@@ -1,0 +1,57 @@
+﻿grant_citizenship = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	
+	message = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_politics"
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			has_character_modifier = foreign_citizen
+			is_alive = yes
+			is_mercenary = no
+		}
+	}
+	
+	allowed_trigger = {
+		scope:target = {
+			has_character_modifier = foreign_citizen
+			prisoner = no
+		}
+		scope:actor.current_ruler = {
+			popularity >= popularity_small
+		}
+	}
+	
+	effect = {
+		scope:target = {
+			remove_character_modifier = foreign_citizen
+			add_loyalty = granted_citizenship
+			set_as_minor_character = THIS
+			set_home_country = employer
+			if = {
+				limit = {
+					has_variable = came_from
+				}
+				remove_variable = came_from
+			}
+		}
+		scope:actor.current_ruler = {
+			add_popularity = subtract_popularity_small
+		}
+	}
+	
+	ai_will_do = {
+		modifier = {
+			add = 10
+			trigger = {
+				always = yes
+			}
+		}
+	}
+	
+}	

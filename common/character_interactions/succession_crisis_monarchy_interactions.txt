@@ -1,0 +1,281 @@
+﻿succession_crisis_make_mercenary = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_economy"
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			has_character_modifier = disloyal_successor_cmod
+			is_general = yes
+			NOT = {
+				employer = {
+					tag = MER
+				}
+			}
+		}
+	}
+	
+	
+	allowed_trigger = {
+		scope:actor = {
+			treasury >= three_years_income_svalue
+		}
+		scope:target = {
+			is_general = yes
+			wealth <= 1000
+		}
+	}
+	
+
+	
+	effect = {
+		scope:actor = {
+			add_treasury = {
+				value = 0
+				subtract = three_years_income_svalue
+			}
+			add_country_modifier = {
+				name = word_gets_around
+				duration = 1825
+			}
+		}
+		scope:target = {
+			add_gold = {
+				value = scope:actor.three_years_income_svalue
+			}
+		}
+		scope:target = {
+			move_country = c:MER
+			set_variable = {
+				name = pretender_from
+				value = scope:actor
+			}
+			add_character_modifier = {
+				name = disinherited_mercenary
+				duration = -1
+			}
+		}
+		custom_tooltip = coup_on_return_tooltip
+		scope:actor = {
+			if = {
+				limit = {
+					is_iron_man = yes
+					is_ai = no
+					NOT = {
+						has_variable = ach_soldier_of_fortune_var
+					}
+				}
+				set_variable = {
+					name = ach_soldier_of_fortune_var
+				}
+			}
+		}
+	}
+	
+}	
+
+succession_crisis_encourage_deserters = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_corruption"
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			employer = scope:actor
+			has_character_modifier = disloyal_successor_cmod
+			is_general = yes
+			NOT = {
+				employer = {
+					tag = MER
+				}
+			}
+		}
+	}
+	
+	
+	allowed_trigger = {
+		scope:actor = {
+			political_influence >= influence_large
+		}
+		scope:target = {
+			popularity <= 40
+			any_character_unit = {
+				unit_size >= 11
+			}
+		}
+	}
+	
+
+	
+	effect = {
+		scope:actor = {
+			add_political_influence = subtract_influence_large
+		}
+		if = {
+			limit = {
+				scope:target = {
+					is_general = yes
+					any_character_unit = {
+						unit_size >= 2
+					}
+				}
+			}
+			scope:target = {
+				ordered_character_unit = {
+					order_by = unit_size
+					while = {
+						count = 6
+						limit = {
+							unit_size > 6
+						}
+						random_sub_unit = {
+							custom_tooltip = unit_is_destroyed_tooltip
+							hidden_effect = {
+								destroy_subunit = yes
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+}
+
+support_foreign_successor = {
+	
+	on_other_nation = yes
+	on_own_nation = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_corruption"
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			NOT = { employer = scope:actor }
+			NOT = {
+				employer = {
+					tag = MER
+				}
+			}
+		}
+	}
+	
+	allowed_trigger = {
+		scope:target = {
+			has_character_modifier = disloyal_successor_cmod
+		}
+		scope:actor = {
+			treasury >= 500
+			political_influence >= 50
+			NOT = {
+				current_ruler = { is_friend = scope:target.employer.current_ruler }
+			}
+		}
+		scope:target = {
+			employer = {
+				NOR = {
+					alliance_with = scope:actor
+					has_civil_war = yes
+				}
+			}
+			NOT = {
+				is_rival = scope:actor.current_ruler
+			}
+			custom_tooltip = {
+				text = recently_supported_sc_tooltip
+				NOT = {
+					has_variable = recently_supported_sc
+				}
+			}
+			num_loyal_veterans < 50
+		}
+	}
+	
+	effect = {
+		scope:actor = {
+			add_treasury = -500
+			add_political_influence = -50
+		}
+		scope:target = {
+			add_gold = 500
+			add_loyal_veterans = 10
+			if = {
+				limit = {
+					NOT = {
+						is_friend = scope:actor.current_ruler
+					}
+					can_get_friends = yes
+					scope:actor.current_ruler = {
+						can_get_friends = yes
+					}
+				}
+				add_friend = scope:actor.current_ruler
+			}
+			ordered_character_unit = {
+				limit = {
+					unit_size <= 50
+				}
+				order_by = unit_size
+				while = {
+					count = 10
+					custom_tooltip = gains_loyal_cohort_tooltip
+					hidden_effect = {
+						add_relevant_loyal_subunit_effect = yes
+					}
+				}
+			}
+			set_variable = {
+				name = recently_supported_sc
+				days = 730
+			}
+		}
+	}
+	
+}
+
+seize_successor_assets = {
+	
+	on_other_nation = no
+	on_own_nation = yes
+	
+	message = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_economy"
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			has_character_modifier = disloyal_successor_cmod
+			is_general = yes
+			NOT = {
+				employer = {
+					tag = MER
+				}
+			}
+		}
+	}
+	
+	allowed_trigger = {
+		scope:target = {
+			wealth >= 800
+		}
+	}
+	
+	effect = {
+		scope:target = {
+			add_gold = -300
+			add_loyalty = assets_seized_sl
+		}
+		scope:actor = {
+			add_treasury = 100
+		}
+		scope:actor.current_ruler = {
+			add_gold = 200
+			add_corruption = 5
+		}
+	}
+	
+}

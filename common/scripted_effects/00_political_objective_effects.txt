@@ -1,0 +1,603 @@
+﻿senate_objective_complete_effect = {
+	save_scope_as = party_obj_complete_scope
+	party_country = {
+		trigger_event = { id = senate_objectives.12 }
+	}
+	show_as_tooltip = {
+		add_party_approval_generic_completion_effect = yes
+	}
+}
+
+clear_party_agenda_cooldown_var_effect = {
+	if = {
+		limit = {
+			has_variable = oligarchic_cooldown
+		}
+		remove_variable = oligarchic_cooldown
+	}
+	if = {
+		limit = {
+			has_variable = democratic_cooldown
+		}
+		remove_variable = democratic_cooldown
+	}
+	if = {
+		limit = {
+			has_variable = traditionalist_cooldown
+		}
+		remove_variable = traditionalist_cooldown
+	}
+}
+
+appointment_office_skill_effect = {
+	if = {
+		limit = {
+			scope:appointment_target.martial >= scope:appointment_target.finesse
+			scope:appointment_target.martial >= scope:appointment_target.charisma
+			scope:appointment_target.martial >= scope:appointment_target.zeal
+		}
+		scope:appointment_target = {
+			set_variable = {
+				name = appointment_office_skill
+				value = 1
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			scope:appointment_target.finesse >= scope:appointment_target.martial
+			scope:appointment_target.finesse >= scope:appointment_target.charisma
+			scope:appointment_target.finesse >= scope:appointment_target.zeal
+		}
+		scope:appointment_target = {
+			set_variable = {
+				name = appointment_office_skill
+				value = 2
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			scope:appointment_target.charisma >= scope:appointment_target.martial
+			scope:appointment_target.charisma >= scope:appointment_target.finesse
+			scope:appointment_target.charisma >= scope:appointment_target.zeal
+		}
+		scope:appointment_target = {
+			set_variable = {
+				name = appointment_office_skill
+				value = 3
+			}
+		}
+	}
+	else = {
+		scope:appointment_target = {
+			set_variable = {
+				name = appointment_office_skill
+				value = 4
+			}
+		}
+	}
+}
+
+senate_objective_appoint_member_generic_effect = {
+	if = {
+		limit = { scope:appointment_target.var:appointment_office_skill = 1 }
+		if = {
+			limit = {
+				any_character = {
+					has_office = office_tribune_of_the_treasury
+					martial <= scope:appointment_target.martial
+				}
+			}
+			random_character = {
+				limit = {
+					has_office = office_tribune_of_the_treasury
+					martial <= scope:appointment_target.martial
+				}
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = {
+					has_office = office_tribune_of_the_soldiers
+					martial <= scope:appointment_target.martial
+				}
+			}
+			random_character = {
+				limit = {
+					has_office = office_tribune_of_the_soldiers
+					martial <= scope:appointment_target.martial
+				}
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = { has_office = office_tribune_of_the_treasury }
+			}
+			random_character = {
+				limit = { has_office = office_tribune_of_the_treasury }
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = { has_office = office_tribune_of_the_soldiers }
+			}
+			random_character = {
+				limit = { has_office = office_tribune_of_the_soldiers }
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else = {
+			scope:appointment_target = { give_office = office_tribune_of_the_soldiers }
+		}
+	}
+	else_if = {
+		limit = { scope:appointment_target.var:appointment_office_skill = 2 }
+		if = {
+			limit = {
+				any_character = {
+					has_office = office_plebeian_aedile
+					finesse <= scope:appointment_target.finesse
+				}
+			}
+			random_character = {
+				limit = {
+					has_office = office_plebeian_aedile
+					finesse <= scope:appointment_target.finesse
+				}
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = {
+					has_office = office_republic_physician
+					finesse <= scope:appointment_target.finesse
+				}
+			}
+			random_character = {
+				limit = {
+					has_office = office_republic_physician
+					finesse <= scope:appointment_target.finesse
+				}
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = { has_office = office_plebeian_aedile }
+			}
+			random_character = {
+				limit = { has_office = office_plebeian_aedile }
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = { has_office = office_republic_physician }
+			}
+			random_character = {
+				limit = { has_office = office_republic_physician }
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else = {
+			scope:appointment_target = { give_office = office_republic_physician }
+		}
+	}
+	else_if = {
+		limit = {  }
+		if = {
+			limit = {
+				any_character = {
+					has_office = office_praetor
+					charisma <= scope:appointment_target.charisma
+				}
+			}
+			random_character = {
+				limit = {
+					has_office = office_praetor
+					charisma <= scope:appointment_target.charisma
+				}
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = {
+					has_office = office_censor
+					charisma <= scope:appointment_target.charisma
+				}
+			}
+			random_character = {
+				limit = {
+					has_office = office_censor
+					charisma <= scope:appointment_target.charisma
+				}
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = { has_office = office_praetor }
+			}
+			random_character = {
+				limit = { has_office = office_praetor }
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = { has_office = office_censor }
+			}
+			random_character = {
+				limit = { has_office = office_censor }
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else = { 
+			scope:appointment_target = { give_office = office_censor }
+		}
+	}
+	else = {
+		if = {
+			limit = {
+				any_character = {
+					has_office = office_augur
+					zeal <= scope:appointment_target.zeal
+				}
+			}
+			random_character = {
+				limit = {
+					has_office = office_augur
+					zeal <= scope:appointment_target.zeal
+				}
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = {
+					has_office = office_pontifex
+					zeal <= scope:appointment_target.zeal
+				}
+			}
+			random_character = {
+				limit = {
+					has_office = office_pontifex
+					zeal <= scope:appointment_target.zeal
+				}
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = { has_office = office_augur }
+			}
+			random_character = {
+				limit = { has_office = office_augur }
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else_if = {
+			limit = {
+				any_character = { has_office = office_pontifex }
+			}
+			random_character = {
+				limit = { has_office = office_pontifex }
+				save_scope_as = replaced_appointment_target
+			}
+		}
+		else = {
+			scope:appointment_target = { give_office = office_augur }
+		}
+	}
+	if = {
+		limit = { exists = scope:replaced_appointment_target }
+		scope:replaced_appointment_target = { add_loyalty = loyalty_appointment_revoked_agenda }
+		if = {
+			limit = {
+				scope:replaced_appointment_target = { has_office = office_censor }
+			}
+			hidden_effect = {
+				scope:replaced_appointment_target = { remove_all_positions = yes }
+			}
+			scope:appointment_target = { give_office = office_censor }
+		}
+		else_if = {
+			limit = {
+				scope:replaced_appointment_target = { has_office = office_praetor }
+			}
+			hidden_effect = {
+				scope:replaced_appointment_target = { remove_all_positions = yes }
+			}
+			scope:appointment_target = { give_office = office_praetor }
+		}
+		else_if = {
+			limit = {
+				scope:replaced_appointment_target = { has_office = office_tribune_of_the_soldiers }
+			}
+			hidden_effect = {
+				scope:replaced_appointment_target = { remove_all_positions = yes }
+			}
+			scope:appointment_target = { give_office = office_tribune_of_the_soldiers }
+		}
+		else_if = {
+			limit = {
+				scope:replaced_appointment_target = { has_office = office_tribune_of_the_treasury }
+			}
+			hidden_effect = {
+				scope:replaced_appointment_target = { remove_all_positions = yes }
+			}
+			scope:appointment_target = { give_office = office_tribune_of_the_treasury }
+		}
+		else_if = {
+			limit = {
+				scope:replaced_appointment_target = { has_office = office_augur }
+			}
+			hidden_effect = {
+				scope:replaced_appointment_target = { remove_all_positions = yes }
+			}
+			scope:appointment_target = { give_office = office_augur }
+		}
+		else_if = {
+			limit = {
+				scope:replaced_appointment_target = { has_office = office_pontifex }
+			}
+			hidden_effect = {
+				scope:replaced_appointment_target = { remove_all_positions = yes }
+			}
+			scope:appointment_target = { give_office = office_pontifex }
+		}
+		else_if = {
+			limit = {
+				scope:replaced_appointment_target = { has_office = office_plebeian_aedile }
+			}
+			hidden_effect = {
+				scope:replaced_appointment_target = { remove_all_positions = yes }
+			}
+			scope:appointment_target = { give_office = office_plebeian_aedile }
+		}
+		else_if = {
+			limit = {
+				scope:replaced_appointment_target = { has_office = office_republic_physician }
+			}
+			hidden_effect = {
+				scope:replaced_appointment_target = { remove_all_positions = yes }
+			}
+			scope:appointment_target = { give_office = office_republic_physician }
+		}
+	}
+	else_if = {
+		limit = { scope:appointment_target.var:demand_office_skill = 1 }
+		scope:appointment_target = { give_office = office_tribune_of_the_treasury }
+	}
+	else_if = {
+		limit = { scope:appointment_target.var:demand_office_skill = 2 }
+		scope:appointment_target = { give_office = office_plebeian_aedile }
+	}
+	else_if = {
+		limit = { scope:appointment_target.var:demand_office_skill = 3 }
+		scope:appointment_target = { give_office = office_praetor }
+	}
+	else = {
+		scope:appointment_target = { give_office = office_augur }
+	}
+}
+
+add_party_approval_roman_completion_effect = {
+	if = {
+        limit = {
+            OR = {
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_dec_war_party }
+                    THIS = scope:sen_obj_dec_war_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_cha_law_optimates }
+                    THIS = scope:sen_obj_cha_law_optimates
+                }
+                trigger_if = {
+                    limit = { exists = scope:senate_objective_revoke_office_party }
+                    THIS = scope:senate_objective_revoke_office_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:reduce_citizenship_party }
+                    THIS = scope:reduce_citizenship_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_cha_law_optimates }
+                    THIS = scope:sen_obj_cha_law_optimates
+                }
+                trigger_if = {
+                    limit = { exists = scope:senate_objective_revoke_office_party }
+                    THIS = scope:senate_objective_revoke_office_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:senate_object_state_investment_party }
+                    THIS = scope:senate_object_state_investment_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:senate_objective_increase_stability_boni_party }
+                    THIS = scope:senate_objective_increase_stability_boni_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:senate_objective_reduce_tyranny_party }
+                    THIS = scope:senate_objective_reduce_tyranny_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_cha_law_boni }
+                    THIS = scope:sen_obj_cha_law_boni
+                }
+                trigger_if = {
+                    limit = { exists = scope:increase_citizenship_party }
+                    THIS = scope:increase_citizenship_party
+                }
+            }
+        }
+        party_country = {
+	        add_party_approval = {
+	            party = scope:party_obj_complete_scope
+	            value = senate_agenda_passed_medium_svalue
+	        }
+	    }
+    }
+    else_if = {
+        limit = {
+            OR = {
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_gra_hol_party }
+                    THIS = scope:sen_obj_gra_hol_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_rev_hol_party }
+                    THIS = scope:sen_obj_rev_hol_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:senate_objective_imprison_head_party }
+                    THIS = scope:senate_objective_imprison_head_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:senate_objective_build_buildings_party }
+                    THIS = scope:senate_objective_build_buildings_party
+                }
+            }
+        }
+        party_country = {
+	        add_party_approval = {
+	            party = scope:party_obj_complete_scope
+	            value = senate_agenda_passed_large_svalue
+	        }
+	    }
+    }
+    else ={
+        party_country = {
+	        add_party_approval = {
+	            party = scope:party_obj_complete_scope
+	            value = senate_agenda_passed_medium_svalue
+	        }
+	    }
+    }
+}
+
+add_party_approval_generic_completion_effect = {
+	if = {
+        limit = {
+            OR = {
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_cha_law_oli_party }
+                    THIS = scope:sen_obj_cha_law_oli_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_cha_law_dem_party }
+                    THIS = scope:sen_obj_cha_law_dem_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_cha_law_tra_party }
+                    THIS = scope:sen_obj_cha_law_tra_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_dec_war_party }
+                    THIS = scope:sen_obj_dec_war_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_len_ter_gen_party }
+                    THIS = scope:sen_obj_len_ter_gen_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_sho_ter_gen_party }
+                    THIS = scope:sen_obj_sho_ter_gen_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_bui_tem_gen_party }
+                    THIS = scope:sen_obj_bui_tem_gen_party
+                }     
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_int_cul_gen_party }
+                    THIS = scope:sen_obj_int_cul_gen_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_red_tyr_gen_party }
+                    THIS = scope:sen_obj_red_tyr_gen_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_inc_sta_gen_party }
+                    THIS = scope:sen_obj_inc_sta_gen_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_inv_gen_party }
+                    THIS = scope:sen_obj_inv_gen_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_rev_rig_gen_party }
+                    THIS = scope:sen_obj_rev_rig_gen_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_app_mem_gen_party }
+                    THIS = scope:sen_obj_app_mem_gen_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_des_shr_party }
+                    THIS = scope:sen_obj_des_shr_party
+                }
+            }
+        }
+        party_country = {
+	        add_party_approval = {
+	            party = scope:party_obj_complete_scope
+	            value = senate_agenda_passed_medium_svalue
+	        }
+	    }
+    }
+    else_if = {
+        limit = {
+            OR = {
+            	trigger_if = {
+                    limit = { exists = scope:sen_obj_gra_hol_party }
+                    THIS = scope:sen_obj_gra_hol_party
+                }
+                trigger_if = {
+                    limit = { exists = scope:sen_obj_rev_hol_party }
+                    THIS = scope:sen_obj_rev_hol_party
+                }
+            	trigger_if = {
+                    limit = { exists = scope:sen_obj_imp_hea_gen_party }
+                    THIS = scope:sen_obj_imp_hea_gen_party
+                }
+            	trigger_if = {
+                    limit = { exists = scope:sen_obj_con_pro_gen_party }
+                    THIS = scope:sen_obj_con_pro_gen_party
+                }
+            	trigger_if = {
+                    limit = { exists = scope:sen_obj_acq_sub_party }
+                    THIS = scope:sen_obj_acq_sub_party
+                }
+            	trigger_if = {
+                    limit = { exists = scope:sen_obj_ene_shr_party }
+                    THIS = scope:sen_obj_ene_shr_party
+                }
+            	trigger_if = {
+                    limit = { exists = scope:sen_obj_pro_cit_party }
+                    THIS = scope:sen_obj_pro_cit_party
+                } 
+            }
+        }
+        party_country = {
+	        add_party_approval = {
+	            party = scope:party_obj_complete_scope
+	            value = senate_agenda_passed_large_svalue
+	        }
+	    }
+    }
+    else ={
+        party_country = {
+	        add_party_approval = {
+	            party = scope:party_obj_complete_scope
+	            value = senate_agenda_passed_medium_svalue
+	        }
+	    }
+    }
+}

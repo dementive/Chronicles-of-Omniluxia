@@ -22,6 +22,7 @@
 				}
 			}
 		}
+		has_civil_war = no
 	}
 	
 	ai_chance = { factor = 0 }
@@ -216,7 +217,7 @@
 						limit = { is_port = yes } 
 						random_sea_and_river_zone = {
 							limit = { is_neighbor = PREV }
-							region = { save_scope_as = trade_sea }
+							save_scope_as = trade_sea
 						}
 					}
 				}
@@ -368,6 +369,10 @@
 							if = {
 								limit = {
 									has_food_trade_good_trigger = yes
+									NOR = {
+										has_city_status = yes
+										terrain = desert_hills
+									}
 								}
 								add = 1
 							}
@@ -496,12 +501,7 @@
 					ordered_state_province = {
 						max = 1
 						check_range_bounds = no
-						order_by = {
-							value = 0
-							every_state_province = {
-								add = total_population
-							}
-						}
+						order_by = total_population
 						save_scope_as = urbanize_area_city
 						if = {
 							limit = { NOT = { dominant_province_culture = owner.culture } }
@@ -533,12 +533,15 @@
 	}
 
 	abort = {
-		custom_tooltip = {
-			text = abort_for_generic_infra
-			OR = {
-				NOT = { exists = scope:infra_governorship }
-				NOT = { exists = scope:governorship_capital_area }
+		OR = {
+			custom_tooltip = {
+				text = abort_for_generic_infra
+				OR = {
+					NOT = { exists = scope:infra_governorship }
+					NOT = { exists = scope:governorship_capital_area }
+				}
 			}
+			ai_mission_back_out_trigger = yes
 		}
 	}
 	
@@ -638,6 +641,7 @@
 	
 	
 	on_start = {
+		start_mission_ai_effect = yes
 		scope:infra_governorship = { set_variable = mission_happened_here }
 		scope:governorship_capital = {
 			if = {
@@ -685,7 +689,10 @@
 						owner = ROOT
 					}
 					has_city_status = yes
-					num_of_temple_building >= 3
+					OR = {
+						num_of_temple_building >= 1
+						num_of_zikkurat_building >= 1
+					}
 				}
 			}
 		}
@@ -702,7 +709,6 @@
 				limit = { is_ai = yes }
 				add_treasury = -100
 				scope:shrine_territory = {
-					add_building_level = temple_building
 					add_building_level = temple_building
 				}
 			}
@@ -775,7 +781,7 @@
 			trigger_if = {
 				limit = { is_ai = no }
 				scope:shrine_territory = {
-					num_of_temple_building > 3
+					num_of_temple_building >= 1
 					state = {
 						custom_tooltip = {
 							text = "have_4_religious_endowments_tooltip"
@@ -810,7 +816,8 @@
 			trigger_event = { id = generic_infra_mission.4 }
 			custom_tooltip = ceremony_event.tooltip
 			scope:shrine_territory = {
-				create_5_citizens_effect = yes #Needs to be replaced with fixed effect
+				create_5_citizens_effect = yes
+				create_2_nobles_effect = yes
 				if = {
 					limit = {
 						NOT = { has_province_modifier = embelished_great_shrine_modifier }
@@ -856,8 +863,6 @@
 			}
 			
 		}
-
-		on_bypass  = {} 
 	}
 	
 	shrine_branch_4 = { #Create Religious Subject
@@ -907,6 +912,7 @@
 					custom_tooltip = autonomous_shrine_tooltip
 				}
 				create_5_citizens_effect = yes
+				create_2_nobles_effect = yes
 				hidden_effect = {
 					if = {
 						limit = {
@@ -921,8 +927,6 @@
 			}
 			trigger_event = { id = generic_infra_mission.29 }
 		}
-
-		on_bypass  = {} 
 	}
 	
 	shrine_branch_5 = { #Lump Sum
@@ -960,6 +964,7 @@
 			trigger_event = { id = generic_infra_mission.4 }
 			scope:shrine_territory = {
 				create_5_citizens_effect = yes
+				create_2_nobles_effect = yes
 				if = {
 					limit = {
 						NOT = { has_province_modifier = embelished_great_shrine_modifier }
@@ -971,8 +976,6 @@
 				}
 			}
 		}
-
-		on_bypass  = {} 
 	}
 
 	
@@ -1025,10 +1028,6 @@
 			}
 		}
 
-		bypass = {
-			
-		}
-
 		#monthly_on_action = generic_1_pulse 
 
 		on_completion = {
@@ -1055,8 +1054,6 @@
 				create_state_pop = freemen
 			}
 		}
-
-		on_bypass  = {} 
 	}
 	
 	capital_branch_1_b = { #If the region IS the capital region.
@@ -1109,8 +1106,6 @@
 				create_state_pop = freemen
 			}
 		} 
-
-		on_bypass  = {} 
 	}
 	
 	capital_branch_1_c = { #If the region IS the capital region.
@@ -1166,8 +1161,6 @@
 				}
 			}
 		} 
-
-		on_bypass  = {} 
 	}
 	
 	capital_branch_2 = { #A task with unmet Potential is not required.
@@ -1229,10 +1222,6 @@
 			}
 		}
 
-		bypass = {
-			
-		}
-
 		on_completion = { #
 			if = {
 				limit = {
@@ -1265,9 +1254,7 @@
 					duration = -1
 				}
 			}
-		}
-
-		on_bypass  = {} 
+		} 
 	}
 	
 	found_colonia = {
@@ -1299,8 +1286,8 @@
 						fort_level >= 1
 					}
 					has_city_status = yes
-					has_building = temple_building
-					has_building = temple_building
+					has_building =  temple_building
+					has_building = commerce_building
 				}
 			}
 			trigger_else = { #if AI
@@ -1333,7 +1320,7 @@
 				limit = { is_ai = yes }
 				add_treasury = -100
 				scope:governorship_capital = {
-					add_building_level = temple_building
+					add_building_level = commerce_building
 					add_building_level = temple_building
 				}
 			}
@@ -1401,8 +1388,8 @@
 				}
 				add_treasury = -150
 				scope:governorship_capital = {
-					add_building_level = court_building
-					add_building_level = court_building
+					add_building_level = town_hall_building
+					add_building_level = town_hall_building
 					add_building_level = fortress_building
 				}
 			}
@@ -1474,8 +1461,8 @@
 			trigger_else = {
 				scope:governorship_capital = {
 					has_city_status = yes
-					num_of_barracks_building >= 1
-					num_of_trade_district_building >= 1
+					num_of_military_building >= 1
+					num_of_commerce_building >= 1
 				}
 			}
 		}
@@ -1488,9 +1475,8 @@
 				}
 				add_treasury = -150
 				scope:governorship_capital = {
-					add_building_level = barracks_building
-					add_building_level = forum_building
-					add_building_level = foundry_building
+					add_building_level = military_building
+					add_building_level = commerce_building
 				}
 			}
 			
@@ -1546,8 +1532,8 @@
 			trigger_else = {
 				scope:governorship_capital = {
 					has_city_status = yes
-					num_of_trade_district_building >= 1
-					num_of_temple_building >= 2
+					num_of_commerce_building >= 1
+					num_of_temple_building >= 1
 				}
 			}
 		}
@@ -1559,9 +1545,8 @@
 				}
 				add_treasury = -150
 				scope:governorship_capital = {
-					add_building_level = trade_district_building
-					add_building_level = trade_district_building
-					add_building_level = library_building
+					add_building_level = commerce_building
+					add_building_level = temple_building
 				}
 			}
 			scope:governorship_capital = {
@@ -1617,7 +1602,8 @@
 			} #needs to expire first
 			trigger_else = {
 				scope:governorship_capital = {
-					has_building = housing_district_building
+					has_building = aqueduct_building
+					has_building = court_building
 					has_building = population_building
 				}
 			}
@@ -1632,10 +1618,10 @@
 				scope:governorship_capital = {
 					if = {
 						limit = {
-							NOT = { has_building = housing_district_building }
+							NOT = { has_building = aqueduct_building }
 							free_building_slots >= 1
 						}
-						add_building_level = housing_district_building
+						add_building_level = aqueduct_building
 						owner = { add_treasury = -50 }
 					}
 					if = {
@@ -1646,16 +1632,27 @@
 						add_building_level = population_building
 						owner = { add_treasury = -50 }
 					}
+					if = {
+						limit = {
+							NOT = { has_building = commerce_building }
+							free_building_slots >= 1
+						}
+						add_building_level = commerce_building
+						owner = { add_treasury = -50 }
+					}
 				}
 			}
-		
 			scope:governorship_capital_area = {
+				
 				add_state_modifier = {
 					name = "well_cared_for_governorship_center"
 					duration = -1
 				}
 			}
 			custom_tooltip = governorship_success_char
+			scope:governorship_capital = {
+				create_state_pop = nobles
+			}
 			trigger_event = { id = generic_infra_mission.28 }
 			
 		}
@@ -1753,17 +1750,6 @@
 							}
 						}
 						custom_tooltip = {
-							text = bring_the_iron_tooltip
-							OR = {
-								state = {
-									any_state_province = {
-										trade_goods = iron
-									}
-								}
-								is_importing_trade_good = iron
-							}
-						}
-						custom_tooltip = {
 							text = bring_the_wood_tooltip
 							OR = {
 								state = {
@@ -1798,6 +1784,7 @@
 						is_monarchy = yes
 					}
 					capital_scope = {
+						create_2_nobles_effect = yes
 						add_province_modifier = {
 							name = "royal_palaces_mission_modifier"
 							duration = -1
@@ -1809,6 +1796,7 @@
 						is_republic = yes
 					}
 					capital_scope = {
+						create_2_nobles_effect = yes
 						add_province_modifier = {
 							name = "forum_mission_modifier"
 							duration = -1
@@ -1817,6 +1805,7 @@
 				}
 				else = {
 					capital_scope = {
+						create_2_nobles_effect = yes
 						add_province_modifier = {
 							name = "clan_council_compound_mission_modifier"
 							duration = -1
@@ -1825,8 +1814,6 @@
 				}
 			}
 		}
-
-		on_bypass  = {} 
 	}
 	
 	food_branch_1 = {
@@ -1874,10 +1861,10 @@
 						state = scope:food_province
 						has_food_trade_good_trigger = yes
 						free_building_slots >= 1
-						NOT = { has_building = farming_settlement_building }
+						NOT = { has_building = basic_settlement_infratructure_building }
 						has_city_status = no
 					}
-					add_building_level = farming_settlement_building
+					add_building_level = basic_settlement_infratructure_building
 				}
 			}
 			scope:food_province = {
@@ -1887,6 +1874,8 @@
 				}
 			}
 		}
+
+		on_bypass = { trigger_event = generic_infra_mission.34 }
 
 	}
 	
@@ -1921,7 +1910,7 @@
 				scope:food_province_capital = {
 					is_state_capital = yes
 					has_city_status = yes
-					num_of_population_building >= 2
+					num_of_population_building >= 1
 				}
 			}
 			trigger_else = { always = no } #AI does the other task.
@@ -1935,6 +1924,15 @@
 					name = "food_depot"
 					duration = -1
 				}
+			}
+		}
+
+		on_bypass = {
+			if = {
+				limit = {
+					scope:food_province = { potential_farms_in_province_svalue < 2 }
+				}
+				trigger_event = generic_infra_mission.35
 			}
 		}
 	}
@@ -1979,6 +1977,14 @@
 				duration = 3650
 			}
 		}
+		on_bypass = {
+			if = {
+				limit = {
+					scope:food_province = { potential_farms_in_province_svalue < 2 }
+				}
+				trigger_event = generic_infra_mission.36
+			}
+		}
 	}
 	
 	breeding_program = { #Optional, AI won't do.
@@ -1994,11 +2000,6 @@
 						trade_goods = horses
 					}
 				}
-				NOT = {
-					any_state_province = {
-						trade_goods = steppe_horses
-					}
-				}
 			}
 		}
 		highlight = {
@@ -2009,18 +2010,8 @@
 		}
 		allow = {
 			treasury > 800
-			trigger_if = {
-				limit = {
-					heritage = steppe_heritage
-				}
-				scope:food_province_capital = {
-					is_importing_trade_good = steppe_horses
-				}
-			}
-			trigger_else = {
-				scope:food_province_capital = {
-					is_importing_trade_good = horses
-				}
+			scope:food_province_capital = {
+				is_importing_trade_good = horses
 			}
 		}
 
@@ -2035,13 +2026,22 @@
 			if = {
 				limit = { heritage = steppe_heritage }
 				scope:food_province_capital = {
-					set_trade_goods = steppe_horses
+					set_trade_goods = horses
 				}
 			}
 			else = {
 				scope:food_province_capital = {
 					set_trade_goods = horses
 				}
+			}
+		}
+
+		on_bypass = {
+			if = {
+				limit = {
+					scope:food_province = { potential_farms_in_province_svalue < 2 }
+				}
+				trigger_event = generic_infra_mission.37
 			}
 		}
 	}
@@ -2092,9 +2092,9 @@
 						has_city_status = no
 						free_building_slots >= 1
 						has_minable_trade_good_trigger = yes
-						NOT = { has_building = mining_settlement_building }
+						NOT = { has_building = slave_mine_building }
 					}
-					add_building_level = mining_settlement_building
+					add_building_level = slave_mine_building
 				}
 			}
 			scope:mining_province = {
@@ -2112,7 +2112,7 @@
 				}
 				hidden_effect = {
 					every_state_province = {
-						limit = { has_building = mining_settlement_building }
+						limit = { has_building = slave_mine_building }
 						add_province_modifier = {
 							name = "thriving_mining_sector"
 							duration = -1
@@ -2122,6 +2122,7 @@
 			}
 		}	
 
+		on_bypass = { trigger_event = generic_infra_mission.38 }
 	}
 	
 	
@@ -2241,6 +2242,7 @@
 			}
 		}
 
+		on_bypass = { trigger_event = generic_infra_mission.39 }
 	}
 	
 	prospecting_mission = {
@@ -2298,6 +2300,7 @@
 			custom_tooltip = prospection_tooltip
 		}
 
+		on_bypass = { trigger_event = generic_infra_mission.40 }
 	}
 	
 	
@@ -2309,6 +2312,22 @@
 		allow = {
 			trigger_if = {
 				limit = { is_ai = no }
+				hidden:scope:port_province = {
+					custom_tooltip = {
+						text = tooltip_num_ports
+						OR = {
+							any_state_province = { #Either own a state with at least 3 ports.
+								count >= 3
+								is_port = yes
+							}
+							any_state_province = { #Or Own a state with at least one port where your subjects and you have at least 3 ports together.
+								count >= 1
+								is_port = yes
+								ports_in_subjects_svalue >= 2
+							}
+						}
+					}
+				}
 				custom_tooltip = {
 					text = tooltip_building_ports
 					port_cities_in_province_svalue >= port_cities_potential_tooltip_svalue
@@ -2374,6 +2393,22 @@
 		allow = {
 			trigger_if = {
 				limit = { is_ai = no }
+				hidden:scope:port_province = {
+					custom_tooltip = {
+						text = tooltip_num_ports
+						OR = {
+							any_state_province = { #Either own a state with at least 3 ports.
+								count >= 3
+								is_port = yes
+							}
+							any_state_province = { #Or Own a state with at least one port where your subjects and you have at least 3 ports together.
+								count >= 1
+								is_port = yes
+								ports_in_subjects_svalue >= 2
+							}
+						}
+					}
+				}
 				custom_tooltip = {
 					text = tooltip_building_ports_markets
 					port_markets_in_province_svalue >= port_cities_potential_tooltip_svalue
@@ -2431,7 +2466,7 @@
 				}
 			}
 			scope:ship_building_center = {
-				num_of_trade_district_building >= 3
+				num_of_foundry_building >= 1
 			}
 		}
 		highlight = {
@@ -2474,38 +2509,17 @@
 		on_start = { add_treasury = -300 }
 
 		on_completion = {
-			if = {
-				limit = {
-					OR = {
-						has_military_tradition = greek_philosophy
-						has_military_tradition = levantine_philosophy
-					}
-				}
-				create_unit = {
-					location = scope:valid_sea_or_river_place
-					navy = yes
-					sub_unit = mega_galley
-					add_subunit = octere
-					add_subunit = octere
-					add_subunit = octere
-					add_subunit = octere
-					save_scope_as = new_navy
-				}
-				custom_tooltip = mega_galley_tooltip
+			create_unit = {
+				location = scope:valid_sea_or_river_place
+				navy = yes
+				sub_unit = octere
+				add_subunit = octere
+				add_subunit = octere
+				add_subunit = octere
+				add_subunit = octere
+				save_scope_as = new_navy
 			}
-			else = {
-				create_unit = {
-					location = scope:valid_sea_or_river_place
-					navy = yes
-					sub_unit = octere
-					add_subunit = octere
-					add_subunit = octere
-					add_subunit = octere
-					add_subunit = octere
-					save_scope_as = new_navy
-				}
-				custom_tooltip = octere_tooltip
-			}
+			custom_tooltip = octere_tooltip
 			trigger_event = { id = generic_infra_mission.30 }
 		}
 
@@ -2597,7 +2611,7 @@
 			trigger_if = {
 				limit = { is_ai = no }
 				scope:urbanize_area_city = {
-					num_of_temple_building >= 2
+					num_of_theathre_building >= 1
 				}
 			}
 			trigger_else = { treasury >= 100 }
@@ -2617,10 +2631,10 @@
 				scope:urbanize_area_city = {
 					while = {
 						limit = {
-							num_of_temple_building < 2
+							num_of_commerce_building < 1
 							free_building_slots >= 1
 						}
-						add_building_level = temple_building
+						add_building_level = commerce_building
 					}
 				}
 			}
@@ -2647,7 +2661,7 @@
 			trigger_if = {
 				limit = { is_ai = no }
 				scope:urbanize_area_city = {
-					fort_level >= 2
+					fort_level >= 1
 				}
 			}
 			trigger_else = {
@@ -2669,7 +2683,7 @@
 				scope:urbanize_area_city = {
 					while = {
 						limit = {
-							num_of_fortress_building < 2
+							num_of_fortress_building < 1
 							free_building_slots >= 1
 						}
 						add_building_level = fortress_building
@@ -2700,7 +2714,7 @@
 			trigger_if = {
 				limit = { is_ai = no }
 				scope:urbanize_area_city = {
-					num_of_trade_district_building >= 2
+					num_of_commerce_building >= 1
 				}
 			}
 			trigger_else = {
@@ -2722,10 +2736,10 @@
 				scope:urbanize_area_city = {
 					while = {
 						limit = {
-							num_of_trade_district_building < 2
+							num_of_commerce_building < 1
 							free_building_slots >= 1
 						}
-						add_building_level = trade_district_building
+						add_building_level = commerce_building
 					}
 				}
 			}
@@ -2753,7 +2767,7 @@
 			trigger_if = {
 				limit = { is_ai = no }
 				scope:urbanize_area_city = {
-					num_of_barracks_building >= 2
+					num_of_military_building >= 1
 				}
 			}
 			trigger_else = {
@@ -2775,10 +2789,10 @@
 				scope:urbanize_area_city = {
 					while = {
 						limit = {
-							num_of_barracks_building < 2
+							num_of_military_building < 1
 							free_building_slots >= 1
 						}
-						add_building_level = barracks_building
+						add_building_level = military_building
 					}
 				}
 			}
@@ -2806,7 +2820,7 @@
 			trigger_if = {
 				limit = { is_ai = no }
 				scope:urbanize_area_city = {
-					num_of_nobility_district_building >= 2
+					num_of_workshop_building >= 1
 				}
 			}
 			trigger_else = {
@@ -2828,10 +2842,10 @@
 				scope:urbanize_area_city = {
 					while = {
 						limit = {
-							num_of_nobility_district_building < 2
+							num_of_town_hall_building < 1
 							free_building_slots >= 1
 						}
-						add_building_level = workshop_building
+						add_building_level = town_hall_building
 					}
 				}
 			}

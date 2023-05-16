@@ -6,16 +6,146 @@
 }
 
 in_naval_battle = {
-
-
+	random_events = {
+		1098 = 0
+		4 = warfare.8 #Battle Wound
+		4 = warfare.9 #Fallen in Battle
+	}
 }
 
 in_land_battle = {
-
+	random_events = {
+		1098 = 0
+		4 = warfare.6 #Battle Wound
+		4 = warfare.7 #Fallen in Battle
+	}
 }
 
 on_battle_won = {
 
+}
+
+on_state_secession = { #Fired for States that revolt only, for now. Civil wars require refactor.
+	effect = {
+		#Invictus
+		random_state_province = {
+			save_scope_as = revolting_state_province
+		}
+		governorship = {
+			save_scope_as = revolting_state_governorship
+		}
+		owner = {
+			#Owner when this on_action fires = player country
+			#Owner 1 day after the on_action = revolting country
+			if = {
+				limit = {
+					is_ai = no
+				}
+				trigger_event = {
+					id = revolt_events.1
+					days = 1
+				}
+			}
+			else_if = {
+				limit = {
+					is_ai = yes
+					num_of_cities >= 150
+				}
+				trigger_event = {
+					id = revolt_events.1
+					days = 1
+				}
+			}
+			else = {
+				limit = {
+					is_ai = yes
+					num_of_cities < 150
+				}
+				trigger_event = revolt_events.2
+			}
+		}
+		if = {
+			limit = {
+				has_variable = num_state_mods
+			}
+			while = {
+				limit = {
+					has_variable = num_state_mods
+					var:num_state_mods > 0
+				}
+				owner = {
+					add_1_free_province_investments = yes
+				}
+				if = {
+					limit = {
+						var:num_state_mods > 1
+					}
+					change_variable = {
+						name = num_state_mods
+						add = -1
+					}
+				}
+				else = {
+					remove_variable = num_state_mods
+				}
+			}
+		}
+		if = {
+			limit = {
+				owner = { is_ai = no }
+			}
+			every_state_province = { #This is a bit convoluted but gives the old owner a culture modifier for any culture dominant in at least 3 territories in the revolting state - unless it is an integrated or primary culture.
+				save_scope_as = revolting_territory
+				owner = {
+					random_country_culture = {
+						limit = { is_culture = scope:revolting_territory.culture }
+						if = {
+							limit = {
+								root = {
+									any_state_province = {
+										count >= 3
+										dominant_province_culture = scope:revolting_territory.culture
+									}
+								}
+							}
+							save_scope_as = revolt_culture
+						}
+					}
+					if = {
+						limit = { exists = scope:revolt_culture }
+						scope:revolt_culture = {
+							if = {
+								limit = {
+									NOT = { has_country_culture_modifier = revolting_culture }
+									is_integrated = no
+									NOT = { is_culture = root.owner.culture }
+								}
+								add_country_culture_modifier = {
+									name = "revolting_culture"
+									duration = 730 #2 years
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+on_rebellion_in_country = { #root scope parent country
+	effect = {
+		if = {
+			limit = {
+				is_ai = yes #There are numerous tools to offset rebellions, all of which are situational - the AI will never be able to manage these with the same ability as a human player, so we reduce the frequency of revolts to balance.
+			}
+			every_country_state = {
+				capital_scope = {
+					add_state_loyalty = 10
+				}
+			}
+		}
+	}
 }
 
 on_battle_lost = {
@@ -26,6 +156,7 @@ on_battle_lost = {
 		50 = after_battle.27 # Pompey Victorious lost
 		50 = after_battle.29 # Pompey Daring lost
 		50 = after_battle.30 # Pompey Tough lost
+		50 = after_battle.41 # Pompey Wounded 
 	}
 }
 
@@ -48,10 +179,36 @@ on_siege_won = { #Only triggers if sieging army has a commander (which is also R
 	
 	events = {
 		warfare.1
+		warfare.10
+		warfare.17
+	}
+	random_events = {
+		1000 = 0
+		25 = distinction.30
 	}
 
 }
 
+#scope:former_ruler, root = country,
+#same as on_ruler_change, but called before switching
+on_reign_ending = { 
+	on_actions = {
+		on_republic_reign_ending
+	}
+}
+
+on_reign_ending_successor = { #scope:former_ruler = the successor, because onactions..., root = country,
+	effect = { 
+		scope:former_ruler = {
+			if = {
+				limit = {
+					has_character_modifier = foreign_citizen
+				}
+				remove_character_modifier = foreign_citizen
+			}
+		}
+	}
+}
 
 #scope:former_ruler, root = country
 on_ruler_change = {
@@ -146,7 +303,20 @@ on_ruler_change = {
 				}
 			}
 		}
+		clear_party_agenda_cooldown_var_effect = yes
 		clear_befriending_var_effect = yes
+		if = {
+			limit = { has_country_modifier = dictatorial_extension }
+			remove_country_modifier = dictatorial_extension
+		}
+		if = {
+			limit = { has_variable = dictatorship_enabled }
+			remove_variable = dictatorship_enabled
+		}
+		if = {
+			limit = { has_variable = ach_dictator_appointed }
+			remove_variable = dictatorship_enabled
+		}
 		if = {
 			limit = {
 				has_country_modifier = oaths_of_allegiance
@@ -173,10 +343,34 @@ on_ruler_change = {
 			remove_variable = ip_mon_36_flag
 		}
 		if = {
-			limit = {
-				has_variable = ip_mon_38_flag
-			}
+			limit = { has_variable = ip_mon_38_flag }
 			remove_variable = ip_mon_38_flag
+		}
+		if = {
+			limit = {
+				is_monarchy = yes
+				scope:former_ruler = { is_alive = no }
+			}
+			trigger_event = {
+				id = gov_pol.9 #Loss of state loyalty
+			}
+		}
+		if = {
+			limit = {
+				is_monarchy = yes
+				scope:former_ruler = { is_alive = no }
+			}
+			trigger_event = {
+				id = gov_pol.9 #Loss of state loyalty
+			}
+		}
+		if = {
+			limit = {
+				is_republic = yes
+			}
+			current_ruler = {
+				add_charisma = 1
+			}
 		}
 	}
 	on_actions = {
@@ -185,12 +379,10 @@ on_ruler_change = {
 	events = {
 		family_events.5 #Rise of new Family
 		new_ruler.1
-		ip_republic.36
 		succession_crisis.5
 		character_events.8
 		character_events.15
 		ip_monarchy.53 # Consort regency
-		monastic_order_events.2
 	}
 	random_events = {
 		100 = 0
@@ -203,21 +395,55 @@ on_ruler_change = {
 #scope:target = ruler of losing side.
 on_civil_war_lost = {
 	effect = {
-		scope:target.employer = {
+		scope:losing_side = {
+			every_country_treasure = {
+				transfer_treasure_to_country = root
+			}
+		}
+		scope:losing_side = {
 			save_scope_as = civil_war_target
 		}
 		if = {
 			limit = {
-				scope:target.employer = {
+				scope:losing_side = {
 					government = dictatorship
 				}
 			}
 			change_government = democratic_republic
 		}
+		if = {
+			limit = {
+				current_ruler = {
+					has_variable = complete_pretender_support
+					exists = var:complete_pretender_support
+					var:complete_pretender_support = {
+						alliance_with = root
+					}
+				}
+			}
+			save_scope_as = puppet_kingdom
+			if = {
+				limit = {
+					current_ruler.var:complete_pretender_support.rank > root.rank
+				}
+				current_ruler.var:complete_pretender_support = {
+					trigger_event = {
+						id = warfare.14
+					}
+				}
+			}
+			else = {
+				current_ruler.var:complete_pretender_support = {
+					trigger_event = {
+						id = warfare.15
+					}
+				}
+			}
+		}
 	}
 	events = {
 		civil_war.3
-		
+		civil_war.6
 	}
 }
 
@@ -225,6 +451,11 @@ on_civil_war_lost = {
 #scope:target = ruler of losing side.
 on_civil_war_won = {
 	effect = {
+		scope:losing_side = {
+			every_country_treasure = {
+				transfer_treasure_to_country = root
+			}
+		}
 		if = {
 			limit = {
 				is_iron_man = yes
@@ -237,34 +468,86 @@ on_civil_war_won = {
 				name = ach_triumvir_var
 			}
 		}
-		scope:target.employer = {
+		scope:losing_side = {
 			save_scope_as = civil_war_target
 		}
 		if = {
 			limit = {
-				has_variable = rome_schism_happened
+				any_governorships = { has_legion_trigger = yes }
 			}
-			remove_variable = rome_schism_happened
 			if = {
 				limit = {
-					government = imperium
+					is_republic = yes
+					any_legion = { count < 2 }
+					NOT = { has_law = republican_recruitment_2 }
 				}
-				change_country_name = "roman_empire_name"
+				change_law = republican_recruitment_2
+			}
+			else_if = {
+				limit = {
+					is_republic = yes
+					any_legion = { count >= 2 }
+					NOT = { has_law = republican_recruitment_4 }
+				}
+				change_law = republican_recruitment_4
 			}
 			else_if = {
 				limit = {
 					is_monarchy = yes
+					any_legion = { count < 2 }
+					NOT = { has_law = work_for_the_best }
 				}
-				change_country_name = "roman_kingdom_name"
+				change_law = work_for_the_best
+			}
+			else_if = {
+				limit = {
+					is_monarchy = yes
+					any_legion = { count >= 2 }
+					NOT = { has_law = standing_army_law }
+				}
+				change_law = standing_army_law
+			}
+			#else = { #What was this doing? 
+			#	every_governorships = {
+			#		limit = { has_legion_trigger = yes }
+			#		disband_legion = yes
+			#	}
+			#	set_legion_recruitment = disabled
+			#}
+		}
+		if = {
+			limit = {
+				current_ruler = {
+					has_variable = complete_pretender_support
+					exists = var:complete_pretender_support
+					var:complete_pretender_support = {
+						alliance_with = root
+					}
+				}
+			}
+			save_scope_as = puppet_kingdom
+			if = {
+				limit = {
+					current_ruler.var:complete_pretender_support.rank > root.rank
+				}
+				current_ruler.var:complete_pretender_support = {
+					trigger_event = {
+						id = warfare.14
+					}
+				}
 			}
 			else = {
-				change_country_name = "ROM"
+				current_ruler.var:complete_pretender_support = {
+					trigger_event = {
+						id = warfare.15
+					}
+				}
 			}
-			change_country_adjective = "roman"
 		}
 	}
 	events = {
 		civil_war.1
+		civil_war.5
 	}
 }
 
@@ -275,38 +558,111 @@ on_character_death = {
 		clear_befriending_var_effect = yes
 		if = {
 			limit = {
+				has_variable = on_espionage_mission_origin
+				var:on_espionage_mission_origin = {
+					exists = this
+					has_land = yes
+				}
+				has_variable = on_espionage_mission_recipient
+				var:on_espionage_mission_recipient = {
+					exists = this
+					has_land = yes
+				}
+			}
+			save_scope_as = spy
+			var:on_espionage_mission_recipient = {
+				save_scope_as = spied_upon
+			}
+			var:on_espionage_mission_origin = {
+				save_scope_as = esp_o
+			}
+			scope:esp_o = {
+				trigger_event = {
+					id = country_diplomacy.46
+				}
+			}
+		}
+		remove_espionage_variables_effect = yes
+		if = {
+			limit = {
 				has_triggered_character_modifier = disloyal_family_head_cmod
 				is_general = yes
 			}
-			unit = {
+			every_character_unit = {
 				destroy_unit = yes
 			}
 		}
-		if = {
+		# Wealth Inheritance
+		if = { # Monarchy only - Ruler passes wealth to heir if they are related
+			limit = {
+				is_ruler = yes
+				employer = {
+					is_monarchy = yes
+					exists = primary_heir
+					OR = {
+						primary_heir = { is_close_relative = ROOT }
+						AND = {
+							exists = primary_heir.family
+							primary_heir.family = ROOT.family
+						}
+					}
+				}
+			}
+			employer.primary_heir = {
+				save_scope_as = holding_target
+				add_gold = family_inheritance_svalue
+			}
+		}
+		else_if = { # Head of Family passes wealth on
 			limit = {
 				is_head_of_family = yes
 				exists = next_in_family
 			}
 			next_in_family = {
+				save_scope_as = holding_target
 				add_gold = family_inheritance_svalue
 			}
-			add_gold = {
-				value = 0
-				subtract = wealth
-			}
 		}
-		else_if = {
+		else_if = { # Family member passes wealth to Head of Family
 			limit = {
 				is_head_of_family = no
 				exists = family.head_of_family
-				family.head_of_family = {
-					employer = root.employer
-				}
+				family.head_of_family = { employer = ROOT.employer }
 			}
 			family.head_of_family = {
+				save_scope_as = holding_target
 				add_gold = family_individual_inheritance_svalue
 			}
 		}
+		add_gold = { # Clear deceased's bank accounts
+			value = 0
+			subtract = wealth
+		}
+		# Holding Inheritance
+		if = { 
+			limit = { num_holdings_owned > 0 }
+			if = { # Give holdings to relevant character based on above
+				limit = { 
+					exists = scope:holding_target 
+					NOT = {
+						scope:holding_target = root
+					}
+				}
+				while = {
+					limit = { num_holdings_owned > 0 }
+					random_holdings = { save_scope_as = holding_transfer }
+					remove_holding = scope:holding_transfer
+					scope:holding_target = { add_holding = scope:holding_transfer }
+				}
+				scope:holding_target = {
+					trigger_event = {
+						id = holding_mech.1
+						days = 1 #Necessary
+					}
+				}
+			}
+		}
+		# Succession Crisis
 		if = {
 			limit = {
 				is_ruler = yes
@@ -315,18 +671,6 @@ on_character_death = {
 					has_land = yes
 				}
 			}
-			
-	if = { 
-	limit = {
-					employer = { 
-					has_variable = votes_has_been_passed 
-					}
-				}
-		employer = { 
-			set_variable = { name = votes_has_been_passed value = 0 }
-				}
-					}
-			
 			save_scope_as = former_ruler
 			employer = {
 				if = {
@@ -424,32 +768,6 @@ on_character_death = {
 		}
 		if = {
 			limit = {
-				num_holdings_owned > 0
-				exists = next_in_family
-			}
-			next_in_family = {
-				save_scope_as = holding_target
-			}
-			if = {
-				limit = {
-					exists = scope:holding_target
-				}
-				while = {
-					limit = {
-						num_holdings_owned > 0
-					}
-					random_holdings = {
-						save_scope_as = holding_transfer
-					}
-					remove_holding = scope:holding_transfer
-					scope:holding_target = {
-						add_holding = scope:holding_transfer
-					}
-				}
-			}
-		}
-		if = {
-			limit = {
 				has_variable = ip_mon_47_regent_consort
 				employer = {
 					has_land = yes
@@ -460,9 +778,21 @@ on_character_death = {
 			}
 			remove_variable = ip_mon_47_regent_consort
 			save_scope_as = ip_mon_47_consort
-			employer = {
-				trigger_event = {
-					id = ip_monarchy.52 
+			if = {
+				limit = {
+					NAND = {
+						this = char:287
+						employer.current_ruler = char:289
+					}
+				}
+				employer = {
+					trigger_event = { id = ip_monarchy.52 }
+				}
+			}
+			else = {
+				employer.current_ruler = { 
+					remove_variable = ip_mon_47_regent_child
+					remove_regent_modifier_effect = yes
 				}
 			}
 		}
@@ -483,10 +813,10 @@ on_character_death = {
 				}
 			}
 		}
-	}
-	events = {
-		olympic.10 #inform patron country of athlete death
-		ip_republic.33
+		if = {
+			limit = { has_variable = betrothed_flag }
+			remove_variable = betrothed_flag
+		}
 	}
 	random_events = {
 		5 = character_events.1
@@ -511,6 +841,9 @@ on_tenth_birthday = {
 }
 
 on_deficit_pulse = {
+	trigger = {
+		treasury <= -50
+	}
 	random_events = {
 		10 = deficit.1
 		10 = deficit.2
@@ -544,10 +877,226 @@ on_office_lost = {
 	}
 }
 
+on_command_gained = {
+	events = {
+		office_gain.1
+	}
+}
+
+on_command_lost = {
+	events = {
+		office_gain.2
+	}
+}
+
+# Target is scope:target_culture, ROOT is country
+on_culture_integration_0 = {
+	
+}
+
+# Target is scope:target_culture, ROOT is country
+on_culture_integration_25 = {
+	trigger = {
+		NOT = { has_variable = culture_integration_25 } # To prevent this on_action from firing multiple times for the same integrating culture as a result of an event option reducing progress
+	}
+	effect = {
+		ordered_country_culture = {
+			limit = {
+				OR = {
+					is_integrated = yes
+					this.culture = root.culture
+				}
+			}
+			max = 1
+			check_range_bounds = no
+			order_by = country_culture_pop_count
+			ROOT = {
+				set_variable = {
+					name = biggest_country_culture_var
+					value = {
+						add = PREV.country_culture_pop_count
+						multiply = 1.5
+					}
+				}
+			}
+		}
+		remove_variable = culture_integration_75 # Remove variable in case player rapidly integrates multiple cultures faster than the variables disappear naturally
+		set_variable = {
+			name = culture_integration_25
+			days = 730
+		}
+	}
+	on_actions = {
+		random_cultural_integration_event_25
+	}
+}
+
+# Target is scope:target_culture, ROOT is country
+on_culture_integration_75 = {
+	trigger = {
+		NOT = { has_variable = culture_integration_75 } # To prevent this on_action from firing multiple times for the same integrating culture as a result of an event option reducing progress
+	}
+	effect = {
+		ordered_country_culture = {
+			limit = {
+				is_integrated = yes
+			}
+			max = 1
+			check_range_bounds = no
+			order_by = country_culture_pop_count
+			ROOT = {
+				set_variable = {
+					name = biggest_country_culture_var
+					value = PREV.country_culture_pop_count
+				}
+			}
+		}
+		remove_variable = culture_integration_25 # Remove variable in case player rapidly integrates multiple cultures faster than the variables disappear naturally
+		set_variable = {
+			name = culture_integration_75
+			days = 730
+		}
+	}
+	on_actions = {
+		random_cultural_integration_event_75
+	}
+}
+
+# Target is scope:target_culture, ROOT is country
+on_culture_integration_100 = {
+	
+}
+
+on_culture_increased_right = { 
+#scope:target_culture = The culture being affected, has_pop_type_right will return the old pop type rights
+#scope:target = The pop type, is_pop_type_right will return the new pop type right
+	effect = {
+		if = {
+			limit = {
+				scope:target_culture = {
+					NOT = {
+						has_country_culture_modifier = rights_increased
+					}
+				}
+			}
+			scope:target_culture = {
+				add_country_culture_modifier = {
+					name = rights_increased
+					duration = 3650 #10 years
+				}
+			}
+		}
+		slavery_unhappiness_cleanup = yes #This removes slave_rights_imposed if culture stopped being slaves
+		
+		increased_rights_cleanup_effect = yes #Clears up rights that can only be held by non-integrated cultures if the culture was integrated.
+	}
+}
+
+on_culture_reduced_right = {
+#scope:target_culture = The culture being affected, has_pop_type_right will return the old pop type rights
+#scope:target = The pop type, is_pop_type_right will return the new pop type right
+	effect = {
+		if = {
+			limit = {
+				scope:target_culture = {
+					NOT = {
+						has_country_culture_modifier = rights_revoked
+					}
+					NOT ={
+						has_pop_type_right = citizen
+						has_pop_type_right = nobles
+					}
+				}
+			}
+			scope:target_culture = {
+				add_country_culture_modifier = {
+					name = rights_revoked
+					duration = 3650 #10 years
+				}
+			}
+		}
+		if = { #Citizenship revoked
+			limit = {
+				scope:target_culture = {
+					OR ={
+						has_pop_type_right = citizen
+						has_pop_type_right = nobles
+					}
+					NOT = {
+						has_country_culture_modifier = integration_status_removed
+					}
+				}
+			}
+			scope:target_culture = {
+				add_country_culture_modifier = {
+					name = integration_status_removed
+					duration = 3650 #10 years
+				}
+			}
+		}
+		
+		if = {
+			limit = { scope:target_culture = { has_country_culture_modifier = rights_increased } }
+			scope:target_culture = { remove_country_culture_modifier = rights_increased }
+		}
+		
+		#Integrated to non Integrated Cleanup:
+		
+		reduced_rights_cleanup_effect = yes #Clears all rights that can only be held by integrated cultures if no longer integrated.
+		
+		# More angry if we were turned to slaves
+		if = {
+			limit = {
+				scope:target = { is_pop_type_right = slaves }
+				scope:target_culture = {
+					NOT = {
+						has_country_culture_modifier = slave_rights_imposed
+					}
+				}
+			}
+			scope:target_culture = {
+				add_country_culture_modifier = {
+					name = slave_rights_imposed
+					duration = -1
+				}
+			}
+		}
+		slavery_unhappiness_cleanup = yes #This removes slave_rights_imposed if culture stopped being slaves
+	}
+}
+
 on_giving_birth = {
 	#scope:newborn is child, root is mother
 	effect = {
-		on_giving_birth_effect = yes
+		scope:newborn = {
+			if = {
+				limit = {
+					exists = employer
+					exists = employer.current_ruler
+					employer = {
+						invention = omen_power_inv_5
+					}
+					OR = {
+						AND = {
+							exists = father
+							father = {
+								is_deified = yes
+							}
+						}
+						AND = {
+							exists = mother
+							mother = {
+								is_deified = yes
+							}
+						}
+					}
+				}
+				add_zeal = 1
+				add_charisma = 1
+				add_martial = 1
+				add_finesse = 1
+			}
+		}
 		if = {
 			limit = {
 				root = {
@@ -606,9 +1155,6 @@ on_being_born = {
             days = 1
         }
     }
-	events = {
-		choo_birth.1
-	}
 }
 
 on_zero_health = {
@@ -622,7 +1168,6 @@ on_zero_health = {
 
 on_becoming_adult = {
 	effect = {
-		on_becoming_adult_effect = yes
 		set_variable = {
 			name = ambition_tombola
 			value = { 
@@ -632,12 +1177,6 @@ on_becoming_adult = {
 				} 
 			}
 			days = 10
-		}
-		if = {
-			limit = {
-				this = char:70
-			}
-			pyrrhus_of_age_effect = yes
 		}
 		if = {
 			limit = {
@@ -658,41 +1197,118 @@ on_becoming_adult = {
 			}
 		}
 	}
+	events = {
+		character_events.53
+	}
 }
 
 on_winning_war = {
-#effect = {
-#		if = {
-#			limit = {
-#				has_variable = for_the_victory
-#			}
-#				add_country_modifier = { name = victorious_spirit_society duration = 365 }
-#		}
-#}
-	events = {
-
+	effect = {
+		if = {
+			limit = {
+				tag = GTM
+				has_variable = ba_starting_war
+				c:URK = {
+					has_variable = ba_starting_war
+				}
+				war_with = c:URK
+			}
+			trigger_event = {
+				id = ba_gutium.2
+			}
+			remove_variable = ba_starting_war
+			c:URK = {
+				remove_variable = ba_starting_war
+			}
+		}
 	}
 }
 
 on_losing_war = {
-	events = {
-
+	effect = {
+		if = {
+			limit = {
+				tag = GTM
+				has_variable = ba_starting_war
+				c:URK = {
+					has_variable = ba_starting_war
+				}
+				war_with = c:URK
+			}
+			trigger_event = {
+				id = ba_gutium.1
+			}
+			remove_variable = ba_starting_war
+			c:URK = {
+				remove_variable = ba_starting_war
+			}
+		}
+		if = {
+			limit = {
+				c:GTM = {
+					war = no
+				}
+				NOR = {
+					has_global_variable = gutium_won
+					has_global_variable = gutium_lost
+				}
+			}
+			c:GTM = {
+				trigger_event = {
+					id = ba_gutium.1
+				}
+				remove_variable = ba_starting_war
+			}
+			c:URK = {
+				remove_variable = ba_starting_war
+			}
+		}
 	}
-	
 }
 
 on_ending_war = {
-
-	events = {
-		ip_republic.34
+	effect = {
+		if = {
+			limit = {
+				tag = GTM
+				has_variable = ba_starting_war
+				c:URK = {
+					has_variable = ba_starting_war
+				}
+				war_with = c:URK
+			}
+			trigger_event = {
+				id = ba_gutium.1
+			}
+			remove_variable = ba_starting_war
+			c:URK = {
+				remove_variable = ba_starting_war
+			}
+		}
+		if = {
+			limit = {
+				c:GTM = {
+					war = no
+				}
+				NOR = {
+					has_global_variable = gutium_won
+					has_global_variable = gutium_lost
+				}
+			}
+			c:GTM = {
+				trigger_event = {
+					id = ba_gutium.1
+				}
+				remove_variable = ba_starting_war
+			}
+			c:URK = {
+				remove_variable = ba_starting_war
+			}
+		}
 	}
 }
 
 dictator_power_return = {
-	random_events = {
-		85 = ip_republic.23
-		15 = ip_republic.32
-	}
 }
 
 on_being_captured = {
@@ -726,15 +1342,37 @@ on_being_released = {
 on_enacting_omen = {
 }
 
-on_change_of_deity = {
-}
-
 on_change_pantheon = {
 }
 
 on_being_imprisoned = {
 	effect = {
 		clear_ambition_effect = yes
+		# if = {
+		# 	limit = { 
+		# 		has_variable = gm_family_head_1_flag
+		# 	}
+		# 	save_scope_as = gm_old_family_head
+		# 	remove_variable = gm_family_head_1_flag
+		# }
+		# if = {
+		# 	limit = { 
+		# 		has_variable = gm_family_head_3_flag
+		# 	}
+		# 	save_scope_as = gm_old_family_head
+		# 	remove_variable = gm_family_head_3_flag
+		# }
+		# if = {
+		# 	limit = { 
+		# 		has_variable = gm_family_head_4_flag
+		# 	}
+		# 	save_scope_as = gm_old_family_head
+		# 	remove_variable = gm_family_head_4_flag
+		# }
+		if = {
+			limit = { has_variable = betrothed_flag }
+			remove_variable = betrothed_flag
+		}
 	}
 	events = {
 		character_events.17
@@ -747,6 +1385,16 @@ on_move_country = { #scope:old_country is the origin country
 		clear_befriending_var_effect = yes
 		clear_ambition_effect = yes
 		clear_loyalty_effect = yes
+		if = {
+			limit = { num_loyal_veterans > 0 }
+			hidden_effect = {
+				while = {
+					limit = { num_loyal_veterans > 0 }
+					add_loyal_veterans = -1
+				}
+			}
+		}
+		remove_espionage_variables_effect = yes
 		if = {
 			limit  = {
 				has_character_modifier = inspire_disloyalty_modifier
@@ -817,8 +1465,7 @@ on_move_country = { #scope:old_country is the origin country
 		if = {
 			limit = {
 				num_holdings_owned > 0
-				NOR = {
-					has_trait = olympic_competitor
+				NOT = {
 					employer = c:MER
 				}
 				employer = {
@@ -834,9 +1481,6 @@ on_move_country = { #scope:old_country is the origin country
 		if = {
 			limit = {
 				prominence > 0
-				NOT = {
-					has_trait = olympic_competitor
-				}
 			}
 			add_prominence = {
 				value = 0
@@ -855,40 +1499,600 @@ on_move_country = { #scope:old_country is the origin country
 				}
 			}
 		}
+		# if = {
+		# 	limit = { 
+		# 		has_variable = gm_family_head_1_flag
+		# 	}
+		# 	save_scope_as = gm_old_family_head
+		# 	remove_variable = gm_family_head_1_flag
+		# }
+		# if = {
+		# 	limit = { 
+		# 		has_variable = gm_family_head_3_flag
+		# 	}
+		# 	save_scope_as = gm_old_family_head
+		# 	remove_variable = gm_family_head_3_flag
+		# }
+		# if = {
+		# 	limit = { 
+		# 		has_variable = gm_family_head_4_flag
+		# 	}
+		# 	save_scope_as = gm_old_family_head
+		# 	remove_variable = gm_family_head_4_flag
+		# }
+		if = {
+			limit = { has_variable = betrothed_flag }
+			remove_variable = betrothed_flag
+		}
+		trigger_event = {
+			id = warfare.13
+			days = 2
+		}
 	}
 	events = {
 		character_events.4
-		character_events.16
+		character_events.16 
 	}
 }
 
 on_game_initialized = {
 	effect = {
-	every_ownable_province = { 
-	limit = { NOT = { has_variable = devastation_level } } 
-	set_variable = { name = devastation_level value = 0 }
-	}
-	every_ownable_province = { 
-	limit = { NOT = { has_variable = prosperity_level } } 
-	set_variable = { name = prosperity_level value = 0 }
-	}	
+		### Other ###
+		if = {
+			limit = {
+				has_law = work_for_the_best
+			}
+			set_legion_recruitment = capital
+		}
+		add_innovation = {
+			value = oratory_tech
+		}
+		add_innovation = {
+			value = military_tech
+		}
+		add_innovation = {
+			value = civic_tech
+		}
+		add_innovation = {
+			value = religious_tech
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_global_variable = migration_init_done
+				}
+			}
+			p:2133 = {
+				if = {
+					limit = {
+						NOT = {
+							is_model_shown = "wonder_giza"
+						}
+					}
+					show_model = "wonder_giza"
+				}
+			}
+			every_country = {
+				limit = {
+					government = egyptian_dynasty
+				}
+				dynasty_init_effect = yes
+				every_country = {
+					limit = {
+						government = egyptian_dynasty
+						NOT = { this = prev }
+					}
+					add_opinion = { modifier = rival_dynasty target = prev}
+				}
+			}
+			set_global_variable = {
+				name = migration_init_done
+				value = 1
+			}
+		}	
+
+		if = {
+			limit = {
+				NOT = {
+					has_global_variable = province_init_done
+				}
+			}
+			every_province = {
+				limit = {
+					NOR = {
+						is_sea = yes
+						terrain = riverine_terrain
+					}
+				}
+				add_neighbor_city_modifier_effect = yes
+			}
+			every_country = {
+				set_variable = {
+					name = civ_tech
+					value = 0
+				}
+				civ_techs_at_start_effect = yes
+			}
+			set_global_variable = {
+				name = province_init_done
+				value = 1
+			}
+			p:1 = {
+				set_variable = {
+					name = yearticks
+					value = 0
+				}
+			}
+			###Misusing this to set some variables
+			set_global_variable = {
+				name = global_lapis_trade_value
+				value = 0
+			}
+			set_global_variable = { 
+				name = lapis_comparative_trade_value #will save the old value to compare it to the new one to see if it has improved or worsened
+				value = 0
+			}
+			set_global_variable = {
+				name = lapis_expedition_lead_gvar_1
+				value = 0
+			}
+			set_global_variable = {
+				name = lapis_expedition_lead_gvar_2
+				value = 0
+			}
+			set_global_variable = {
+				name = lapis_expedition_lead_gvar_3
+				value = 0
+			}
+			p:6567 = { 
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}	
+			}
+			p:6621 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:6590 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:6629 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:5891 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:5626 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:1809 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:2076 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:6859 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:4742 = {
+				set_variable = {
+					name = local_lapis_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			set_global_variable = { 
+				name = lapis_anti_bandit_army #army
+				value = 0
+			}
+			set_global_variable = { 
+				name = lapis_anti_bandit_envoy #bribe
+				value = 0
+			}
+			set_global_variable = { 
+				name = lapis_attack_time
+				value = 0
+			}
+
+			### Tin
+
+			set_global_variable = {
+				name = global_tin_trade_value
+				value = 0
+			}
+			set_global_variable = { 
+				name = tin_comparative_trade_value #will save the old value to compare it to the new one to see if it has improved or worsened
+				value = 0
+			}
+			set_global_variable = {
+				name = tin_expedition_lead_gvar_1
+				value = 0
+			}
+			set_global_variable = {
+				name = tin_expedition_lead_gvar_2
+				value = 0
+			}
+			set_global_variable = {
+				name = tin_expedition_lead_gvar_3
+				value = 0
+			}
+			set_global_variable = { 
+				name = tin_anti_bandit_army #army
+				value = 0
+			}
+			set_global_variable = { 
+				name = tin_anti_bandit_envoy #bribe
+				value = 0
+			}
+			set_global_variable = { 
+				name = tin_attack_time
+				value = 0
+			}
+
+			p:177 = {
+				set_variable = {
+					name = local_tin_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:3380 = {
+				set_variable = {
+					name = local_tin_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:4735 = {
+				set_variable = {
+					name = local_tin_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:5257 = {
+				set_variable = {
+					name = local_tin_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			p:1784 = {
+				set_variable = {
+					name = local_tin_value 
+					value = 0 #not counting the base and the base modifier
+				}
+			}
+			every_province = {
+				limit = {
+					is_sea = no
+				}
+				if = {
+					limit = {
+						terrain = plains
+					}
+					add_permanent_province_modifier = {
+						name = is_plains
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = deep_forest
+					}
+					add_permanent_province_modifier = {
+						name = is_deep_forest
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = mountain_valley
+					}
+					add_permanent_province_modifier = {
+						name = is_mountain_valley
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = oasis
+					}
+					add_permanent_province_modifier = {
+						name = is_oasis
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = desert_hills
+					}
+					add_permanent_province_modifier = {
+						name = is_desert_hills
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = desert_valley
+					}
+					add_permanent_province_modifier = {
+						name = is_desert_valley
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = mountain
+					}
+					add_permanent_province_modifier = {
+						name = is_mountain
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = hills
+					}
+					add_permanent_province_modifier = {
+						name = is_hills
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = desert
+					}
+					add_permanent_province_modifier = {
+						name = is_desert
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = marsh
+					}
+					add_permanent_province_modifier = {
+						name = is_marsh
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = jungle
+					}
+					add_permanent_province_modifier = {
+						name = is_jungle
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = farmland
+					}
+					add_permanent_province_modifier = {
+						name = is_farmland
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = forest
+					}
+					add_permanent_province_modifier = {
+						name = is_forest
+					}
+				}
+				else_if = {
+					limit = {
+						terrain = flood_plain
+					}
+					add_permanent_province_modifier = {
+						name = is_flood_plain
+					}
+				}
+				#civilization_value_setup_effect = yes
+			}
+			#END OF SPECIAL CONNECTIONS
+			sumerian_revolt_start_effect = yes
+		}
 	
-	
-	}
-	events = {
-		startup_events.1
-		startup_events.2
-		flavor_arl.5		
-		startup_choo.1
-		choo_birth.3
-		razani_civil_war.1
-	}
+		if = {
+			limit = {
+				OR = {
+					rank = local_power
+					rank = regional_power
+					rank = major_power
+					rank = great_power
+				}
+				num_of_cities > 15
+			}
+			every_family = {
+				ROOT = {
+					random_owned_province = {
+						limit = {
+							is_capital = no
+							NOT = {
+								exists = holding_owner
+							}
+						}
+						save_scope_as = first_holding
+						weight = {
+							modifier = {
+								factor = 100000
+								any_neighbor_province = {
+									NOT = { exists = holding_owner }
+								}
+							}
+						}
+					}
+				}
+				head_of_family = {
+					add_holding = scope:first_holding
+				}
+			}
+		}
+		
+		#More for the bigger tags!
+		
+		if = {
+			limit = {
+				rank = regional_power
+			}
+			every_family = {
+				head_of_family = { save_scope_as = hof }
+				while = {
+					count = 3
+					ROOT = {
+						random_owned_province = {
+							limit = {
+								is_capital = no
+								OR = {
+									NOT = {
+										exists = holding_owner
+									}
+									AND = {
+										exists = holding_owner
+										holding_owner = {
+											is_alive = no
+										}
+									}
+								}
+							}
+							weight = {
+								modifier = {
+									factor = 10000
+									any_neighbor_province = {
+										trigger_if = {
+											limit = {
+												exists = holding_owner
+											}
+											holding_owner = scope:hof
+										}
+										trigger_else = {
+											always = no
+										}
+									}
+								}
+							}
+							save_scope_as = buy_holding_target
+						}
+					}
+					head_of_family = {
+						add_holding = scope:buy_holding_target
+					}
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				rank = major_power
+			}
+			every_family = {
+				head_of_family = { save_scope_as = hof }
+				while = {
+					count = 10
+					ROOT = {
+						random_owned_province = {
+							limit = {
+								is_capital = no
+								OR = {
+									NOT = {
+										exists = holding_owner
+									}
+									AND = {
+										exists = holding_owner
+										holding_owner = {
+											is_alive = no
+										}
+									}
+								}
+							}
+							weight = {
+								modifier = {
+									factor = 10000
+									any_neighbor_province = {
+										trigger_if = {
+											limit = {
+												exists = holding_owner
+											}
+											holding_owner = scope:hof
+										}
+										trigger_else = {
+											always = no
+										}
+									}
+								}
+							}
+							save_scope_as = buy_holding_target
+						}
+					}
+					head_of_family = {
+						add_holding = scope:buy_holding_target
+					}
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				rank = great_power
+			}
+			every_family = {
+				head_of_family = { save_scope_as = hof }
+				while = {
+					count = 20
+					ROOT = {
+						random_owned_province = {
+							limit = {
+								is_capital = no
+								OR = {
+									NOT = {
+										exists = holding_owner
+									}
+									AND = {
+										exists = holding_owner
+										holding_owner = {
+											is_alive = no
+										}
+									}
+								}
+							}
+							weight = {
+								modifier = {
+									factor = 10000
+									any_neighbor_province = {
+										trigger_if = {
+											limit = {
+												exists = holding_owner
+											}
+											holding_owner = scope:hof
+										}
+										trigger_else = {
+											always = no
+										}
+									}
+								}
+							}
+							save_scope_as = buy_holding_target
+						}
+					}
+					head_of_family = {
+						add_holding = scope:buy_holding_target
+					}
+				}
+			}
+		}
+	} 
 }
 
 on_province_colonized = {
-	events = {
-		
-	}
 }
 
 on_ownership_change = { #province scope
@@ -915,6 +2119,14 @@ on_ownership_change = { #province scope
 				}
 			}
 		}
+		if = {
+			limit = {
+				exists = holding_owner
+			}
+			holding_owner = {
+				remove_holding = root
+			}
+		}
 	}
 	events = {
 		comet.2
@@ -938,6 +2150,10 @@ on_great_battle_won_country = { #root = country scope of the main unit on the wi
 				}
 			}
 			scope:actor.commander = {
+				set_variable = {
+					name = great_battle_won_flag
+					days = 720
+				}
 				trigger_event = {
 					on_action = custom_on_great_battle_commander
 				}
@@ -969,10 +2185,51 @@ on_great_battle_won_country = { #root = country scope of the main unit on the wi
 				}
 			}
 		}
+		if = {
+			limit = {
+				scope:actor = { has_legion_trigger = yes }
+			}
+			if = {
+				limit = { exists = scope:actor.commander }
+				scope:actor.legion = {
+					add_legion_history = {
+						key = great_battle_won_history
+						commander = scope:actor.commander
+						province = scope:actor.unit_location
+					}
+				}
+			}
+			else = {
+				scope:actor.legion = {
+					add_legion_history = {
+						key = great_battle_won_history
+						commander = scope:actor.unit_owner.current_ruler
+						province = scope:actor.unit_location
+					}
+				}
+			}
+		}
+	}
+	events = {
+		distinction.19
 	}
 	random_events = {
+		100 = 0
 		50 = ip_monarchy.60
 		50 = ip_monarchy.61
+		10 = distinction.1
+		10 = distinction.2
+		10 = distinction.3
+		10 = distinction.4
+		10 = distinction.5
+		10 = distinction.8
+		10 = distinction.9
+		5 = distinction.13
+		10 = distinction.14
+		10 = distinction.15
+		15 = distinction.16
+		10 = distinction.18
+		5 = distinction.20
 	}
 	
 }
@@ -1066,33 +2323,112 @@ on_battle_won_country = { #root = country scope of the main unit on the winning 
 }
 
 on_great_battle_lost_country = { #root = country scope of the main unit on the losing side, scope:actor = main unit on the losing side, scope:target = main unit on the winning side
+	effect = {
+		if = {
+			limit = {
+				scope:actor = { has_legion_trigger = yes }
+			}
+			if = {
+				limit = { exists = scope:actor.commander }
+				scope:actor.legion = {
+					add_legion_history = {
+						key = great_battle_lost_history
+						commander = scope:actor.commander
+						province = scope:actor.unit_location
+					}
+				}
+			}
+			else = {
+				scope:actor.legion = {
+					add_legion_history = {
+						key = great_battle_lost_history
+						commander = scope:actor.unit_owner.current_ruler
+						province = scope:actor.unit_location
+					}
+				}
+			}
+		}
+		root = {
+			if = {
+				limit = {
+					scope:target.employer = {
+						has_country_modifier = professional_army_cmod
+					}
+					NOT = {
+						has_variable = defetaed_by_assyria
+					}
+				}
+				set_variable = {
+					name = defetaed_by_assyria
+					days = -1
+					value = 1
+				}
+			}
+			else_if = {
+				limit = {
+					scope:target.employer = {
+						has_country_modifier = professional_army_cmod
+						has_variable = defetaed_by_assyria
+					}
+				}
+				change_variable = {
+					name = defetaed_by_assyria
+					add = 1
+				}
+			}
+			if = {
+				limit = {
+					has_variable = defetaed_by_assyria
+					trigger_if = {
+						limit = {
+							has_variable = defetaed_by_assyria
+						}
+						var:defetaed_by_assyria >= 5
+					}
+					scope:target.employer = {
+						has_country_modifier = professional_army_cmod
+					}
+					root = {
+						NOR = { 
+							has_country_modifier = professional_army_cmod 
+							has_variable = no_professional_army
+						}
+					}
+				}
+				trigger_event = {
+					id = ba_flavour_events.8
+				}
+			}
+		}
+	}
+
 	random_events = {
 		95 = 0
-		50 = ip_monarchy.62
-		50 = ip_monarchy.63
+        50 = ip_monarchy.62
+        50 = ip_monarchy.63
+        10 = distinction.21
 	}
 }
 
 on_battle_lost_country = { #root = country scope of the main unit on the losing side, scope:actor = main unit on the losing side, scope:target = main unit on the winning side
-	events = {
-
-	}
-	random_events = {
-		199 = 0
-
-	}
 }
 
 # scope is country being annexed
 # scope:actor = country doing the annexing
 on_military_annex = {
 	effect = {
+		every_country_treasure = {
+			add_to_list = annexed_treasures
+		}
 		on_annexation_event_effect = yes
 	}
 }
 
 on_diplomatic_annex = {
 	effect = {
+		every_country_treasure = {
+			add_to_list = annexed_treasures
+		}
 		on_diplo_annexation_event_effect = yes
 	}
 }
@@ -1213,9 +2549,6 @@ character_story_events =
 		1 = ip_generic.3
 		1 = ip_generic.4
 		1 = ip_generic.5
-		1 = ip_republic.4
-		1 = ip_republic.18
-		2 = ip_republic.19
 		#Get friends/rivals events
 		2 = friend_rival.15
 		#Mentor/Mentee events
@@ -1225,6 +2558,7 @@ character_story_events =
 		2 = friend_rival.10
 		# Tribal Pol events
 		50 = tribal_pol.24
+		# Other
 		3 = character_events.14
 		200 = character_events.18
 		1 = ip_monarchy.21
@@ -1234,8 +2568,7 @@ character_story_events =
 	}
 }
 
-character_traits_pulse = 
-{
+character_traits_pulse = {
 	random_events = 
 	{
 		1000 = 0
@@ -1245,8 +2578,7 @@ character_traits_pulse =
 
 }
 
-yearly_medical_pulse = 
-{
+yearly_medical_pulse = {
 	random_events = 
 	{
 		150 = 0
@@ -1329,14 +2661,180 @@ on_subject_defect = { #scope:future_overlord = country that stole vassal, scope:
 	}
 }
 
-on_command_gained = {
+on_great_work_anniversary = {
 	events = {
-		office_gain.1
 	}
 }
 
-on_command_lost = {
+on_great_work_completed = {	
+	effect = {
+		trigger_event = {
+			id = "gw_existing.2"
+			days = 1825
+        }
+		
+		if = {
+			limit = {
+				is_iron_man = yes
+				is_ai = no
+				has_land = yes
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_variable = ach_gw_built_var
+					}
+				}
+				set_variable = {
+					name = ach_gw_built_var
+					value = 1
+				}
+			}
+			else = {
+				change_variable = {
+					name = ach_gw_built_var
+					add = 1
+				}
+			}
+		}
+	}
 	events = {
-		office_gain.2
+		gw_completed.1
+		gw_completed.2
+		gw_completed.3
+	}
+}
+
+on_great_work_destroyed = {
+#scope:target = the builder of the destroyed great work
+	effect = {
+		if = {
+			limit = {
+				NOT = { scope:target = root }
+				is_iron_man = yes
+				is_ai = no
+				has_land = yes
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_variable = ach_gw_destroyed_var
+					}
+				}
+				set_variable = {
+					name = ach_gw_destroyed_var
+					value = 1
+				}
+			}
+			else = {
+				change_variable = {
+					name = ach_gw_destroyed_var
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+on_action_requiring_senate_approval = { #If you change this, also change the scripted effect: change_religion_effect
+	effect = {
+		if = {
+			limit = {
+				has_senate_approval < define:NPolitics|SENATE_REQUIRED_APPROVAL_WITHOUT_PENALTIES
+				is_republic = yes
+				is_ai = no
+				NOT = { has_variable = dictatorship_enabled }
+				NOT = { has_variable = one_senatorial_bypass }
+			}
+			add_tyranny = {
+				# Calculates the percentage of disapproval
+				value = define:NPolitics|SENATE_REQUIRED_APPROVAL_WITHOUT_PENALTIES
+				subtract = has_senate_approval
+				divide = define:NPolitics|SENATE_REQUIRED_APPROVAL
+				
+				# This is the real value that you want for 100% of the effect
+				multiply = 20
+			}
+		}
+		if = {
+			limit = { has_variable = one_senatorial_bypass }
+			custom_tooltip = senatorial_bypass_spent_tt
+			remove_variable = one_senatorial_bypass
+			set_ignore_senate_approval = no
+		}
+	}
+}
+
+on_legion_raised = {
+   # what: on the end of the day after a legion is created
+   # scope: legion
+   effect = {
+		if = {
+			limit = {
+				owner = {
+					NOT = {
+						any_legion = { has_distinction = distinction_legio_primagena }
+					}
+				}
+			}
+			if = {
+				limit = {
+					owner = {
+						is_ai = yes
+						has_civil_war = yes
+					}
+				}
+				owner = {
+					save_scope_as = mutineer_revolting_country
+					trigger_event = distinction.40
+				}
+			}
+			else_if = {
+				limit = {
+					NOT = { has_distinction = distinction_legio_primagena }
+				}
+				save_scope_as = primagena_legion
+				owner = { trigger_event = distinction.7 }
+			}
+		}
+		else = {
+			add_legion_history = {
+				key = legion_raised_history
+				commander = owner.current_ruler
+				province = owner.capital_scope
+			}
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_distinction = distinction_legion_default
+				}
+			}
+			add_distinction = distinction_legion_default
+		}
+	}
+}
+
+on_disband_legion_unit = {
+	# what: when units belonging to a legion are disbanded.
+	# scope country, 
+	# scope:target legion,
+	# scope:unit unit,
+}
+
+on_legion_dissolved = {
+	# what: just before a legion is completely destroyed and their remaining units disbanded.
+	# note: empty legions are not destroyed automatically,
+	# scope legion,
+}
+
+on_gw_construction_job_completed = {
+	#Scope Character
+	effect = {
+		add_gold = 200
+		add_loyalty = loyalty_gw_job_completed
+		add_prominence = prominence_medium
+		add_popularity = popularity_large
+		add_finesse = 1
 	}
 }

@@ -16,62 +16,18 @@ potential_change_religion_trigger = { #Used by all decisions to change Religion
 			is_female = no
 		}
 		NOT = { has_character_modifier = foreign_citizen }
-		NOT = { has_trait = olympic_competitor }
 	}
 }
 
 could_change_religion_trigger = { #Used by all decisions to change Religion
 	political_influence >= 200
-	
-	trigger_if = {
-		limit = { is_monarchy = yes }
-		custom_tooltip = {
-			text = heretic_high_priest_monarchy_tooltip
-			any_character = {
-				has_office = office_high_priest_monarchy
-				has_religion = $RELIGION$
-			}
-		}
-	}
-	trigger_else_if = {
-		limit = { is_republic = yes }
-		custom_tooltip = {
-			text = heretic_high_priest_republic_tooltip
-			any_character = {
-				has_office = office_pontifex
-				has_religion = $RELIGION$
-			}
-		}
-	}
-	trigger_else = {
-		custom_tooltip = {
-			text = heretic_high_priest_tribe_tooltip
-			any_character = {
-				has_office = office_high_priest
-				has_religion = $RELIGION$
-			}
-		}
-	}
-	hidden:capital_scope = {
-		custom_tooltip = {
-			text = big_religion_in_capital_tooltip
-			any_pops_in_province = {
-				count >= majority_of_free_men_in_capital_svalue
-				pop_religion = $RELIGION$
-				NOT = { pop_type = slaves }
-			}
-		}
-	}
 	trigger_if = { #monarchy
 		limit = { is_monarchy = yes }
 		legitimacy >= 70
 	}
 	trigger_else_if = { #Republic
 		limit = { is_republic = yes }
-		custom_tooltip = {
-			text = ruling_party_support_tooltip
-			current_ruler.character_party.party_support >= 50
-		}
+		has_senate_approval >= 0.3
 	}
 	trigger_else = { #Tribe
 		any_character = {
@@ -84,6 +40,34 @@ could_change_religion_trigger = { #Used by all decisions to change Religion
 	}
 	NOT = {
 		has_country_modifier = recent_convert_modifier
+	}
+	
+	OR = {
+		hidden:capital_scope = {
+			custom_tooltip = {
+				text = big_religion_in_capital_tooltip
+				any_pops_in_province = {
+					count >= majority_of_free_men_in_capital_svalue
+					pop_religion = $RELIGION$
+					NOT = { pop_type = slaves }
+				}
+			}
+		}
+		AND = {
+			custom_tooltip = {
+				text = big_religion_in_country_tooltip
+				religion_pops_in_country = {
+					target = $RELIGION$
+					value >= 20
+				}
+			}
+			custom_tooltip = {
+				text = pantheon_deity_tooltip
+				any_pantheon_deity = {
+					deity_religion = $RELIGION$
+				}
+			}
+		}
 	}
 }
 
@@ -104,38 +88,88 @@ province_has_shrine_trigger = {
 # Checking religion in eastern religion flavor
 country_eastern_religion_trigger = {
 	OR = {
-		religion = armenian_religion
 		religion = mesopotamian_religion
-		religion = caucasian_religion
 	}
 }
 
 # Checking religion in northern religion flavor
 country_northern_religion_trigger = {
 	OR = {
-		religion = germanic_religion
-		religion = matrist_religion
-		religion = bon_religion
+		religion = berber_religion
+		religion = anatolian_religion
 	}
 }
 
 # Checking religion in thracian religion flavor
 country_thracian_religion_trigger = {
-	OR = {
-		religion = shamanism
-		religion = indo_iranian_religion
-	}
+	always = no
 }
 
 own_religious_center_province_trigger = { #List of locations of particular religious importance
 	custom_tooltip = {
 		text = holy_site_tooltip
 		owner = {
-
+			switch = {
+				trigger = religion
+				anatolian_religion = {
+					PREV = {
+						OR = {
+							province_id = 1477
+							province_id = 2482
+							province_id = 3320
+							province_id = 3299
+							province_id = 3359
+							province_id = 3378
+						}
+					}
+				}
+				mesopotamian_religion = {
+					PREV = {
+						OR = {
+							province_id = 5666
+							province_id = 1995
+							province_id = 5998
+							province_id = 6182
+							province_id = 6151
+							province_id = 6183
+							province_id = 5980
+							province_id = 5981
+							province_id = 5969
+							province_id = 5967
+							province_id = 6022
+							province_id = 6017
+							province_id = 5961
+							province_id = 6029
+							province_id = 6310
+							province_id = 6000
+							province_id = 6046
+							province_id = 6084
+							province_id = 6087
+							province_id = 5950
+							province_id = 6059
+							province_id = 6126
+							province_id = 5753
+							province_id = 5450
+							province_id = 5303
+							province_id = 5407
+							province_id = 5288
+						}
+					}
+				}
+				berber_religion = {
+					PREV = {
+						OR = {
+							province_id = 4902
+							province_id = 4904
+							province_id = 4909
+							province_id = 4922
+						}
+					}
+				}
+			}
 		}
 	}
 }
-
 
 polytheistic_check_religion_trigger = {
 	is_monotheist_religion = no

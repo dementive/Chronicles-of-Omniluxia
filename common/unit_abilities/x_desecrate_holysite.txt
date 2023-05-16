@@ -42,62 +42,88 @@
 	
 	
 	start_effect = {
-		unit_owner = {  pay_price = desecrate }
-		hidden_effect = {
-			unit_owner = { save_scope_as = sacker }
-			unit_location = {
-				save_scope_as = shrine_location
-				set_variable = unit_desecration_happened
-				if = {
-					limit = { is_holy_site = yes } #If we are actually doing this
-					province_deity = {
-						save_scope_as = provincial_deity
-					}
+		unit_owner = { 
+			pay_price = desecrate
+			save_scope_as = sacker
+		}
+		unit_location = {
+			save_scope_as = shrine_location
+			if = {
+				limit = { is_holy_site = yes } #If we are actually doing this
+				province_deity = { save_scope_as = provincial_deity }
+				every_province_treasure = {	transfer_treasure_to_country = root.unit_owner }
+			}
+		}
+		desecrate_effect = yes
+		scope:shrine_location = {
+			if = { # Ping event for victim
+				limit = {
+					NOT = { root.unit_owner = owner }
 				}
-				if = {
-					limit = { NOT = { root.unit_owner = owner } }
-					trigger_event = {
-						id = desecration.1 #Sack of X
-					}
+				trigger_event = { id = desecration.1 } #Sack of X
+			}
+			else = { # Ping event for sacker
+				root.unit_owner = {
+					trigger_event = { id = desecration.2 } #Holy Site Sacked
 				}
-				else = {
-					root.unit_owner = {
-						trigger_event = {
-							id = desecration.2 #Holy Site Sacked
-						}
-					}
+			}
+		}
+		save_scope_as = pious_legion
+		if = {
+			limit = {
+				has_dlc = "Heirs of Alexander"
+				exists = scope:provincial_deity
+				scope:provincial_deity.religion = ROOT.unit_owner.religion
+				has_legion_trigger = yes
+			}
+			unit_owner = {
+				trigger_event = {
+					days = 10
+					id = distinction.24
 				}
-				if = {
-					limit = {
-						exists = scope:provincial_deity 
-					}
-					every_country = {
-						limit = {
-							scope:provincial_deity = {
-								deity_religion = PREV.religion
-							}
-							NOT = { THIS = root.unit_owner }
-							NOT = { THIS = root.unit_location.owner }
-						}
-						trigger_event = {
-							id = desecration.3 #Holy Site of our Faith Sacked
-						}
-					}
+			}
+			show_as_tooltip = {
+				scope:pious_legion.legion = {
+					if = {
+		                limit = { has_distinction = distinction_pious }
+		                remove_distinction = distinction_pious
+		            }
+					add_distinction = distinction_dishonor_impious
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				has_dlc = "Heirs of Alexander"
+				has_legion_trigger = yes
+			}
+			unit_owner = {
+				trigger_event = {
+					days = 10
+					id = distinction.11
+				}
+			}
+			show_as_tooltip = {
+				scope:pious_legion.legion = {
+					if = {
+		                limit = { has_distinction = distinction_dishonor_impious }
+		                remove_distinction = distinction_dishonor_impious
+		            }
+					add_distinction = distinction_pious
 				}
 			}
 		}
 		if = {
-			limit = { unit_location = { is_holy_site = yes } }
-			custom_tooltip = desecration_opinion
+			limit = {
+				unit_owner = { is_republic = yes }
+			}
+			unit_owner = {
+				set_variable = {
+					name = sacked_holy_site_flag
+					value = ROOT.unit_location
+				}
+			}
 		}
-		else = {
-			custom_tooltip = desecration_opinion_general
-		}
-
-		unit_location = {
-			desecrate_effect = yes
-		}
-		
 	}
 	
 	ai_will_do = {

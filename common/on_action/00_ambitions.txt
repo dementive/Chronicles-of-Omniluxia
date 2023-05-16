@@ -207,7 +207,7 @@ ambition_grow_up = {
 					add_finesse = 1
 				}
 				
-				100 = {
+				94 = {
 				}
 			}
 		}
@@ -338,6 +338,7 @@ ambition_become_great_warrior_finish = {
 				}
 			}
 		}
+		democratic_growing_up_ambition_effect = yes
 	}
 }
 
@@ -474,6 +475,7 @@ ambition_become_despot_finish = {
 				}
 			}
 		}
+		oligarchic_growing_up_ambition_effect = yes
 	}
 }
 
@@ -586,6 +588,7 @@ ambition_become_bureaucrat_finish = {
 				}
 			}
 		}
+		traditionalist_growing_up_ambition_effect = yes
 	}
 }
 
@@ -700,6 +703,7 @@ ambition_become_rich_finish = {
 				}
 			}
 		}
+		oligarchic_growing_up_ambition_effect = yes
 	}
 }
 
@@ -812,6 +816,7 @@ ambition_become_politician_finish = {
 				}
 			}
 		}
+		oligarchic_growing_up_ambition_effect = yes
 	}
 }
 
@@ -877,9 +882,8 @@ ambition_become_demagogue_finish = {
 							is_republic = yes
 						}
 					}
-					add_party_conviction = {
-						party = populist_party
-						value = 200
+					character_democratic_party_conviction_effect = {
+						VALUE = 20
 					}
 				}
 				add_character_modifier = {
@@ -888,6 +892,7 @@ ambition_become_demagogue_finish = {
 				}
 			}
 		}
+		democratic_growing_up_ambition_effect = yes
 	}
 }
 
@@ -990,6 +995,7 @@ ambition_become_holy_finish = {
 				}
 			}
 		}
+		traditionalist_growing_up_ambition_effect = yes
 	}
 }
 
@@ -1212,11 +1218,11 @@ scheme_provoke_rival_start = {
 				}
 				weight = {
 					modifier = {
-						factor = 2
+						factor = 4
 						power_base >= root.power_base
 					}
 					modifier = {
-						factor = 2
+						factor = 4
 						wealth >= root.wealth
 					}
 					modifier = {
@@ -1227,6 +1233,21 @@ scheme_provoke_rival_start = {
 					modifier = {
 						factor = 0.1
 						has_same_family = root
+					}
+					modifier = {
+						factor = 6
+						is_head_of_family = yes
+						root = {
+							is_head_of_family = yes
+						}
+					}
+					modifier = {
+						factor = 2
+						is_party_leader = yes
+					}
+					modifier = {
+						factor = 2
+						has_any_office = yes
 					}
 				}
 				save_scope_as = ongoing_scheme_target
@@ -1382,16 +1403,19 @@ scheme_hold_games_start = {
 				}
 			}
 		}
-		scope:games_province = {
-			if = {
-				limit = {
-					NOT = {
-						has_province_modifier = games_being_held_scheme
+		if = {
+			limit = { exists = scope:games_province }
+			scope:games_province = {
+				if = {
+					limit = {
+						NOT = {
+							has_province_modifier = games_being_held_scheme
+						}
 					}
-				}
-				add_province_modifier = {
-					name = games_being_held_scheme
-					duration = 365
+					add_province_modifier = {
+						name = games_being_held_scheme
+						duration = 365
+					}
 				}
 			}
 		}
@@ -1591,6 +1615,10 @@ scheme_expand_family_estates_start = {
 					days = -1
 				}
 			}
+		}
+		add_character_modifier = {
+			name = scheme_expand_family_estates_modifier
+			duration = 365
 		}
 		scope:family_estate = {
 			add_province_modifier = {
@@ -1831,7 +1859,6 @@ scheme_seek_treatment_finish = {
 				}
 			}
 		}
-		remove_scheme_variables_effect = yes
 	}
 }
 
@@ -1946,6 +1973,7 @@ scheme_seek_patron_start = {
 		employer = {
 			random_character = {
 				limit = {
+					is_adult = yes
 					NOT = {
 						this = root
 					}
@@ -2292,14 +2320,18 @@ scheme_buy_troop_loyalty_finish = {
 					root = {
 						wealth >= 800
 					}
-					exists = unit
-					unit = {
+					any_character_unit = {
 						any_sub_unit = {
 							has_personal_loyalty = no
 						}
 					}
 				}
-				unit = {
+				random_character_unit = {
+					limit = {
+						any_sub_unit = {
+							has_personal_loyalty = no
+						}
+					}
 					random_sub_unit = {
 						limit = {
 							has_personal_loyalty = no
@@ -2367,8 +2399,48 @@ scheme_abort = {
 			remove_character_modifier = encroaching_on_public_land_modifier
 		}
 		if = {
+			limit = { has_character_modifier = scheme_expand_family_estates_modifier }
+			remove_character_modifier = scheme_expand_family_estates_modifier
+		}
+		if = {
 			limit = { has_loyalty = scheme_disloyalty_self }
 			remove_loyalty = scheme_disloyalty_self
+		}
+	}
+}
+
+scheme_influence_abort = {
+	effect = {
+		remove_scheme_variables_effect = yes
+		if = {
+			limit = {
+				exists = employer
+				employer = {
+					has_country_modifier = influence_mod
+				}
+			}
+			employer = {
+				remove_country_modifier = influence_mod
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:province_target
+				scope:province_target = {
+					has_province_modifier = being_extorted
+				}
+			}
+			scope:province_target = {
+				remove_province_modifier = being_extorted
+			}
+		}
+		if = {
+			limit = { has_character_modifier = encroaching_on_public_land_modifier }
+			remove_character_modifier = encroaching_on_public_land_modifier
+		}
+		if = {
+			limit = { has_character_modifier = scheme_expand_family_estates_modifier }
+			remove_character_modifier = scheme_expand_family_estates_modifier
 		}
 	}
 }
@@ -2416,46 +2488,15 @@ scheme_governor_extort_finish = {
 
 scheme_influence_start = {
 	effect = {
-		if = {
-			limit = {
-				exists = var:ongoing_scheme_target
-			}
-			var:ongoing_scheme_target = {
-				save_scope_as = ongoing_scheme_target
-			}
+		save_scope_as = ongoing_scheme_target
+		set_variable = {
+			name = ongoing_scheme_target
+			value = scope:ongoing_scheme_target
 		}
-		else = {
-			employer = {
-				random_character = {
-					limit = {
-						NOT = {
-							this = root
-						}
-						is_adult = yes
-						prominence >= 50
-						OR = {
-							martial >= root.martial
-							finesse >= root.martial
-							charisma >= root.martial
-							zeal >= root.martial
-						}
-						loyalty >= 50
-						NOT = {
-							is_rival = root
-						}
-					}
-					save_scope_as = ongoing_scheme_target
-				}
-			}
-			set_variable = {
-				name = ongoing_scheme_target
-				value = scope:ongoing_scheme_target
-			}
-		}
-		scope:ongoing_scheme_target = {
-			add_to_variable_list = {
-				name = targeted_by
-				target = root
+		employer = {
+			add_country_modifier = {
+				name = influence_mod
+				duration = 7300
 			}
 		}
 	}
@@ -2463,20 +2504,25 @@ scheme_influence_start = {
 
 scheme_influence_finish = {
 	effect = {
-		custom_tooltip = "influence_effect_tt"
-		hidden_effect = {
-			trigger_event = {
-				id = influence.5
+		#custom_tooltip = "influence_effect_tt"
+		remove_scheme_variables_effect = yes
+		if = {
+			limit = {
+				exists = employer
+				employer = {
+					has_country_modifier = influence_mod
+				}
+			}
+			employer = {
+				remove_country_modifier = influence_mod
 			}
 		}
-		remove_scheme_variables_effect = yes
 	}
 }
 
 scheme_influence_monthly = {
 	random_events = {
 		200 = 0
-	#	1 = influence.1
 		1 = influence.2
 		1 = influence.3
 		1 = influence.4
@@ -2506,25 +2552,25 @@ scheme_ruler_legitimacy_finish = {
 		employer = {
 			add_legitimacy = 5
 		}
-		if = {
-			limit = {
-				has_culture_group = hellenic
-				is_male = yes
-				NOT = {
-					has_bloodline_trigger = yes
-				}
-				number_of_traits <= 7
-			}
-			random = {
-				chance = 2
-				custom_tooltip = gain_random_diadochi_bloodline_trait
-				hidden_effect = {
-					trigger_event = {
-						id = scheme.11
-					}
-				}
-			}
-		}
+		# if = {
+		# 	limit = {
+		# 		has_culture_group = hellenic
+		# 		is_male = yes
+		# 		NOT = {
+		# 			has_bloodline_trigger = yes
+		# 		}
+		# 		number_of_traits <= 7
+		# 	}
+		# 	random = {
+		# 		chance = 2
+		# 		custom_tooltip = gain_random_diadochi_bloodline_trait
+		# 		hidden_effect = {
+		# 			trigger_event = {
+		# 				id = scheme.11
+		# 			}
+		# 		}
+		# 	}
+		# }
 		remove_scheme_variables_effect = yes
 	}
 }
@@ -2567,7 +2613,7 @@ scheme_invest_in_agriculture_finish = {
 		custom_tooltip = invest_in_agriculture_effect_tt
 		hidden_effect = {
 			scope:latifundia_holding = {
-				add_building_level = farming_settlement_building
+				add_building_level = basic_settlement_infratructure_building
 			}
 			remove_scheme_variables_effect = yes
 		}
@@ -2612,9 +2658,374 @@ scheme_invest_in_mining_finish = {
 		custom_tooltip = invest_in_mining_effect_tt
 		hidden_effect = {
 			scope:mining_holding = {
-				add_building_level = mining_settlement_building
+				add_building_level = slave_mine_building
 			}
 			remove_scheme_variables_effect = yes
 		}
 	}
 }
+
+scheme_hold_religious_festival_start = {
+	effect = {
+		save_scope_as = ongoing_scheme_target
+		set_variable = {
+			name = ongoing_scheme_target
+			value = scope:ongoing_scheme_target
+			days = 400
+		}
+	}
+}
+
+scheme_hold_religious_festival_finish = {
+	effect = { 
+		save_scope_as = this_guy
+		employer = {
+			add_country_modifier = {
+				name = grand_religious_festival
+				duration = 730 
+			}
+			trigger_event = {
+				id = scheme.17
+			}
+		}
+		hidden_effect = {
+			remove_scheme_variables_effect = yes
+		}
+	}
+}
+
+
+scheme_court_ruler_start = {
+	effect = {
+		employer.current_ruler = {
+			save_scope_as = ongoing_scheme_target
+			set_variable = {
+				name = being_courted #Only one family at a time
+				days = 365
+			}
+		}
+		set_variable = {
+			name = ongoing_scheme_target
+			value = scope:ongoing_scheme_target
+			days = 400
+		}
+		add_character_modifier = {
+			name = "courting_ruler"
+			duration = 365
+		}
+		scope:ongoing_scheme_target = {
+			add_to_variable_list = {
+				name = targeted_by
+				target = root
+			}
+		}
+		
+	}
+}
+
+scheme_court_ruler_finish = {
+	effect = {
+		custom_tooltip = offer_marriage_effect_tt
+		hidden_effect = {
+			save_scope_as = courting_hof
+			scope:ongoing_scheme_target = {
+				trigger_event = { id = scheme.18 }
+			}
+			remove_scheme_variables_effect = yes
+		}
+	}
+}
+
+
+scheme_seek_a_spouse_start = {
+	effect = {
+		if = {
+			limit = {
+				NOT = {
+					has_variable = seeking_spouse_ci
+				}
+			}
+			employer = {
+				random_character = {
+					limit = {
+						is_minor_character = no
+						NOT = {
+							this = root
+						}
+						is_head_of_family = yes
+						family = {
+							NOT = { this = root.family }
+						}
+					}
+					save_scope_as = ongoing_scheme_target
+				}
+			}
+			set_variable = {
+				name = ongoing_scheme_target
+				value = scope:ongoing_scheme_target
+				days = 400
+			}
+			scope:ongoing_scheme_target = {
+				add_to_variable_list = {
+					name = targeted_by
+					target = root
+				}
+			}
+		}
+		else = {
+			var:ongoing_scheme_target = {
+				save_scope_as = ongoing_scheme_target
+			}
+			scope:ongoing_scheme_target = {
+				add_to_variable_list = {
+					name = targeted_by
+					target = root
+				}
+			}
+		}
+		add_character_modifier = {
+			name = "seeking_a_spouse"
+			duration = 365
+		}
+	}
+}
+
+scheme_seek_a_spouse_finish = {
+	effect = {
+		custom_tooltip = seek_spouse_effect_tt
+		hidden_effect = {
+			if = { #If character picked this on their own, no event.
+				limit = {
+					NOT = { has_variable = seeking_spouse_ci }
+					trigger_if = {
+						limit = { is_ruler = yes }
+						employer = { is_ai = yes }
+					}
+				}
+				random_list = {
+					50 = {
+						save_scope_as = spouse_seeker
+						if = {
+							limit = {
+								is_male = yes
+							}
+							employer = {
+								create_character = {
+									age = seek_spouse_age_window
+									female = yes
+									culture = scope:ongoing_scheme_target.culture
+									religion = scope:ongoing_scheme_target.religion
+									family = scope:ongoing_scheme_target.family
+									save_scope_as = new_wife
+								}
+							}
+						}
+						else = {
+							employer = {
+								create_character = {
+									age = seek_spouse_age_window
+									culture = scope:ongoing_scheme_target.culture
+									religion = scope:ongoing_scheme_target.religion
+									family = scope:ongoing_scheme_target.family
+									save_scope_as = new_wife
+								}
+							}
+						}
+						if = {	
+							limit = {
+								scope:new_wife = {
+									is_married = yes
+								}
+							}
+							scope:new_wife = {
+								divorce_character = spouse
+							}
+						}
+						if = {	
+							limit = {
+								is_married = yes
+							}
+							divorce_character = spouse
+						}
+						if = {
+							limit = {
+								is_alive = yes
+								is_adult = yes
+								prisoner = no
+								is_married = no
+								scope:new_wife = {
+									is_alive = yes
+									is_adult = yes
+									prisoner = no
+									is_married = no
+								}
+							}							
+							marry_character = scope:new_wife
+						}
+					}
+					50 = {
+						trigger_event = { id = scheme.20 } #Refusal, Character is sad.
+					}
+				}
+			}
+			else_if = { #This is our ruler, we are not AI
+				limit = {
+					is_ruler = yes
+				}
+				random_list = {
+					50 = { #Positive Outcome
+						trigger = {
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								loyalty > 30
+							}
+						}
+						modifier = {
+							add = 10
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								loyalty > 70
+							}
+						}
+						modifier = {
+							add = -20
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								family = {
+									is_scorned = yes
+								}
+							}
+						}
+						modifier = {
+							add = 10
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								family = {
+									is_grateful = yes
+								}
+							}
+						}
+						modifier = {
+							add = 20
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								has_trait = submissive
+							}
+						}
+						save_scope_as = suitor
+						trigger_event = { id = scheme.21 }
+					}
+					50 = {	#Outright Refusal
+						trigger = {
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								loyalty <= 40
+							}
+						}
+						modifier = {
+							add = 20
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								has_trait = arrogant
+							}
+						}
+						modifier = {
+							add = 10
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								has_trait = foolish
+							}
+						}
+						save_scope_as = spurned_suitor
+						trigger_event = { id = scheme.22 }
+					}
+				}
+			}
+			else = { #Not our ruler, but we picked the scheme ourselves.
+				random_list = {
+					50 = {
+						trigger = {
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								loyalty > 50
+							}
+						}
+						modifier = {
+							add = 10
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								loyalty > 70
+							}
+						}
+						modifier = {
+							add = -20
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								family = {
+									is_scorned = yes
+								}
+							}
+						}
+						modifier = {
+							add = 10
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								family = {
+									is_grateful = yes
+								}
+							}
+						}
+						modifier = {
+							add = 20
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								has_trait = submissive
+							}
+						}
+						save_scope_as = suitor
+						employer.current_ruler = {
+							trigger_event = { id = scheme.21 }
+						}
+					}
+					50 = {
+						trigger = {
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								loyalty <= 50
+							}
+						}
+						modifier = {
+							add = 20
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								has_trait = arrogant
+							}
+						}
+						modifier = {
+							add = 10
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								has_trait = foolish
+							}
+						}
+						modifier = {
+							add = 20
+							exists = scope:ongoing_scheme_target
+							scope:ongoing_scheme_target = {
+								family = {
+									is_scorned = yes
+								}
+							}
+						}
+						save_scope_as = spurned_suitor
+						employer.current_ruler = {
+							trigger_event = { id = scheme.23 }
+						}
+					}
+				}
+			}
+			remove_scheme_variables_effect = yes
+		}
+	}
+}
+

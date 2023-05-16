@@ -27,7 +27,7 @@ NJominiMapGraphics = {
 }
 
 NJominiGraphics = {
-	BLOOM_ITERATIONS = 6
+	BLOOM_ITERATIONS = 2
 	NULL_ENTITY = "test_object_entity"
 	NULL_MESH = "test_object_mesh"
 }
@@ -48,7 +48,7 @@ NGraphics = {
 	
 	FLAT_MAP_HEIGHT = 3.92
 	FLAT_MAP_FADE_SPEED = 3	# How fast to fade to/from flat map state
-	FLAT_MAP_ZOOM_STEP = @country_zoomstep_min	# At which zoom step to fade to flat map
+	FLAT_MAP_ZOOM_STEP = 14	# At which zoom step to fade to flat map
 	
 	SURROUND_MAP_INNER_RECT = { 700.0 900.0 7700.0 3600.0 } 			#x-start, y-start, x-end, y-end
 	SURROUND_MAP_OUTER_RECT = { -10000.0 -10000.0 20000.0 20000.0 }		#x-start, y-start, x-end, y-end
@@ -149,10 +149,14 @@ NMapColors = {
 	BARBARIAN_POWER_COLOR_LOW = 		{ 0.0	0.8		0.05 }
 	BARBARIAN_POWER_COLOR_HIGH = 		{ 0.0	0.8		0.95 }
 	
+	POPULATION_COLOR_MAX_POPS = 130	# this is what COLOR_HIGH is targeted against
 	POPULATION_COLOR_LOW =  			{ 0		0		0	 }
 	POPULATION_COLOR_HIGH = 			{ 0.333 0.8		1 	 }
 	POP_STARVING_COLOR_STRIPE = 		{ 0.0	0.8		0.95 }
 	
+	CULTURE_COLOR_MAX_POPS = 50 # this is what COLOR_HIGH is targeted against
+	CULTURE_COLOR_HIGH_OFFSET_FACTOR =	{ 0.25 0.25 0.25 }
+
 	CIVILIZATION_COLOR_LOW = 			{ 0.0	1		0.1  }
 	CIVILIZATION_COLOR_HIGH = 			{ 0.333	0.8		0.75 }
 
@@ -176,6 +180,7 @@ NMapColors = {
 	MACRO_BUILDER_CAN_NOT_BUILD_COLOR =	{ 0.0	0.8		0.7	 }
 	MACRO_BUILDER_ALREADY_BUILDING_STRIPES_COLOR = { 0.333 1.0 0.75  }
 	MACRO_BUILDER_CAN_NOT_BUILD_FORT =	{ 0.5	0.9		0.9  }
+	MACRO_BUILDER_GOT_ONE_ALREADY_BUILDING_COLOR = { 0.8	0.8		0.3	 }
 	
 	AI_OBJECTIVE_REGION_SELECTED = 		{ 0 0.9 1  }
 	AI_OBJECTIVE_REGION_OLD_SELECTED = 	{ 0 1 0.3  }
@@ -222,6 +227,9 @@ NMapColors = {
 	NAVAL_RANGE_INSIDE_COLOR_HIGH =		{ 0.333 0.1		0 }
 	NAVAL_RANGE_OUTSIDE_COLOR_LOW =		{ 0		0.8		0.6 }
 	NAVAL_RANGE_OUTSIDE_COLOR_HIGH =	{ 0		0.1		0 }
+
+	CAN_RAISE_LEVY_HERE = 				{ 0		0.5		1 }
+	CANT_RAISE_LEVY_HERE = 				{ 1		0.2		0.2 }
 }
 
 NBorder = {
@@ -262,6 +270,9 @@ NUnitGraphics = {
 	UNIT_SCALE_PER_ZOOM_STEP = 		{ 0.5 0.5625  0.675	0.825  1.0  1.0  1.0  1.0  1.00  0.5  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0	}	#0 will hide the unit model				#2x Size
 	UNIT_RIVER_SCALE = 0.5 # Applied on top of UNIT_SCALE_PER_ZOOM_STEP
 	UNIT_MAP_MARKER_MAP_PIXELS_SOUTH = 2	# The unit map marker (# of troops, etc.) will be positioned as if it was this many pixels on the map south of where the unit is standing
+
+	UNIT_LEVY_TAG = "_levy_"
+	UNIT_LEGION_TAG = "_legion_"
 }		
 
 
@@ -280,10 +291,19 @@ NMapName = {
 }
 
 NGui = {
-	TOOLTIP_OPEN_TIME = 0				# Time a tooltip takes to show up
-	TOOLTIP_OPEN_DELAYED_TIME = 1.2		# Time a delayed tooltip takes to show up
-	TOOLTIP_CLOSE_TIME = 0.0			# Time a delayed tooltip takes to close
-	TOOLTIP_TENDENCY_BUFFER = 0			# Tendency buffer to detect where the mouse if going to be in the future
+	TOOLTIP_OPEN_TIME = 0.15			# Time a tooltip takes to show up
+	TOOLTIP_OPEN_LOCK_TIME = 0.65		# Time a tooltip takes to lock for mouseover purposes
+	TOOLTIP_OPEN_DELAYED_TIME = 0		# Time a delayed tooltip takes to show up
+	TOOLTIP_CLOSE_TIME = 0.3			# Time a delayed tooltip takes to close
+	TOOLTIP_TENDENCY_BUFFER = 25		# Tendency buffer to detect where the mouse if going to be in the future
+	TOOLTIP_MIDDLE_MOUSE_LOCK_TIME = 0.25
+	# Tooltip stack tint RGBA colors starting with the top tooltip
+    TOOLTIP_TINT_RGBA = {
+        1.0  1.0  1.0    1.0
+        0.7 0.7 0.7 1
+        0.5 0.5 0.5  1
+        0.2  0.2  0.2  1
+    }
 }
 
 
@@ -303,12 +323,15 @@ NMapIcon = {
 	#Visible in the "state" zoom level
 	ZOOM_STEP_RANGE_COUNTRY_CAPITAL = 	{ @state_zoomstep_min @state_zoomstep_max }
 	
+	ZOOM_STEP_RANGE_DECORATIVE = 				{ -1 20 }
+
 	#Visible in anything "state" and lower
 	ZOOM_STEP_RANGE_PORT = 				{ @province_zoomstep_min @state_zoomstep_max }
 	ZOOM_STEP_RANGE_UNIT = 				{ -1 @state_zoomstep_max }
 	ZOOM_STEP_RANGE_COMBAT = 			{ -1 @state_zoomstep_min }
 	ZOOM_STEP_RANGE_BARBARIAN_POWER =	{ -1 @state_zoomstep_max }
 	ZOOM_STEP_RANGE_HOLY_SITE =			{ -1 @state_zoomstep_max }
+	ZOOM_STEP_RANGE_GREAT_WORK =		{ @province_zoomstep_min @province_zoomstep_max }
 
 	ZOOM_STEP_RANGE_GOVERNOR_WIDGET = { -1 @country_zoomstep_max }
 	ZOOM_STEP_RANGE_AREA_WIDGET = { -1 @state_zoomstep_min }
@@ -318,7 +341,7 @@ NMapIcon = {
 
 	ZOOM_STEP_RANGE_SMALL_UNIT = { @country_zoomstep_min @country_zoomstep_max }
 	
-	CITY_ICON_FADE = 0.8
+	CITY_ICON_FADE = 0.9
 	
 	ARMY_BANNER_STACK_OFFSET = 29.0
 	ARMY_BANNER_MERGE_NUM = 1 #More than X army banners will be merged into the last banner as a group which you can click on to cycle through
@@ -341,6 +364,9 @@ NGameIcons = {
 	ICON_PATH = "gfx/interface/icons"
 	ICON_SMALL_POSTFIX = "small"
 	ICON_BIG_POSTFIX = "big"
+	ICON_HUGE_POSTFIX = "huge"
+	ICON_NORMAL_TINT_POSTFIX = "normal_tint"
+	ICON_HUGE_TINT_POSTFIX = "huge_tint"
 	ICON_DEFAULT_NAME = "_default"
 	IDEA_ICON_PATH = "gfx/interface/icons/ideas"
 	IDEAGROUP_ICON_PATH = "gfx/interface/icons/idea_groups"
@@ -355,9 +381,11 @@ NGameIcons = {
 	TERRAIN_ICON_PATH = "gfx/interface/icons/terrain"
 	OMEN_ICON_PATH = "gfx/interface/icons/omens"
 	DEITY_ICON_PATH = "gfx/interface/icons/deities"
+	TRADITION_ICON_PATH = "gfx/interface/icons/military_traditions"
 	SACRIFICE_ICON_PATH = "gfx/interface/religion"
 	HOLY_SITE_ICON_PATH = "gfx/interface/icons/holy_sites"
 	TREASURE_ICON_PATH = "gfx/interface/icons/treasures"
+	TREASURE_ICON_DEFAULT = "treasure_chest"
 	PARTY_ICON_PATH = "gfx/interface/icons/party_types"
 	MACRO_BUILDER_ICON_PATH = "gfx/interface/icons/macro_builder"
 	DIPLOMATIC_STATUS_ICON_PATH = "gfx/interface/icons/diplomatic_status"
@@ -371,10 +399,25 @@ NGameIcons = {
 	DIP_STANCE_ICON_PATH = "gfx/interface/icons/diplomatic_stances"
 	MISSION_ICON_PATH = "gfx/interface/icons/missions"
 	MISSION_PATH = "gfx/interface/missions"
+	MISSION_HEADER_DEFAULT = "mission_image_general"
 	MISSION_TASKS_ICON_PATH = "gfx/interface/icons/mission_tasks"
 	PROVINCE_RANK_ICON_PATH = "gfx/interface/icons/province_rank"
 	MAP_MODE_ICONS = "gfx/interface/icons/minimap"
 	DEFAULT_SACRIFICE_ICON = "sacrifice_pig"
+	GREAT_WORK_EFFECT_ICON_PATH = "gfx/interface/icons/great_work/effects"
+	GREAT_WORK_EFFECT_EMPTY_ICON = "_empty"
+	GREAT_WORK_MATERIAL_ICON_PATH = "gfx/interface/icons/great_work/materials"
+	GREAT_WORK_MODULE_ICON_PATH = "gfx/interface/icons/great_work/modules"
+	GREAT_WORK_TEMPLATE_ICON_PATH = "gfx/interface/icons/great_work/templates"
+	GREAT_WORK_PROVINCE_BUILDING_VIEW_ICON = "gfx/interface/icons/buildings/greatwork_building.dds"
+	GREAT_WORK_EFFECT_TIER_ICON_PATH = "gfx/interface/icons/great_work/effect_tiers"
+	GREAT_WORK_ANCIENT_ICON_PATH = "gfx/interface/icons/great_work/panel/ancient_wonders"
+	CHARACTER_BACKGROUND_PATH = "gfx/interface/portrait"
+	WATER_CROSSING_PENALTY_ICON = "gfx/interface/icons/combat_imminent/rivercrossing_battle.dds"
+	WATER_CROSSING_NEGATION_ICON = "gfx/interface/icons/combat_imminent/rivercrossing_battle_negated.dds"
+	DISTINCTIONS_ICON_PATH = "gfx/interface/icons/phalera"
+	RIVER_CROSSING_PENALTY_ICON = "gfx/interface/icons/combat_imminent/rivercrossing_battle.dds"
+	RIVER_CROSSING_NEGATION_ICON = "gfx/interface/icons/combat_imminent/rivercrossing_battle_negated.dds"
 }
 
 NMapGraphics = {
@@ -390,6 +433,7 @@ NMapGraphics = {
 	
 	PORT_SHIP_LOCATOR = "ship_locator"
 	FORT_SIEGE_LOCATOR = "siege_locator"
+	GREAT_WORK_CONSTRUCTION_ENTITY = "gw_construction_site_entity"
 }
 
 NCities = {
@@ -471,4 +515,5 @@ NMapLines = {
   POP_MOVEMENT_OUT = "line_pop_movement_red"
   TRADE_ROUTE_IMPORT = "line_trade_green"
   TRADE_ROUTE_EXPORT = "line_trade_yellow"
+  ROAD = "line_road"
 }

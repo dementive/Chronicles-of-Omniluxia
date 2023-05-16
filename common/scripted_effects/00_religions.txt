@@ -3,6 +3,26 @@
 change_religion_effect = {
 	custom_tooltip = religion_conversion_tooltip
 	custom_tooltip = religion_conversion_family_tooltip
+	if = {
+		limit = { 
+			is_republic = yes
+			has_party_type = traditionalist_party
+		}
+		add_party_approval = {
+			party_type = traditionalist_party
+			value = -10
+		}
+	}
+	if = {
+		limit = { 
+			is_republic = yes
+			has_party_type = boni_party
+		}
+		add_party_approval = {
+			party_type = boni_party
+			value = -10
+		}
+	}
 	add_political_influence = -200
 	add_stability = -30
 	add_country_modifier = {
@@ -43,57 +63,74 @@ change_religion_effect = {
 		}
 		max = 6
 		order_by = prominence
+		check_range_bounds = no
 		set_character_religion = $RELIGION$
+	}
+	if = {
+		limit = {
+			has_senate_approval < 60
+			is_republic = yes
+			NOT = { has_variable = dictatorship_enabled }
+		}
+		add_tyranny = {
+			# Calculates the percentage of disapproval
+			value = 0.6 # -- SENATE_REQUIRED_APPROVAL_WITHOUT_PENALTIES
+			subtract = has_senate_approval
+			divide = 0.3 # -- SENATE_REQUIRED_APPROVAL
+			
+			# This is the real value that you want for 100% of the effect
+			multiply = 20
+		}
 	}
 }
 
-desecrate_effect = { #Province scope
-	if = { #Notification events, for if you used the religion view button.
-		limit = {
-			is_holy_site = yes
-			NOT = { has_variable = unit_desecration_happened } #Set by unit ability - this means the unit ability bypasses this part.
-		} #If we are actually doing this
-		save_scope_as = shrine_location
-		province_deity = {
-			save_scope_as = provincial_deity
+desecrate_effect = { # Shared part of the effect, for unit or location
+	scope:shrine_location = {
+		remove_province_deity = yes
+		add_city_fire_effect = yes
+		add_province_modifier = {
+			name = "upset_local_priests"
+			duration = 365
 		}
-		owner = { save_scope_as = sacker }
+	}
+	if = {
+		limit = {
+			exists = scope:provincial_deity
+			exists = scope:shrine_location
+		}
+		custom_tooltip = holy_site_deity_bonus_lost_tt
+	}
+	if = { # In case button checked on non-holysite
+		limit = { exists = scope:provincial_deity }
 		if = {
 			limit = {
-				exists = scope:shrine_location
-				exists = scope:provincial_deity
-			}
-			every_country = {
-				limit = {
-					scope:provincial_deity = {
-						deity_religion = PREV.religion
-					}
-					NOT = {
+				any_country = {
+					has_land = yes
+					scope:provincial_deity = { deity_religion = PREV.religion }
+					NOR = { 
 						THIS = scope:shrine_location.owner
+						AND = {
+							exists = ROOT.unit_owner
+							THIS = ROOT.unit_owner
+						}
 					}
 				}
-				trigger_event = {
-					id = desecration.3 #Holy Site of our Faith Sacked
+			}
+			every_country = { # Ping event for same religion countries
+				limit = {
+					scope:provincial_deity = { deity_religion = PREV.religion }
+					NOR = { 
+						THIS = scope:shrine_location.owner
+						AND = {
+							exists = ROOT.unit_owner
+							THIS = ROOT.unit_owner
+						}
+					}
 				}
+				trigger_event = { id = desecration.3 } #Holy Site of our Faith Sacked
 			}
+			custom_tooltip = desecration_opinion
 		}
-		every_province_treasure = {
-			transfer_treasure_to_country = root.owner
-		}
+		else = { custom_tooltip = desecration_opinion_general }
 	}
-	hidden_effect = {
-		if = {
-			limit = { has_variable = unit_desecration_happened }
-			every_province_treasure = {
-				transfer_treasure_to_country = root.unit_owner
-			}
-		}
-	}
-	remove_province_deity = yes
-	add_city_fire_effect = yes
-	add_province_modifier = {
-		name = "upset_local_priests"
-		duration = 365
-	}
-
 }

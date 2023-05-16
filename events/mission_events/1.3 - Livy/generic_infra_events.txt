@@ -335,9 +335,8 @@ generic_infra_mission.4 = { #Ending Ceremony
     option = {      
         name = generic_infra_mission.4.c
 		trigger = { is_republic = yes }
-		add_party_support = {
-			party = religious_party
-			value = 10	
+		traditionalist_approval_effect = {
+			VALUE = party_approval_medium
 		}
 		add_country_modifier = {
 			name = "cult_protector_religious_establishment"
@@ -644,6 +643,7 @@ generic_infra_mission.11 = {
 				is_monarchy = yes
 			}
 			capital_scope = {
+				create_2_nobles_effect = yes
 				add_province_modifier = {
 					name = "royal_palaces_mission_modifier"
 					duration = -1
@@ -655,6 +655,7 @@ generic_infra_mission.11 = {
 				is_republic = yes
 			}
 			capital_scope = {
+				create_2_nobles_effect = yes
 				add_province_modifier = {
 					name = "forum_mission_modifier"
 					duration = -1
@@ -663,6 +664,7 @@ generic_infra_mission.11 = {
 		}
 		else = {
 			capital_scope = {
+				create_2_nobles_effect = yes
 				add_province_modifier = {
 					name = "clan_council_compound_mission_modifier"
 					duration = -1
@@ -1082,7 +1084,10 @@ generic_infra_mission.18 = {
 		capital_scope = {
 			any_pops_in_province = {
 				count >= 2
-				pop_type = citizen
+				OR = {
+					pop_type = citizen
+					pop_type = nobles
+				}
 			}
 		}
 	}
@@ -1099,7 +1104,10 @@ generic_infra_mission.18 = {
 		capital_scope = {
 			ordered_pops_in_province = {
 				limit = {
-					pop_type = citizen
+					OR = {
+						pop_type = citizen
+						pop_type = nobles
+					}
 				}
 				order_by = pop_hapiness
 				max = 2
@@ -1373,9 +1381,16 @@ generic_infra_mission.22 = {
 
     option = {
 		name = generic_infra_mission.22.a
-		add_treasury = -300
 		scope:find_struck_here = {
-			set_trade_goods = iron
+			if = {
+				limit = { has_building = basic_settlement_infratructure_building }
+				remove_building_level = basic_settlement_infratructure_building
+				ROOT = { add_treasury = -200 }
+			}
+			else = {
+				ROOT = { add_treasury = -300 }
+			}
+			set_trade_goods = copper
 		}
     }
     option = {
@@ -1432,8 +1447,15 @@ generic_infra_mission.23 = {
 
     option = {
 		name = generic_infra_mission.23.a
-		add_treasury = -300
 		scope:find_struck_here = {
+			if = {
+				limit = { has_building = basic_settlement_infratructure_building }
+				remove_building_level = basic_settlement_infratructure_building
+				ROOT = { add_treasury = -200 }
+			}
+			else = {
+				ROOT = { add_treasury = -300 }
+			}
 			set_trade_goods = precious_metals
 		}
     }
@@ -1492,8 +1514,15 @@ generic_infra_mission.24 = {
 
     option = {
 		name = generic_infra_mission.24.a
-		add_treasury = -900
 		scope:find_struck_here = {
+			if = {
+				limit = { has_building = basic_settlement_infratructure_building }
+				remove_building_level = basic_settlement_infratructure_building
+				ROOT = { add_treasury = -800 }
+			}
+			else = {
+				ROOT = { add_treasury = -900 }
+			}
 			set_trade_goods = gems
 		}
     }
@@ -1553,8 +1582,15 @@ generic_infra_mission.25 = {
 
     option = {
 		name = generic_infra_mission.25.a
-		add_treasury = -200
 		scope:find_struck_here = {
+			if = {
+				limit = { has_building = basic_settlement_infratructure_building }
+				remove_building_level = basic_settlement_infratructure_building
+				ROOT = { add_treasury = -100 }
+			}
+			else = {
+				ROOT = { add_treasury = -200 }
+			}
 			set_trade_goods = base_metals
 		}
     }
@@ -1923,6 +1959,7 @@ generic_infra_mission.29 = { #Ending Ceremony - Subject state
 					is_male = yes
 				}
 				is_minor_character = no
+				home_country = ROOT
 				NOT = {
 					family = {
 						any_family_member = { is_ruler = yes }
@@ -1942,6 +1979,7 @@ generic_infra_mission.29 = { #Ending Ceremony - Subject state
 				}
 				is_minor_character = no
 				NOT = { has_same_family = scope:religious_family_1 }
+				home_country = ROOT
 				NOT = {
 					family = {
 						any_family_member = { is_ruler = yes }
@@ -1960,6 +1998,7 @@ generic_infra_mission.29 = { #Ending Ceremony - Subject state
 					is_male = yes
 				}
 				is_minor_character = no
+				home_country = ROOT
 				NOT = { has_same_family = scope:religious_family_1 }
 				NOT = { has_same_family = scope:religious_family_2 }
 				NOT = {
@@ -2139,9 +2178,11 @@ generic_infra_mission.30 = { #Ending Ceremony - Subject state
 				is_male = yes
 			}
 			char_is_unoccupied_trigger = yes
+			home_country = ROOT
 			is_admiral = no
 			is_general = no
 			is_governor = no
+			home_country = ROOT
 			NOT = {
 				family = {
 					any_family_member = { is_ruler = yes }
@@ -2164,6 +2205,7 @@ generic_infra_mission.30 = { #Ending Ceremony - Subject state
 				}
 				char_is_unoccupied_trigger = yes
 				is_admiral = no
+				home_country = ROOT
 				is_general = no
 				is_governor = no
 				NOT = {
@@ -2188,6 +2230,7 @@ generic_infra_mission.30 = { #Ending Ceremony - Subject state
 				is_admiral = no
 				is_general = no
 				is_governor = no
+				home_country = ROOT
 				NOT = { has_same_family = scope:naval_family_1 }
 				NOT = {
 					family = {
@@ -2211,6 +2254,7 @@ generic_infra_mission.30 = { #Ending Ceremony - Subject state
 				is_admiral = no
 				is_general = no
 				is_governor = no
+				home_country = ROOT
 				NOT = { has_same_family = scope:naval_family_1 }
 				NOT = { has_same_family = scope:naval_family_2 }
 				NOT = {
@@ -2282,5 +2326,174 @@ generic_infra_mission.30 = { #Ending Ceremony - Subject state
 		scope:new_navy = {
 			set_as_commander = scope:naval_family_3
 		}
+    }
+}
+
+#Bypass
+generic_infra_mission.34 = { # food_branch_1
+    type = country_event
+    title = generic_infra_mission.34.t
+    desc = generic_infra_mission.34.desc
+    picture = farming
+	
+    trigger = {
+    	is_ai = no
+    	NAND = {
+    		has_variable = good_infra_bypass_cooldown
+    		var:good_infra_bypass_cooldown = scope:food_province
+    	}
+    }
+
+    immediate = {
+    	set_variable = {
+    		name = good_infra_bypass_cooldown
+    		value = scope:food_province
+    		days = 15
+    	}
+    }
+
+    option = {
+    	name = generic_infra_mission.34.a
+    	custom_tooltip = generic_infra_mission.34.at
+    }
+}
+
+generic_infra_mission.35 = { # granary_of_x / food
+    type = country_event
+    title = generic_infra_mission.35.t
+    desc = generic_infra_mission.34.desc
+    picture = farming
+	
+    trigger = {
+    	is_ai = no
+    	NAND = {
+    		has_variable = good_infra_bypass_cooldown
+    		var:good_infra_bypass_cooldown = scope:food_province
+    	}
+    }
+
+	immediate = {
+    	set_variable = {
+    		name = good_infra_bypass_cooldown
+    		value = scope:food_province
+    		days = 15
+    	}
+    }
+
+    option = {
+    	name = generic_infra_mission.34.a
+    	custom_tooltip = generic_infra_mission.35.at
+    }
+}
+
+generic_infra_mission.36 = { # food_market_of_x / food
+    type = country_event
+    title = generic_infra_mission.36.t
+    desc = generic_infra_mission.34.desc
+    picture = farming
+	
+    trigger = {
+    	is_ai = no
+    	NAND = {
+    		has_variable = good_infra_bypass_cooldown
+    		var:good_infra_bypass_cooldown = scope:food_province
+    	}
+    }
+
+    immediate = {
+    	set_variable = {
+    		name = good_infra_bypass_cooldown
+    		value = scope:food_province
+    		days = 15
+    	}
+    }
+
+    option = {
+    	name = generic_infra_mission.34.a
+    	custom_tooltip = generic_infra_mission.36.at
+    }
+}
+
+generic_infra_mission.38 = { # mining_branch_1 / mines
+    type = country_event
+    title = generic_infra_mission.38.t
+    desc = generic_infra_mission.38.desc
+    picture = quarry
+	
+    trigger = {
+    	is_ai = no
+    	NAND = {
+    		has_variable = mining_infra_bypass_cooldown
+    		var:mining_infra_bypass_cooldown = scope:mining_province
+    	}
+    }
+
+    immediate = {
+    	set_variable = {
+    		name = mining_infra_bypass_cooldown
+    		value = scope:mining_province
+    		days = 15
+    	}
+    }
+
+    option = {
+    	name = generic_infra_mission.38.a
+    	custom_tooltip = generic_infra_mission.38.at
+    }
+}
+
+generic_infra_mission.39 = { # expand_work_force / mines
+    type = country_event
+    title = generic_infra_mission.39.t
+    desc = generic_infra_mission.38.desc
+    picture = quarry
+	
+    trigger = {
+    	is_ai = no
+    	NAND = {
+    		has_variable = mining_infra_bypass_cooldown
+    		var:mining_infra_bypass_cooldown = scope:mining_province
+    	}
+    }
+
+    immediate = {
+    	set_variable = {
+    		name = mining_infra_bypass_cooldown
+    		value = scope:mining_province
+    		days = 15
+    	}
+    }
+
+    option = {
+    	name = generic_infra_mission.38.a
+    	custom_tooltip = generic_infra_mission.39.at
+    }
+}
+
+generic_infra_mission.40 = { # prospecting_mission / mines
+    type = country_event
+    title = generic_infra_mission.40.t
+    desc = generic_infra_mission.38.desc
+    picture = quarry
+	
+    trigger = {
+    	is_ai = no
+    	NAND = {
+    		has_variable = mining_infra_bypass_cooldown
+    		var:mining_infra_bypass_cooldown = scope:mining_province
+    	}
+    }
+
+    immediate = {
+    	set_variable = {
+    		name = mining_infra_bypass_cooldown
+    		value = scope:mining_province
+    		days = 15
+    	}
+    }
+
+    option = {
+    	name = generic_infra_mission.38.a
+    	custom_tooltip = generic_infra_mission.40.at
     }
 }

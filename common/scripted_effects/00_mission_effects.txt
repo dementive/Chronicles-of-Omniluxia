@@ -1,0 +1,249 @@
+﻿complete_mission_effect = {
+	if = {
+		limit = {
+			NOT = {
+				has_variable = num_of_completed_missions
+			}
+		}
+		set_variable = {
+			name = num_of_completed_missions
+			value = 1
+		}
+	}
+	else_if = {
+		limit = {
+			has_variable = num_of_completed_missions
+		}
+		change_variable = {
+			name = num_of_completed_missions
+			add = 1
+		}
+	}
+	if = {
+		limit = { has_variable = ai_mission_backout }
+		remove_variable = ai_mission_backout
+	}
+}
+
+start_mission_ai_effect = {
+	if = {
+		limit = { has_variable = ai_mission_backout }
+		remove_variable = ai_mission_backout
+	}
+	if = {
+		limit = { is_ai = yes }
+		set_variable = {
+			name = ai_mission_backout
+			days = 21900 # 60 years # defines how long after taking a mission the AI will automatically abort it
+		}
+	}
+}
+
+rm_notable_person_effect = {
+	random_character = {
+		limit = {
+			is_ruler = no
+			is_co_ruler = no
+			prisoner = no
+			is_adult = yes
+			is_at_location = root.capital_scope
+			NOT = { has_character_modifier = foreign_citizen }
+			trigger_if = {
+				limit = {
+					employer = { gender_equality = no }
+				}
+				is_female = no
+			}
+		}
+		weight = {
+			modifier = {
+				factor = 0
+				NOT = { has_culture = roman }
+			}
+			modifier = {
+				factor = 0
+				has_variable = expansion_encourager_cooldown
+			}
+			modifier = {
+				factor = 2
+				is_admiral = yes
+			}
+			modifier = {
+				factor = 2
+				is_general = yes
+			}
+			modifier = {
+				factor = 2
+				has_any_office = yes
+			}
+			modifier = {
+				factor = 2
+				power_base >= 10
+			}
+			modifier = {
+				factor = 2
+				wealth > 500
+			}
+			modifier = {
+				factor = 2
+				age >= 30
+			}
+			modifier = {
+				factor = 0
+				is_minor_character = no
+			}
+		}
+		save_scope_as = expansion_encourager
+	}
+}
+
+rm_strongpoint_effect = {
+	if = {
+		limit = { free_building_slots > 0 }
+		add_building_level = fortress_building
+	}
+	add_province_modifier = { 
+		name = rm_3_fortified_pmod 
+		duration = 18250 # 50 years
+	}
+}
+
+rm_triumphal_arch_effect = {
+	if = {
+		limit = {
+			NOR = {
+				has_province_modifier = rm_triumphal_arch_1
+				has_province_modifier = rm_triumphal_arch_2
+				has_province_modifier = rm_triumphal_arch_3
+				has_province_modifier = rm_triumphal_arch_4
+				has_province_modifier = rm_triumphal_arch_5
+				has_province_modifier = rm_triumphal_arch_6
+			}
+		}
+		add_province_modifier = { name = rm_triumphal_arch_1 }
+	}
+	else_if = {
+		limit = { has_province_modifier = rm_triumphal_arch_1 }
+		hidden_effect = { remove_province_modifier = rm_triumphal_arch_1 }
+		add_province_modifier = { name = rm_triumphal_arch_2 }
+	}
+	else_if = {
+		limit = { has_province_modifier = rm_triumphal_arch_2 }
+		hidden_effect = { remove_province_modifier = rm_triumphal_arch_2 }
+		add_province_modifier = { name = rm_triumphal_arch_3 }
+	}
+	else_if = {
+		limit = { has_province_modifier = rm_triumphal_arch_3 }
+		hidden_effect = { remove_province_modifier = rm_triumphal_arch_3 }
+		add_province_modifier = { name = rm_triumphal_arch_4 }
+	}
+	else_if = {
+		limit = { has_province_modifier = rm_triumphal_arch_4 }
+		hidden_effect = { remove_province_modifier = rm_triumphal_arch_4 }
+		add_province_modifier = { name = rm_triumphal_arch_5 }
+	}
+	else_if = {
+		limit = { has_province_modifier = rm_triumphal_arch_5 }
+		hidden_effect = { remove_province_modifier = rm_triumphal_arch_5 }
+		add_province_modifier = { name = rm_triumphal_arch_6 }
+	}
+}
+
+rm_fortify_effect = {
+	if = {
+		limit = {
+			free_building_slots > 0
+		}
+		add_building_level = fortress_building
+	}
+	else = {
+		destroy_building_effect = yes
+		add_building_level = fortress_building
+	}
+	if = {
+		limit = {
+			NOT = { has_province_modifier = rm_3_fortified_pmod }
+		}
+		add_province_modifier = {
+			name = rm_3_fortified_pmod
+			duration = 18250 # 50 years
+		}
+	}
+}
+
+generic_conquest_modifier_cleanup_effect = {
+	if = {
+		limit = { has_country_modifier = generic_peaceful_1 }
+		remove_country_modifier = generic_peaceful_1
+	}
+	else_if = {
+		limit = { has_country_modifier = generic_peaceful_2 }
+		remove_country_modifier = generic_peaceful_2
+	}
+	else_if = {
+		limit = { has_country_modifier = generic_peaceful_3 }
+		remove_country_modifier = generic_peaceful_3
+	}
+	else_if = {
+		limit = { has_country_modifier = generic_warlike_1 }
+		remove_country_modifier = generic_warlike_1
+	}
+	else_if = {
+		limit = { has_country_modifier = generic_warlike_2 }
+		remove_country_modifier = generic_warlike_2
+	}
+	else_if = {
+		limit = { has_country_modifier = generic_warlike_3 }
+		remove_country_modifier = generic_warlike_3
+	}
+}
+
+mission_area_claim_effect = {
+	every_area_province = {
+		limit = {
+			NOT = { owned_or_subject_owned = root }
+		}
+		add_claim = root
+	}
+}
+
+mission_claim_area_effect = {
+	if = {
+		limit = {
+			area:$AREA$ = {
+				any_area_province = {
+					NOT = { owned_or_subject_owned = root }
+				}
+			}
+		}
+		random_province = {
+			limit = { is_in_area = $AREA$ }
+			custom_tooltip = mission_claim_area_tooltip
+		}
+		area:$AREA$ = {
+			hidden_effect = {
+				every_area_province = {
+					limit = {
+						NOT = { owned_or_subject_owned = root }
+					}
+					add_claim = root
+				}
+			}
+		}
+	}
+}
+
+ai_build_city_pay_price_effect = {
+	if = {
+        limit = {
+            is_ai = yes
+            trigger_if = {
+            	limit = { treasury > 50 }
+            	can_pay_price = price_found_city
+            }
+            $CITY$ = { has_city_status = no }
+        }
+        pay_price = price_found_city
+        $CITY$ = { set_city_status = city }
+    }
+}

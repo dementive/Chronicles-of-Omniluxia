@@ -24,24 +24,30 @@ generic_mission_conquer_region = { #Conquer Region
 				NOT = { 
 					owner = root
 				} 
-				exists = area
 				exists = region
-				area = {
-					any_area_province = {
-						count >= 6
-						NOT = {
-							owner = root
+				region = {
+					any_region_province = {
+						percent < 0.75
+						has_owner = yes
+						OR = {
+							owner = ROOT
+							owner = { is_subject_of = ROOT }
 						}
 					}
 				}
+				generic_block_trigger = yes
 			}
 		}
+		has_civil_war = no
 	} 
 
 	abort = {
-		NOT = {
-			exists = scope:region_target
-		}
+		OR = {
+			NOT = {
+				exists = scope:region_target
+			}
+			ai_mission_back_out_trigger = yes
+		}			
 	}
 	on_abort = {
 		destroy_generic_mission_variables_effect = yes
@@ -57,16 +63,18 @@ generic_mission_conquer_region = { #Conquer Region
 					NOT = { 
 						owner = root
 					}
-					exists = area
 					exists = region
-					area = {
-						any_area_province = {
-							count >= 6
-							NOT = {
-								owner = root
+					region = {
+						any_region_province = {
+							percent < 0.75
+							has_owner = yes
+							OR = {
+								owner = ROOT
+								owner = { is_subject_of = ROOT }
 							}
 						}
 					}
+					generic_block_trigger = yes
 				}
 			} 
 			random_neighbor_province = {
@@ -76,16 +84,18 @@ generic_mission_conquer_region = { #Conquer Region
 					NOT = { 
 						owner = root
 					}
-					exists = area
 					exists = region
-					area = {
-						any_area_province = {
-							count >= 6
-							NOT = {
-								owner = root
+					region = {
+						any_region_province = {
+							percent < 0.75
+							has_owner = yes
+							OR = {
+								owner = ROOT
+								owner = { is_subject_of = ROOT }
 							}
 						}
 					}
+					generic_block_trigger = yes
 				}
 				save_scope_as = conquer_region_target
 				region = {
@@ -219,6 +229,7 @@ generic_mission_conquer_region = { #Conquer Region
 	}
 	
 	on_start = {
+		start_mission_ai_effect = yes
 		generic_conquest_modifier_cleanup_effect = yes
 		hidden_effect = {
 			if = {
@@ -450,9 +461,18 @@ generic_mission_conquer_region = { #Conquer Region
 						variable = iter
 						limit = {
 							NOR = {
-								this = scope:first
-								this = scope:second
-								this = scope:third
+								AND = {
+									exists = scope:first
+									this = scope:first
+								}
+								AND = { 
+									exists = scope:second
+									this = scope:second
+								}
+								AND = {
+									exists = scope:third
+									this = scope:third
+								}
 								AND = {
 									exists = scope:first_follow
 									this = scope:first_follow
@@ -475,9 +495,18 @@ generic_mission_conquer_region = { #Conquer Region
 						any_in_list = {
 							variable = iter
 							NOR = {
-								this = scope:first
-								this = scope:second
-								this = scope:third
+								AND = {
+									exists = scope:first
+									this = scope:first
+								}
+								AND = { 
+									exists = scope:second
+									this = scope:second
+								}
+								AND = {
+									exists = scope:third
+									this = scope:third
+								}
 								AND = {
 									exists = scope:first_follow
 									this = scope:first_follow
@@ -504,9 +533,18 @@ generic_mission_conquer_region = { #Conquer Region
 						variable = iter
 						limit = {
 							NOR = {
-								this = scope:first
-								this = scope:second
-								this = scope:third
+								AND = {
+									exists = scope:first
+									this = scope:first
+								}
+								AND = { 
+									exists = scope:second
+									this = scope:second
+								}
+								AND = {
+									exists = scope:third
+									this = scope:third
+								}
 								AND = {
 									exists = scope:first_follow
 									this = scope:first_follow
@@ -1101,14 +1139,12 @@ generic_mission_conquer_region = { #Conquer Region
 			}
 			else = {
 				scope:third_follow = {
-					random_area_province = {
-						state = {
-							capital_scope = {
-								while = {
-									count = 5
-									create_state_pop = freemen
-								}
-							}
+					ordered_area_province = {
+						order_by = total_population
+						max = 1
+						while = {
+							count = 5
+							create_state_pop = freemen
 						}
 					}
 				}
@@ -1507,6 +1543,7 @@ generic_mission_conquer_region = { #Conquer Region
 						if = {
 							limit = {
 								has_city_status = no
+								NOT = { has_province_modifier = founding_city_in_progress }
 							}
 							show_as_tooltip = {
 								set_city_status = city
@@ -1839,7 +1876,19 @@ generic_mission_conquer_region = { #Conquer Region
 					any_area_province = {
 						count >= 3
 						owner = root 
-						has_city_status = yes
+						trigger_if = {
+							limit = {
+								ROOT = { is_ai = no }
+							}
+							has_city_status = yes
+						}
+						trigger_else = {
+							ROOT = { can_pay_price = price_found_city }
+							OR = {
+								has_city_status = yes
+								total_population >= 10
+							}
+						}
 					}
 				}
 			} 
@@ -1858,7 +1907,19 @@ generic_mission_conquer_region = { #Conquer Region
 			scope:development_branch_area = {
 				every_area_province = {
 					limit = {
-						has_city_status = yes
+						trigger_if = {
+							limit = {
+								ROOT = { is_ai = no }
+							}
+							has_city_status = yes
+						}
+						trigger_else = {
+							ROOT = { can_pay_price = price_found_city }
+							OR = {
+								has_city_status = yes
+								total_population >= 10
+							}
+						}
 						NOT = {
 							has_province_modifier = generic_development_branch_pmod
 						}
@@ -1867,6 +1928,24 @@ generic_mission_conquer_region = { #Conquer Region
 					add_province_modifier = {
 						name = generic_development_branch_pmod
 						duration = 7300
+					}
+					if = {
+						limit = {
+							ROOT = {
+								is_ai = yes
+								can_pay_price = price_found_city
+							}
+							total_population >= 10
+							has_city_status = no
+							area = {
+								any_area_province = {
+									count < 3
+									has_city_status = yes
+								}
+							}
+						}
+						ROOT = { pay_price = price_found_city }
+						set_city_status = city
 					}
 				}
 			}
@@ -1890,9 +1969,18 @@ generic_mission_conquer_region = { #Conquer Region
 					any_area_province = {
 						count >= 3
 						owner = root
-						has_city_status = yes
-						free_building_slots = 0
-						has_construction = no
+						trigger_if = {
+							limit = {
+								ROOT = { is_ai = no }
+							}
+							has_city_status = yes
+							free_building_slots = 0
+							has_construction = no
+						}
+						trigger_else = {
+							total_population >= 10
+							ROOT = { can_pay_price = price_found_city }
+						}
 					}
 				}
 			}
@@ -1909,6 +1997,42 @@ generic_mission_conquer_region = { #Conquer Region
 
 		on_completion = {
 			add_1_free_province_investments = yes
+			scope:development_branch_area = {
+				if = {
+					limit = {
+						ROOT = {
+							is_ai = yes
+							can_pay_price = price_found_city
+						}
+						any_area_province = {
+							count < 3
+							owner = root
+							has_city_status = yes
+						}
+						
+					}
+					while = {
+						limit = {
+							ROOT = { can_pay_price = price_found_city }
+							any_area_province = {
+								count < 3
+								owner = root
+								has_city_status = yes
+							}
+						}
+						
+						ROOT = {
+							ordered_owned_province = {
+								limit = { has_city_status = no }
+								check_range_bounds = no
+								order_by = total_population
+								owner = { pay_price = price_found_city }
+								set_city_status = city
+							}
+						}
+					}
+				}
+			}
 		} 
 	}
 	
@@ -1990,6 +2114,12 @@ generic_mission_conquer_region = { #Conquer Region
 		allow = {
 			owns_or_subject_owns_area = scope:colonize_target.area
 		} 
+		highlight = {
+			scope:province = {
+				exists = scope:colonize_target
+				this.area = scope:colonize_target.area
+			}
+		}
 
 		on_completion = {
 			add_country_modifier = {
@@ -2016,12 +2146,22 @@ generic_mission_conquer_region = { #Conquer Region
 					scope:defend_target = {
 						any_state_province = {
 							count >= 3
-							fort_level >= 1
+							fort_level >= 1 
 						}
 					}
 				}
 			}
 		} 
+
+		highlight = {
+			scope:province = {
+				trigger_if = {
+					limit = { exists = scope:defend_target.area }
+					area = scope:defend_target.area
+				}
+				trigger_else = { always = no }
+			}
+		}
 
 		bypass = {
 			NOT = {
@@ -2058,7 +2198,7 @@ generic_mission_conquer_region = { #Conquer Region
 		
 		allow = {
 			custom_tooltip = {
-				text = "2irontt"
+				text = copper_import_tt
 				scope:third = {
 					any_area_province = {
 						exists = owner
@@ -2066,7 +2206,7 @@ generic_mission_conquer_region = { #Conquer Region
 						exists = state
 						state = {
 							trade_good_imports = {
-								target = iron
+								target = copper
 								value >= 2
 							}
 						}
@@ -2080,7 +2220,7 @@ generic_mission_conquer_region = { #Conquer Region
 		}
 	
 		on_completion = {
-			add_military_experience = 2.5 
+			add_military_experience = 5
 		} 
 	}
 	

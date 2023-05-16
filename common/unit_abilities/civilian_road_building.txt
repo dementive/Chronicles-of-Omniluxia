@@ -10,33 +10,58 @@
 	is_road_building = yes #blocks disband/reorganization and makes AI try to move armies acccordingly
 	cancel_on_combat_end = yes
 	
-	hidden = {
-		unit_owner = { 
-			has_military_tradition = latin_philosophy  
-		}
-	}
+	# hidden = { #makes no sense without unlocked mil trad. currently not set to any.
+	# 	trigger_if = {
+	# 		limit = {
+	# 			has_legion_trigger = yes
+	# 		}
+	# 		AND = {
+	# 			NOT = { is_unit_ability_used = civilian_road_building }
+	# 		}
+	# 		unit_owner = { has_military_bonus = latin_roman_path_4 }
+	# 	}
+	# 	trigger_else = {
+	# 		always = no
+	# 	}
+	# }
 
 	map = yes
 	
 	
 	allow = {
-		hidden:unit_owner = { can_pay_price = build_expensive_roads }
+		unit_owner = {
+			civic_tech > 4
+		}
+		trigger_if = {
+			limit = { has_reduced_roadbuilding_cost = yes }
+			hidden:unit_owner = { can_pay_price = build_roads_engineers }
+		}
+		trigger_else = {
+			hidden:unit_owner = { can_pay_price = build_expensive_roads }
+		}
 		is_army = yes
 		unit_size >= 10
 		in_combat = no
 		is_moving = no
 		is_exiled = no
-		unit_owner = {
-			civic_tech > 4
-		}
+		
 		scope:province = { #not unit_location since AI needs to be able to reason about this 
-			owner =  root.unit_owner
-			controller = root.unit_owner
-			
-			any_neighbor_province = {
-				owner =  root.unit_owner
-				controller = root.unit_owner
-				NOT = { has_road_towards = scope:province }
+			trigger_if = {
+				limit = {
+					exists = owner 
+				}
+				OR = {
+					owner =  root.unit_owner
+					owner = {
+						is_subject_of = root.unit_owner
+					}
+				}
+			}
+			trigger_else = {
+				custom_tooltip = {
+					text = road_building_invalid_province_tt
+					always = no
+				}
 			}
 		}
 		trigger_if = {
@@ -51,43 +76,64 @@
 	modifier = {
 		movement_speed_if_no_road = -0.7
 		army_maintenance_cost = 1.2
-		land_morale_modifier = -0.2
+		land_morale_modifier = -0.25
 	}
 	
 	
 	start_effect = {
-		
 		set_variable = {
 			name = road_location
 			value = unit_location
 		}
 		custom_tooltip = ROAD_WILL_BE_FINISHED
+		if = {
+			limit = {
+				has_reduced_roadbuilding_cost = yes
+			}
+			custom_tooltip = BUILD_ROADS_ENGINEERS_TT
+		}
+		else = {
+			custom_tooltip = BUILD_ROADS_EXPENSIVE_TT
+		}
 	}
 	
 	on_entering_province = {
 		if = {
 			limit = {
+				has_variable = road_location
 				NOT = { unit_location = root.var:road_location }
 				NOT = { unit_location = { has_road_towards = root.var:road_location } }
 				unit_location = { is_neighbor = root.var:road_location }
-				unit_owner = { can_pay_price = build_expensive_roads }
+				trigger_if = {
+					limit = { has_reduced_roadbuilding_cost = yes }
+					unit_owner = { can_pay_price = build_roads_engineers }
+				}
+				trigger_else = {
+					unit_owner = { can_pay_price = build_expensive_roads }
+				}
 				unit_location = {
+					has_owner = yes
 					OR = {
-						AND = {
-							has_owner = yes
-							owner = root.unit_owner 
-							controller = root.unit_owner 
+						owner = root.unit_owner 
+						owner = {
+							is_subject_of = root.unit_owner
 						}
-						AND = {
-							has_owner = no
-							NOT = {
-								is_sea = yes
-							}
+					}
+					OR = {
+						controller = root.unit_owner 
+						controller = {
+							is_subject_of = root.unit_owner
 						}
 					}
 				}
 			}
-			unit_owner = {  pay_price = build_expensive_roads }
+			if = {
+				limit = { has_reduced_roadbuilding_cost = yes }
+				unit_owner = { pay_price = build_roads_engineers }
+			}
+			else = {
+				unit_owner = { pay_price = build_expensive_roads }
+			}
 			unit_location = {
 				add_road_towards = root.var:road_location
 			}
@@ -98,6 +144,7 @@
 		}
 		else_if = {
 			limit = {
+				has_variable = road_location
 				NOT = { unit_location = root.var:road_location }
 				unit_location = { has_road_towards = root.var:road_location }
 				unit_location = { is_neighbor = root.var:road_location }
@@ -105,8 +152,18 @@
 					OR = {
 						AND = {
 							has_owner = yes
-							owner = root.unit_owner 
-							controller = root.unit_owner 
+							OR = {
+								owner = root.unit_owner 
+								owner = {
+									is_subject_of = root.unit_owner
+								}
+							}
+							OR = {
+								controller = root.unit_owner 
+								controller = {
+									is_subject_of = root.unit_owner
+								}
+							}
 						}
 						AND = {
 							has_owner = no
@@ -128,26 +185,31 @@
 				value = unit_location
 			}
 		}
-		
-		
 	}
 	
 	finished_when = {
 		OR = {
+			NOT = { has_variable = road_location }
 			has_variable = road_finished
 			unit_location = {
 				OR = {
 					is_sea = yes
 					AND = {
 						has_owner = yes
-						NOT = {
+						NOR = {
 							controller = root.unit_owner
+							controller = {
+								is_subject_of = root.unit_owner
+							}
 						}
 					}
 					AND = {
 						has_owner = yes
-						NOT = {
+						NOR = {
 							owner = root.unit_owner
+							owner = {
+								is_subject_of = root.unit_owner
+							}
 						}
 					}
 				}
@@ -171,6 +233,7 @@
 	}
 	
 	move_entity_state = build_road
+	available_states = { build_road build_road_2 }
 	
 	ai_will_do = {
 		modifier = {

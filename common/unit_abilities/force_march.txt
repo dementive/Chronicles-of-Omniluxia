@@ -6,14 +6,16 @@
 	
 	army_only = yes
 	
-	shortcut = "force_march"
 	soundeffect = "event:/SFX/UI/Unit/sfx_ui_unit_force_march"
 	#soundeffect = "event:/sfx_ui_debug_duck"
 
 	allow = {
 		is_army = yes
 		in_combat = no
-		is_moving = no
+		OR = {
+			is_moving = no
+			unit_owner = { is_ai = yes } #AI doesn't know how to stop for abilities.
+		}
 		is_exiled = no
 		trigger_if = {
 			limit = {
@@ -23,6 +25,9 @@
 				loyalty > 33
 			}
 		}
+		unit_owner = {
+			invention = army_movement_speed_inv
+		}
 	}
 	modifier = {
 		land_morale_recovery = -1.0
@@ -30,6 +35,42 @@
 		army_movement_speed = 0.5
 	}
 	
+	on_entering_province = {
+		hidden_effect = {	
+			if = {
+				limit = {
+					unit_location = {
+						OR = {
+							terrain = mountains
+							terrain = hills
+							terrain = desert
+							terrain = marsh
+							terrain = jungle
+							terrain = desert_hills
+							terrain = mountain_valley
+							terrain = desert_valley
+						}
+					}
+				}
+				random_list = {
+					90 = {}
+					10 = {
+						trigger = {
+							has_dlc = "Heirs of Alexander"
+							has_legion_trigger = yes
+						}
+						save_scope_as = barca_legion
+						unit_owner = {
+							trigger_event = {
+								days = 5
+								id = distinction.12
+							}
+						}
+					}	
+				}				
+			}	
+		}
+	}
 	#Currently, a conservative approach to avoid attrition: Enable forced march ASAP in own territory where attrition is unlikely (it's then effectively free)
 	#and disable as soon as we stop in enemy controlled territory.
 	

@@ -1,0 +1,519 @@
+﻿#for effects block in on actions
+
+on_annexation_effect = {
+	if = {
+		limit = {
+			NOT = {
+				is_subject_of = scope:actor
+			}
+		}
+		if = {
+			limit = {
+				any_character = {
+					is_mercenary = yes
+					is_general = yes
+				}
+			}
+			every_character = {
+				limit = {
+					is_mercenary = yes
+					is_general = yes
+				}
+				move_country = c:MER
+			}
+		}
+		if = {
+			limit = {
+				any_character = {
+					has_variable = came_from
+					exists = var:came_from
+					var:came_from = scope:actor
+				}
+			}
+			every_character = {
+				limit = {
+					has_variable = came_from
+					exists = var:came_from
+					var:came_from = scope:actor
+				}
+				remove_all_positions = yes
+				if = {
+					limit = {
+						prisoner = yes
+					}
+					root = {
+						release_prisoner = prev
+					}
+				}
+				move_country = scope:actor
+			}
+		}
+		if = {
+			limit = {
+				root.current_ruler = {
+					is_alive = yes
+				}
+			}
+			root.current_ruler = {
+				if = {
+					limit = {
+						OR = {
+							is_general = yes
+							is_admiral = yes
+						}
+					}
+					remove_command = yes
+				}
+				save_scope_as = ruler_target_annex
+				if = {
+					limit = {
+						exists = scope:ruler_target_annex
+						scope:ruler_target_annex = {
+							is_alive = yes
+						}
+					}
+					if = {
+						limit = {
+							is_rival = scope:actor.current_ruler
+						}
+						remove_rival = scope:actor.current_ruler
+					}
+					scope:ruler_target_annex = {
+						move_country = scope:actor
+					}
+					scope:actor = {
+						imprison = {
+							target = scope:ruler_target_annex
+						}
+					}
+				}
+			}
+		}
+		ordered_character = {
+			limit = {
+				is_alive = yes
+			}
+			order_by = age
+			death = {
+				death_reason = death_slaughtered_during_conquest
+			}
+		}
+	}
+	else = {
+		every_character = {
+			limit = {	
+				has_same_family = current_ruler
+				is_ruler = no
+			}
+			remove_all_positions = yes
+			move_country = scope:actor
+		}
+		ordered_character = {
+			limit = {
+				is_alive = yes
+				is_ruler = no
+			}
+			order_by = importance_value
+			max = 8
+			remove_all_positions = yes
+			move_country = scope:actor
+		}
+		current_ruler = {
+			if = {
+				limit = {
+					is_alive = yes
+				}
+				if = {
+					limit = {
+						OR = {
+							is_general = yes
+							is_admiral = yes
+						}
+					}
+					remove_command = yes
+				}
+				move_country = scope:actor
+				if = {
+					limit = {
+						is_rival = scope:actor.current_ruler
+					}
+					remove_rival = scope:actor.current_ruler
+				}
+			}
+		}
+		ordered_character = {
+			limit = {
+				is_alive = yes
+			}
+			order_by = age
+			death = {
+				death_reason = death_mysteriously_retired
+			}
+		}
+	}
+}
+
+befriend_removal_effect = {
+	if = {
+		limit = {
+			has_variable = being_befriended
+			exists = var:being_befriended
+		}
+		var:being_befriended = {
+			remove_friend_variables = yes
+		}
+	}
+	if = {
+		limit = {
+			has_variable = being_befriended
+		}
+		remove_variable = being_befriended
+	}
+}
+
+clear_befriending_var_effect = {
+	if = {
+		limit = {
+			exists = scope:former_ruler
+			scope:former_ruler = {
+				has_variable = currently_befriending
+				exists = var:currently_befriending
+			}
+		}
+		var:currently_befriending = {
+			remove_variable = being_befriended
+		}
+	}
+	if = {
+		limit = {
+			has_variable = currently_befriending
+		}
+		remove_friend_variables = yes
+	}
+}
+
+on_annexation_event_effect = {
+	if = { #On annexation by conquest, do this.
+		limit = {
+			NOT = {
+				is_subject_of = scope:actor
+			}
+		}
+		save_scope_as = annexee
+		scope:actor = {
+			save_scope_as = annexer
+		}
+		scope:annexer = {
+			trigger_event = {
+				id = annexation.3
+			}
+		}
+	}
+}
+
+on_diplo_annexation_event_effect = {
+	#On annexation diplomatically, move families, then murder everyone quietly
+	scope:actor = {
+		save_scope_as = annexer
+	}
+	save_scope_as = annexee
+	
+	#Much of this logic is replicated in the annexation.3 from the conquest annexation on_action, please don't change this without also changing that.
+	#Comments should also be kept similar.
+	
+	scope:annexee = {
+		#This is where we send foreigners home:
+		if = {
+			limit = {
+				any_character = {
+					has_variable = came_from
+					var:came_from = scope:annexer
+					prisoner = yes
+				}
+			}
+			every_character = {
+				limit = {
+					has_variable = came_from
+					var:came_from = scope:annexer
+					prisoner = yes
+				}
+				scope:annexee = {
+					release_prisoner = {
+						target = prev
+					}
+				}
+				remove_all_positions = yes
+				move_country_with_message = scope:annexer
+				if = {
+					limit = {
+						has_character_modifier = foreign_citizen
+					}
+					remove_character_modifier = foreign_citizen
+				}
+			}
+		}
+		#Mercenaries also go Home:
+		if = { 
+			limit = {
+				any_character = {
+					is_mercenary = yes
+					OR = {
+						is_general = yes
+						is_admiral = yes
+					}
+				}
+			}
+			every_character = {
+				limit = {
+					is_mercenary = yes
+					OR = {
+						is_general = yes
+						is_admiral = yes
+					}
+				}
+				move_country = c:MER
+			}
+		}
+		
+		#Families!
+				
+		#This is where we find our candidate families to accept:
+		ordered_family = {
+			limit = {
+				any_family_member = {
+					is_alive = yes
+					employer = scope:annexee
+				}
+			}
+			order_by = prestige
+			max = 4
+			check_range_bounds = no
+			if = {
+				limit = {
+					NOT = {
+						exists = scope:first_family
+					}
+				}
+				save_scope_as = first_family
+			}
+			else_if = {
+				limit = {
+					NOT = {
+						exists = scope:second_family     
+					}
+				}
+				save_scope_as = second_family
+			}
+			else_if = {
+				limit = {
+					NOT = {
+						exists = scope:third_family
+					}
+				}
+				save_scope_as = third_family
+			}
+			else_if = {
+				limit = {
+					NOT = {
+						exists = scope:fourth_family
+					}
+				}
+				save_scope_as = fourth_family
+			}
+		}
+		
+		#These are members of the Annexed country's great families that we may be accepting:
+		
+		#First Family:
+		if = {
+			limit = {
+				exists = scope:first_family
+			}
+			scope:first_family = {
+				head_of_family = {
+					save_scope_as = first_family_head
+					add_to_list = first_annex_family_list
+				}
+				ordered_family_member = {
+					limit = { power_base > 1 }
+					max = 2
+					check_range_bounds = no
+					order_by = power_base
+					add_to_list = first_annex_family_list
+				}
+			}
+		}
+		#Second Family:
+		if = {
+			limit = {
+				exists = scope:second_family
+			}
+			scope:second_family = {
+				head_of_family = {
+					save_scope_as = second_family_head
+					add_to_list = second_annex_family_list
+				}
+				ordered_family_member = {
+					limit = { power_base > 1 }
+					max = 2
+					check_range_bounds = no
+					order_by = power_base
+					remove_all_positions = yes
+					set_as_minor_character = THIS
+					move_country = scope:annexer
+					add_to_list = second_annex_family_list
+				}
+			}
+		}
+		#Third Family:
+		if = {
+			limit = {
+				exists = scope:third_family
+			}
+			scope:third_family = {
+				head_of_family = {
+					save_scope_as = third_family_head
+					add_to_list = third_annex_family_list
+				}
+				ordered_family_member = {
+					limit = { power_base > 1 }
+					max = 2
+					check_range_bounds = no
+					order_by = power_base
+					add_to_list = third_annex_family_list
+				}
+			}
+		}
+		#Third Family:
+		if = {
+			limit = {
+				exists = scope:fourth_family
+			}
+			scope:fourth_family = {
+				head_of_family = {
+					save_scope_as = fourth_family_head
+					add_to_list = fourth_annex_family_list
+				}
+				ordered_family_member = {
+					limit = { power_base > 1 }
+					max = 2
+					check_range_bounds = no
+					order_by = power_base
+					add_to_list = fourth_annex_family_list
+				}
+			}
+		}
+		
+		every_character = { #Now we move everyone of interest:
+			limit = {
+				OR = {
+					is_in_list = first_annex_family_list
+					is_in_list = second_annex_family_list
+					is_in_list = third_annex_family_list
+					is_in_list = fourth_annex_family_list
+				}
+			}
+			remove_all_positions = yes
+			move_country = scope:annexer
+			set_as_minor_character = THIS
+			set_home_country = scope:annexer
+		}
+		
+		
+		every_character = { #The rest vanish into obscurity.
+			limit = {
+				NOR = {
+					is_in_list = first_annex_family_list
+					is_in_list = second_annex_family_list
+					is_in_list = third_annex_family_list
+					is_in_list = fourth_annex_family_list
+				}
+			}
+			death = {
+				death_reason = death_obscurity
+			}
+		}
+		every_character = {
+			death = {
+				death_reason = death_obscurity
+			}
+		}
+	}
+	scope:annexer = {
+		trigger_event = {
+			id = annexation.5
+		}
+	}
+}
+
+country_kill_counter_effect = { #Counts those who die but not those who vanish into obscurity.
+	if = {
+		limit = {
+			NOT = {
+				has_variable = country_kill_counter
+			}
+		}
+		set_variable = {
+			name = country_kill_counter
+			value = 1
+		}
+	}
+	else = {
+		change_variable = {
+			name = country_kill_counter
+			add = 1
+		}
+	}
+}
+
+inbreeding_effect = {
+	if = {
+		limit = {
+			is_alive = yes
+			exists = mother
+			exists = father
+			mother = {
+				is_close_relative = root.father
+			}
+		}
+		if = {
+			limit = {
+				mother = {
+					has_same_family = root.father
+				}
+			}
+			random_list = {
+				10 = {
+					add_trait = inbred
+				}	
+				90 = {}
+			}
+		}
+		else = {
+			random_list = {
+				25 = {
+					add_trait = inbred
+				}
+				75 = {}
+			}
+		}
+	}
+}
+
+add_state_modification_value_effect = {
+	if = {
+		limit = {
+			has_variable = num_state_mods
+		}
+		change_variable = {
+			name = num_state_mods
+			add = 1
+		}
+	}
+	else = {
+		set_variable = {
+			name = num_state_mods
+			value = 1
+		}
+	}
+}
