@@ -1,0 +1,176 @@
+﻿raze_city = {
+
+	duration = 0
+	enable = yes
+	toggle = no
+	army_only = yes
+	
+	#map = yes
+
+	
+	hidden = {
+		unit_owner = { 
+			is_tribal = no
+		}
+	}
+	
+	
+	allow = {
+		is_army = yes
+		in_combat = no
+		is_moving = no
+		in_siege = no
+		is_exiled = no
+		hidden:unit_location = { 
+			has_owner = yes
+			civilization_value >= 5
+			total_population > 0
+		}
+		NOR = {
+			hidden:unit_location = { 
+				has_province_modifier = province_pillaged
+			}
+			hidden:unit_location = { 
+				has_province_modifier = province_razed_ua
+			}
+			hidden:unit_location = { 
+				owner = root.unit_owner 
+			}
+		} 
+		hidden:unit_owner = {
+			can_pay_price = raid
+		}
+		trigger_if = {
+			limit = {
+				exists = commander
+			}
+			commander = {
+				loyalty > 33
+			}
+		}
+		trigger_if = {
+			limit = {
+				unit_location = {
+					exists = owner
+					fort_level >= 1
+				}
+			}
+			controller = root.unit_owner
+		}
+	}
+	
+	start_effect = {
+		unit_owner = {  pay_price = raid }
+		unit_location = {
+			if = {
+				limit = {
+					exists = owner
+				}
+				owner = {
+					if = {
+						limit = {
+							NOT = {
+								war_with = root.unit_owner
+							}
+						}
+						if = {
+							limit = {
+								opinion = {
+									target = root.unit_owner
+									value >= -100
+								}
+							}
+							add_opinion = {
+								modifier = opinion_we_pillaged_them
+								target = root.unit_owner
+							}
+						}
+						else = {
+							root.unit_owner = {
+								declare_war_with_wargoal = {
+									war_goal = raiding_wargoal
+									target = prev
+								}
+							}
+						} 
+					}
+				}
+			}
+			if = {	
+				limit = {
+					civilization_value >= 5
+				}
+				root.unit_owner = {
+					if = {
+						limit = {
+							root.unit_location.owner = {
+								military_tech > root.unit_owner.military_tech
+							}
+						}
+						add_research = {
+							technology = military_tech
+							value = {
+								value = root.unit_location.half_province_civ_svalue_pos
+								divide = 10
+							}
+						}
+					}
+					if = {
+						limit = {
+							root.unit_location.owner = {
+								civic_tech > root.unit_owner.civic_tech
+							}
+						}
+						add_research = {
+							technology = civic_tech
+							value = {
+								value = root.unit_location.half_province_civ_svalue_pos
+								divide = 10
+							}
+						}
+					}
+					if = {
+						limit = {
+							root.unit_location.owner = {
+								oratory_tech > root.unit_owner.oratory_tech
+							}
+						}
+						add_research = {
+							technology = oratory_tech
+							value = {
+								value = root.unit_location.half_province_civ_svalue_pos
+								divide = 10
+							}
+						}
+					}
+					if = {
+						limit = {
+							root.unit_location.owner = {
+								religious_tech > root.unit_owner.religious_tech
+							}
+						}
+						add_research = {
+							technology = religious_tech
+							value = {
+								value = root.unit_location.half_province_civ_svalue_pos
+								divide = 10
+							}
+						}
+					}
+				}
+				add_civilization_value = half_province_civ_svalue
+			}
+		}
+		
+		
+		unit_location = {
+			add_city_smoke_effect = yes
+			add_province_modifier = {
+				name = province_razed_ua
+				duration = 1825
+			}
+		}
+	}
+	
+	idle_entity_state = raiding
+}

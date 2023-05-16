@@ -1,0 +1,143 @@
+﻿#Religion Conversion Triggers
+
+potential_change_religion_trigger = { #Used by all decisions to change Religion
+	NOT = { religion = $RELIGION$ }
+	any_character = {
+		has_religion = $RELIGION$
+		prisoner = no
+		country = employer
+		is_adult = yes
+		trigger_if = {
+			limit = {
+				employer = {
+					gender_equality = no
+				}
+			}
+			is_female = no
+		}
+		NOT = { has_character_modifier = foreign_citizen }
+		NOT = { has_trait = olympic_competitor }
+	}
+}
+
+could_change_religion_trigger = { #Used by all decisions to change Religion
+	political_influence >= 200
+	
+	trigger_if = {
+		limit = { is_monarchy = yes }
+		custom_tooltip = {
+			text = heretic_high_priest_monarchy_tooltip
+			any_character = {
+				has_office = office_high_priest_monarchy
+				has_religion = $RELIGION$
+			}
+		}
+	}
+	trigger_else_if = {
+		limit = { is_republic = yes }
+		custom_tooltip = {
+			text = heretic_high_priest_republic_tooltip
+			any_character = {
+				has_office = office_pontifex
+				has_religion = $RELIGION$
+			}
+		}
+	}
+	trigger_else = {
+		custom_tooltip = {
+			text = heretic_high_priest_tribe_tooltip
+			any_character = {
+				has_office = office_high_priest
+				has_religion = $RELIGION$
+			}
+		}
+	}
+	hidden:capital_scope = {
+		custom_tooltip = {
+			text = big_religion_in_capital_tooltip
+			any_pops_in_province = {
+				count >= majority_of_free_men_in_capital_svalue
+				pop_religion = $RELIGION$
+				NOT = { pop_type = slaves }
+			}
+		}
+	}
+	trigger_if = { #monarchy
+		limit = { is_monarchy = yes }
+		legitimacy >= 70
+	}
+	trigger_else_if = { #Republic
+		limit = { is_republic = yes }
+		custom_tooltip = {
+			text = ruling_party_support_tooltip
+			current_ruler.character_party.party_support >= 50
+		}
+	}
+	trigger_else = { #Tribe
+		any_character = {
+			count = all
+			OR = {
+				is_clan_chief = no
+				loyalty >= 60
+			}
+		}
+	}
+	NOT = {
+		has_country_modifier = recent_convert_modifier
+	}
+}
+
+# Holy site / temple / shrine - province check
+province_has_shrine_trigger = {
+	OR = {
+		has_province_modifier = province_improvement_athena_shrine
+		has_province_modifier = province_improvement_shadrafa_shrine
+		has_province_modifier = province_improvement_cybelene_shrine
+		has_province_modifier = province_improvement_shrine_of_fortune	
+		has_province_modifier = province_improvement_temple_of_fortune
+		has_province_modifier = province_improvement_isis_shrine
+		has_province_modifier = province_improvement_eastern_religion_fertility_goddess
+		has_province_modifier = province_improvement_judaism_grand_temple
+	}
+}
+
+# Checking religion in eastern religion flavor
+country_eastern_religion_trigger = {
+	OR = {
+		religion = armenian_religion
+		religion = mesopotamian_religion
+		religion = caucasian_religion
+	}
+}
+
+# Checking religion in northern religion flavor
+country_northern_religion_trigger = {
+	OR = {
+		religion = germanic_religion
+		religion = matrist_religion
+		religion = eastern_animism
+		religion = bon_religion
+	}
+}
+
+# Checking religion in thracian religion flavor
+country_thracian_religion_trigger = {
+	OR = {
+		religion = shamanism
+		religion = indo_iranian_religion
+	}
+}
+
+own_religious_center_province_trigger = { #List of locations of particular religious importance
+	custom_tooltip = {
+		text = holy_site_tooltip
+		owner = {
+
+		}
+	}
+}
+
+
+polytheistic_check_religion_trigger = {
+	is_monotheist_religion = no
+}

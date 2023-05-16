@@ -1,0 +1,243 @@
+﻿namespace = flavor_arl
+
+# Deidamia and Demetrius - SOV
+flavor_arl.1 = {
+	type = country_event
+	title = "flavor_arl.1.t"
+	desc = "flavor_arl.1.desc"
+	picture = greek_court
+	
+	left_portrait = current_ruler
+	left_portrait = char:63
+	right_portrait = c:ARL.current_ruler
+	right_portrait = char:60
+	
+	fire_only_once = yes
+
+	goto_location = C:ARL.capital_scope
+	
+	trigger = {
+		exists = c:SOV
+		exists = c:ARL
+		exists = char:60
+		char:60 = {
+			is_alive = yes
+		}
+		exists = char:63
+		char:63 = {
+			is_alive = yes
+		}
+	}
+	
+	# Send Proposal
+	option = {
+		name = flavor_arl.1.a
+		c:ARL = {
+			trigger_event = {
+				id = flavor_arl.2
+			}
+		}
+		custom_tooltip = flavor_arl.1.at
+		ai_chance = { factor = 100 }
+	}
+
+	# Reject Marriage
+	option = {
+		name = flavor_arl.1.b
+		reverse_add_opinion = { modifier = flavor_arl_sov_rejected_op target = c:ARL }
+		add_opinion = { modifier = flavor_arl_sov_marriage_op target = c:BRE }
+		reverse_add_opinion = { modifier = flavor_arl_sov_marriage_op target = c:BRE }
+		reverse_add_opinion = { modifier = flavor_arl_sov_marriage_op target = c:WGA }			
+		c:SOV = { add_treasury = 350 }		
+		ai_chance = { factor = 0 }
+	}
+}
+
+# Deidamia and Demetrius - ARL
+flavor_arl.2 = {
+	type = country_event
+	title = "flavor_arl.2.t"
+	desc = "flavor_arl.2.desc"
+	picture = greek_court
+	
+	left_portrait = current_ruler
+	left_portrait = char:60
+	right_portrait = c:SOV.current_ruler
+	right_portrait = char:63
+	
+	fire_only_once = yes
+	
+	goto_location = C:SOV.capital_scope
+	
+	# Accept Proposal
+	option = {
+		name = flavor_arl.2.a
+		c:ARL = {
+			trigger_event = {
+				id = flavor_arl.3
+			}
+		}
+		c:SOV = {
+			trigger_event = {
+				id = flavor_arl.3
+			}
+		}
+		ai_chance = { factor = 95 }
+		custom_tooltip = flavor_arl.2.at
+	}
+	
+	# Reject Marriage
+	option = {
+		name = flavor_arl.2.b
+		c:SOV = {
+			trigger_event = {
+				id = flavor_arl.4
+			}
+		}
+		custom_tooltip = flavor_arl.2.bt
+		ai_chance = { factor = 5 }
+	}
+}
+
+# Marriage
+flavor_arl.3 = {
+	type = country_event
+	title = "flavor_arl.3.t"
+	desc = {
+		first_valid = {
+			triggered_desc = { # SOV
+				trigger = {
+					tag = SOV
+				}
+				desc = "flavor_arl.3.desc_1"
+			}
+			triggered_desc = { # ARL
+				trigger = {
+					always = yes
+				}
+				desc = "flavor_arl.3.desc_2"
+			}
+		}
+	}
+	picture = celtic_religious_festival
+	
+	left_portrait = c:SOV.current_ruler
+	left_portrait = char:63
+	right_portrait = c:ARL.current_ruler
+	right_portrait = char:60
+	
+	goto_location = C:ARL.capital_scope
+	
+	fire_only_once = yes
+	
+	# SOV
+	option = {
+		name = flavor_arl.3.a
+		trigger = {
+			tag = SOV
+		}
+		char:63 = {  
+			if = {
+				limit = { is_married = yes}
+				hidden_effect = { divorce_character = char:63.spouse }
+			}
+			move_country = c:ARL
+			hidden_effect = {
+				remove_character_modifier = foreign_citizen
+			}
+		}
+		char:60 = {
+			if = {
+				limit = { is_married = yes}
+				hidden_effect = { divorce_character = char:60.spouse }
+			}
+			marry_character = char:63
+			
+		}
+		c:ARL = {
+            add_treasury = 250 		
+			add_opinion = { modifier = flavor_arl_sov_marriage_op target = c:SOV }
+			reverse_add_opinion = { modifier = flavor_arl_sov_marriage_op target = c:SOV }
+		    reverse_add_opinion = { modifier = flavor_arl_sov_rejected_op target = c:BRE }
+				create_unit = {
+					location = p:2871
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry					
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+				}			
+		}
+		c:SOV = { add_treasury = 250 }			
+		char:16 = {
+			set_variable = {
+				name = flavor_epi_deidamia_demetrius_married_flag
+			}
+		}
+	}
+	
+	# ARL
+	option = {
+		name = "flavor_arl.3.b"
+		trigger = {
+			tag = ARL
+		}
+		custom_tooltip = flavor_arl.3.bt
+	}
+}
+
+# Rejection from ARL
+flavor_arl.4 = {
+	type = country_event
+	title = "flavor_arl.4.t"
+	desc = "flavor_arl.4.desc"
+	picture = greek_court
+	
+	left_portrait = current_ruler
+	left_portrait = char:63
+	right_portrait = c:ARL.current_ruler
+	right_portrait = char:60
+	
+	fire_only_once = yes
+	
+	goto_location = C:ARL.capital_scope
+	
+	option = {
+		name = flavor_arl.4.a
+		add_opinion = { modifier = flavor_arl_sov_rejected_op target = c:ARL }
+	}
+}
+
+# Startup trigger
+flavor_arl.5 = {
+	type = country_event
+	
+	fire_only_once = yes
+	
+	hidden = yes
+	
+	trigger = {
+		tag = SOV
+	}
+	
+	immediate = {
+		c:SOV = {
+			trigger_event = {
+				id = flavor_arl.1
+				days = 1
+			}
+		}
+	}
+}

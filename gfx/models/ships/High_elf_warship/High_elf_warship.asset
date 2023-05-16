@@ -1,0 +1,151 @@
+pdxmesh = {
+	name = "High_elf_warship_mesh"
+	file = "High_elf_warship.mesh"
+
+	animation = { id = "idle" 			type = "High_elf_warship_idle.anim" }
+	animation = { id = "move_start" 	type = "High_elf_warship_move_start.anim" }
+	animation = { id = "moving" 		type = "High_elf_warship_moving.anim" }
+	animation = { id = "port_idle" 		type = "High_elf_warship_port_idle.anim" }
+	animation = { id = "death" 			type = "High_elf_warship_death.anim" }
+	animation = { id = "combat" 		type = "High_elf_warship_combat.anim" }
+
+	lod_percentages = {
+		lod = { index = 1 percent = 20.0 }
+		lod = { index = 2 percent = 10.0 }
+	}
+
+	meshsettings = {
+		name = "LOD_0|phrygia_warship|phrygia_warshipShape"
+		index = 0
+		texture_diffuse = "High_elf_warship_diffuse.dds"
+		texture_normal = "High_elf_warship_normal.dds"
+		texture_specular = "High_elf_warship_properties.dds"
+		shader = "standard_usercolor"
+		shader_file = "gfx/FX/pdxmesh.shader"
+	}
+
+	meshsettings = {
+		name = "LOD_1|phrygia_warship|phrygia_warshipShape"
+		index = 0
+		texture_diffuse = "High_elf_warship_diffuse.dds"
+		texture_normal = "High_elf_warship_normal.dds"
+		texture_specular = "High_elf_warship_properties.dds"
+		shader = "standard_usercolor"
+		shader_file = "gfx/FX/pdxmesh.shader"
+	}
+
+	meshsettings = {
+		name = "LOD_2|phrygia_warship|phrygia_warshipShape"
+		index = 0
+		texture_diffuse = "High_elf_warship_diffuse.dds"
+		texture_normal = "High_elf_warship_normal.dds"
+		texture_specular = "High_elf_warship_properties.dds"
+		shader = "standard_usercolor"
+		shader_file = "gfx/FX/pdxmesh.shader"
+	}
+	
+	#scale = 0.3
+	scale = 2.0
+}
+
+entity = {
+	name = "high_elf_gfx_trireme"
+	pdxmesh = "High_elf_warship_mesh"
+	
+	locator = { name = "combat_effect" position = { 0 0 0 } rotation = { -27 0 0 } }
+	
+	default_state = "idle"
+	state = {
+		name = "idle"
+    	animation = "idle"
+		event = { time = 0 node = "ship_main" particle = "units/ship_idle_wave_01_effect" keep_particle = yes trigger_once = no }
+		event = { time = 3 node = "ship_main" particle = "units/ship_idle_wave_01_effect" keep_particle = yes trigger_once = no }
+		start_event = { sound = { soundeffect = "event:/SFX/Animations/Ships/Generic/sfx_anim_ship_generic_idle"}}
+    }
+	state = {
+		name = "port_idle"
+    	animation = "port_idle"
+    }
+	state = {
+		name = "move"
+    	animation = "move_start"
+		looping = no
+		chance = {
+			if_current_state = {
+				"idle" = 100
+				"move" = 0
+			}
+		}
+		next_state = "move"
+		event = { time = 0 node = "hull_front_locator" particle = "units/ship_water_front_01_effect" keep_particle = yes trigger_once = yes }
+		event = { time = 0 node = "hull_back_locator" particle = "units/ship_water_back_01_effect" keep_particle = yes trigger_once = yes }
+		event = { time = 0 node = "root" particle = "units/ship_wind_01_effect" keep_particle = yes trigger_once = yes }
+		event = { sound = { soundeffect = "event:/SFX/Animations/Ships/Generic/sfx_anim_ship_generic_start"}}
+
+		
+   }
+	state = {
+		name = "move"
+    	animation = "moving"
+		looping = yes
+		chance = {
+			if_current_state = {
+				"idle" = 0
+				"move" = 100
+			}
+		}
+		next_state = "move"
+		event = { time = 0.25 node = "left_oars_locator" particle = "units/ship_water_oars_03_effect" keep_particle = yes trigger_once = no }
+		event = { time = 0.25 node = "right_oars_locator" particle = "units/ship_water_oars_03_effect" keep_particle = yes trigger_once = no }
+		event = { time = 0 node = "hull_front_locator" particle = "units/ship_water_front_01_effect" keep_particle = yes trigger_once = yes }
+		event = { time = 0 node = "hull_back_locator" particle = "units/ship_water_back_01_effect" keep_particle = yes trigger_once = yes }
+		event = { time = 0 node = "root" particle = "units/ship_wind_01_effect" keep_particle = yes trigger_once = yes }
+		start_event = { sound = { soundeffect = "event:/SFX/Animations/Ships/Generic/sfx_anim_ship_generic_move"}}
+		
+    }
+	state = {
+		name = "death"
+    	animation = "death"
+		looping = no
+	#	event = { time = 0 node = "root" particle = "ship_wind_effect" keep_particle = yes trigger_once = yes }
+	#	start_event = { sound = { soundeffect = "event:/SFX/Animations/Ships/Generic/sfx_anim_ship_generic_move"}}
+		
+    }
+	state = {
+		name = "combat"
+    	animation = "combat"
+		looping = yes
+		event = { time = 0 node = "ship_main" particle = "units/ship_idle_wave_01_effect" keep_particle = yes trigger_once = no }
+		event = { time = 3 node = "ship_main" particle = "units/ship_idle_wave_01_effect" keep_particle = yes trigger_once = no }
+		event = { time = 0 node = "combat_effect" particle = "units/naval_combat_arrow_effect" keep_particle = yes trigger_once = yes }
+		start_event = { sound = { soundeffect = "event:/SFX/Animations/Ships/Generic/sfx_anim_ship_vfx_combat_arrows"}}	
+	}
+	
+	#scale = 0.15
+	scale = 1
+}
+
+##################################################################################################################
+##############################							CLONES						##############################
+##################################################################################################################
+entity = {
+	name = "high_elf_gfx_liburnian"
+	clone = "high_elf_gfx_trireme"
+}
+entity = {
+	name = "high_elf_gfx_tetrere"
+	clone = "high_elf_gfx_trireme"
+}
+entity = {
+	name = "high_elf_gfx_hexere"
+	clone = "high_elf_gfx_trireme"
+}
+entity = {
+	name = "high_elf_gfx_octere"
+	clone = "high_elf_gfx_trireme"
+}
+entity = {
+	name = "high_elf_gfx_mega_galley"
+	clone = "high_elf_gfx_trireme"
+}
+

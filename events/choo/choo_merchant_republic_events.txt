@@ -1,0 +1,131 @@
+﻿namespace = merchant_republic_events
+
+merchant_republic_events.1 = {
+	type = country_event
+	title = "merchant_republic_events.1.t"
+	desc = "merchant_republic_events.1.desc"
+	picture = successors
+
+	trigger = {
+		government = merchant_republic
+	}
+
+	option = {	
+		name = "merchant_republic_events.1.a"
+		ai_chance = {
+			factor = 25
+		}
+		current_ruler = { 
+			add_popularity = -10
+		}
+		add_tyranny = 5	
+		every_character = {
+			limit = { is_head_of_family = yes }
+			add_loyalty = scorned_oligarchs
+		}
+		every_character = {
+			limit = { has_variable = chosen_next_head_minister }
+			add_loyalty = scorned_hedminister_candidate
+		}	
+	}
+	option = { 
+		ai_chance = {
+			factor = 60
+			modifier = { factor = 0.1 stability < 40  }
+		}
+		name = "merchant_republic_events.1.b"
+		custom_tooltip = "republic_will_follow_new_lead"		
+		every_character = {
+			limit = { has_variable = chosen_next_head_minister }
+			root = {
+				set_as_ruler = PREV
+				add_stability = 2.5
+			}
+			remove_variable = chosen_next_head_minister
+			remove_character_modifier = chosen_as_next_head_minister
+		}	
+	}	
+	option = { 
+		ai_chance = {
+			factor = 15
+			modifier = { factor = 0.1 stability < 40  }
+		}
+		name = "merchant_republic_events.1.c"
+		custom_tooltip = "republic_will_follow_new_lead"		
+		every_character = {
+			limit = { is_ruler = yes  }
+			save_temporary_scope_as = previous_head_minister
+		}		
+		every_character = {
+			limit = { has_variable = chosen_next_head_minister }
+			root = {
+				set_as_ruler = PREV
+			}
+			remove_variable = chosen_next_head_minister
+			remove_character_modifier = chosen_as_next_head_minister
+		}		
+		scope:previous_head_minister = {
+			set_variable = chosen_next_head_minister
+			add_character_modifier = { name = chosen_as_next_head_minister duration = 1825 }
+		}
+	}
+}
+
+merchant_republic_events.2 = {
+
+	type = province_event
+	hidden = yes
+
+	trigger = {
+		has_variable = trade_post_constructed
+		exists = root.var:trade_post_constructed
+		trigger_if = {
+			limit = { has_variable = trade_post_constructed  }
+			any_country = { root.var:trade_post_constructed = this }
+		}
+	}
+	
+	immediate = {	
+		if = { 
+			limit = { 
+				NOT = { root.owner = root.var:trade_post_constructed } 
+			}  	
+		}
+		if = {  
+			limit = { exists = root.var:trade_post_constructed }
+			every_country = {	
+				limit = { root.var:trade_post_constructed = this  }
+				add_treasury = current_income_gained_from_trade_post
+			}
+		}	
+	}
+}
+
+
+
+#merchant_republic_events.2 = {
+#
+#	type = country_event
+#	title = "merchant_republic_events.2.t"
+#	desc = "merchant_republic_events.2.desc"
+#	picture = successors
+#
+#	
+#	option = { 
+#		name = "merchant_republic_events.2.a"
+#		custom_tooltip = "grant_trading_consent"
+#		reverse_add_opinion = { modifier = opinion_recieved_trading_consent target = FROM }
+#		add_opinion = { modifier = opinion_granted_trading_consent target = FROM }
+#		set_variable = { name =   value =  }
+#	
+#	}
+#	option = { 
+#	
+#		name = "merchant_republic_events.2.b"
+#		custom_tooltip = "decline_trading_consent"
+#		reverse_add_opinion = { modifier = opinion_declined_trading_consent target = FROM }
+#	
+#	}	
+#	
+#
+#}

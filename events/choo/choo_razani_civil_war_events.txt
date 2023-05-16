@@ -1,0 +1,615 @@
+﻿namespace = razani_civil_war
+
+
+#its a prelude to a civil war, old emperor dosent have an heir and theres no chance that he will get an offspring his time is comming, who knows what awaits the empire afterwards, there is many of those who want to take throne over for them who shall prevaill or maybe old emperror shall come victorious from all that war
+razani_civil_war.1 = {
+	
+	type = country_event
+	title = "razani_civil_war.1.title"
+	desc = "razani_civil_war.1.desc"
+	picture = revolt
+
+	fire_only_once = yes
+	trigger = {
+		tag = EGA
+		NOT = { has_variable = civil_wars_prelude }
+	}
+	immediate = {
+		trigger_event = {
+			id = "razani_civil_war.3"
+			days = 91
+		}		
+		set_variable = { name = civil_wars_prelude }
+	}
+
+	#why in the world they have to scheme against me
+	option = {
+	name = "razani_civil_war.1.a"
+		trigger_event = {
+			id = "razani_civil_war.2"
+			days = 365
+		}	
+	}
+}
+
+#brink of civil war
+razani_civil_war.2 = {
+	
+	type = country_event
+	title = "razani_civil_war.2.title"
+	desc = "razani_civil_war.2.desc"
+	picture = revolt
+
+	fire_only_once = yes
+	trigger = {
+		tag = EGA
+		has_variable = civil_wars_prelude 
+	}
+	immediate = {
+		c:WGA = { 
+			trigger_event = { id = razani_civil_war.9 } 
+		} 
+	}
+	#the end is coming
+	option = {
+	name = "razani_civil_war.2.a"
+		trigger_event = {
+			id = "razani_civil_war.4"
+			days = 730
+		}
+	}
+}
+
+#ytalian rebelion
+razani_civil_war.3 = {
+	
+	type = country_event
+	title = "razani_civil_war.3.title"
+	desc = "razani_civil_war.3.desc"
+	picture = revolt
+
+	fire_only_once = yes
+	trigger = {
+		tag = EGA
+		NOT = { exists = c:YGA }
+		has_variable = civil_wars_prelude 
+	}
+	
+	immediate = {
+		hidden_effect = {
+			every_owned_province = {
+			limit = {
+					OR = {
+						is_in_region = far_march_of_empire
+						is_in_region = egalia_east
+					}
+					dominant_province_religion = ancestral_beliefs
+				}
+				set_conquered_by = YGA
+			}
+			c:YGA = {
+				set_primary_culture = ytalian
+				set_country_religion = ancestral_beliefs
+				set_capital = 3559
+				create_character = { # Create ruler for GAR
+					culture = ytalian
+					religion = ancestral_beliefs
+					age = 40
+					female = no
+					save_scope_as = yga_ruler
+				}
+				set_as_ruler = scope:yga_ruler
+				change_government = tribal_federation
+				add_treasury = 250.0
+				create_unit = {
+					location = p:3559
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+				}
+			}
+			every_army = {
+				limit = { is_exiled = yes }
+				destroy_unit = yes
+			}
+		}
+	}
+
+	option = {
+	name = razani_civil_war.3.a
+		p:3559 = { add_claim = EGA }
+		declare_war_with_wargoal = {
+			war_goal = conquer_wargoal
+			province = p:3559
+			target = YGA
+		}
+	}
+	#crush them 
+	option = {
+	name = razani_civil_war.3.b
+	
+	}
+	#let it slide
+	option = {
+	name = razani_civil_war.3.c
+		add_treasury = -250
+		random_list = {  
+				65 = {
+					make_subject = { 
+						target = YGA
+						type = feudatory
+					}
+				}
+				35 = { p:3559 = { add_claim = EGA } }
+		}
+		c:YGA = { add_treasury = 150 }
+	}
+	#we can negotiate it
+}
+#civil war starts
+razani_civil_war.4 = {
+	
+	type = country_event
+	title = "razani_civil_war.4.title"
+	desc = "razani_civil_war.4.desc"
+	picture = revolt
+
+	fire_only_once = yes
+	trigger = {
+		tag = EGA
+		has_variable = civil_wars_prelude 
+	}
+	
+	immediate = {
+		remove_variable = civil_wars_prelude
+		set_variable = { name = civil_wars_ongoing }
+		if = { limit = { has_variable = nazani_supporters_faction  } 
+		#in the name of reunitement
+			every_owned_province = {
+				limit = {
+					OR = {
+							is_in_area = egalia_minori_4
+							is_in_area = egalia_minori_6
+							is_in_area = egaliaan_marshlands			
+					}
+				}
+				set_conquered_by = NGA
+			}
+			c:NGA = {  
+				set_capital = 2467
+				create_character = { # Create ruler for NGA
+				set_family = char:2.family	
+					culture = eagelian
+					religion = the_first_emperor
+					age = 30
+					female = no
+					save_scope_as = nga_ruler
+				}
+				set_as_ruler = scope:nga_ruler
+				set_primary_culture = eagelian
+				set_country_religion = the_first_emperor
+				change_government = despotic_monarchy
+				add_treasury = 200.0
+				p:2478 = { add_claim = NGA }
+				declare_war_with_wargoal = {
+					war_goal = conquer_wargoal
+					province = p:2478
+					target = p:2478.owner
+				}
+				set_variable = { name = civil_wars_ongoing }
+			}	
+		}
+	}
+	#for the rebellion
+	option = {
+	name = razani_civil_war.4.a
+		hidden_effect = {
+			current_ruler = { save_scope_as = egallian_ruler_prev }
+			change_country_name = "GAR"
+			change_country_flag = "GAR"
+			change_country_tag = GAR
+			change_country_adjective = "GAR_ADJ"
+			set_primary_culture = eagelian
+			set_country_religion = helluvian
+			set_capital = 3293
+			create_character = { # Create ruler for GAR
+				culture = eagelian
+				religion = helluvian
+				set_family = char:41.family		
+				age = 30
+				female = no
+				save_scope_as = gar_ruler
+			}
+			set_as_ruler = scope:gar_ruler
+			change_government = despotic_monarchy
+			add_treasury = 500.0
+			every_owned_province = {
+				limit = {
+					OR = {
+						is_in_region = egalia_majori_region
+						is_in_region = egalia_north
+					}
+				}
+				set_conquered_by = EGL
+			}
+			every_army = {
+				limit = { is_exiled = yes }
+				destroy_unit = yes
+			}
+			c:EGL = {
+				change_country_flag = "EGL"
+				set_as_ruler = scope:egallian_ruler_prev 
+				set_variable = { name = civil_wars_ongoing }
+				create_unit = {
+					location = p:2478
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry				
+				}
+			}
+			p:2478 = { add_claim = GAR }
+		}
+		declare_war_with_wargoal = {
+			war_goal = conquer_wargoal
+			province = p:2478
+			target = p:2478.owner
+		}
+	}
+	#for the empire
+	option = {
+	name = razani_civil_war.4.b
+		hidden_effect = {
+			every_owned_province = {
+				limit = {
+					OR = {
+						is_in_region = far_march_of_empire
+						is_in_region = egalia_east
+					}
+					dominant_province_religion = helluvian
+				}
+				set_conquered_by = GAR
+			}
+			every_army = {
+				limit = { is_exiled = yes }
+				destroy_unit = yes
+			}
+			c:GAR = {
+				set_primary_culture = eagelian
+				set_country_religion = helluvian
+				set_capital = 3293
+				create_character = { # Create ruler for GAR
+					set_family = char:41.family			
+					culture = eagelian
+					religion = helluvian
+					age = 30
+					female = no
+					save_scope_as = gar_ruler
+				}
+				set_as_ruler = scope:gar_ruler
+				change_government = despotic_monarchy
+				add_treasury = 500.0			
+				p:2478 = { add_claim = GAR }
+				declare_war_with_wargoal = {
+					war_goal = conquer_wargoal
+					province = p:2478
+					target = p:2478.owner
+				}
+				create_unit = {
+					location = p:3293
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = heavy_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = light_infantry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = archers
+					add_subunit = heavy_cavalry
+					add_subunit = heavy_cavalry
+				}
+				set_variable = { name = civil_wars_ongoing }
+			}
+		}	
+	}		
+}
+#civil war ending
+razani_civil_war.5 = {
+	
+	type = country_event
+	title = "razani_civil_war.5.title"
+	desc = "razani_civil_war.5.desc"
+	picture = revolt
+
+	fire_only_once = yes
+	trigger = {
+		OR = {  
+			tag = EGA
+			tag = NGA
+			tag = GAR
+			tag = EGL
+		}	
+		p:2478 = {
+			controller = root
+		}
+		p:2467 = {
+			controller = root
+		}
+		p:3293 = {
+			controller = root
+		}
+		has_variable = civil_wars_ongoing 
+	}
+	
+	#empire might have been shattered but it will back with all its might soon
+	option = {
+	trigger = { tag = EGA }
+	name = razani_civil_war.5.a
+		hidden_effect = {
+			if = {
+				limit = { exists = c:GAR }
+				c:GAR = {  
+					every_owned_province = {
+						set_conquered_by = EGA
+					}
+				}
+			}
+			if = {
+				limit = { exists = c:NGA }
+				c:NGA = {  
+					every_owned_province = {
+						set_conquered_by = EGA
+					}
+				}
+			}
+		}
+		remove_variable = civil_wars_ongoing
+	}
+	#its great time for us, for the empire of ZANI
+	option = {
+	trigger = { tag = NGA }
+	name = razani_civil_war.5.b	
+	custom_tooltip = razani_civil_war_zani_tooltip	
+	hidden_effect = {
+		if = {
+			limit = { exists = c:EGA }
+			c:EGA = {  
+				every_owned_province = {
+					set_conquered_by = WGA
+				}
+			}
+		}
+		
+		if = {
+			limit = { exists = c:EGL }
+			c:EGL = {  
+				every_owned_province = {
+					set_conquered_by = WGA
+				}
+			}
+		}
+		
+		if = {
+			limit = { exists = c:GAR }
+			c:GAR = {  
+				every_owned_province = {
+					set_conquered_by = WGA
+				}
+			}
+		}
+		c:NGA = {  
+			every_owned_province = {
+				set_conquered_by = WGA
+			}
+		}
+
+	}
+	
+	c:WGA = {  
+		change_country_name = "GAE"
+		change_country_flag = "GAE"
+		set_country_heritage = zani_heritage
+	}
+	remove_variable = civil_wars_ongoing
+	}
+	#its final time to rise and throw out the forgoten rulers off the throne
+	option = {
+	trigger = { tag = GAR }
+	name = razani_civil_war.5.c
+	
+	custom_tooltip = razani_civil_war_reunite_tooltip
+	
+	hidden_effect = {
+		if = {
+			limit = { exists = c:EGL }
+			c:EGL = {  
+				every_owned_province = {
+					set_conquered_by = EGA
+				}
+			}
+		}	
+			
+		if = {
+			limit = { exists = c:NGA }
+			c:NGA = {  
+				every_owned_province = {
+					set_conquered_by = EGA
+				}
+			}
+		}
+	}
+	change_country_name = "EGA"
+	change_country_flag = "EGA"
+	change_country_tag = EGA
+	change_country_adjective = "EGA_ADJ"
+	set_country_heritage = razani_heritage
+	remove_variable = civil_wars_ongoing
+	}
+}
+	
+
+#side events
+#wegalian stance in civil war
+razani_civil_war.9 = {
+	
+	type = country_event
+	title = "razani_civil_war.9.title"
+	desc = "razani_civil_war.9.desc"
+	picture = revolt
+
+	fire_only_once = yes
+	trigger = {
+		tag = WGA
+		c:EGA = {
+		has_variable = civil_wars_prelude 
+		}
+	}
+	#we shall unite our nations under one banner
+	option = {
+	name = razani_civil_war.9.a
+		add_treasury = -200
+		add_manpower = -20
+		c:EGA = {
+			set_variable = { name = nazani_supporters_faction } 
+			trigger_event = { id = razani_civil_war.10 }
+		}
+		reverse_add_opinion = { modifier = supporting_rebelious_faction_nazani target = EGA }
+	}
+	#we shouldnt bother our eastern brethen
+	option = {
+	name = razani_civil_war.9.b
+	}
+	#its time to support Razani empire in need
+	option = {
+	name = razani_civil_war.9.c
+		add_treasury = -200
+		add_manpower = -20
+		c:EGA = { 
+			add_manpower = 20
+			add_treasury = 200
+			trigger_event = { id = razani_civil_war.11 }
+		}
+		reverse_add_opinion = { modifier = supporting_us_nazani target = EGA }	
+	}
+}
+#nazani supports rebels
+razani_civil_war.10 = {
+	
+	type = country_event
+	title = "razani_civil_war.10.title"
+	desc = "razani_civil_war.10.desc"
+	picture = revolt
+	
+	trigger = {
+		tag = EGA
+	}
+	#damn this maggots
+	option = {
+	name = razani_civil_war.10.a
+	}
+	
+}
+	#nazani supports razani
+razani_civil_war.11 = {
+	
+	type = country_event
+	title = "razani_civil_war.11.title"
+	desc = "razani_civil_war.11.desc"
+	picture = revolt
+	
+	trigger = {
+		tag = EGA
+	}
+	#we shall unite our nations under one banner
+	option = {
+	name = razani_civil_war.11.a
+	}
+
+}

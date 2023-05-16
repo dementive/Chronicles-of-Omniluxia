@@ -1,0 +1,99 @@
+﻿## Religion effects
+
+change_religion_effect = {
+	custom_tooltip = religion_conversion_tooltip
+	custom_tooltip = religion_conversion_family_tooltip
+	add_political_influence = -200
+	add_stability = -30
+	add_country_modifier = {
+		name = "recent_convert_modifier"
+		duration = 3650
+	}
+	set_country_religion = $RELIGION$
+	current_ruler = {
+		if = {
+			limit = {
+				NOT = { has_religion = $RELIGION$ }
+			}
+			set_character_religion = $RELIGION$
+		}
+	}
+	hidden_effect = {
+		every_character = {
+			limit = { NOT = { has_same_religion_as = employer.current_ruler } }
+			add_loyalty = national_conversion_l
+		}
+		current_ruler.family = {
+			every_family_member = {
+				limit = {
+					employer = ROOT
+					loyalty >= 60
+					NOT = { has_religion = $RELIGION$ }
+				}
+				set_character_religion = $RELIGION$
+			}
+		}
+	}
+	ordered_character = {
+		limit = {
+			loyalty >= 60
+			NOT = { has_religion = $RELIGION$ }
+			is_ruler = no
+			from_ruler_family = no
+		}
+		max = 6
+		order_by = prominence
+		set_character_religion = $RELIGION$
+	}
+}
+
+desecrate_effect = { #Province scope
+	if = { #Notification events, for if you used the religion view button.
+		limit = {
+			is_holy_site = yes
+			NOT = { has_variable = unit_desecration_happened } #Set by unit ability - this means the unit ability bypasses this part.
+		} #If we are actually doing this
+		save_scope_as = shrine_location
+		province_deity = {
+			save_scope_as = provincial_deity
+		}
+		owner = { save_scope_as = sacker }
+		if = {
+			limit = {
+				exists = scope:shrine_location
+				exists = scope:provincial_deity
+			}
+			every_country = {
+				limit = {
+					scope:provincial_deity = {
+						deity_religion = PREV.religion
+					}
+					NOT = {
+						THIS = scope:shrine_location.owner
+					}
+				}
+				trigger_event = {
+					id = desecration.3 #Holy Site of our Faith Sacked
+				}
+			}
+		}
+		every_province_treasure = {
+			transfer_treasure_to_country = root.owner
+		}
+	}
+	hidden_effect = {
+		if = {
+			limit = { has_variable = unit_desecration_happened }
+			every_province_treasure = {
+				transfer_treasure_to_country = root.unit_owner
+			}
+		}
+	}
+	remove_province_deity = yes
+	add_city_fire_effect = yes
+	add_province_modifier = {
+		name = "upset_local_priests"
+		duration = 365
+	}
+
+}

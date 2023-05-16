@@ -1,0 +1,105 @@
+﻿#Neutral migration for AI.
+
+objective_migration_neutral = {
+	priority = 50 #If above 0, check allow and automatically switch to this objective if there are no objectives with higher priority allowed.
+	
+	allow = {
+		is_army = yes
+		num_of_migrants > 0
+		unit_owner = {
+			migration_strategy = migration_neutral
+			is_ai = yes
+			war = no
+		}
+	}
+	interface_allow = {
+		always = no
+	}
+	
+	#Custom evaluation function.
+	mode = replace #none/add/replace
+	
+	#Custom evaluation function. Unit scope. Use scope:province to access the province being evaluated.
+	#Negative => better, positive => worse. If total sum exceeds 1 million unit will not go there. We now have 64 bit fixed point format rather than 32 bit so overflow no longer is a common issue.
+	
+	pure_weight = yes
+	
+	weight = {
+		modifier = {
+			trigger = {
+				scope:province = {
+					NOT = { owner = root.unit_owner } #Prefer to stay our homeland if not doing anything else, we don't want to aggressively take stuff.
+				}
+			}
+			add = {
+				value = 100
+			}
+		}
+		modifier = {
+			trigger = {
+				NOT = {
+					scope:province = {
+						can_use_unit_ability = settle #Stay away from places where we can't use the settle ability.
+					}
+				}
+			}
+			add = {
+				value = 50000
+			}
+		}
+		modifier = {
+			trigger = {
+				scope:province = {
+					OR = {
+						has_enemy_army = root.unit_owner #Don't run into enemy armies regardless of where we are.
+					}
+				}
+			}
+			add = {
+				value = 1000000
+			}
+		}
+		#Note for modders: It's fine to ignore the migration target, it's just there to provide more coordination (and slightly less emergent behavior) in where units choose to go.
+		modifier = {
+			add = {
+				unit_owner = {
+					scope:province = {
+						value = distance_to_migration_target
+						subtract =
+						{
+							value = scope:province.total_population
+							multiply = 3
+						}
+					}
+				}
+			}
+		}
+		modifier = {
+			trigger = {
+				scope:province = {
+					any_neighbor_province = {
+						owner = root.unit_owner
+					}
+				}
+			}
+			add = {
+				value = -60
+			}
+		}
+		modifier = {
+			trigger = {
+				scope:province = {
+					any_neighbor_province = {
+						NOT = {
+							owner = root.unit_owner
+						}
+						exists = owner
+					}
+				}
+			}
+			add = {
+				value = 50
+			}
+		}
+	}
+}

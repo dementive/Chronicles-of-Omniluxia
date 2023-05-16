@@ -1,0 +1,179 @@
+﻿namespace = choo_birth
+
+
+choo_birth.1 = {
+	type = character_event
+	hidden = yes	
+	trigger = { is_alive = yes }
+	
+	immediate = {     
+			save_scope_as = newborn	
+		assign_proper_race_on_birth = yes	
+	}
+
+	
+	
+}
+
+#choo_ongame_start
+
+
+choo_birth.2 = {
+	type = character_event
+	hidden = yes
+	
+	trigger = {
+		NOT = { has_trait = orc_trait }
+		NOT = { has_trait = half_orc_trait }
+		NOT = { has_trait = elf_trait }
+		NOT = { has_trait = half_elf_trait }
+		NOT = { has_trait = dwarf_trait }
+		NOT = { has_trait = half_dwarf_trait }
+		OR = {
+				has_culture_group = high_elves
+				has_culture_group = werhenssian
+				has_culture_group = forest_elves
+				has_culture_group = common_dwarves
+				has_culture_group = silver_dwarves
+				has_culture_group = gold_dwarves
+				has_culture_group = orcish
+		}
+	}
+	
+	immediate = {     
+		if = {
+			limit = { 		
+				exists = father
+				exists = mother 
+			}
+			if = {
+				limit = {
+					OR = {
+						has_culture_group = high_elves
+						has_culture_group = werhenssian
+						has_culture_group = forest_elves
+					}
+				}
+				if = { 
+					limit = { 
+						OR = { 
+							root.mother = { 
+								NOT = {  							
+									has_culture_group = high_elves
+									has_culture_group = werhenssian
+									has_culture_group = forest_elves
+							
+								} 							
+							} 
+							root.father = { 						
+								NOT = {  						
+									has_culture_group = high_elves
+									has_culture_group = werhenssian
+									has_culture_group = forest_elves
+							
+								} 							
+							}
+						}  
+					} 					
+					add_trait = half_elf_trait
+				}
+				else = { 
+					add_trait = elf_trait
+				}								
+			}
+			if = {
+				limit = {
+						has_culture_group = common_dwarves
+						has_culture_group = silver_dwarves
+						has_culture_group = gold_dwarves
+
+				}
+				if = { 
+					limit = { 
+						OR = { 
+							root.mother = { 					
+								NOT = {  					
+									has_culture_group = common_dwarves
+									has_culture_group = silver_dwarves
+									has_culture_group = gold_dwarves					
+								} 					
+							} 
+							root.father = { 					
+								NOT = {  					
+									has_culture_group = common_dwarves
+									has_culture_group = silver_dwarves
+									has_culture_group = gold_dwarves					
+								} 					
+							}
+						}  
+					} 				
+					add_trait = half_dwarf_trait
+				}
+				else = { 
+					add_trait = dwarf_trait
+				}			 
+			}				
+			if = {
+				limit = {
+					has_culture_group = orcish
+				}
+				if = { 
+					limit = { 
+						OR = { 
+							root.mother = { 
+								NOT = {  
+									has_culture_group = orcish
+								} 						
+							} 
+							root.father = { 						
+								NOT = {  
+									has_culture_group = orcish						
+								} 						
+							}
+						}  
+					} 					
+					add_trait = half_orc_trait
+				}
+				else = { 
+					add_trait = orc_trait
+				}
+			}			
+		}
+	}	
+}
+
+#Choo check the races
+
+choo_birth.3 = {
+	type = country_event
+	hidden = yes
+	
+	immediate = {     	
+		every_character = {
+			limit = {
+				OR = {
+					has_culture_group = high_elves
+					has_culture_group = werhenssian
+					has_culture_group = forest_elves
+				}
+			}
+			add_trait = elf_trait
+		}				
+		every_character = {
+			limit = {
+				OR = {
+					has_culture_group = common_dwarves
+					has_culture_group = silver_dwarves
+					has_culture_group = gold_dwarves
+				}
+			}
+			add_trait = dwarf_trait
+		}	
+		every_character = {
+			limit = {
+				has_culture_group = orcish
+			}
+			add_trait = orc_trait
+		}		
+	}	
+}

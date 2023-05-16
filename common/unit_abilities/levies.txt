@@ -1,0 +1,175 @@
+﻿levies = {
+	duration = 0
+	enable = no
+	toggle = no
+	army_only = yes
+	soundeffect = "event:/SFX/Animations/Units/Generic/sfx_anim_unit_raise_levies"
+
+	hidden = {
+		unit_owner = {
+			NOR = { 
+				has_military_tradition = celtic_philosophy
+				has_military_tradition = persian_philosophy
+			} 
+		}
+	}
+	
+	allow = {
+	
+		unit_owner = { 
+			trigger_if = {
+				limit = { has_military_tradition = celtic_philosophy }
+				has_military_bonus = celtic_gallic_path_4
+			}
+			trigger_else_if = {
+				limit = { has_military_tradition = persian_philosophy }
+				has_military_bonus = persian_achaemenid_path_4
+			}
+		}
+
+		is_army = yes
+		in_combat = no
+		is_moving = no
+		in_siege = no
+		is_exiled = no
+
+		hidden:unit_owner = { can_pay_price = raise_levies }
+		unit_location = { owner = root.unit_owner }
+		unit_owner = {
+			any_owned_province = {
+				custom_tooltip = { 
+					text = "levies_tooltip_trigger"
+					controller = owner
+					is_in_area = root.unit_location
+					NOT= {
+						has_province_modifier = levies_manpower_depleted
+					}
+				}
+			}
+		}
+		trigger_if = {
+			limit = {
+				exists = commander
+			}
+			commander = {
+				loyalty > 33
+				is_clan_chief = no
+				is_mercenary = no
+			}
+		}
+	}
+	
+	start_effect = {
+		unit_owner = { pay_price = raise_levies }
+		custom_tooltip = "levies_tooltip_info"
+		if = {
+			limit = {
+				unit_owner = {
+					any_owned_province = {
+						is_in_area = root.unit_location
+						controller = owner
+						OR = {
+							trade_goods = horses
+							trade_goods = steppe_horses
+							is_importing_trade_good = horses
+							is_importing_trade_good = steppe_horses
+						}
+					}
+				}
+			}
+			custom_tooltip = "unit_levies_effect_tooltip_horses"
+			custom_tooltip = "unit_levies_effect_tooltip_provinces_horses"
+			hidden_effect = {
+				unit_owner = {
+					while = {
+						limit = {
+							any_owned_province = {
+								is_in_area = root.unit_location
+								controller = owner
+								NOT = {
+									has_province_modifier = levies_manpower_depleted
+								}
+							}
+						}
+						random_owned_province = {
+							limit = {
+								is_in_area = root.unit_location
+								controller = owner
+								NOT = {
+									has_province_modifier = levies_manpower_depleted
+								}
+							}
+							add_province_modifier = {
+								name = levies_manpower_depleted
+								duration = 1825
+							}
+						}
+						root = {
+							add_subunit = light_cavalry
+						}
+					}
+				}
+				damage_unit_morale_percent = 0.25
+			}
+		}
+		else = {
+			custom_tooltip = "unit_levies_effect_tooltip"
+			custom_tooltip = "unit_levies_effect_tooltip_provinces"
+			hidden_effect = {
+				unit_owner = {
+					while = {
+						limit = {
+							any_owned_province = {
+								is_in_area = root.unit_location
+								controller = owner
+								NOT = {
+									has_province_modifier = levies_manpower_depleted
+								}
+							}
+						}
+						random_owned_province = {
+							limit = {
+								is_in_area = root.unit_location
+								controller = owner
+								NOT = {
+									has_province_modifier = levies_manpower_depleted
+								}
+							}
+							add_province_modifier = {
+								name = levies_manpower_depleted
+								duration = 1825
+							}
+						}
+						root = {
+							add_subunit = light_infantry
+						}
+					}
+				}
+				damage_unit_morale_percent = 0.5
+			}
+		}
+	}
+	
+	ai_will_do = {
+		modifier = {
+			trigger = {
+				unit_owner =
+				{
+					war = yes
+					manpower_percentage < 0.1 #it appears to be a fraction rather than percentage...
+				}
+				unit_threat > 0.6
+				unit_size_rank_percentage <= 50
+			}
+			add = {
+				value = 2500
+				divide = {
+					value = unit_size_rank
+					add = 2
+				}
+			}
+		}
+	}
+	
+	idle_entity_state = recruit
+}

@@ -1,0 +1,1637 @@
+template unit_action_item
+{
+	button = {
+		texture = "gfx/interface/buttons/button_square_40.dds"
+		onclick = "[UnitActionItem.Activate]"
+		enabled = "[UnitActionItem.CanActivate]"
+		tooltip = "[UnitActionItem.GetTooltip]"
+		shortcut = "[UnitActionItem.GetShortcut]"
+		oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+		clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+		
+		
+		
+		icon = {
+			position = { -0 0 }
+			size = { 40 40 }
+			texture = "[UnitActionItem.GetTexture]"
+		}
+	}
+}
+
+template unit_action_item_round
+{
+	button = {
+		gfxtype = togglepushbuttongfx
+		
+		
+		texture = "gfx/interface/buttons/button_circle_40_toggle.dds"
+		onclick = "[UnitActionItem.Activate]"
+		enabled = "[UnitActionItem.CanActivate]"
+		tooltip = "[UnitActionItem.GetTooltip]"
+		down = "[UnitActionItem.IsActive]"
+		shortcut = "[UnitActionItem.GetShortcut]"
+		oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+		clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+		
+		
+		shaderfile = "gfx/FX/pdxgui_pushbutton.shader"
+		
+		framesize = { 40 40 }
+		upframe = 1
+		uphoverframe = 1
+		uppressedframe = 1
+		downframe = 2
+		downhoverframe = 2
+		disableframe = 1
+		
+		icon = {
+			position = { -0 0 }
+			size = { 40 40 }
+			texture = "[UnitActionItem.GetTexture]"
+		}
+	}
+}
+
+template unit_action_item_diamond
+{
+	button = {
+		texture = "gfx/interface/buttons/button_diamond_40.dds"
+		onclick = "[UnitActionItem.Activate]"
+		enabled = "[UnitActionItem.CanActivate]"
+		tooltip = "[UnitActionItem.GetTooltip]"
+		shortcut = "[UnitActionItem.GetShortcut]"
+		oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+		clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+		
+		icon = {
+			position = { 5 5 }
+			size = { 30 30 }
+			texture = "[UnitActionItem.GetTexture]"
+		}
+	}
+}
+
+
+
+window = {
+	gfxtype = windowgfx
+	name = "single_unit_window"
+	parentanchor = top|left
+	size = { 542 755 }
+	position = { 0 120 }
+	widgetanchor = top|left
+	movable = yes
+	allow_outside = yes
+	
+	widget = {
+		name = "background"
+		using = small_window_type
+		size = { 100% 100% }
+		alwaystransparent = no
+	}
+	
+	icon = {
+		texture = "gfx/interface/tiles/small_window_title_header_corners.dds"
+		spriteType = Corneredtiled
+		size = { 542 51 }
+		spriteborder = { 16 16 }
+		shaderfile = "gfx/FX/pdxgui_default.shader"
+	}
+	
+	square_close_button = {
+		name = "close_button"
+		position = { -4 5 }
+		parentanchor = top|right
+		shortcut = "close_window"
+		onclick = "[SingleUnitWindow.OnClose]"
+		tooltip = "CLOSE"
+	}
+	
+	button = {
+		
+		texture = "gfx/interface/buttons/magic_window/magic_panel_show_button.dds"
+		position = { 525 305 }
+		size = { 20 75 }
+		tooltip = "SHOW_CASTABLE_SPELLS"
+		onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('spells_window').Show]"
+	}
+	
+	container = {
+		container = {
+			portrait_button = {
+				using = portrait_60_no_pop
+				name = "portrait"
+				position = { 12 54 }
+				parentanchor = top|left
+				datacontext = "[SingleUnitWindow.GetSelectedUnit.GetCommander]"
+				tooltip = "[SingleUnitWindow.GetCommanderTooltip]"
+			
+			}
+			
+			button = {
+				position = { 56 136 }
+				size = { 36 36 }
+				onclick = "[SingleUnitWindow.OnCommanderClick]"
+				enabled = "[SingleUnitWindow.CanReplaceLeader]"
+				tooltip = "[SingleUnitWindow.GetReplaceLeaderInfo]"
+				texture = "gfx/interface/buttons/button_select_new_person.dds"
+				clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+				oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+			}
+			
+			country_flag = {
+				position = { 13 0 }
+				tooltip = "[SingleUnitWindow.GetCountryTooltip]"
+				
+				blockoverride "flag"
+				{
+					texture = "[SingleUnitWindow.GetSelectedUnit.GetCountry.AccessCoatOfArms.GetTexture('(int32)56','(int32)56')]"
+					frame = "[SingleUnitWindow.GetSelectedUnit.GetCountry.AccessCoatOfArms.GetFrame('(int32)56','(int32)56')]"
+					framesize = { 56 56 }
+				}
+				
+				blockoverride "size"
+				{
+					size = { 56 56 }
+				}
+				
+				blockoverride "click"
+				{
+					onclick = "[OpenDiplomacy(SingleUnitWindow.GetSelectedUnit.GetCountry)]"
+				}
+			}
+			
+			icon = {
+				position = { 90 11 }
+				framesize = { 50 50 }
+				size = { 28 28 }
+				texture = "gfx/interface/icons/unit_actions/unit_naming.dds"
+				frame = "[SingleUnitWindow.GetUnitNameIconFrame]"
+				visible = "[And(SingleUnitWindow.CanRenameUnit,SingleUnitWindow.HasCustomUnitName)]"
+				tooltip = "[SingleUnitWindow.GetUnitNameIconTooltip]"
+			}
+			
+			editbox = {
+				position = { 120 6 }
+				size = { 270 34 }
+				name = "unit_name"
+				using = MarbleButtonFontM
+				text = "[SingleUnitWindow.GetSelectedUnit.GetName]"
+				ontextchanged = "[SingleUnitWindow.RenameUnit]"
+				focuspolicy = all
+				alwaystransparent = no
+				
+				visible = "[SingleUnitWindow.CanRenameUnit]"
+				multiline = no
+				
+				tooltip = "UNIT_NAME_TT"
+			}
+			
+			textbox = {
+				position = { 120 6 }
+				size = { 270 34 }
+				using = MarbleButtonFontM
+				text = "[SingleUnitWindow.GetSelectedUnit.GetName]"
+				focuspolicy = all
+				alwaystransparent = no
+				visible = "[Not(SingleUnitWindow.CanRenameUnit)]"
+				multiline = no
+				tooltip = "UNIT_NAME_NON_EDIT_TT"
+			}
+			
+			textbox = {
+				position = { 494 14 }
+				autoresize = yes
+				using = MarbleButtonFontS
+				text = "[SingleUnitWindow.GetSelectedUnit.GetLocation.GetName]"
+				tooltip = UNIT_LOCATION_TT
+				widgetanchor = top|right
+			}
+			
+			container = {
+				position = { 94 56 }
+				
+				icon = {
+					name = "moral_bar_frame"
+					texture = "gfx/interface/unit_view/moral_frame.dds"
+				}
+				
+				progressbar = {
+					using = unit_view_moral_bar_green
+					value = "[FixedPointToFloat(SingleUnitWindow.GetSelectedUnit.GetMoralePercent)]"
+					tooltip = [SingleUnitWindow.GetSelectedUnit.GetMoraleTooltip]
+				}
+			}
+			
+			icon = {
+				texture = "gfx/interface/unit_view/army_hidden_icon.dds"
+				position = { 68 12 }
+				visible = "[Not(SingleUnitWindow.GetSelectedUnit.IsVisibleToAi)]"
+				tooltip = [SingleUnitWindow.GetSelectedUnit.GetIsVisibleToAiTooltip]
+			}
+			
+			icon = {
+				texture = "gfx/interface/unit_view/army_visible_icon.dds"
+				position = { 64 12 }
+				visible = [SingleUnitWindow.GetSelectedUnit.IsVisibleToAi]
+				tooltip = [SingleUnitWindow.GetSelectedUnit.GetIsVisibleToAiTooltip]
+			}
+			
+			widget = {
+				position = { 468 52 }
+				size = { 60 120 }
+				vbox = {
+					button = {
+						size = { 40 40 }
+						texture = "gfx/interface/buttons/button_square_40.dds"
+						tooltip = "COMBAT_TACTIC_BUTTON"
+						onclick = "[SingleUnitWindow.OnPickTactic]"
+						clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+						oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						enabled = [SingleUnitWindow.CanPickTactic]
+						icon = {
+							texture = "[GetCombatTacticIcon(SingleUnitWindow.GetSelectedUnit.GetTactic.GetIcon)]"
+							position = { 2 2 }
+							alwaystransparent = yes
+							size = { 36 36 }
+						}
+					
+					}
+					
+					dynamicgridbox = {
+						name = "objective_buttons"
+						flipdirection = yes
+						datamodel_wrap = 3
+						datamodel = "[SingleUnitWindow.GetObjectiveItems]"
+						item = {
+							using = unit_action_item
+						}
+					}
+				
+				
+				}
+			}
+		}
+		
+		flowcontainer = {
+			direction = horizontal
+			position = { 112 51 }
+			# First Row: Reorg!
+			dynamicgridbox = {
+				name = "reorg_buttons"
+				flipdirection = yes
+				datamodel_wrap = 2
+				datamodel = "[SingleUnitWindow.GetReorganisationItems]"
+				item = {
+					using = unit_action_item_diamond
+				}
+			}
+			
+			widget = {
+				size = { 19 0 }
+				icon = {
+					position = { 6 0 }
+					texture = "gfx/interface/tiles/vertical_divider.dds"
+					spriteType = corneredtiled
+					spriteborder = { 0 10 }
+					size = { 6 120 }
+				}
+			}
+			
+			#Second Row: Actions
+			dynamicgridbox = {
+				name = "action_buttons"
+				flipdirection = yes
+				datamodel_wrap = 4
+				datamodel = "[SingleUnitWindow.GetActionItems]"
+				item = {
+					using = unit_action_item
+				}
+			}
+			
+			widget = {
+				size = { 19 0 }
+				icon = {
+					position = { 7 0 }
+					texture = "gfx/interface/tiles/vertical_divider.dds"
+					spriteType = corneredtiled
+					spriteborder = { 0 10 }
+					size = { 6 120 }
+				}
+			}
+			
+			#Third Row: Toggle
+			dynamicgridbox = {
+				name = "toggle_buttons"
+				flipdirection = yes
+				datamodel_wrap = 2
+				datamodel = "[SingleUnitWindow.GetToggleItems]"
+				item = {
+					using = unit_action_item_round
+				}
+			}
+		}
+		
+		# STATUS INDICATIOTORS!
+		container = {
+			position = { 16 176 }
+			
+			icon = {
+				texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+				spriteType = Corneredtiled
+				spriteborder = { 10 10 }
+				size = { 508 118 }
+				shaderfile = "gfx/FX/pdxgui_default.shader"
+				position = { 0 3 }
+			}
+			
+			button = {
+				gfxtype = framedbuttongfx
+				effectname = "NoHighlight"
+				texture = "gfx/interface/buttons/button_unit_types_all.dds"
+				visible = "[SingleUnitWindow.IsShowAll]"
+				onclick = "[SingleUnitWindow.ToggleShowAll]"
+				clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+				oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				tooltip = SHOW_ALL_UNIT_TYPES
+				position = { 14 5 }
+				framesize = { 45 45 }
+				upframe = 1
+				overframe = 2
+				downframe = 3
+			}
+			
+			button = {
+				gfxtype = framedbuttongfx
+				effectname = "NoHighlight"
+				texture = "gfx/interface/buttons/button_unit_types_in.dds"
+				visible = "[Not(SingleUnitWindow.IsShowAll)]"
+				onclick = "[SingleUnitWindow.ToggleShowAll]"
+				clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+				oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				position = { 14 8 }
+				framesize = { 45 45 }
+				tooltip = SHOW_ONLY_UNIT_TYPES
+				upframe = 1
+				overframe = 2
+				downframe = 3
+			}
+			
+			icon = {
+				texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+				spriteType = Corneredtiled
+				position = { 5 55 }
+				spriteborder = { 10 10 }
+				size = { 64 28 }
+				shaderfile = "gfx/FX/pdxgui_default.shader"
+			}
+			
+			icon = {
+				alpha = "[TransparentIfZero(SingleUnitWindow.GetSelectedUnit.GetAttrition)]"
+				texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+				spriteType = Corneredtiled
+				position = { 5 86 }
+				spriteborder = { 10 10 }
+				size = { 64 28 }
+				shaderfile = "gfx/FX/pdxgui_default.shader"
+			}
+			
+			textbox = {
+				position = { 37 54 }
+				autoresize = yes
+				using = MarbleButtonFont
+				text = "[SingleUnitWindow.GetSelectedUnit.GetVisualStrength]"
+				tooltip = "[SingleUnitWindow.GetSelectedUnit.GetStrengthTooltip]"
+				widgetanchor = top|hcenter
+			}
+			
+			container = {
+				position = { 3 87 }
+				parentanchor = top|left
+				tooltip = [SingleUnitWindow.GetSelectedUnit.GetAttritionTooltip]
+				alpha = "[TransparentIfZero(SingleUnitWindow.GetSelectedUnit.GetAttrition)]"
+				icon = {
+					using = icon_attrition
+					size = { 26 26 }
+					position = { 3 0 }
+				}
+				
+				textbox = {
+					position = { 45 -2 }
+					autoresize = yes
+					using = MarbleButtonFont
+					text = "[SingleUnitWindow.GetSelectedUnit.GetAttrition|1]%"
+					widgetanchor = top|hcenter
+				}
+			}
+			
+			container = {
+				position = { 72 8 }
+				
+				visible = "[SingleUnitWindow.GetSelectedUnit.IsArmy]"
+				tooltip = "[SingleUnitWindow.GetSelectedUnit.GetFoodSupplyInformation]"
+				
+				icon = {
+					name = "food_bar_frame"
+					position = { 10 2 }
+					spriteborder = { 1 5 }
+					size = { 11 76 }
+					texture = "gfx/interface/tiles/morale_progress_bar_frame.dds"
+					spriteType = Corneredtiled
+					
+					progressbar = {
+						name = "foodbar"
+						position = { 3 2 }
+						size = { 7 72 }
+						visible = "[SingleUnitWindow.GetSelectedUnit.CanGetFoodFromLocation]"
+						using = progressbar_green_vertical
+						value = "[SingleUnitWindow.GetSelectedUnit.GetFoodPercentage]"
+					}
+					progressbar = {
+						name = "foodbar_negative"
+						position = { 3 2 }
+						size = { 7 72 }
+						visible = "[Not(SingleUnitWindow.GetSelectedUnit.CanGetFoodFromLocation)]"
+						using = progressbar_red_vertical
+						value = "[SingleUnitWindow.GetSelectedUnit.GetFoodPercentage]"
+					}
+				}
+				
+				icon = {
+					position = { 2 82 }
+					size = { 28 28 }
+					texture = "gfx/interface/icons/shared_icons/food_capacity.dds"
+				}
+			}
+			
+			
+			overlappingitembox = {
+				using = UnitCards
+				name = "unit_types_grid"
+				position = { 100 8 }
+				size = { 404 120 }
+				datamodel = "[SingleUnitWindow.GetSubUnitCounts]"
+			}
+		}
+	}
+	
+	flowcontainer = {
+		parentanchor = top|right
+		widgetanchor = top|right
+		position = { -100 300 }
+		ignoreinvisible = yes
+		
+		icon = {
+			texture = "gfx/interface/icons/shared_icons/exiles.dds"
+			size = { 32 32 }
+			visible = "[SingleUnitWindow.GetSelectedUnit.IsExiled]"
+			tooltip = "[SingleUnitWindow.GetExileTooltip]"
+		}
+		
+		icon = {
+			texture = "gfx/interface/icons/shared_icons/retreating.dds"
+			size = { 32 32 }
+			visible = "[SingleUnitWindow.GetSelectedUnit.IsRetreating]"
+			tooltip = UNIT_RETREAT_TT
+		}
+	}
+	
+	margin_widget = {
+		size = { 80 40 }
+		position = { -18 300 }
+		margin = { 8 8 }
+		
+		parentanchor = top|right
+		widgetanchor = top|right
+		
+		background = {
+			texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			shaderfile = "gfx/FX/pdxgui_default.shader"
+		}
+		
+		overlappingitembox = {
+			datamodel = "[SingleUnitWindow.GetSelectedUnit.GetTemporaryModifiers]"
+			position = { 0 -4 }
+			size = { 65 30 }
+			spacing = 5
+			
+			item = {
+				modifier_icon = {
+					datacontext = "[TimedModifier.GetModifier]"
+					tooltip = "[TimedModifier.GetTooltip]"
+				}
+			}
+		}
+	}
+	
+	margin_widget = {
+		size = { 80 40 }
+		position = { 17 300 }
+		margin = { 8 8 }
+		
+		background = {
+			texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			shaderfile = "gfx/FX/pdxgui_default.shader"
+		}
+		
+		textbox = {
+			autoresize = yes
+			using = MarbleButtonFont
+			text = "[SingleUnitWindow.GetMaintenance|2]@gold"
+			tooltip = "MAINTENANCE_UNIT"
+			parentanchor = center
+			align = hcenter|nobaseline
+		}
+	}
+	
+	margin_widget = {
+		visible = yes
+		
+		position = { 100 300 }
+		size = { 180 40 }
+		margin = { 8 2 }
+		
+		parentanchor = top|left
+		widgetanchor = top|left
+		
+		background = {
+			texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			shaderfile = "gfx/FX/pdxgui_default.shader"
+		}
+		
+		dynamicgridbox = {
+			size = { 120 200 }
+			flipdirection = yes
+			datamodel = "[SingleUnitWindow.GetPreferredUnitItems]"
+			
+			item = {
+				
+				
+				widget = {
+					size = { 38 32 }
+					
+					button = {
+						position = { 0 1 }
+						size = { 34 34 }
+						texture = "gfx/interface/buttons/button_square_42.dds"
+						#	align = center|nobaseline
+						parentanchor = top|left
+						clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_close"
+						oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						onclick = "[PreferredUnitItem.OnClick]"
+						enabled = "[PreferredUnitItem.CanClick]"
+						tooltip = "[PreferredUnitItem.GetTooltip]"
+						
+						icon = {
+							position = { 3 2 }
+							size = { 28 28 }
+							texture = "[GetSubUnitIcon(PreferredUnitItem.GetType.GetType)]"
+						}
+					}
+				}
+			
+			
+			}
+		}
+		
+		button = {
+			position = { 128 1 }
+			texture = "gfx/interface/buttons/button_square_42.dds"
+			tooltip = "[SingleUnitWindow.GetFlankTooltip]"
+			enabled = "[SingleUnitWindow.CanToggleFlankSize]"
+			onclick = [SingleUnitWindow.ToggleFlankSize]
+			size = { 34 34 }
+			
+			oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+			clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+			
+			textbox = {
+				parentanchor = center
+				size = { 30 30 }
+				position = { 0 2 }
+				align = center|nobaseline
+				alwaystransparent = yes
+				using = MarbleButtonFontL
+				text = "[SingleUnitWindow.GetSelectedUnit.GetDesiredFlankSize]"
+			}
+		}
+	}
+	
+	margin_widget = {
+		visible = "[SingleUnitWindow.GetSelectedUnit.HasLeader]"
+		position = { 280 300 }
+		size = { 80 40 }
+		margin = { 2 2 }
+		parentanchor = top|left
+		widgetanchor = top|left
+		tooltip = "[SingleUnitWindow.GetSelectedUnit.GetCommander.GetLoyaltyGainToolTip]"
+		
+		background = {
+			texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			shaderfile = "gfx/FX/pdxgui_default.shader"
+		}
+		
+		icon = {
+			texture = "gfx/interface/icons/modifiers/loyalty_gain_chance.dds"
+			size = { 32 32 }
+			position = { 2 3 }
+		}
+		
+		textbox = {
+			position = { 30 0 }
+			size = { 30 30 }
+			alwaystransparent = yes
+			using = MarbleButtonFont
+			text = "[SingleUnitWindow.GetSelectedUnit.GetCommander.GetLoyaltyGainChanceValue|2%]"
+		}
+	}
+	
+	margin_widget = {
+		visible = "[SingleUnitWindow.GetSelectedUnit.HasLeader]"
+		position = { 360 300 }
+		size = { 70 40 }
+		margin = { 2 2 }
+		parentanchor = top|left
+		widgetanchor = top|left
+		tooltip = "[SingleUnitWindow.GetSelectedUnit.GetEnslavementEffiencyTooltip]"
+		
+		background = {
+			texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			shaderfile = "gfx/FX/pdxgui_default.shader"
+		}
+		
+		icon = {
+			texture = "gfx/interface/icons/modifiers/enslavement_efficiency.dds"
+			size = { 32 32 }
+			position = { 2 3 }
+		}
+		
+		textbox = {
+			position = { 36 0 }
+			size = { 30 30 }
+			alwaystransparent = yes
+			using = MarbleButtonFont
+			text = "[SingleUnitWindow.GetSelectedUnit.GetEnslavementEffiencyUI|0%]"
+		}
+	}
+	
+	###########################################################
+	# Show Subunits
+	###########################################################
+	
+	icon = {
+		texture = "gfx/interface/tiles/list_slot_corner_tiles.dds"
+		position = { 16 344 }
+		spriteType = Corneredtiled
+		spriteborder = { 10 10 }
+		size = { 508 396 }
+		shaderfile = "gfx/FX/pdxgui_default.shader"
+	}
+	
+	scrollarea = {
+		position = { 20 350 }
+		size = { 494 384 }
+		scrollbarpolicy_horizontal = always_off
+		
+		scrollbar_vertical = {
+			using = MarbleScrollBar
+		}
+		
+		scrollwidget = {
+			dynamicgridbox = {
+				name = "subunits_grid"
+				size = { 380 200 }
+				
+				datamodel = "[SingleUnitWindow.GetSelectedUnit.GetSubUnits]"
+				
+				item = {
+					widget = {
+						size = { 484 64 }
+						
+						icon = {
+							texture = "gfx/interface/unit_view/unit_background.dds"
+							visible = "[SubUnit.IsRegular]"
+							tooltip = "[SubUnit.GetCategoryDescription]"
+						}
+						icon = {
+							texture = "gfx/interface/unit_view/unit_background_merc.dds"
+							tooltip = "[SubUnit.GetCategoryDescription]"
+							visible = "[SubUnit.IsMercenary]"
+						}
+						
+						
+						icon = {
+							texture = "gfx/interface/unit_view/unit_background_migration.dds"
+							visible = "[SubUnit.IsMigration]"
+							tooltip = "[SubUnit.GetCategoryDescription]"
+						}
+						
+						
+						icon = {
+							texture = "gfx/interface/unit_view/unit_background_clan.dds"
+							visible = "[SubUnit.IsClanRetinue]"
+							tooltip = "[SubUnit.GetCategoryDescription]"
+						}
+						
+						
+						icon = {
+							position = { 14 -3 }
+							texture = "gfx/interface/unit_view/unit_card_square.dds"
+						
+						}
+						
+						icon = {
+							position = { 48 29 }
+							size = { 57 57 }
+							texture = "[GetSubUnitIcon(SubUnit.GetType)]"
+							tooltip = "[SubUnit.GetTypeDescription]"
+							widgetanchor = vcenter|hcenter
+						}
+						
+						textbox = {
+							position = { 102 5 }
+							autoresize = yes
+							using = GoldenFontL
+							text = "[SubUnit.GetName]"
+							tooltip = "[SubUnit.GetDescription]"
+						}
+						
+						textbox = {
+							position = { 102 29 }
+							autoresize = yes
+							using = GoldenFontS
+							text = "[SubUnit.GetTypeName]"
+							tooltip = "[SubUnit.GetTypeDescription]"
+						}
+						
+						button = {
+							using = icon_loyalty
+							visible = "[SubUnit.HasPersonalLoyalty]"
+							tooltip = "[SubUnit.GetLoyaltyInformation]"
+							onclick = "[DefaultOnCharacterClick( SubUnit.GetPersonalLoyalty.GetID )]"
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+							size = { 28 28 }
+							position = { 440 6 }
+						}
+						
+						icon = {
+							texture = "gfx/interface/unit_view/experience_frame.dds"
+							position = { 76 6 }
+						}
+						
+						progressbar = {
+							using = unit_view_experience_bar
+							position = { 81 10 }
+							value = "[FixedPointToFloat(SubUnit.GetExperience)]"
+							tooltip = "[SubUnit.GetExperienceInfo]"
+						}
+						
+						icon = {
+							texture = "gfx/interface/unit_view/experience_frame.dds"
+							position = { 86 6 }
+						}
+						
+						progressbar = {
+							using = unit_view_morale_bar
+							position = { 91 10 }
+							value = "[FixedPointToFloat(SubUnit.GetMoralePercent)]"
+							tooltip = "[SubUnit.GetMoraleInfo]"
+						}
+						
+						textbox = {
+							position = { -24 29 }
+							autoresize = yes
+							using = GoldenFontS
+							parentanchor = top|right
+							text = "[SubUnit.GetStrength]"
+							tooltip = "[SubUnit.GetStrengthDescription]"
+						
+						}
+					
+					}
+				}
+			}
+		}
+	}
+	container = {
+		name = "spells_window"
+		position = { 536 45 }
+		
+		visible = no
+		allow_outside = yes
+		
+		icon = {
+			texture = "gfx/interface/buttons/magic_window/magic_bg.dds"
+			size = { 300 705 }
+			position = { 0 0 }
+			spriteType = stretched
+			alwaystransparent = no
+		}
+		
+		button = {
+			texture = "gfx/interface/buttons/magic_window/magic_panel_hide_button.dds"
+			position = { -10 260 }
+			size = { 20 75 }
+			tooltip = "HIDE_CASTABLE_SPELLS"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('spells_window').Hide]"
+		}
+		
+		textbox = {
+			size = { 200 30 }
+			position = { 50 150 }
+			datacontext = "[GetScriptedGui('is_target_of_spell_displayed')]"
+			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+			multiline = yes
+			using = MarbleButtonFont
+			text = "[SingleUnitWindow.GetSelectedUnit.MakeScope.Var('choosen_province_as_target_for_spell_casting').Province.GetName]"
+			align = left|top
+		}
+		textbox = {
+			size = { 200 30 }
+			position = { 50 260 }
+			datacontext = "[GetScriptedGui('is_target_of_spell_displayed_area')]"
+			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+			multiline = yes
+			using = MarbleButtonFont
+			text = "[SingleUnitWindow.GetSelectedUnit.MakeScope.Var('choosen_area_as_target_for_spell_casting').Province.GetArea.GetName]"
+			align = left|top
+		}
+		
+		
+		button = {
+			datacontext = "[GetScriptedGui('open_targets_list_provinces_spellcast')]"
+			position = { 300 20 }
+			size = { 50 50 }
+			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_provinces').Show]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_areas').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_armies').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_characters').Hide]"
+			
+			texture = "gfx/interface/buttons/magic_window/magic_tab_icon_province.dds"
+			clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+			oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+		}
+		
+		button = {
+			datacontext = "[GetScriptedGui('open_targets_list_area_spellcast')]"
+			position = { 300 80 }
+			size = { 50 50 }
+			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_provinces').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_areas').Show]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_armies').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_characters').Hide]"
+			
+			texture = "gfx/interface/buttons/magic_window/magic_tab_icon_area.dds"
+			clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+			oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+		}
+		
+		button = {
+			datacontext = "[GetScriptedGui('open_targets_list_army_spellcast')]"
+			position = { 300 140 }
+			size = { 50 50 }
+			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_provinces').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_areas').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_armies').Show]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_characters').Hide]"
+			
+			texture = "gfx/interface/buttons/magic_window/magic_tab_icon_army.dds"
+			clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+			oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+		}
+		
+		button = {
+			datacontext = "[GetScriptedGui('open_targets_list_character_spellcast')]"
+			position = { 300 200 }
+			size = { 50 50 }
+			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope( 'current_location_of_the_unit', SingleUnitWindow.GetSelectedUnit.GetLocation.MakeScope ).End )]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_provinces').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_areas').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_armies').Hide]"
+			onclick = "[PdxGuiWidget.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_characters').Show]"
+			
+			texture = "gfx/interface/buttons/magic_window/magic_tab_icon_character.dds"
+			clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+			oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+		}
+		
+		
+		
+		
+		flowcontainer = {
+			name = "panel_with_list_of_targetable_provinces"
+			ignoreinvisible = yes
+			visible = no
+			position = { 4 15 }
+			container = {
+				position = { 0 0 }
+				
+				icon = {
+					texture = "gfx/interface/bg/law_entry_scroll_bg.dds"
+					spriteType = stretched
+					spriteborder = { 10 10 }
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					size = { 290 680 }
+					alwaystransparent = no
+					position = { 0 0 }
+				}
+				
+				
+				
+				button = {
+					position = { 296 5 }
+					size = { 50 50 }
+					onclick = "[PdxGuiWidget.AccessParent.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_provinces').Hide]"
+					texture = "gfx/interface/buttons/magic_window/magic_tab_icon_province.dds"
+					clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+					oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				}
+				
+				scrollarea = {
+					position = { 5 20 }
+					size = { 280 625 }
+					scrollbarpolicy_horizontal = always_off
+					
+					scrollbar_vertical = {
+						using = MarbleScrollBar
+						blockoverride "ScrollBar_offset"
+						{
+							size = { 0 4 }
+						}
+					}
+					
+					
+					scrollwidget = {
+						
+						dynamicgridbox = {
+							size = { 230 400 }
+							position = { 5 5 }
+							
+							datamodel = "[SingleUnitWindow.GetSelectedUnit.GetCountry.MakeScope.GetList('targetable_provinces_casting')]"
+							
+							item = {
+								container = {
+									
+									entry_button = {
+										position = { 8 0 }
+										size = { 200 34 }
+										onmousehierarchyenter = "[SetHighlightProvince(Scope.Province.GetId)]"
+										onmousehierarchyleave = "[ClearHighlightColors]"
+									}
+									
+									flowcontainer = {
+										position = { 60 6 }
+										ignoreinvisible = yes
+										
+										textbox = {
+											text = "[Scope.Province.GetName]"
+											using = MarbleButtonFontS
+											autoresize = yes
+										}
+									}
+									textbox = {
+										size = { 200 30 }
+										position = { 5 200 }
+										multiline = yes
+										datacontext = "[Scope.Province]"
+										using = MarbleButtonFont
+										text = "[Province.GetOwner.GetName]"
+										align = left|vcenter
+									}
+									
+									textbox = {
+										size = { 200 30 }
+										position = { 100 100 }
+										multiline = yes
+										datacontext = "[Scope.Province]"
+										using = MarbleButtonFont
+										text = "[GuiScope.SetRoot( Province.MakeScope).ScriptValue('province_spell_standard_ai_callculation_usage')]"
+										align = left|vcenter
+									}	
+
+									textbox = {
+										size = { 200 30 }
+										position = { 100 140 }
+										multiline = yes
+										datacontext = "[Scope.Province]"
+										using = MarbleButtonFont
+										text = "[GuiScope.SetRoot( Province.MakeScope).ScriptValue('province_spell_standard_ai_callculation_threshold')]"
+										align = left|vcenter
+									}
+									
+									
+									container = {
+										position = { 5 35 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('spell_cast_impressive_growth')]"
+											datacontext = "[Scope.Province]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										
+										button = {
+											datacontext = "[GetScriptedGui('spell_cast_impressive_growth_overcast')]"
+											datacontext = "[Scope.Province]"
+											position = { 6 36 }
+											size = { 26 26 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+									container = {
+										position = { 46 35 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('spell_cast_lifeless_soil_p')]"
+											datacontext = "[Scope.Province]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										
+										button = {
+											datacontext = "[GetScriptedGui('spell_cast_lifeless_soil_overcast_p')]"
+											datacontext = "[Scope.Province]"
+											position = { 6 36 }
+											size = { 26 26 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+								
+							
+								
+								
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		flowcontainer = {
+			name = "panel_with_list_of_targetable_areas"
+			ignoreinvisible = yes
+			visible = no
+			position = { 4 15 }
+			container = {
+				position = { 0 0 }
+				
+				icon = {
+					texture = "gfx/interface/bg/law_entry_scroll_bg.dds"
+					spriteType = stretched
+					spriteborder = { 10 10 }
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					size = { 290 680 }
+					alwaystransparent = no
+					position = { 0 0 }
+				}
+				
+				
+				
+				button = {
+					position = { 296 65 }
+					size = { 50 50 }
+					onclick = "[PdxGuiWidget.AccessParent.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_areas').Hide]"
+					texture = "gfx/interface/buttons/magic_window/magic_tab_icon_area.dds"
+					clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+					oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				}
+				
+				scrollarea = {
+					position = { 5 20 }
+					size = { 280 625 }
+					scrollbarpolicy_horizontal = always_off
+					
+					scrollbar_vertical = {
+						using = MarbleScrollBar
+						blockoverride "ScrollBar_offset"
+						{
+							size = { 0 4 }
+						}
+					}
+					
+					
+					scrollwidget = {
+						
+						dynamicgridbox = {
+							size = { 230 400 }
+							position = { 5 5 }
+							
+							datamodel = "[SingleUnitWindow.GetSelectedUnit.GetCountry.MakeScope.GetList('targetable_area_casting')]"
+							
+							item = {
+								container = {
+									
+									entry_button = {
+										position = { 8 0 }
+										size = { 200 34 }
+										onmousehierarchyenter = "[SetHighlightArea(Scope.Province.GetArea)]"
+										onmousehierarchyleave = "[ClearHighlightColors]"
+									}
+									
+									flowcontainer = {
+										position = { 60 6 }
+										ignoreinvisible = yes
+										
+										textbox = {
+											text = "[Scope.Province.GetArea.GetName]"
+											using = MarbleButtonFontS
+											autoresize = yes
+										}
+									}
+									textbox = {
+										size = { 200 30 }
+										position = { 0 165 }
+										multiline = yes
+										datacontext = "[Scope.Province]"
+										using = MarbleButtonFont
+										text = "[Province.GetOwner.GetName]"
+										align = left|vcenter
+									}
+									
+									container = {
+										position = { 5 35 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('spell_cast_lifeless_soil')]"
+											datacontext = "[Scope.Province]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										
+										button = {
+											datacontext = "[GetScriptedGui('spell_cast_lifeless_soil_overcast')]"
+											datacontext = "[Scope.Province]"
+											position = { 6 36 }
+											size = { 26 26 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+									container = {
+										position = { 5 130 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('spell_cast_gift_of_nature')]"
+											datacontext = "[Scope.Province]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Province.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									
+									}
+								
+								
+								
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		flowcontainer = {
+			name = "panel_with_list_of_targetable_armies"
+			ignoreinvisible = yes
+			visible = no
+			position = { 4 15 }
+			container = {
+				position = { 0 0 }
+				
+				icon = {
+					texture = "gfx/interface/bg/law_entry_scroll_bg.dds"
+					spriteType = stretched
+					spriteborder = { 10 10 }
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					size = { 290 680 }
+					alwaystransparent = no
+					position = { 0 0 }
+				}
+				
+				
+				
+				button = {
+					position = { 296 125 }
+					size = { 50 50 }
+					onclick = "[PdxGuiWidget.AccessParent.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_armies').Hide]"
+					texture = "gfx/interface/buttons/magic_window/magic_tab_icon_army.dds"
+					clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+					oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				}
+				
+				scrollarea = {
+					position = { 5 20 }
+					size = { 280 625 }
+					scrollbarpolicy_horizontal = always_off
+					
+					scrollbar_vertical = {
+						using = MarbleScrollBar
+						blockoverride "ScrollBar_offset"
+						{
+							size = { 0 4 }
+						}
+					}
+					
+					
+					scrollwidget = {
+						
+						dynamicgridbox = {
+							size = { 230 400 }
+							position = { 5 5 }
+							
+							datamodel = "[SingleUnitWindow.GetSelectedUnit.GetCountry.MakeScope.GetList('targetable_armies_casting')]"
+							
+							item = {
+								container = {
+									
+									textbox = {
+										size = { 220 30 }
+										position = { 1 0 }
+										multiline = yes
+										datacontext = "[Scope.Unit]"
+										using = MarbleButtonFont
+										text = "[Unit.GetName]"
+										align = left|vcenter
+									}
+									
+									textbox = {
+										size = { 220 30 }
+										position = { 2 35 }
+										multiline = yes
+										datacontext = "[Scope.Unit]"
+										using = MarbleButtonFont
+										text = "[Unit.GetCountry.GetName]"
+										align = left|vcenter
+									}
+									icon = {
+										datacontext = "[GetScriptedGui('we_are_this_unit_sir')]"
+										datacontext = "[Scope.Unit]"
+										visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope('player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).End )]"
+										size = { 40 40 }
+										texture = "gfx/interface/buttons/button_plus.dds"
+										position = { 5 70 }
+										tooltip = "WE_ARE_THIS_UNIT"
+									}
+									
+									container = {
+										position = { 45 125 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('nature_protects_spell')]"
+											datacontext = "[Scope.Unit]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										
+										button = {
+											datacontext = "[GetScriptedGui('nature_protects_spell_overcast')]"
+											datacontext = "[Scope.Unit]"
+											position = { 6 36 }
+											size = { 26 26 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+									container = {
+										position = { 165 125 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('bear_frenzy_spell')]"
+											datacontext = "[Scope.Unit]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										
+										button = {
+											datacontext = "[GetScriptedGui('bear_frenzy_spell_overcast')]"
+											datacontext = "[Scope.Unit]"
+											position = { 6 36 }
+											size = { 26 26 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+									container = {
+										position = { 125 125 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('wolf_instincts_spell')]"
+											datacontext = "[Scope.Unit]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										
+										button = {
+											datacontext = "[GetScriptedGui('wolf_instincts_spell_overcast')]"
+											datacontext = "[Scope.Unit]"
+											position = { 6 36 }
+											size = { 26 26 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+									container = {
+										position = { 85 125 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('eagle_eyes_spell')]"
+											datacontext = "[Scope.Unit]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										
+										button = {
+											datacontext = "[GetScriptedGui('eagle_eyes_spell_overcast')]"
+											datacontext = "[Scope.Unit]"
+											position = { 6 36 }
+											size = { 26 26 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+									container = {
+										position = { 5 125 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('stallion_pride_spell')]"
+											datacontext = "[Scope.Unit]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										
+										button = {
+											datacontext = "[GetScriptedGui('stallion_pride_spell_overcast')]"
+											datacontext = "[Scope.Unit]"
+											position = { 6 36 }
+											size = { 26 26 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+									container = {
+										position = { 0 275 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('rage_of_earth_spell')]"
+											datacontext = "[Scope.Unit]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+									container = {
+										position = { 35 275 }
+										
+										button = {
+											datacontext = "[GetScriptedGui('rage_of_nature_spell')]"
+											datacontext = "[Scope.Unit]"
+											position = { 5 0 }
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope  ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Unit.MakeScope ).AddScope( 'player', Player.MakeScope ).AddScope( 'current_unit', SingleUnitWindow.GetSelectedUnit.MakeScope ).AddScope( 'unit_commander', SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).End )]"
+											texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+									}
+								
+								
+								
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		flowcontainer = {
+			name = "panel_with_list_of_targetable_characters"
+			ignoreinvisible = yes
+			visible = no
+			position = { 4 15 }
+			container = {
+				position = { 0 0 }
+				
+				icon = {
+					texture = "gfx/interface/bg/law_entry_scroll_bg.dds"
+					spriteType = stretched
+					spriteborder = { 10 10 }
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					size = { 290 680 }
+					alwaystransparent = no
+					position = { 0 0 }
+				}
+				
+				
+				
+				button = {
+					position = { 296 185 }
+					size = { 50 50 }
+					onclick = "[PdxGuiWidget.AccessParent.AccessParent.AccessParent.FindChild('panel_with_list_of_targetable_characters').Hide]"
+					texture = "gfx/interface/buttons/magic_window/magic_tab_icon_character.dds"
+					clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+					oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				}
+				
+				scrollarea = {
+					position = { 5 20 }
+					size = { 280 625 }
+					scrollbarpolicy_horizontal = always_off
+					
+					scrollbar_vertical = {
+						using = MarbleScrollBar
+						blockoverride "ScrollBar_offset"
+						{
+							size = { 0 4 }
+						}
+					}
+					
+					
+					scrollwidget = {
+						
+						dynamicgridbox = {
+							size = { 230 400 }
+							position = { 5 5 }
+							
+							datamodel = "[SingleUnitWindow.GetSelectedUnit.GetCountry.MakeScope.GetList('targetable_char_casting')]"
+							
+							item = {
+								container = {
+									
+									button = {
+										using = portrait_60_no_pop
+										datacontext = "[Scope.Char]"
+										parentanchor = top|left
+										position = { 2 -3 }
+									}
+									textbox = {
+										size = { 220 30 }
+										position = { 86 1 }
+										multiline = yes
+										datacontext = "[Scope.Char]"
+										using = MarbleButtonFont
+										text = "[Character.GetName]"
+										align = left|top
+									}
+								
+								
+								
+								
+								
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	
+	
+	
+	
+	
+	
+	
+	
+	}
+
+
+
+
+}
+

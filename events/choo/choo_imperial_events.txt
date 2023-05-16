@@ -1,0 +1,177 @@
+﻿namespace = choo_imperial
+
+#choo_imperial.1 = {
+#	type = country_event
+#	hidden = yes
+#	
+#	trigger = {
+#	always = yes
+#	#var:current_state_rank > 4
+#	}
+#
+#	immediate = {
+#	clear_variable_list = governors_submissions_list
+#	
+#	every_character = {
+#			limit = {
+#			is_governor = yes
+#			NOR = {
+#			is_target_in_variable_list = { name = denied_submissions_list target = this }
+#			is_target_in_variable_list = { name = accepted_submissions_list target = this }
+#			is_target_in_variable_list = { name = governors_submissions_list_submissions target = this }
+#			}
+#			}
+#			save_temporary_scope_as = to_add
+#			root = {
+#				add_to_variable_list = {
+#					name = governors_submissions_list
+#					target = scope:to_add
+#				}
+#			}
+#		}
+#	}
+#}
+
+
+choo_imperial.2 = {
+	type = country_event
+	hidden = yes
+	
+	trigger = {
+		is_monarchy = yes
+		var:current_state_rank > 4
+		any_character = {  
+			is_governor = yes
+			is_ruler = no
+		}
+		NOT = { has_variable = submissions_pending_timer }
+	}
+
+	immediate = {	
+		random_character = {
+			limit = {
+				is_governor = yes
+				root = {
+					NOT = {
+						is_target_in_variable_list = { name = denied_submissions_list target = prev }
+						is_target_in_variable_list = { name = accepted_submissions_list target = prev }
+						is_target_in_variable_list = { name = governors_submissions_list_submissions target = prev }
+					}
+				}
+			}
+			save_temporary_scope_as = to_add
+			set_random_submission = yes
+			add_character_modifier = { name = submission_lasting_time duration = 1460 }
+			root = {
+				add_to_variable_list = {
+					name = governors_submissions_list_submissions
+					target = scope:to_add
+				}
+			}
+		}			
+		set_variable = { name = submissions_pending_timer days = 548 }	
+	}
+}
+
+choo_imperial.3 = {
+
+	type = country_event
+	hidden = yes
+	
+	trigger = {
+		is_monarchy = yes
+		var:current_state_rank > 4
+		any_character = {  
+			is_governor = yes
+			ROOT = {
+				is_target_in_variable_list = { name = governors_submissions_list_submissions target = prev }
+				NOT = {  
+					is_target_in_variable_list = { name = denied_submissions_list target = prev }
+					is_target_in_variable_list = { name = accepted_submissions_list target = prev }
+				}
+			}
+			NOT = { has_character_modifier = submission_lasting_time }
+		}
+	}
+
+	immediate = {
+		every_character = {
+			limit = {
+			is_governor = yes
+				ROOT = {
+					is_target_in_variable_list = { name = governors_submissions_list_submissions target = prev }
+					NOT = {  
+					is_target_in_variable_list = { name = denied_submissions_list target = prev }
+					is_target_in_variable_list = { name = accepted_submissions_list target = prev }
+					}
+				}
+			NOT = { has_character_modifier = submission_lasting_time }			
+			}			
+			save_temporary_scope_as = to_add						
+			root = {			
+				add_to_variable_list = {
+						name = denied_submissions_list
+						target = scope:to_add
+				}
+				remove_list_variable = { 
+					name = governors_submissions_list_submissions 
+					target = scope:to_add 
+				}
+				scope:to_add = {
+					add_loyalty = denied_governor_submission
+					if = { 
+						limit = {  loyalty < 50  }  
+						random = { 
+							chance = 50
+							add_character_modifier = { name = opposing_imperial_rule duration = 1825  }
+						}
+					}  
+					clear_all_submissions = yes
+				}				
+			}
+		}
+	}
+}
+choo_imperial.4 = {
+	type = country_event
+	hidden = yes	
+
+	trigger = {
+		is_monarchy = yes
+		var:current_state_rank > 4
+		any_character = {  
+			is_governor = yes
+			ROOT = {
+				OR = {  
+					is_target_in_variable_list = { name = denied_submissions_list target = prev }
+					is_target_in_variable_list = { name = accepted_submissions_list target = prev }
+				}
+			}
+		}
+	}
+
+	immediate = {
+		every_character = {
+			limit = {
+				is_governor = yes
+				ROOT = {
+					OR = {  
+						is_target_in_variable_list = { name = denied_submissions_list target = prev }
+						is_target_in_variable_list = { name = accepted_submissions_list target = prev }
+					}
+				}
+			}
+			save_temporary_scope_as = to_be_removed_from_submissions
+			root = {				
+				remove_list_variable = {
+					name = denied_submissions_list
+					target = scope:to_be_removed_from_submissions
+				}
+				remove_list_variable = { 
+					name = accepted_submissions_list 
+					target = scope:to_be_removed_from_submissions 
+				}	
+			}			
+		}		
+	}
+}

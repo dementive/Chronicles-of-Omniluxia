@@ -1,0 +1,64 @@
+﻿country_decisions = {
+	negotiate_with_slaves = {
+		potential = {
+			num_of_cities >= 1
+			has_country_modifier = ongoing_slave_revolt
+		}
+		allow = {
+			stability > 60
+			treasury >= 5
+		}
+		effect = {
+			add_stability = -25 #Negotiation is not expected
+			add_treasury = -250 #Money to the slaves
+			custom_tooltip = allow_slaves_to_settle
+			remove_country_modifier = ongoing_slave_revolt
+			add_country_modifier = {
+				name = "slave_revolt_succesful"
+				duration = 5475
+			}
+			hidden_effect = {
+				every_owned_province = {
+					limit = { controller = c:REB }
+					set_controller = owner
+				}
+				if = {
+					limit = {
+						any_owned_province = {
+							any_unit_in_province = { #Snowball is here
+								unit_owner = c:REB
+							}
+						}
+					}
+					every_owned_province = {
+						limit = {
+							any_unit_in_province = { #Snowball is here
+								unit_owner = c:REB
+							}
+						}
+						add_province_modifier = {
+							name = settled_slaves #Don't move slaves here.
+							duration = 5475
+						}
+						random_unit_in_province = {
+							limit = {
+								unit_owner = c:REB
+							}
+							every_sub_unit = {
+								owning_unit.unit_location = {
+									create_state_pop = freemen
+								}
+								destroy_subunit = yes
+							}
+							destroy_unit = yes
+						}
+					}
+				}
+			}
+		}
+		
+		ai_will_do = {
+			factor = 0
+		}
+	}
+}

@@ -1,0 +1,90 @@
+﻿settle = {
+
+	duration = 0
+	enable = yes
+	toggle = no
+
+	army_only = yes
+	soundeffect ="event:/SFX/Animations/Units/Generic/sfx_anim_unit_build_colony"
+
+	
+	hidden = {
+		unit_owner = { 
+			NOT = { 
+				government = tribal_chiefdom 
+				government = nomadic_tribe 				
+			}
+		}
+	}
+	
+	
+	allow = {
+		
+		in_combat = no
+		is_moving = no
+		in_siege = no
+		is_exiled = no
+		num_of_migrants > 0
+		unit_location = { is_inhabitable = yes }
+		OR = {
+			unit_location.controller = unit_owner
+			hidden:unit_location = { has_owner = no }
+		}
+		hidden:unit_location = { has_siege = no }
+		hidden:unit_location = { NOT = { is_sea = yes } }
+		hidden:unit_location = { is_uninhabitable = no }
+		OR = {
+			num_of_migrants >= unit_location.total_population
+			unit_location.owner = unit_owner
+		}
+	}
+	
+	start_effect = {
+		if = {
+			limit = {
+				is_iron_man = yes
+				unit_owner = {
+					is_ai = no
+					NOT = {
+						has_variable = ach_a_new_home_var
+					}
+				}
+			}
+			unit_owner = {
+				set_variable = {
+					name = ach_a_new_home_var
+				}
+			}
+		}
+		if = {
+			limit = {
+				num_of_migrants >= unit_location.total_population
+			}
+			unit_location = {
+				set_conquered_by = root.unit_owner
+			}
+		}
+		every_sub_unit = {
+			limit = {
+				is_migration = yes
+			}
+			owning_unit.unit_location = { 
+				define_pop = {
+					type = tribesmen
+					religion = root.unit_owner.religion
+					culture = root.unit_owner.culture
+				}
+			}
+			destroy_subunit = yes
+		}
+		
+		if = {
+			limit = {
+				unit_size = 0
+			}
+			destroy_unit = yes
+		}
+	}
+	
+
+}

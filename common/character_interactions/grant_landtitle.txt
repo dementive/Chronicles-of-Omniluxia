@@ -1,0 +1,371 @@
+﻿grant_land_title = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			is_ruler = no
+			is_primary_heir = no
+			is_alive = yes
+			is_mercenary = no
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+		}
+		hidden:scope:actor = {
+			is_monarchy = yes
+			has_variable = current_state_rank
+			var:current_state_rank >= 2
+		}
+	}
+	
+	allowed_trigger = {
+		hidden:scope:actor = {
+			OR = {
+				war = no
+				has_civil_war = no
+			}
+		}
+		direct_feudal_vassals_limit <= current_feudal_vassals_amount
+	}
+	
+	province_actor_trigger = {
+		is_capital = no
+	}
+	
+	
+	effect = {
+	
+	scope:actor = {
+				if = {
+				
+				limit = { exists = scope:recipient }
+				
+				hidden_effect = {
+				
+				 scope:recipient = {
+				 create_country = { } 
+				 }
+				
+				
+				scope:recipient.owner = {
+				
+				save_scope_as = new_created_vassal
+				
+				}
+
+				scope:new_created_vassal = { set_as_ruler = scope:target }
+				
+				scope:target = {
+						move_country = scope:new_created_vassal
+						remove_character_modifier = foreign_citizen
+				}
+
+				}
+				
+				custom_tooltip = create_new_vassal_under_ctrl
+				
+				}
+				else = { 
+				custom_tooltip = havent_choosen_province_to_be_given 
+				
+				}
+				
+				if = { 
+				limit = { exists = scope:new_created_vassal } 
+				
+				make_subject = { target = scope:new_created_vassal type = county_vassal  } 
+				
+				scope:target.family = {
+						every_family_member = {
+							limit = {
+								employer = scope:actor
+								is_ruler = no
+								is_governor = no
+							}
+							move_country = scope:target_country
+							remove_character_modifier = foreign_citizen
+							set_variable = {
+								name = f1temp_1
+								days = 1
+							}
+						}
+					}
+				scope:target_country = {
+						change_government = feudal_monarchy
+						create_family = scope:target
+						every_character = {
+							limit = {
+								has_variable = f1temp
+							}
+							set_family = scope:target.family
+						}
+					}
+				
+				
+				}				
+				
+			}
+			
+				
+	}
+	
+	
+	ai_will_do = {
+	
+		modifier = {
+			add = 10
+			trigger = {
+				employer = {
+				OR = {
+				has_country_modifier = overextended_domene_size_1
+				has_country_modifier = overextended_domene_size_2
+				has_country_modifier = overextended_domene_size_3
+				}	
+				}
+			}
+		}
+	modifier = {
+			add = 10
+			trigger = {
+				employer = {
+				has_country_modifier = overextended_domene_size_1
+				}
+			}
+		}
+		modifier = {
+			add = 20
+			trigger = {
+				employer = {
+				has_country_modifier = overextended_domene_size_2
+				}
+			}
+		}
+		modifier = {
+			add = 30
+			trigger = {
+				employer = {
+				has_country_modifier = overextended_domene_size_3
+				}
+			}
+		}
+	modifier = {
+			add = 20
+			trigger = {
+			scope:target = { 
+			finesse >= 6 
+			loyalty >= 60 
+			}
+			}
+		}
+		modifier = {
+			add = 20
+			trigger = {
+			scope:target = { 
+			loyalty >= 90 
+			}
+			}
+		}	
+	}
+	
+	
+}
+grant_land_title_princedom = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_economy"
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			is_ruler = no
+			is_primary_heir = no
+			is_alive = yes
+			is_mercenary = no
+			is_governor = no
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+		}
+		hidden:scope:actor = {
+			is_monarchy = yes
+			has_variable = current_state_rank
+			var:current_state_rank >= 4
+		}
+	}
+	
+
+	allowed_trigger = {
+		scope:actor = {
+			war = no
+			has_civil_war = no
+			is_subject = no
+			
+			direct_feudal_vassals_limit_princedom <= current_feudal_vassals_amount
+			
+		}
+	}
+	
+
+ province_actor_trigger = { 
+		state = {  
+		is_capital_state = no
+				}
+		is_state_capital = yes
+		}	
+	
+	effect = {
+		if = {
+		limit = { exists = scope:recipient }
+			scope:actor = {
+				hidden_effect = {
+					scope:recipient = {
+						save_scope_as = target_province
+					}
+					scope:target_province = {
+					create_country = {  }
+					}
+					
+				}
+				show_as_tooltip = {
+				scope:recipient = {
+				create_country = {  }
+				}
+					 
+				}
+				custom_tooltip = clan_chief_secedes
+				hidden_effect = {
+					scope:target_province.owner = {
+						save_scope_as = target_country
+					}
+					scope:target = {
+						move_country = scope:target_country
+						remove_character_modifier = foreign_citizen
+					}
+					scope:target_country = {
+						set_as_ruler = scope:target
+					}
+					scope:target.family = {
+						every_family_member = {
+							limit = {
+								employer = scope:actor
+								is_ruler = no
+								is_governor = no
+							}
+							move_country = scope:target_country
+							remove_character_modifier = foreign_citizen
+							set_variable = {
+								name = f1temp
+								days = 1
+							}
+						}
+					}
+					scope:target_province.area = {
+						every_area_province = {
+							limit = {
+								owner = scope:actor
+							}
+							set_owned_by = scope:target_country
+						}
+					}
+					scope:target_country = {
+						change_government = feudal_monarchy
+						create_family = scope:target
+						every_character = {
+							limit = {
+								has_variable = f1temp
+							}
+							set_family = scope:target.family
+						}
+					}
+					if = {
+						limit = {
+							scope:target_province = {
+								total_population < 5
+							}
+						}
+						scope:target_province = {
+							while = {
+								limit = {
+									total_population < 5
+								}
+								create_state_pop = tnoble
+							}
+						}
+					}
+				}
+					custom_tooltip = becomes_a_tributary_tt
+					if = {
+						limit = {
+							scope:actor = {
+								NOT = {
+									this = scope:target_country
+								}
+							}
+						}
+						hidden_effect = {
+							scope:actor = {
+								make_subject = {
+									target = scope:target_country
+									type = county_vassal
+								}
+							}
+						}
+					}
+				}
+			}
+		else = {
+			custom_tooltip = no_effect_tooltip
+		}
+	}
+	
+	ai_will_do = {
+	
+		modifier = {
+			add = 10
+			trigger = {
+				employer = {
+				OR = {
+				has_country_modifier = overextended_domene_size_2
+				has_country_modifier = overextended_domene_size_3
+				}	
+				}
+			}
+		}
+		modifier = {
+			add = 10
+			trigger = {
+				employer = {
+				has_country_modifier = overextended_domene_size_2
+				}
+			}
+		}
+		modifier = {
+			add = 20
+			trigger = {
+				employer = {
+				has_country_modifier = overextended_domene_size_3
+				}
+			}
+		}
+	modifier = {
+			add = 20
+			trigger = {
+			scope:target = { 
+			finesse >= 6 
+			loyalty >= 60 
+			}
+			}
+		}
+		modifier = {
+			add = 20
+			trigger = {
+			scope:target = { 
+			finesse >= 5
+			loyalty >= 90 
+			}
+			}
+		}	
+	}
+	
+}

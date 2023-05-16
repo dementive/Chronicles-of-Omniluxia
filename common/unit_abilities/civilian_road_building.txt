@@ -1,0 +1,196 @@
+﻿civilian_road_building = {
+
+	duration = -1
+	enable = no
+	toggle = yes
+	army_only = yes
+	soundeffect = "event:/SFX/UI/Unit/sfx_ui_unit_build_road"
+	map = yes
+	
+	is_road_building = yes #blocks disband/reorganization and makes AI try to move armies acccordingly
+	cancel_on_combat_end = yes
+	
+	hidden = {
+		unit_owner = { 
+			has_military_tradition = latin_philosophy  
+		}
+	}
+
+	map = yes
+	
+	
+	allow = {
+		hidden:unit_owner = { can_pay_price = build_expensive_roads }
+		is_army = yes
+		unit_size >= 10
+		in_combat = no
+		is_moving = no
+		is_exiled = no
+		unit_owner = {
+			civic_tech > 4
+		}
+		scope:province = { #not unit_location since AI needs to be able to reason about this 
+			owner =  root.unit_owner
+			controller = root.unit_owner
+			
+			any_neighbor_province = {
+				owner =  root.unit_owner
+				controller = root.unit_owner
+				NOT = { has_road_towards = scope:province }
+			}
+		}
+		trigger_if = {
+			limit = {
+				exists = commander
+			}
+			commander = {
+				loyalty > 33
+			}
+		}
+	}
+	modifier = {
+		movement_speed_if_no_road = -0.7
+		army_maintenance_cost = 1.2
+		land_morale_modifier = -0.2
+	}
+	
+	
+	start_effect = {
+		
+		set_variable = {
+			name = road_location
+			value = unit_location
+		}
+		custom_tooltip = ROAD_WILL_BE_FINISHED
+	}
+	
+	on_entering_province = {
+		if = {
+			limit = {
+				NOT = { unit_location = root.var:road_location }
+				NOT = { unit_location = { has_road_towards = root.var:road_location } }
+				unit_location = { is_neighbor = root.var:road_location }
+				unit_owner = { can_pay_price = build_expensive_roads }
+				unit_location = {
+					OR = {
+						AND = {
+							has_owner = yes
+							owner = root.unit_owner 
+							controller = root.unit_owner 
+						}
+						AND = {
+							has_owner = no
+							NOT = {
+								is_sea = yes
+							}
+						}
+					}
+				}
+			}
+			unit_owner = {  pay_price = build_expensive_roads }
+			unit_location = {
+				add_road_towards = root.var:road_location
+			}
+			set_variable = {
+				name = road_location
+				value = unit_location
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { unit_location = root.var:road_location }
+				unit_location = { has_road_towards = root.var:road_location }
+				unit_location = { is_neighbor = root.var:road_location }
+				unit_location = { 
+					OR = {
+						AND = {
+							has_owner = yes
+							owner = root.unit_owner 
+							controller = root.unit_owner 
+						}
+						AND = {
+							has_owner = no
+							NOT = {
+								is_sea = yes
+							}
+						}
+					}
+				}
+			}
+			set_variable = {
+				name = road_location
+				value = unit_location
+			}
+		}
+		else = { 
+			set_variable = {
+				name = road_finished
+				value = unit_location
+			}
+		}
+		
+		
+	}
+	
+	finished_when = {
+		OR = {
+			has_variable = road_finished
+			unit_location = {
+				OR = {
+					is_sea = yes
+					AND = {
+						has_owner = yes
+						NOT = {
+							controller = root.unit_owner
+						}
+					}
+					AND = {
+						has_owner = yes
+						NOT = {
+							owner = root.unit_owner
+						}
+					}
+				}
+			}
+			AND = {
+				exists = commander
+				commander = {
+					loyalty <= 33
+				}
+			}
+		}
+	}
+	
+	finish_effect = {
+		if = {
+			limit = {
+				has_variable = road_finished 
+			}
+			remove_variable = road_finished
+		}
+	}
+	
+	move_entity_state = build_road
+	
+	ai_will_do = {
+		modifier = {
+			trigger = {
+				unit_owner =
+				{
+					war = no
+				}
+				unit_threat <= 0.0
+				unit_location = {
+					ai_wants_road = root.unit_owner
+				}
+			}
+			add = {
+				value = 11110
+			}
+		}
+	}
+	
+	ai_will_revoke = {
+		always = no #Handled by script when road finishes.
+	}
+}

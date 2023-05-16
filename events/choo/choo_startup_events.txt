@@ -1,0 +1,245 @@
+﻿namespace = startup_choo
+
+startup_choo.1 = {
+	type = country_event
+	title = "startup_choo.1"
+	desc = "startup_choo.1"
+	picture = revolt
+	hidden = yes
+	
+	trigger = {
+		NOT = { has_variable = choo_startup_stuff_done }
+	}
+
+	immediate = {  
+		set_variable = choo_startup_stuff_done
+		set_variable = { name = society_points value = 0  }
+		set_variable = { name = society_development_level value = 0  }
+		set_variable = { name = magic_influx value = 0  }	
+		#assigning rank
+		if = { limit = { num_of_cities < 2 } 
+			set_variable = { name = current_state_rank value = 1  }
+		}
+		else_if = { limit = { num_of_provinces < 2 } 
+			set_variable = { name = current_state_rank value = 2  }
+		}
+		else_if = { limit = { num_of_provinces < 4 } 
+			set_variable = { name = current_state_rank value = 3  }
+		}
+		else_if = { limit = { num_of_provinces < 10 } 
+			set_variable = { name = current_state_rank value = 4  }
+		}
+		else = { set_variable = { name = current_state_rank value = 5  } }	
+		if = { 
+			limit = {
+				OR = { 
+					TAG = WGA 
+					TAG = EGA 
+				} 
+			} 
+		set_variable = { name = current_state_rank value = 5  } }		
+		if = { 
+			limit = { 
+				OR = { 
+					government = seekers_councill 
+					government = monastic_order  
+				} 
+			} 
+			set_variable = { name = current_state_rank value = 3  } 
+		}
+		if = { 
+			limit = { 
+				OR = { 
+					government = seekers_councill 
+					government = monastic_order 
+				}  
+			} 
+			set_variable = { name = devotness_shift value = 20  } 
+		}		
+		random_list = { 
+			20 = { set_variable = divide_and_conquer_destiny }
+			20 = { set_variable = rule_and_unite_destiny }
+			20 = { set_variable = expand_and_grow_destiny }
+			20 = { set_variable = be_welthy_and_prosper_destiny }
+			20 = { set_variable = discovery_wonders_of_world_destiny }
+		}
+		if = { 
+			limit = { 
+				OR = { 
+					TAG = WGA 
+					TAG = EGA 
+				} 
+			} 
+			switch = { 
+				trigger = tag
+				WGA = { set_variable = balanced_nation_nature }
+				EGA = { set_variable = balanced_nation_nature }
+			}		
+		}
+		else = {
+			set_variable = balanced_nation_nature
+		}	
+		#assign_race
+		if = { limit = { country_culture_group = forest_elves } 
+			add_country_modifier = { name = forest_elven_race_modifier duration = -1 }
+			add_country_modifier = { name = forest_elven_race_society_modifier duration = -1 }
+		}
+		else_if = {
+			limit = { country_culture_group = kinones }
+			add_country_modifier = { name = kinones_race_modifier duration = -1 }
+			add_country_modifier = { name = kinones_race_society_modifier duration = -1 }
+		}
+		else_if = {
+			limit = { country_culture_group = high_elves }
+			add_country_modifier = { name = high_elven_race_modifier duration = -1 }
+			add_country_modifier = { name = high_elven_race_society_modifier duration = -1 }
+		} 
+		else_if = {
+			limit = { country_culture_group = orcish }
+			add_country_modifier = { name = orcish_race_modifier duration = -1 }
+			add_country_modifier = { name = orcish_race_society_modifier duration = -1 }
+		}
+		else_if = {
+			limit = { 
+				OR = { 
+					country_culture_group = gold_dwarves 
+					country_culture_group = common_dwarves  
+					country_culture_group = silver_dwarves 
+				}   
+			}
+			add_country_modifier = { name = dwarven_race_modifier duration = -1 }
+			add_country_modifier = { name = dwarven_race_society_modifier duration = -1 }
+		}
+		else_if = {
+			limit = { country_culture = werhenssian }
+			add_country_modifier = { name = forest_elven_race_modifier duration = -1 }
+			add_country_modifier = { name = werhenssian_race_society_modifier duration = -1 }
+		}	
+		else = {
+			add_country_modifier = { name = human_race_modifier duration = -1 }
+			add_country_modifier = { name = human_race_society_modifier duration = -1 }
+		}		
+	}	
+}
+
+
+startup_choo.2 = {
+	type = country_event
+	hidden = yes
+	
+	trigger = {
+		OR = {		
+			NOR = {
+				has_variable = society_points
+				has_variable = society_development_level
+				has_variable = current_state_rank
+			}		
+			NOT = {  
+				has_country_modifier = forest_elven_race_modifier 
+				has_country_modifier = forest_elven_race_society_modifier 
+				has_country_modifier = kinones_race_modifier 
+				has_country_modifier = kinones_race_society_modifier 
+				has_country_modifier = orcish_race_modifier 
+				has_country_modifier = orcish_race_society_modifier 
+				has_country_modifier = dwarven_race_modifier 
+				has_country_modifier = dwarven_race_society_modifier 
+				has_country_modifier = forest_elven_race_modifier 
+				has_country_modifier = werhenssian_race_society_modifier 
+				has_country_modifier = human_race_modifier 
+				has_country_modifier = human_race_society_modifier 		
+			}		
+		}
+	}
+
+	immediate = {  
+		set_variable = choo_startup_stuff_done
+		set_variable = { name = society_points value = 0  }
+		set_variable = { name = society_development_level value = 1  }	
+		#assigning rank
+		if = { limit = { num_of_cities < 2 } 
+			set_variable = { name = current_state_rank value = 1  }
+		}
+		else_if = { limit = { num_of_provinces < 2 } 
+			set_variable = { name = current_state_rank value = 2  }
+		}
+		else_if = { limit = { num_of_provinces < 4 } 
+			set_variable = { name = current_state_rank value = 3  }
+		}
+		else_if = { limit = { num_of_provinces < 10 } 
+			set_variable = { name = current_state_rank value = 4  }
+		}
+		else = { set_variable = { name = current_state_rank value = 5  } }	
+		if = { 
+			limit = { 
+				OR = { 
+					TAG = WGA 
+					TAG = EGA 
+				}  
+			} 
+			set_variable = { name = current_state_rank value = 5  } 
+		} 	
+		random_list = { 
+			20 = { set_variable = divide_and_conquer_destiny }
+			20 = { set_variable = rule_and_unite_destiny }
+			20 = { set_variable = expand_and_grow_destiny }
+			20 = { set_variable = be_welthy_and_prosper_destiny }
+			20 = { set_variable = discovery_wonders_of_world_destiny }
+		}
+		if = { 
+			limit = { 
+				OR = { 
+					TAG = WGA 
+					TAG = EGA 
+				} 
+			} 
+			switch = { 
+				trigger = tag
+				WGA = { set_variable = balanced_nation_nature }
+				EGA = { set_variable = balanced_nation_nature }
+			}	
+		}
+		else = {
+			set_variable = balanced_nation_nature
+		}	
+		#assign_race
+		if = { limit = { country_culture_group = forest_elves } 
+			add_country_modifier = { name = forest_elven_race_modifier duration = -1 }
+			add_country_modifier = { name = forest_elven_race_society_modifier duration = -1 }
+		}
+		else_if = {
+			limit = { country_culture_group = kinones }
+			add_country_modifier = { name = kinones_race_modifier duration = -1 }
+			add_country_modifier = { name = kinones_race_society_modifier duration = -1 }
+		}
+		else_if = {
+			limit = { country_culture_group = high_elves }
+			add_country_modifier = { name = high_elven_race_modifier duration = -1 }
+			add_country_modifier = { name = high_elven_race_society_modifier duration = -1 }
+		} 
+		else_if = {
+			limit = { country_culture_group = orcish }
+			add_country_modifier = { name = orcish_race_modifier duration = -1 }
+			add_country_modifier = { name = orcish_race_society_modifier duration = -1 }
+		}
+		else_if = {
+			limit = { 
+				OR = { 
+					country_culture_group = gold_dwarves 
+					country_culture_group = common_dwarves  
+					country_culture_group = silver_dwarves 
+				}   
+			}
+			add_country_modifier = { name = dwarven_race_modifier duration = -1 }
+			add_country_modifier = { name = dwarven_race_society_modifier duration = -1 }
+		}
+		else_if = {
+			limit = { country_culture = werhenssian }
+			add_country_modifier = { name = forest_elven_race_modifier duration = -1 }
+			add_country_modifier = { name = werhenssian_race_society_modifier duration = -1 }
+		}	
+		else = {
+			add_country_modifier = { name = human_race_modifier duration = -1 }
+			add_country_modifier = { name = human_race_society_modifier duration = -1 }
+		}		
+	}
+}

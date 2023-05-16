@@ -1,0 +1,106 @@
+﻿namespace = monastic_order_events
+
+monastic_order_events.1 = {
+	type = country_event
+	hidden = yes
+
+	trigger = { 
+		OR = {
+			government = monastic_order
+			government = seekers_councill
+		}
+	}
+	
+	immediate = { 
+		if = { 
+			limit = { government = monastic_order }		
+			if = { 
+				limit = { devotion_value > 50 }
+				add_country_modifier_stack = { MOD = devotion_positive_modifier NUM = devotion_offset_value DUR = -1 }
+				remove_country_modifier = devotion_negative_modifier
+			}
+			else_if = { 
+				limit = {  devotion_value < 50 }
+				remove_country_modifier = devotion_positive_modifier
+				add_country_modifier_stack = { MOD = devotion_negative_modifier NUM = devotion_negative_offset_value DUR = -1 }
+			}
+			else = {
+				remove_country_modifier = devotion_positive_modifier
+				remove_country_modifier = devotion_negative_modifier
+			}		
+		}
+		if = { 
+			limit = { government = seekers_councill }			
+			if = { 
+				limit = { wisdom_value > 50 }
+				add_country_modifier_stack = { MOD = wisdom_positive_modifier NUM = wisdom_offset_value DUR = -1 }
+				remove_country_modifier = wisdom_negative_modifier
+			}
+			else_if = { 
+				limit = { wisdom_value < 50 }
+				remove_country_modifier = wisdom_positive_modifier
+				add_country_modifier_stack = { MOD = wisdom_negative_modifier NUM = wisdom_negative_offset_value DUR = -1 }
+			}
+			else = {
+				remove_country_modifier = wisdom_positive_modifier
+				remove_country_modifier = wisdom_negative_modifier
+			}		
+		}	
+		if = { limit = { NOT = { has_variable = devotness_shift } } set_variable = { name = devotness_shift value = 20 }  }		
+		if = { limit = { var:devotness_shift < -40 } change_variable = { name = devotness_shift add = 0.1 } }
+		if = { limit = { var:devotness_shift < -25 } change_variable = { name = devotness_shift add = 0.1 } }
+		if = { limit = { var:devotness_shift > 25 } change_variable = { name = devotness_shift add = -0.1 } }
+		if = { limit = { var:devotness_shift > 40 } change_variable = { name = devotness_shift add = -0.1 } }		
+	}	
+}
+
+monastic_order_events.2 = {
+
+	type = country_event
+	title = "monastic_order_events.2.t"
+	desc = "monastic_order_events.2.desc"
+	picture = successors
+
+	trigger = {
+		OR = {
+			government = monastic_order
+			government = seekers_councill
+		}
+	}
+	
+	option = {	
+		name = "monastic_order_events.2.a"
+		ai_chance = {
+			factor = 25
+		}
+		
+		every_character = {
+			limit = { has_variable = chosen_next_grandmaster }
+			remove_variable = chosen_next_grandmaster
+			remove_character_modifier = chosen_as_next_grandmaster
+		}	
+		remove_variable = chosen_next_grandmaster_display	
+		change_variable = { name = devotness_shift add = -2.5  }
+		#current regent shall become new grandmaster
+	}
+
+	option = { 
+		ai_chance = {
+			factor = 60
+			modifier = { factor = 0.1 stability < 40  }
+		}
+		name = "monastic_order_events.2.b"
+		
+		every_character = {
+			limit = { has_variable = chosen_next_grandmaster }
+			root = {
+				set_as_ruler = PREV
+				change_variable = { name = devotness_shift add = 2.5  }
+			}
+			remove_variable = chosen_next_grandmaster
+			remove_character_modifier = chosen_as_next_grandmaster
+		}
+		remove_variable = chosen_next_grandmaster_display
+		#we honour choice of previous grandmaster 	
+	}
+}

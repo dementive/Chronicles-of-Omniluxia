@@ -1,0 +1,176 @@
+﻿desecrate_holysite = {
+
+	duration = 0
+	enable = yes
+	toggle = no
+	soundeffect = "event:/SFX/UI/Unit/sfx_ui_unit_desecrate_holy_site"
+
+	army_only = yes
+	is_desecrate = yes #Invokes hardcoded AI behavior for desecration.
+
+	# will prompt a confirmation window before triggering
+	confirm = yes
+
+	allow = {
+		hidden:unit_owner = { can_pay_price = desecrate }
+		
+		is_army = yes
+		in_combat = no
+		OR = {
+			is_moving = no
+			unit_owner = { is_ai = yes } #AI doesn't know how to stop for abilities.
+		}
+		in_siege = no
+		is_exiled = no
+		unit_location = {
+			has_owner = yes
+		}
+		hidden:unit_location = {
+			has_owner = yes
+			is_holy_site = yes
+			controller = root.unit_owner
+		}
+		trigger_if = {
+			limit = {
+				exists = commander
+			}
+			commander = {
+				loyalty > 33
+			}
+		}
+	}
+	
+	
+	start_effect = {
+		unit_owner = {  pay_price = desecrate }
+		hidden_effect = {
+			unit_owner = { save_scope_as = sacker }
+			unit_location = {
+				save_scope_as = shrine_location
+				set_variable = unit_desecration_happened
+				if = {
+					limit = { is_holy_site = yes } #If we are actually doing this
+					province_deity = {
+						save_scope_as = provincial_deity
+					}
+				}
+				if = {
+					limit = { NOT = { root.unit_owner = owner } }
+					trigger_event = {
+						id = desecration.1 #Sack of X
+					}
+				}
+				else = {
+					root.unit_owner = {
+						trigger_event = {
+							id = desecration.2 #Holy Site Sacked
+						}
+					}
+				}
+				if = {
+					limit = {
+						exists = scope:provincial_deity 
+					}
+					every_country = {
+						limit = {
+							scope:provincial_deity = {
+								deity_religion = PREV.religion
+							}
+							NOT = { THIS = root.unit_owner }
+							NOT = { THIS = root.unit_location.owner }
+						}
+						trigger_event = {
+							id = desecration.3 #Holy Site of our Faith Sacked
+						}
+					}
+				}
+			}
+		}
+		if = {
+			limit = { unit_location = { is_holy_site = yes } }
+			custom_tooltip = desecration_opinion
+		}
+		else = {
+			custom_tooltip = desecration_opinion_general
+		}
+
+		unit_location = {
+			desecrate_effect = yes
+		}
+		
+	}
+	
+	ai_will_do = {
+	
+		#AI will descrate holy sites that either have treasures OR match either the religion or pantheon of its opponent IF:
+		#It has less than x AE.
+		#It is not a subject state.
+		#Its commander or ruler has certain traits.
+	
+		modifier = { #If the commander or ruler have the right traits and if we don't have a lot of AE then we consider this.
+			trigger = {
+				unit_location = { is_holy_site = yes }
+				unit_owner = {
+					is_subject = no
+					war_with = PREV.unit_location.owner #AI should never target its own holy sites.
+					has_aggressive_expansion < 15  #Don't accrue AE this way so you cannot demand territory later.
+				}
+				
+				#Either there is at least 1 treasure here, or its deity belongs to our opponents religion but it is not our religion.
+				unit_location = {
+					OR = {
+						any_province_treasure = { count >= 1 }
+						province_deity = { #Not our religion but it is the owners religion.
+							NOT = { deity_religion = root.unit_owner.religion }
+							OR = {
+								deity_religion = prev.owner.religion
+								PREV.owner = { has_deity_in_pantheon = PREV }
+							}
+						}
+					}
+				}
+				
+				#Traits evaluation:
+				trigger_if = { #If we have a commander then we look both to him and his boss.
+					limit = {
+						exists = commander
+						unit_owner = {
+							exists = current_ruler
+						}
+					}
+					OR = {
+						unit_owner.current_ruler = { has_trait = zealous }
+						unit_owner.current_ruler = { has_trait = vengeful }
+						unit_owner.current_ruler = { has_trait = reckless }
+						unit_owner.current_ruler = { has_trait = rash }
+						commander = { has_trait = zealous }
+						commander = { has_trait = vengeful }
+						commander = { has_trait = reckless }
+						commander = { has_trait = rash }
+					}
+				}
+				trigger_else_if = { #We look at the ruler.
+					limit = {
+						unit_owner = {
+							exists = current_ruler
+						}
+					}
+					OR = {
+						unit_owner.current_ruler = { has_trait = zealous }
+						unit_owner.current_ruler = { has_trait = vengeful }
+						unit_owner.current_ruler = { has_trait = reckless }
+						unit_owner.current_ruler = { has_trait = rash }
+					}
+				}
+				trigger_else = { #Troops from countries without rulers (barbarians, rebels) should not do this.
+					always = no
+				}
+			}
+			add = {
+				value = 100
+			}
+		}
+	}
+	
+	idle_entity_state = raiding
+}

@@ -1,0 +1,184 @@
+﻿
+remove_all_devastation_modifiers = {
+remove_province_modifier = choo_devastated_0
+remove_province_modifier = choo_devastated_1
+remove_province_modifier = choo_devastated_2
+remove_province_modifier = choo_devastated_3
+remove_province_modifier = choo_devastated_4
+remove_province_modifier = choo_devastated_5
+remove_province_modifier = choo_devastated_6
+remove_province_modifier = choo_devastated_7
+remove_province_modifier = choo_devastated_8
+remove_province_modifier = choo_devastated_9
+
+}
+assing_proper_devastation_modifier = {
+remove_all_devastation_modifiers = yes
+
+if = { limit = { var:devastation_level > 1  var:devastation_level < 10  } add_province_modifier = { name = choo_devastated_0 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 10 var:devastation_level < 20 } add_province_modifier = { name = choo_devastated_1 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 20 var:devastation_level < 30 } add_province_modifier = { name = choo_devastated_2 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 30 var:devastation_level < 40 } add_province_modifier = { name = choo_devastated_3 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 40 var:devastation_level < 50 } add_province_modifier = { name = choo_devastated_4 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 50 var:devastation_level < 60 } add_province_modifier = { name = choo_devastated_5 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 60 var:devastation_level < 70 } add_province_modifier = { name = choo_devastated_6 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 70 var:devastation_level < 80 } add_province_modifier = { name = choo_devastated_7 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 80 var:devastation_level < 90 } add_province_modifier = { name = choo_devastated_8 duration = -1  } }
+else_if = { limit = { var:devastation_level >= 90 } add_province_modifier = { name = choo_devastated_9 duration = -1  } }
+
+
+}
+remove_all_prosperity_modifiers = {
+remove_province_modifier = choo_prospering_0
+remove_province_modifier = choo_prospering_1
+remove_province_modifier = choo_prospering_2
+}
+
+assing_proper_prosperity_modifier = { 
+remove_all_prosperity_modifiers = yes
+if = { limit = { var:prosperity_level >= 25  var:prosperity_level < 50  } add_province_modifier = { name = choo_prospering_0 duration = -1  } }
+else_if = { limit = { var:prosperity_level >= 50  var:prosperity_level < 90  } add_province_modifier = { name = choo_prospering_1 duration = -1  } }
+else_if = { limit = { var:prosperity_level >= 90 } add_province_modifier = { name = choo_prospering_2 duration = -1  } }
+}
+
+change_devastation_level = {
+
+if = { 
+limit = { var:devastation_level >= 0  var:devastation_level <= 99.9 }   
+change_variable = { name = devastation_level add = $VALUE$ }
+} 
+
+}
+
+check_is_devastation_at_proper_level = { 
+
+if = { 
+limit = { var:devastation_level < 0 }
+set_variable = { name = devastation_level value = 0  }
+}
+
+if = { 
+limit = { var:devastation_level > 100 }
+set_variable = { name = devastation_level value = 100  }
+}
+
+}
+
+increase_prosperity_no_deva = {
+
+if = { 
+limit = { var:prosperity_level >= 0  var:prosperity_level <= 100 var:devastation_level < 1 }   
+change_variable = { name = prosperity_level add = $VALUE$ }
+}
+
+
+}
+
+decrease_prosperity_if_deva = { 
+
+if = { 
+limit = { var:prosperity_level >= 0  var:prosperity_level <= 100 var:devastation_level > 1 }   
+change_variable = { name = prosperity_level add = $VALUE$ }
+}
+
+
+}
+
+check_is_prosperity_at_proper_level = { 
+
+if = { 
+limit = { var:prosperity_level < 0 }
+set_variable = { name = prosperity_level value = 0  }
+}
+
+if = { 
+limit = { var:prosperity_level > 100 }
+set_variable = { name = prosperity_level value = 100  }
+}
+
+}
+#event effects
+change_devastation_level_by = { 
+
+change_variable = { name = devastation_level add = $AMOUNT$  }
+
+
+check_is_devastation_at_proper_level = yes
+
+}
+#change_devastation_level_by = { AMOUNT = x }
+#change_prosperity_level_by = { AMOUNT = x }
+change_prosperity_level_by = {
+change_variable = { name = prosperity_level value = $AMOUNT$  }
+
+check_is_prosperity_at_proper_level = yes
+}
+
+#plagues
+
+start_random_plague_province = {
+set_variable = has_plague
+random_list = {
+ 
+20 = { add_province_modifier = { name = plague_typhoid  duration = $PLAGUE_DURATION$ } }
+15 = { add_province_modifier = { name = plague_smallpox  duration = $PLAGUE_DURATION$ } } 
+20 = { add_province_modifier = { name = plague_typhus  duration = $PLAGUE_DURATION$ } } 
+15 = { add_province_modifier = { name = plague_consumption  duration = $PLAGUE_DURATION$ } } 
+15 = { add_province_modifier = { name = plague_bigpox  duration = $PLAGUE_DURATION$ } } 
+15 = { add_province_modifier = { name = plague_melases  duration = $PLAGUE_DURATION$ } } 
+ 
+trigger_event = { id = choo_plague.2  days = $PLAGUE_DURATION$ }
+}
+
+#start_random_plague = { PLAGUE_DURATION = x } duration in days
+} 
+#does not include black death
+
+start_chosen_plague_province = {  
+set_variable = has_plague
+add_province_modifier = { name = plague_$NAME$  duration = $PLAGUE_DURATION$ }
+trigger_event = { id = choo_plague.2  days = $PLAGUE_DURATION$ }
+}
+#start_chosen_plague = { NAME = smallpox PLAGUE_DURATION = x } duration in days
+#spread_the_plague = yes
+spread_the_plague = {
+state = {
+random_state_province = {
+limit = { has_variable = has_plague }
+save_temporary_scope_as = tainted_by_plague_prov
+}
+}
+if = { limit = { scope:tainted_by_plague_prov = { has_province_modifier = plague_typhoid  } }
+add_province_modifier = { name = plague_typhoid  duration = 3650 }
+trigger_event = { id = choo_plague.2  days = 3650 }
+ }
+else_if = {  
+limit = { scope:tainted_by_plague_prov = { has_province_modifier = plague_smallpox  } }
+add_province_modifier = { name = plague_smallpox  duration = 3650 }
+trigger_event = { id = choo_plague.2  days = 3650 }
+}
+else_if = {  
+limit = { scope:tainted_by_plague_prov = { has_province_modifier = plague_typhus  } }
+add_province_modifier = { name = plague_typhus  duration = 3650 }
+trigger_event = { id = choo_plague.2  days = 3650 }
+}
+else_if = {  
+limit = { scope:tainted_by_plague_prov = { has_province_modifier = plague_bigpox  } }
+add_province_modifier = { name = plague_bigpox  duration = 3650 }
+trigger_event = { id = choo_plague.2  days = 3650 }
+}
+else_if = {  
+limit = { scope:tainted_by_plague_prov = { has_province_modifier = plague_melases  } }
+add_province_modifier = { name = plague_melases  duration = 3650 }
+trigger_event = { id = choo_plague.2  days = 3650 }
+}
+else_if = {  
+limit = { scope:tainted_by_plague_prov = { has_province_modifier = plague_black  } }
+add_province_modifier = { name = plague_black  duration = 3650 }
+trigger_event = { id = choo_plague.2  days = 3650 }
+}
+
+}
+
+
+

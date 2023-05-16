@@ -1,0 +1,181 @@
+﻿namespace = lovers
+
+lovers.1 = { # Duel of Lust
+	type = character_event
+	title = "lovers.1.t"
+	desc = "lovers.1.desc"
+	picture = greek_court
+	
+	left_portrait = root
+	right_portrait = scope:love_interest_1
+	right_portrait = scope:love_interest_2
+	
+	trigger = {
+		is_married = yes
+		has_trait = lustful
+		age > 16
+		is_pregnant = no
+		OR = {
+			is_female = no
+			age <= 35
+		}
+		char_can_have_friends_trigger = yes
+		char_valid_for_country_events_trigger = yes
+		employer = {
+			any_character = {
+				count >= 2
+				is_pregnant = no
+				char_valid_for_country_events_trigger = yes
+				char_can_be_friend_trigger = yes
+				age > 16
+				NOT = { has_trait = chaste }
+				NOT = { is_same_gender = ROOT }
+				NOT = { has_same_family = ROOT }
+				NOT = { is_spouse_of = ROOT }
+				OR = {
+					is_female = no
+					age <= 35
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		employer = {
+			random_character = {
+				limit = {
+					is_pregnant = no
+					char_valid_for_country_events_trigger = yes
+					char_can_be_friend_trigger = yes
+					age > 16
+					NOT = { has_trait = chaste }
+					NOT = { is_same_gender = ROOT }
+					NOT = { has_same_family = ROOT }
+					NOT = { is_spouse_of = ROOT }
+					OR = {
+						is_female = no
+						age <= 35
+					}
+				}
+				weight = {
+					base = 1
+					modifier = {
+						factor = 5
+						has_trait = lustful
+					}
+					modifier = {
+						factor = 2
+						has_same_culture_group_as = ROOT
+					}
+					modifier = {
+						factor = 0.05
+						char_is_ill_trigger = yes
+					}
+					title_importance_modifier = yes
+				}
+				save_scope_as = love_interest_1
+			}
+			random_character = {
+				limit = {
+					is_pregnant = no
+					char_valid_for_country_events_trigger = yes
+					char_can_be_friend_trigger = yes
+					age > 16
+					NOT = { has_trait = chaste }
+					NOT = { is_same_gender = ROOT }
+					NOT = { has_same_family = ROOT }
+					NOT = { is_spouse_of = ROOT }
+					OR = {
+						is_female = no
+						age <= 35
+					}
+					NOT = { this = scope:love_interest_1 }
+				}
+				weight = {
+					base = 1
+					modifier = {
+						factor = 5
+						has_trait = lustful
+					}
+					modifier = {
+						factor = 2
+						has_same_culture_group_as = ROOT
+					}
+					modifier = {
+						factor = 0.05
+						char_is_ill_trigger = yes
+					}
+					title_importance_modifier = yes
+				}
+				save_scope_as = love_interest_2
+			}
+		}
+	}
+	
+	option = {
+		name = "lovers.1.a"
+		add_friend = scope:love_interest_1
+		if = {
+			limit = {
+				is_female = yes
+			}
+			make_pregnant = {
+				father = scope:love_interest_1
+				known_bastard = yes
+			}
+		}
+		else = {
+			scope:love_interest_1 = {
+				make_pregnant = {
+					father = ROOT
+					known_bastard = yes
+				}
+			}
+		}
+		scope:love_interest_1 = {
+			add_loyalty = loyalty_love_encouraged
+		}
+		scope:love_interest_2 = {
+			add_loyalty = loyalty_love_spurned_1
+		}
+	}
+	
+	option = {
+		name = "lovers.1.b"
+		add_friend = scope:love_interest_2
+		if = {
+			limit = {
+				is_female = yes
+			}
+			make_pregnant = {
+				father = scope:love_interest_2
+				known_bastard = yes
+			}
+		}
+		else = {
+			scope:love_interest_2 = {
+				make_pregnant = {
+					father = ROOT
+					known_bastard = yes
+				}
+			}
+		}
+		scope:love_interest_2 = {
+			add_loyalty = loyalty_love_encouraged
+		}
+		scope:love_interest_1 = {
+			add_loyalty = loyalty_love_spurned_1
+		}
+	}
+	
+	option = {
+		name = "lovers.1.c"
+		scope:love_interest_2 = {
+			add_loyalty = loyalty_love_spurned_2
+		}
+		scope:love_interest_1 = {
+			add_loyalty = loyalty_love_spurned_2
+		}
+	}
+}
+	

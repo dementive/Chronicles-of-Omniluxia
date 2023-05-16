@@ -1,0 +1,2513 @@
+﻿namespace = city
+
+city.1 = { # City Prospers
+	type = country_event
+	title = "city.1.t"
+	desc = "city.1.desc"
+	picture = hellenic_marketplace
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_1_target.governor
+	
+	goto_location = scope:city_1_target
+	
+	trigger = {
+		war = no
+		NOT = {
+			has_variable = city_1_toggle
+		}
+		any_owned_province = {
+			controller = root
+			is_capital = no
+			exists = governor_or_ruler
+			has_city_status = yes
+		}
+	}
+	
+	immediate = {
+		set_variable = {
+			name = city_1_toggle
+			days = 1825
+		}
+		random_owned_province = {
+			limit = {
+				controller = root
+				is_capital = no
+				has_city_status = yes
+			}
+			weight = {
+				modifier = {
+					factor = 5
+					OR = {
+						trade_goods = grain
+						trade_goods = dates
+						trade_goods = vegetables
+					}
+				}
+			}
+			save_scope_as = city_1_target
+		}
+	}
+	
+	option = {
+		name = "city.1.a"
+		if = {
+			limit = {
+				scope:city_1_target.governor_or_ruler = { 
+					NOT = { this = scope:city_1_target.owner.current_ruler }
+				}
+			}
+			scope:city_1_target.governor_or_ruler = { add_loyalty = loyalty_jealous_governor }
+		}
+		add_treasury = {
+			value = scope:city_1_target.province_income
+			multiply = 80
+			max = 80
+			min = 20
+		}
+	}
+	
+	option = {
+		name = "city.1.b"
+		scope:city_1_target = {
+			if = {
+				limit = {
+					can_build_building = trade_district_building
+				}
+				add_building_level = trade_district_building
+			}
+			else_if = {
+				limit = {
+					can_build_building = population_building
+				}
+				add_building_level = population_building
+			}
+			else = {
+				create_2_citizens_effect = yes
+			}
+		}
+	}
+	
+	option = {
+		name = "city.1.c"
+		scope:city_1_target.governor_or_ruler = { add_popularity = popularity_small }
+		scope:city_1_target.state = {
+			add_state_modifier = {
+				name = local_games_smod
+				duration = 1825 # 5 years
+			}
+		}
+	}
+	
+	option = {
+		name = "city.1.d"
+		trigger = {
+			scope:city_1_target = { free_building_slots >= 1 }
+		}
+		scope:city_1_target = {
+			random_list = {
+				1 = {
+					trigger = {
+						can_build_building = town_hall_building 
+					}
+					add_building_level = town_hall_building
+				}
+				1 = {
+					trigger = {
+						can_build_building = temple_building 
+					}
+					add_building_level = temple_building
+				}
+				1 = {
+					trigger = {
+						can_build_building = taverns_and_inns_building 
+					}
+					add_building_level = taverns_and_inns_building
+				}
+				1 = {
+					trigger = {
+						can_build_building = craftsmans_district_building 
+					}
+					add_building_level = craftsmans_district_building
+				}
+			}
+		}
+	}
+
+}
+
+city.2 = { # Autonomy - city funds own building
+	type = country_event
+	title = "city.2.t"
+	desc = "city.2.desc"
+	picture = city_construction
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_2_target.governor
+	
+	goto_location = scope:city_2_target
+	
+	trigger = {
+		war = no
+		NOT = {
+			has_variable = city_2_toggle
+		}
+		any_owned_province = {
+			controller = root
+			OR = {
+				can_build_building = trade_district_building
+				can_build_building = drilling_square_building
+				can_build_building = population_building
+			}
+			has_city_status = yes
+			free_building_slots > 0
+		}
+	}
+	
+	immediate = {
+		set_variable = {
+			name = city_2_toggle
+			days = 1825
+		}
+		random_owned_province = {
+			limit = {
+				controller = root
+				OR = {
+					can_build_building = trade_district_building
+					can_build_building = drilling_square_building
+					can_build_building = population_building
+				}
+				has_city_status = yes
+				free_building_slots > 0
+			}
+			weight = {
+				modifier = {
+					factor = 4
+					total_population >= 15
+				}
+				modifier = {
+					factor = 2
+					OR = {
+						can_build_building = trade_district_building
+						can_build_building = drilling_square_building
+						can_build_building = population_building
+					}
+				}
+			}
+			save_scope_as = city_2_target
+		}
+	}
+	
+	option = {
+		name = "city.2.a"
+		scope:city_2_target = {
+			if = {
+				limit = {
+					can_build_building = population_building
+				}
+				add_building_level = population_building
+			}
+			else_if = {
+				limit = {
+					can_build_building = trade_district_building
+				}
+				add_building_level = trade_district_building
+			}
+			else_if = {
+				limit = {
+					can_build_building = housing_district_building
+				}
+				add_building_level = housing_district_building
+			}
+			else = {
+				create_2_freemen_effect = yes
+			}
+		}
+	}
+	
+	option = {
+		name = "city.2.b"
+		scope:city_2_target.governor_or_ruler = { add_popularity = subtract_popularity_small }
+		scope:city_2_target = {
+			if = {
+				limit = {
+					can_build_building = barracks_building
+					NOT = { has_building = barracks_building }
+				}
+				add_building_level = barracks_building
+			}
+			else_if = {
+				limit = {
+					can_build_building = town_hall_building
+					NOT = { has_building = town_hall_building }
+				}
+				add_building_level = town_hall_building
+			}
+			else_if = {
+				limit = {
+					can_build_building = drilling_square_building
+					NOT = { has_building = drilling_square_building }
+				}
+				add_building_level = drilling_square_building
+			}
+			else = {
+				owner = { add_manpower = 4 }
+			}
+		}
+	}
+	
+	option = {
+		name = "city.2.c"
+		trigger = {
+			NOT = { 
+				scope:city_2_target = { free_building_slots = 0 }
+			}
+		}
+		current_ruler = { add_popularity = subtract_popularity_medium }
+		add_treasury = {
+			value = scope:city_2_target.province_income
+			multiply = 80
+			max = 80
+			min = 20
+		}
+	}
+
+}
+
+city.3 = { #province unhappy with governor
+	type = country_event
+	title = "city.3.t"
+	desc = "city.3.desc"
+	picture = slaves_working
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_3_target.governor
+	
+	goto_location = scope:city_3_target
+	
+	trigger = {
+		any_owned_province = {
+			exists = this.governor
+			controller = root
+			num_of_slaves >= 1
+			num_of_citizen >= 1
+			NOT = {
+				has_province_modifier = petition_ignored
+			}
+			has_city_status = yes
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				controller = root
+				exists = governor
+				num_of_slaves >= 1
+				num_of_citizen >= 1
+				NOT = {
+					has_province_modifier = petition_ignored
+				}
+				has_city_status = yes
+			}
+			weight = {
+				modifier = {
+					factor = 10
+					governor = {
+						corruption >= 50
+					}
+				}
+			}
+			save_scope_as = city_3_target
+		}
+		if = {
+			limit = {
+				exists = scope:city_3_target.governor
+			}
+			scope:city_3_target.governor = {
+				save_scope_as = city_3_governor
+				add_corruption = corruption_large
+			}
+		}
+	}
+	
+	option = {
+		name = "city.3.a"
+		current_ruler = { add_corruption = corruption_medium }
+		scope:city_3_governor = {
+			add_loyalty = loyalty_defended_governor
+		}
+		scope:city_3_target.state = {
+			if = {
+				limit = {
+					exists = this.governor
+				}
+				add_state_modifier = {
+					name = petition_ignored
+					duration = 730
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "city.3.b"
+		current_ruler = { add_popularity = popularity_small }
+		scope:city_3_governor = {
+			add_loyalty = loyalty_governor_oversight
+			add_gold = {
+				value = scope:city_3_governor.wealth
+				multiply = -0.33
+			}
+		}
+	}
+
+	option = {
+		name = "city.3.c"
+		current_ruler = { add_popularity = popularity_medium }
+		scope:city_3_governor = {
+			remove_all_positions = yes
+			add_loyalty = loyalty_governor_removed
+		}
+		add_tyranny = tyranny_small
+	}
+}
+
+city.4 = { #province happy with governor  
+	type = country_event
+	title = "city.4.t"
+	desc = "city.4.desc"
+	picture = religious_rite
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_4_target.governor
+	
+	goto_location = scope:city_4_target
+	
+	trigger = {
+		war = no
+		any_owned_province = {
+			exists = this.governor
+			controller = root
+			has_city_status = yes
+			num_of_slaves >= 1
+			num_of_citizen >= 1
+			NOT = {
+				has_province_modifier = celebrations_ongoing
+			}
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				controller = root
+				exists = governor
+				has_city_status = yes
+				num_of_slaves >= 1
+				num_of_citizen >= 1
+				NOT = {
+					has_province_modifier = celebrations_ongoing
+				}
+			}
+			weight = {
+				modifier = {
+					factor = 10
+					governor = {
+						corruption <= 20
+					}
+				}
+			}
+			save_scope_as = city_4_target
+		}
+		if = {
+			limit = {
+				exists = scope:city_4_target.governor
+			}
+			scope:city_4_target.governor = {
+				save_scope_as = city_4_governor
+			}
+		}
+	}
+	
+	option = {
+		name = "city.4.a"
+		scope:city_4_target = {
+			add_province_modifier = {
+				name = celebrations_ongoing
+				duration = 730
+			}
+		}
+		scope:city_4_governor = {
+			add_popularity = popularity_large
+			add_prominence = prominence_large
+			if = {
+				limit = {
+					number_of_personality_traits < max_number_of_traits_svalue
+					NOR = {
+						has_trait = kindly
+						has_trait = uncaring
+					}
+				}
+				add_trait = kindly
+			}
+		}
+	}
+	
+	option = {
+		name = "city.4.b"
+		current_ruler = {
+			add_popularity = subtract_popularity_small
+			if = {
+				limit = {
+					number_of_personality_traits < max_number_of_traits_svalue
+					NOR = {
+						has_trait = jealous
+						has_trait = secure
+					}
+				}
+				add_trait = jealous
+			}
+		}
+		scope:city_4_governor = {
+			add_loyalty = loyalty_feast_refused
+		}
+		add_treasury = {
+			value = scope:city_4_target.province_income
+			multiply = 40
+			max = 40
+			min = 10
+		}
+	}
+	
+	option = {
+		name = "city.4.c"
+		trigger = { 
+			current_ruler = { has_trait = jealous }
+		}
+		highlight = yes
+		current_ruler = {
+			add_popularity = popularity_medium
+		}
+		scope:city_4_governor = {
+			add_loyalty = loyalty_feast_stolen
+		}
+		if = {
+			limit = {
+				current_ruler = { can_get_rivals = yes }
+				scope:city_4_governor = { can_get_rivals = yes }
+			}
+			scope:city_4_governor = { add_rival = root.current_ruler }
+		}
+		custom_tooltip = jealous_tooltip
+	}
+
+}
+
+city.5 = { #coastal city state trade boost
+	type = country_event
+	title = "city.5.t"
+	desc = "city.5.desc"
+	
+	picture = trade_port
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_5_target.governor
+	
+	goto_location = scope:city_5_target
+	
+	trigger = {
+		war = no
+		any_owned_province = {
+			is_port = yes
+			controller = root
+			has_city_status = yes
+			total_population >= 10
+			NOT = {
+				state = {
+					has_state_modifier = trade_winds_good
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				is_port = yes
+				controller = root
+				has_city_status = yes
+				total_population >= 10
+				NOT = {
+					state = {
+						has_state_modifier = trade_winds_good
+					}
+				}
+			}
+			save_scope_as = city_5_target
+		}
+	}
+	
+	option = {
+		name = "city.5.a"
+		scope:city_5_target.state = {
+			add_state_modifier = {
+				name = trade_winds_good
+				duration = 1825
+			} 
+		}
+	}
+	
+	option = {
+		name = "city.5.b"
+		scope:city_5_target.state = {
+			add_state_modifier = {
+				name = trade_winds_migrants_smod
+				duration = 1825
+			} 
+		}
+	}
+
+}
+
+city.6 = { #minor city state becomes new trade hub
+	type = country_event
+	title = "city.6.t"
+	desc = "city.6.desc"
+	
+	picture = trade_port
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_6_target.governor
+	
+	goto_location = scope:city_6_target
+	
+	trigger = {
+		war = no
+		any_owned_province = {
+			total_population <= 10
+			is_coastal = yes
+			controller = root
+			is_capital = no
+			has_city_status = yes
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				total_population <= 10
+				is_coastal = yes
+				controller = root
+				is_capital = no
+				has_city_status = yes
+			}
+			save_scope_as = city_6_target
+		}
+	}
+	
+	option = {
+		name = "city.6.a"
+		trigger = {
+			is_tribal = no
+		}
+		scope:city_6_target = {
+			create_2_citizens_effect = yes
+		}
+	}
+	
+	option = {
+		name = "city.6.b"
+		scope:city_6_target = {
+			create_2_freemen_effect = yes
+		}
+	}
+	
+	option = {
+		name = "city.6.c"
+		scope:city_6_target = {
+			create_2_slaves_effect = yes
+		}
+	}
+	
+	option = {
+		name = "city.6.d"
+		scope:city_6_target = {
+			add_province_modifier = {
+				name = new_trade_hub
+				duration = 7300
+			}
+		}
+	}
+
+}
+
+city.7 = { #pops flee foreign war
+	type = country_event
+	title = "city.7.t"
+	desc = "city.7.desc"
+	
+	picture = city_country
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_7_target_country.current_ruler
+	
+	goto_location = scope:city_7_target
+	
+	trigger = {
+		war = no
+		any_neighbour_country = {
+			war = yes
+			any_owned_province = {
+				any_neighbor_province = {
+					has_owner = yes
+					owner = ROOT
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		random_neighbour_country = {
+			limit = {
+				war = yes
+			}
+			save_scope_as = city_7_target_country
+			random_countries_at_war_with = {
+				save_scope_as = city_7_target_country_2
+			}
+		}
+		random_owned_province = {
+			weight = {
+				modifier = {
+					factor = 10000
+					any_neighbor_province = {
+						has_owner = yes
+						owner = scope:city_7_target_country
+					}
+				}
+			}
+			save_scope_as = city_7_target
+		}
+	}
+	
+	option = {
+		name = "city.7.a"
+		scope:city_7_target = {
+			create_2_freemen_effect = yes
+		}
+	}
+	option = {
+		name = "city.7.b"
+		scope:city_7_target_country = {
+			add_opinion = {
+				modifier = denied_pop_entry
+				target = root
+			}
+		}
+	}
+}
+
+city.8 = { #migrants from trade agreement
+	type = country_event 
+	title = "city.8.t"
+	desc = "city.8.desc"
+	picture = city_country
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_8_target_country.current_ruler
+	
+	goto_location = scope:city_8_target
+	
+	trigger = {
+		any_neighbour_country = { 
+			OR = {
+				imports_from = root
+				root = {
+					imports_from = prev
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		random_neighbour_country = {
+			limit = {
+				OR = {
+					imports_from = root
+					root = {
+						imports_from = prev
+					}
+				}
+			}
+			save_scope_as = city_8_target_country
+		}
+		random_owned_province = {
+			weight = {
+				modifier = {
+					factor = 100
+					any_neighbor_province = {
+						owner = scope:city_8_target_country
+					}
+				}
+			}
+			save_scope_as = city_8_target
+		}
+	}
+	
+	option = {
+		name = "city.8.a"
+		scope:city_8_target = {
+			create_2_citizens_effect = yes
+		}
+	}
+	
+	option = {
+		name = "city.8.b"
+		custom_tooltip = "cruel_bad_tooltip"
+		highlight = yes
+		trigger = {
+			current_ruler = {
+				has_trait = cruel
+			}
+		}
+		exclusive = yes
+		scope:city_8_target_country = {
+			add_opinion = {
+				modifier = enslaved_refugees
+				target = root
+			}
+		}
+		scope:city_8_target = {
+			create_2_slaves_effect = yes
+			create_2_slaves_effect = yes
+		}
+	}
+	
+	option = {
+		name = "city.8.b"
+		scope:city_8_target_country = {
+			add_opinion = {
+				modifier = enslaved_refugees
+				target = root
+			}
+		}
+		scope:city_8_target = {
+			create_2_slaves_effect = yes
+		}
+	}
+
+}
+
+city.9 = { #character wants to build a grand temple
+	type = country_event
+	title = "city.9.t"
+	desc = "city.9.desc"
+	picture = hellenic_temple
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_9_patron
+
+	goto_location = scope:city_9_target
+	
+	trigger = {
+		NOT = {
+			has_variable = city_9_toggle
+		}
+		any_character = {
+			is_ruler = no
+			has_same_religion_as = root.current_ruler
+			wealth >= 1000
+		}
+		any_owned_province = {
+			is_capital = no
+			controller = root
+			free_building_slots >= 1
+			has_city_status = yes
+			NOT = {
+				has_province_modifier = grand_temple_built
+			}
+		}
+	}
+	
+	immediate = {
+		set_variable = {
+			name = city_9_toggle
+			days = 3600
+		}
+		random_character = {
+			limit = {
+				is_ruler = no
+				has_same_religion_as = root.current_ruler
+				wealth >= 1000
+			}
+			weight = {
+				title_importance_modifier = yes
+			}
+			save_scope_as = city_9_patron
+		}
+		random_owned_province = {
+			limit = {
+				is_capital = no
+				controller = root
+				has_city_status = yes
+				NOT = {
+					has_province_modifier = grand_temple_built
+				}
+			}
+			save_scope_as = city_9_target
+		}
+	}
+	
+	option = {
+		name = "city.9.a"
+		scope:city_9_patron = {
+			add_popularity = popularity_small
+			add_gold = -200
+			if = {
+				limit = {
+					NOR = {
+						has_trait = pious
+						has_trait = sceptical
+					}
+					number_of_personality_traits < max_number_of_traits_svalue
+				}
+				add_trait = pious
+			}
+		}
+		scope:city_9_target = {
+			if = {
+				limit = {
+					can_build_building = temple_building 
+				}
+				add_building_level = temple_building
+			}
+			add_province_modifier = {
+				name = grand_temple_built
+				duration = 3650 # 10 years
+			}
+		}
+	}
+	
+	option = {
+		name = "city.9.b"
+		scope:city_9_patron = {
+			add_popularity = subtract_popularity_small
+			add_loyalty = loyalty_patronage_redirected
+			if = {
+				limit = {
+					NOR = {
+						has_trait = cruel
+						has_trait  = merciful
+					}
+					number_of_personality_traits < max_number_of_traits_svalue
+				}
+				add_trait = cruel
+			}
+		}
+		scope:city_9_target = {
+			create_2_slaves_effect = yes
+		}
+	}
+
+	option = {
+		name = "city.9.c"
+		scope:city_9_patron = {
+			add_popularity = popularity_medium
+			add_loyalty = loyalty_patronage_meddled
+			if = {
+				limit = {
+					NOR = {
+						has_trait = generous
+						has_trait  = miserly
+					}
+					number_of_personality_traits < max_number_of_traits_svalue
+				}
+				add_trait = generous
+			}
+		}
+		scope:city_9_target = {
+			random_list = {
+				1 = {
+					trigger = {
+						can_build_building = taverns_and_inns_building 
+					}
+					add_building_level = taverns_and_inns_building
+				}
+				1 = {
+					trigger = {
+						can_build_building = library_building 
+					}
+					add_building_level = library_building
+				}
+				
+				1 = {
+					trigger = {
+						can_build_building = town_hall_building 
+					}
+					add_building_level = town_hall_building
+				}
+				1 = {
+					trigger = {
+						can_build_building = craftsmans_district_building 
+					}
+					add_building_level = craftsmans_district_building
+				}
+			}
+		}
+	}
+}
+
+city.10 = { #storm ruins city
+	type = country_event
+	title = "city.10.t"
+	desc = "city.10.desc"
+	picture = ship_in_storm
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_10_target.governor
+	
+	goto_location = scope:city_10_target
+	
+	trigger = {
+		any_owned_province = {
+			is_coastal = yes
+			has_province_modifier = ravaged_by_storms
+			has_city_status = yes
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				is_coastal = yes
+				has_city_status = yes
+			}
+			save_scope_as = city_10_target
+		}
+	}
+	
+	option = {
+		name = "city.10.a"
+		current_ruler = { add_popularity = 2 }
+		add_treasury = {
+			value = 0
+			subtract = root.has_monthly_income
+			multiply = 3
+			min = -200
+		}
+	}
+	
+	option = {
+		name = "city.10.b"
+		current_ruler = { add_popularity = 2 }
+		add_manpower = {
+			value = 0
+			subtract = root.max_manpower
+			divide = 20
+			min = -5
+		}
+	}
+	
+	option = {
+		name = "city.10.c"
+		if = {
+			limit = {
+				scope:city_10_target.governor = {
+					NOT = { this = root.current_ruler }
+				}
+			}
+			scope:city_10_target.governor = {
+				add_loyalty = loyalty_province_ignored
+			}
+		}
+		else = {
+			current_ruler = { add_popularity = subtract_popularity_medium }
+		}
+		scope:city_10_target = {
+			add_state_loyalty = -20
+			remove_province_modifier = ravaged_by_storms
+			add_province_modifier = {
+				name = terrible_storm_modifier
+				duration = 1825
+			}
+		}
+	}
+}
+
+city.11 = { #city frees slaves
+	type = country_event
+	title = "city.11.t"
+	desc = "city.11.desc"
+	picture = slaves_working
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_11_target.governor
+	
+	goto_location = scope:city_11_target
+	
+	trigger = {
+		any_owned_province = {
+			total_population >= 10
+			num_of_slaves >= 4
+			has_city_status = yes
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				total_population >= 10
+				num_of_slaves >= 4
+				has_city_status = yes
+			}
+			save_scope_as = city_11_target
+		}
+	}
+	
+	option = {
+		name = "city.11.a"
+		current_ruler = { add_popularity = popularity_small }
+		if = {
+			limit = {
+				exists = scope:city_11_target.governor
+			}
+			scope:city_11_target.governor = {
+				add_loyalty = loyalty_slaves_freed
+			}
+		}
+		scope:city_11_target = {
+			random_pops_in_province = {
+				limit = {
+					pop_type = slaves
+				}
+				set_pop_type = freemen
+			}
+			random_pops_in_province = {
+				limit = {
+					pop_type = slaves
+				}
+				set_pop_type = freemen
+			}
+		}
+	}
+	
+	option = {
+		name = "city.11.b"
+		trigger = {
+			exists = scope:city_11_target.governor
+		}
+		current_ruler = { add_popularity = subtract_popularity_small }
+		if = {
+			limit = {
+				exists = scope:city_11_target.governor
+			}
+			scope:city_11_target.governor = {
+				add_loyalty = loyalty_slaves_defended
+				add_corruption = corruption_large
+			}
+		}
+		add_treasury  = {
+		   value = root.has_monthly_income
+		   multiply = add_monthly_income_small
+		}
+	}
+	
+	option = {
+		name = "city.11.b"
+		trigger = {
+			NOT = {
+				exists = scope:city_11_target.governor
+			}
+		}
+		current_ruler = {
+			add_corruption = corruption_medium
+			add_popularity = subtract_popularity_small
+		}
+		add_treasury  = {
+		   value = root.has_monthly_income
+		   multiply = add_monthly_income_small
+		}
+	}
+
+}
+
+city.12 = { #grand temple collapses (city.9)
+	type = country_event
+	title = "city.12.t"
+	desc = "city.12.desc"
+	picture = hellenic_temple
+	
+	left_portrait = current_ruler
+	right_portrait = scope:city_12_target.governor
+	
+	goto_location = scope:city_12_target
+	
+	trigger = {
+		any_owned_province = {
+			has_building = temple_building
+			has_city_status = yes
+		}
+		rank <= 2
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				has_building = temple_building
+				has_city_status = yes
+			}
+			save_scope_as = city_12_target
+		}
+	}
+	
+	option = {
+		name = "city.12.a"
+		current_ruler = { add_popularity = popularity_small }
+		if = {
+			limit = {
+				exists = scope:city_12_target.governor
+			}
+			scope:city_12_target.governor = {
+				add_loyalty = loyalty_temple_restored
+			}
+		}
+		add_treasury  = {
+		   subtract = root.has_monthly_income
+		   multiply = 0.2
+		   subtract = 30
+		}
+	}
+	
+	option = {
+		name = "city.12.b"
+		current_ruler = { add_popularity = subtract_popularity_small }
+		if = {
+			limit = {
+				exists = scope:city_12_target.governor
+			}
+			scope:city_12_target.governor = {
+				add_loyalty = loyalty_temple_unfunded
+			}
+		}
+		scope:city_12_target = {
+			remove_building_level = temple_building
+		}
+		if = {
+			limit = {
+				scope:city_12_target = { has_province_modifier = grand_temple_built }
+			}
+			scope:city_12_target = { remove_province_modifier = grand_temple_built }
+		}
+	}
+	
+	option = {
+		name = "city.12.c"
+		trigger = {
+			scope:city_12_target = {
+				free_building_slots >= 1
+				can_build_building = temple_building
+			}
+		}
+		current_ruler = { add_popularity = popularity_medium }
+		if = {
+			limit = {
+				exists = scope:city_12_target.governor
+			}
+			scope:city_12_target.governor = {
+				add_loyalty = loyalty_temple_expanded
+			}
+		}
+		add_treasury  = {
+		   subtract = root.has_monthly_income
+		   multiply = 0.25
+		   subtract = 75
+		}
+		scope:city_12_target = {
+			add_building_level = temple_building
+		}
+		if = {
+			limit = {
+				scope:city_12_target = { 
+					NOT = { has_province_modifier = grand_temple_built }
+				}
+			}
+			scope:city_12_target = {
+				add_province_modifier = {
+					name = grand_temple_built
+					duration = 9125 # 25 years 
+				}
+			}
+		}
+		else = {
+			hidden_effect = { 
+				scope:city_12_target = { remove_province_modifier = grand_temple_built }
+			}
+			scope:city_12_target = {
+				add_province_modifier = {
+					name = grand_temple_built
+					duration = 9125 # 25 years 
+				}
+			}
+		}
+	}
+
+}
+
+city.13 = {
+	type = country_event
+	title = "city.13.t"
+	desc = "city.13.desc"
+	picture = city_country
+	
+	left_portrait = current_ruler
+	right_portrait = scope:city_13_target_3.owner.current_ruler
+	
+	goto_location = scope:city_13_target
+	
+	trigger = {
+		is_tribal = no
+		NOT = { has_variable = city_13_cooldown }
+		any_owned_province = {
+			num_of_tribesmen >= 4
+			AND = {
+				any_neighbor_province = {
+					owner = ROOT
+				}
+				any_neighbor_province = {
+					exists = owner
+					NOT = {
+						owner = ROOT
+					}
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		set_variable = {
+			name = "city_13_cooldown"
+			years = 10
+		}
+		random_owned_province = {
+			limit = {
+				num_of_tribesmen >= 4
+				AND = {
+					any_neighbor_province = {
+						owner = ROOT
+					}
+					any_neighbor_province = {
+						exists = owner
+						NOT = {
+							owner = ROOT
+						}
+					}
+				}
+			}
+			save_scope_as = city_13_target
+			random_neighbor_province = {
+				limit = {
+					owner = ROOT
+				}
+				save_scope_as = city_13_target_2
+			}
+			random_neighbor_province = {
+				limit = {
+					exists = owner
+					NOT = {
+						owner = ROOT
+					}
+				}
+				save_scope_as = city_13_target_3
+			}
+		}
+	}
+	
+	option = {
+		name = "city.13.a"
+		add_treasury = {
+			value = root.has_monthly_income
+			multiply = 6
+		}
+		hidden_effect = {
+			scope:city_13_target = {
+				random_pops_in_province = {
+					limit = {
+						pop_type = tribesmen
+					}
+					move_pop = scope:city_13_target_3
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = tribesmen
+					}
+					move_pop = scope:city_13_target_3
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = tribesmen
+					}
+					move_pop = scope:city_13_target_3
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = tribesmen
+					}
+					move_pop = scope:city_13_target_3
+				}
+			}
+			scope:city_13_target_3 = {
+				hidden_effect = {
+					owner = {
+						trigger_event = {
+							id = city.14
+						}
+					}
+				}
+			}
+		}
+		custom_tooltip = "city.13.at"
+	}
+	
+	option = {
+		name = "city.13.b"
+		custom_tooltip = city.13.bt
+		scope:city_13_target_2 = {
+			add_province_modifier = {
+				name = tribesmen_angry_moved
+				duration = 730
+			}
+		}
+		hidden_effect = {
+			scope:city_13_target = {
+				random_pops_in_province = {
+					limit = {
+						pop_type = tribesmen
+					}
+					move_pop = scope:city_13_target_2
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = tribesmen
+					}
+					move_pop = scope:city_13_target_2
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = tribesmen
+					}
+					move_pop = scope:city_13_target_2
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = tribesmen
+					}
+					move_pop = scope:city_13_target_2
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "city.13.c"
+		trigger = {
+			current_ruler = {
+				has_trait = cruel
+			}
+		}
+		custom_tooltip = "cruel_tooltip"
+		scope:city_13_target = {
+			add_province_modifier = {
+				name = cruel_tribesmen_option
+				duration = 1440
+			}
+		}
+	}
+	
+}
+
+city.14 = {
+	type = country_event
+	title = "city.14.t"
+	desc = "city.14.desc"
+	picture = city_country
+	
+	left_portrait = current_ruler
+	right_portrait = scope:city_13_target.owner.current_ruler
+
+	goto_location = scope:city_13_target_3
+	
+	option = {
+		name = "city.14.a"
+		custom_tooltip = city.14.at
+	}
+	
+}
+
+city.15 = {
+	type = country_event
+	title = "city.15.t"
+	desc = "city.15.desc"
+	picture = war_chest
+	
+	left_portrait = current_ruler
+	right_portrait = scope:city_15_target.governor
+	
+	goto_location = scope:city_15_target
+	
+	trigger = {
+		war = no
+		any_owned_province = {
+			has_city_status = yes
+			province_unrest < 1
+			num_of_citizen >= 4
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				has_city_status = yes
+				province_unrest < 1
+				num_of_citizen >= 4
+			}
+			save_scope_as = city_15_target
+		}
+	}
+	
+	option = {
+		name = "city.15.a"
+		if = {
+			limit = {
+				exists = scope:city_15_target.governor
+			}
+			scope:city_15_target.governor = { 
+				add_loyalty = loyalty_jealous_governor
+				if = {
+					limit = {
+						number_of_personality_traits < max_number_of_traits_svalue
+						NOR = {
+							has_trait = jealous
+							has_trait = secure
+						}
+					}
+					add_trait = jealous
+				}
+			}
+		}
+		else = { 
+			current_ruler = { add_popularity = 2 }
+		}
+		add_treasury = {
+			value = root.has_monthly_income
+			multiply = 3
+		}
+	}
+	
+	option = {
+		name = "city.15.b"
+		trigger = {
+			scope:city_15_target = { state_loyalty < 100 }
+		}
+		current_ruler = { add_popularity = popularity_small }
+		if = {
+			limit = {
+				exists = scope:city_15_target.governor
+			}
+			scope:city_15_target.governor = { 
+				add_loyalty = loyalty_grateful_governor
+			}
+		}
+		scope:city_15_target = {
+			add_state_loyalty = 10
+		}
+	}
+	
+}
+
+city.16 = {
+	type = country_event
+	title = "city.16.t"
+	desc = "city.16.desc"
+	picture = farming
+	
+	goto_location = scope:city_16_target
+	
+	trigger = {
+		OR = {
+			is_republic = yes
+			is_monarchy = yes
+		}
+		any_owned_province = {
+			num_of_freemen >= 6
+			NOT = {
+				has_province_modifier = state_owned_farmlands
+			}
+		}
+		NOT = {
+			has_variable = city_16_toggle
+		}
+	}
+	
+	immediate = {
+		set_variable = {
+			name = city_16_toggle
+			days = 1825
+		}
+		random_owned_province = {
+			limit = {
+				num_of_freemen >= 6
+				NOT = {
+					has_province_modifier = state_owned_farmlands
+				}
+			}
+			weight = {
+				modifier = {
+					factor = 10
+					trade_goods = grain
+				}
+			}
+			save_scope_as = city_16_target
+		}
+	}
+	
+	option = {
+		name = "city.16.a"
+		add_manpower = {
+			value = 0
+			add = root.max_manpower
+			divide = 20
+			max = 2
+		}
+		scope:city_16_target = {
+			add_province_modifier = {
+				name = state_owned_farmlands
+				duration = -1
+			}
+		}
+	}
+	
+}
+
+city.17 = { #city clashes with rival city SERIES
+	type = country_event
+	title = "city.17.t"
+	desc = "city.17.desc"
+	picture = city_siege
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_17_protagonist.governor
+	
+	goto_location = scope:city_17_protagonist
+	
+	trigger = {
+		any_owned_province = {
+			total_population >= 10
+			is_capital = no
+			has_city_status = yes
+			NOT = {
+				has_variable = rival_city
+			}
+			any_neighbor_province = {
+				exists = owner
+				owner = root
+				total_population >= 10
+				has_city_status = yes
+				is_capital = no
+				NOT = {
+					has_variable = rival_city
+				}
+			}
+		}
+		num_of_controlled_cities <= 15
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				total_population >= 10
+				is_capital = no
+				has_city_status = yes
+				NOT = {
+					has_variable = rival_city
+				}
+				any_neighbor_province = {
+					exists = owner
+					owner = root
+					total_population >= 10
+					has_city_status = yes
+					is_capital = no
+					NOT = {
+						has_variable = rival_city
+					}
+				}
+			}
+			save_scope_as = city_17_protagonist
+		}
+		scope:city_17_protagonist = {
+			random_neighbor_province = {
+				limit = {
+					exists = owner
+					owner = root
+					total_population >= 10
+					is_capital = no
+					NOT = {
+						has_variable = rival_city
+					}
+				}
+				save_scope_as = city_17_antagonist
+			}
+		}
+		scope:city_17_protagonist = {
+			set_variable = {
+				name = rival_city
+				value = scope:city_17_antagonist
+			}
+		}
+		scope:city_17_antagonist = {
+			set_variable = {
+				name = rival_city
+				value = scope:city_17_protagonist
+			}
+		}
+	}
+	
+	option = {
+		name = "city.17.a"
+		if = {
+			limit = {
+				exists = scope:city_17_antagonist.governor
+				exists = scope:city_17_protagonist.governor
+				scope:city_17_antagonist.governor = { 
+					NOT = {
+						this = scope:city_17_protagonist.governor
+					}
+				}
+			}
+			scope:city_17_protagonist.governor = { add_loyalty = loyalty_preferred_city }
+			scope:city_17_antagonist.governor = { add_loyalty = loyalty_unpreferred_city }
+		}
+		else_if = {
+			limit = {
+				exists = scope:city_17_antagonist.governor
+				exists = scope:city_17_protagonist.governor
+				scope:city_17_antagonist.governor = { 
+					this = scope:city_17_protagonist.governor
+				}
+			}
+			scope:city_17_antagonist.governor = { add_loyalty = loyalty_preferred_city }
+		}
+		scope:city_17_protagonist = {
+			add_province_modifier = {
+				name = city_17_bonus_modifier
+				duration = 7300
+			}
+		}
+		scope:city_17_antagonist = {
+			add_province_modifier = {
+				name = city_17_malus_modifier
+				duration = 7300
+			}
+		}
+	}
+	
+	option = {
+		name = "city.17.b"
+		if = {
+			limit = {
+				exists = scope:city_17_antagonist.governor
+				exists = scope:city_17_protagonist.governor
+				scope:city_17_antagonist.governor = { 
+					NOT = {
+						this = scope:city_17_protagonist.governor
+					}
+				}
+			}
+			scope:city_17_antagonist.governor = { add_loyalty = loyalty_preferred_city }
+			scope:city_17_protagonist.governor = { add_loyalty = loyalty_unpreferred_city }
+		}
+		else_if = {
+			limit = {
+				exists = scope:city_17_antagonist.governor
+				exists = scope:city_17_protagonist.governor
+				scope:city_17_antagonist.governor = { 
+					this = scope:city_17_protagonist.governor
+				}
+			}
+			scope:city_17_antagonist.governor = { add_loyalty = loyalty_preferred_city }
+		}
+		scope:city_17_antagonist = {
+			add_province_modifier = {
+				name = city_17_bonus_modifier
+				duration = 7300
+			}
+		}
+		scope:city_17_protagonist = {
+			add_province_modifier = {
+				name = city_17_malus_modifier
+				duration = 7300
+			}
+		}
+	}
+	
+	option = {
+		name = "city.17.c"
+		if = {
+			limit = {
+				exists = scope:city_17_antagonist.governor
+				exists = scope:city_17_protagonist.governor
+				scope:city_17_antagonist.governor = { 
+					NOT = {
+						this = scope:city_17_protagonist.governor
+					}
+				}
+			}
+			scope:city_17_antagonist.governor = { add_loyalty = loyalty_unpreferred_city }
+			scope:city_17_protagonist.governor = { add_loyalty = loyalty_unpreferred_city }
+		}
+		else_if = {
+			limit = {
+				exists = scope:city_17_antagonist.governor
+				exists = scope:city_17_protagonist.governor
+				scope:city_17_antagonist.governor = { 
+					this = scope:city_17_protagonist.governor
+				}
+			}
+			scope:city_17_antagonist.governor = { add_loyalty = loyalty_unpreferred_city }
+		}
+		else = {
+			current_ruler = { add_popularity = subtract_popularity_small }
+		}
+		add_treasury = {
+			value = has_monthly_income
+			multiply = 2.1
+		}
+		scope:city_17_antagonist = {
+			add_province_modifier = {
+				name = city_land_appropriated_pmod
+				duration = 7300
+			}
+		}
+		scope:city_17_protagonist = {
+			add_province_modifier = {
+				name = city_land_appropriated_pmod
+				duration = 7300
+			}
+		}
+	}
+}
+
+city.18 = { #city clashes with rival city SERIES
+	type = country_event
+	title = "city.18.t"
+	desc = "city.18.desc"
+	picture = city_siege
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_18_protagonist.governor
+	
+	goto_location = scope:city_18_protagonist
+	
+	trigger = {
+		any_owned_province = {
+			total_population < 10
+			is_capital = no
+			has_city_status = yes
+			NOT = {
+				has_variable = rival_city
+			}
+			any_neighbor_province = {
+				exists = owner
+				owner = root
+				total_population >= 10
+				is_capital = no
+				has_city_status = yes
+				num_of_freemen >= 2
+				NOT = {
+					has_variable = rival_city
+				}
+			}
+		}
+		num_of_controlled_cities <= 15
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				total_population < 10
+				is_capital = no
+				has_city_status = yes
+				NOT = {
+					has_variable = rival_city
+				}
+				any_neighbor_province = {
+					exists = owner
+					owner = root
+					total_population >= 10
+					is_capital = no
+					has_city_status = yes
+					num_of_freemen >= 2
+					NOT = {
+						has_variable = rival_city
+					}
+				}
+			}
+			save_scope_as = city_18_protagonist
+		}
+		scope:city_18_protagonist = {
+			random_neighbor_province = {
+				limit = {
+					exists = owner
+					owner = root
+					total_population >= 10
+					is_capital = no
+					num_of_freemen >= 2
+					NOT = {
+						has_variable = rival_city
+					}
+				}
+				save_scope_as = city_18_antagonist
+			}
+		}
+		scope:city_18_protagonist = {
+			set_variable = {
+				name = rival_city
+				value = scope:city_18_antagonist
+			}
+		}
+		scope:city_18_antagonist = {
+			set_variable = {
+				name = rival_city
+				value = scope:city_18_protagonist
+			}
+		}
+		hidden_effect = {
+			scope:city_18_antagonist = {
+				random_pops_in_province = {
+					limit = {
+						pop_type = freemen
+					}
+					set_pop_type = slaves
+					move_pop = scope:city_18_protagonist
+				}
+			}
+			scope:city_18_antagonist = {
+				random_pops_in_province = {
+					limit = {
+						pop_type = freemen
+					}
+					set_pop_type = slaves
+					move_pop = scope:city_18_protagonist
+				}
+			}
+		}
+		custom_tooltip = city.18.it
+	}
+	
+	option = {
+		name = "city.18.a"
+		if = {
+			limit = {
+				exists = scope:city_18_antagonist.governor
+				exists = scope:city_18_protagonist.governor
+				scope:city_18_antagonist.governor = { 
+					NOT = {
+						this = scope:city_18_protagonist.governor
+					}
+				}
+			}
+			scope:city_18_antagonist.governor = { add_loyalty = loyalty_slaves_returned_to }
+			scope:city_18_protagonist.governor = { add_loyalty = loyalty_slaves_returned_from }
+		}
+		scope:city_18_protagonist = {
+			hidden_effect = {
+				if = {
+					limit = {
+						num_of_slaves >= 2
+					}
+					random_pops_in_province = {
+						limit = {
+							pop_type = slaves
+						}
+						set_pop_type = freemen
+						move_pop = scope:city_18_antagonist
+					}
+					random_pops_in_province = {
+						limit = {
+							pop_type = slaves
+						}
+						set_pop_type = freemen
+						move_pop = scope:city_18_antagonist
+					}
+				}
+			}
+			add_province_modifier = {
+				name = enforced_return_of_slaves
+				duration = 1825
+			}
+		}
+		custom_tooltip = city.18.at
+	}
+	
+	option = {
+		name = "city.18.b"
+		if = {
+			limit = {
+				exists = scope:city_18_antagonist.governor
+				exists = scope:city_18_protagonist.governor
+				scope:city_18_antagonist.governor = { 
+					NOT = {
+						this = scope:city_18_protagonist.governor
+					}
+				}
+			}
+			scope:city_18_antagonist.governor = { add_loyalty = loyalty_slaves_returned_to }
+			scope:city_18_protagonist.governor = { add_loyalty = loyalty_slaves_purchased_back }
+		}
+		else_if = {
+			limit = {
+				exists = scope:city_18_antagonist.governor
+				exists = scope:city_18_protagonist.governor
+				scope:city_18_antagonist.governor = { 
+					this = scope:city_18_protagonist.governor
+				}
+			}
+			scope:city_18_antagonist.governor = { add_loyalty = loyalty_slaves_returned_to }
+		}
+		scope:city_18_protagonist = {
+			if = {
+				limit = {
+					num_of_slaves >= 2
+				}
+				hidden_effect = {
+					random_pops_in_province = {
+						limit = {
+							pop_type = slaves
+						}
+						set_pop_type = freemen
+						move_pop = scope:city_18_antagonist
+					}
+					random_pops_in_province = {
+						limit = {
+							pop_type = slaves
+						}
+						set_pop_type = freemen
+						move_pop = scope:city_18_antagonist
+					}
+				}
+				root = {
+					add_treasury = {
+						value = 0
+						subtract = root.has_monthly_income
+						multiply = 3
+					}
+				}
+			}
+		}
+		custom_tooltip = city.18.at
+	}
+	
+	option = {
+		name = "city.18.c"
+		current_ruler = { add_popularity = subtract_popularity_small }
+		if = {
+			limit = {
+				exists = scope:city_18_antagonist.governor
+				exists = scope:city_18_protagonist.governor
+				scope:city_18_antagonist.governor = { 
+					NOT = {
+						this = scope:city_18_protagonist.governor
+					}
+				}
+			}
+			scope:city_18_antagonist.governor = { add_loyalty = loyalty_slaves_stolen }
+			scope:city_18_protagonist.governor = { add_loyalty = loyalty_slaves_kept }
+		}
+		else_if = {
+			limit = {
+				exists = scope:city_18_antagonist.governor
+				exists = scope:city_18_protagonist.governor
+				scope:city_18_antagonist.governor = { 
+					this = scope:city_18_protagonist.governor
+				}
+			}
+			scope:city_18_antagonist.governor = { add_loyalty = loyalty_slaves_stolen }
+		}
+	}
+	
+}
+
+city.19 = { #city clashes with rival city SERIES
+	type = country_event
+	title = "city.19.t"
+	desc = "city.19.desc"
+	picture = city_construction
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_19_protagonist.governor
+	
+	goto_location = scope:city_19_protagonist
+	
+	trigger = {
+		any_owned_province = {
+			total_population >= 10
+			is_capital = no
+			has_city_status = yes
+			NOT = {
+				has_variable = rival_city
+			}
+			any_neighbor_province = {
+				exists = owner
+				owner = root
+				total_population >= 10
+				has_city_status = yes
+				is_capital = no
+				NOT = {
+					has_variable = rival_city
+				}
+			}
+		}
+		num_of_controlled_cities <= 15
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				total_population >= 10
+				is_capital = no
+				has_city_status = yes
+				NOT = {
+					has_variable = rival_city
+				}
+				any_neighbor_province = {
+					exists = owner
+					owner = root
+					total_population >= 10
+					has_city_status = yes
+					is_capital = no
+					NOT = {
+						has_variable = rival_city
+					}
+				}
+			}
+			save_scope_as = city_19_protagonist
+		}
+		scope:city_19_protagonist = {
+			random_neighbor_province = {
+				limit = {
+					exists = owner
+					owner = root
+					total_population >= 10
+					is_capital = no
+					NOT = {
+						has_variable = rival_city
+					}
+				}
+				save_scope_as = city_19_antagonist
+			}
+		}
+		scope:city_19_protagonist = {
+			set_variable = {
+				name = rival_city
+				value = scope:city_19_antagonist
+			}
+		}
+		scope:city_19_antagonist = {
+			set_variable = {
+				name = rival_city
+				value = scope:city_19_protagonist
+			}
+		}
+	}
+	
+	option = {
+		name = "city.19.a"
+		scope:city_19_protagonist = {
+			add_province_modifier = {
+				name = local_preparing_for_war
+				duration = 7300
+			}
+		}
+		scope:city_19_antagonist = {
+			add_province_modifier = {
+				name = local_preparing_for_war
+				duration = 7300
+			}
+		}
+	}
+	
+}
+
+city.20 = {
+	type = country_event
+	title = "city.20.t"
+	desc = "city.20.desc"
+	picture = city_construction
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_20_protagonist.governor
+	
+	goto_location = scope:city_20_protagonist
+	
+	trigger = {
+		any_owned_province = {
+			has_siege = no
+			total_population >= 10
+			is_capital = no
+			has_city_status = yes
+			NOT = {
+				has_variable = rival_city
+			}
+			any_neighbor_province = {
+				exists = owner
+				owner = root
+				total_population >= 10
+				has_city_status = yes
+				is_capital = no
+				NOT = {
+					has_variable = rival_city
+				}
+			}
+			any_neighbor_province = {
+				count = all
+				NOT = {
+					has_building = fortress_building
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				total_population >= 10
+				is_capital = no
+				has_city_status = yes
+				NOT = {
+					has_variable = rival_city
+				}
+				any_neighbor_province = {
+					exists = owner
+					owner = root
+					total_population >= 10
+					has_city_status = yes
+					is_capital = no
+					NOT = {
+						has_variable = rival_city
+					}
+				}
+				any_neighbor_province = {
+					count = all
+					NOT = {
+						has_building = fortress_building
+					}
+				}
+			}
+			save_scope_as = city_20_protagonist
+		}
+		scope:city_20_protagonist = {
+			random_neighbor_province = {
+				limit = {
+					exists = owner
+					owner = root
+					total_population >= 10
+					is_capital = no
+					NOT = {
+						has_variable = rival_city
+					}
+				}
+				save_scope_as = city_20_antagonist
+			}
+		}
+		scope:city_20_protagonist = {
+			set_variable = {
+				name = rival_city
+				value = scope:city_20_antagonist
+			}
+		}
+		scope:city_20_antagonist = {
+			set_variable = {
+				name = rival_city
+				value = scope:city_20_protagonist
+			}
+		}
+	}
+	
+	option = {
+		name = "city.20.a"
+		ai_chance = {
+			factor = 1
+		}
+		scope:city_20_protagonist = {
+			if = {
+				limit = {
+					can_build_building = fortress_building
+				}
+				add_building_level = fortress_building
+			}
+			else = {
+				root = {
+					add_manpower = 1
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "city.20.b"
+		trigger = {
+			scope:city_20_protagonist = {
+				can_build_building = fortress_building
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:city_20_protagonist.governor
+			}
+			scope:city_20_protagonist.governor = { add_loyalty = loyalty_workforce_recruited }
+		}
+		add_manpower = 3
+		ai_chance = {
+			factor = 99
+		}
+	}
+	
+	option = {
+		name = "city.20.c"
+		trigger = {
+			scope:city_20_protagonist = {
+				OR = {
+					AND = {
+						can_build_building = barracks_building
+						NOT = { has_building = barracks_building }
+					}
+					AND = {
+						can_build_building = town_hall_building
+						NOT = { has_building = town_hall_building }
+					}
+					AND = {
+						can_build_building = drilling_square_building
+						NOT = { has_building = drilling_square_building }
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:city_20_protagonist.governor
+			}
+			scope:city_20_protagonist.governor = { add_loyalty = loyalty_workforce_repurposed }
+		}
+		scope:city_20_protagonist = {
+			if = {
+				limit = {
+					can_build_building = barracks_building
+					NOT = { has_building = barracks_building }
+				}
+				add_building_level = barracks_building
+			}
+			else_if = {
+				limit = {
+					can_build_building = town_hall_building
+					NOT = { has_building = town_hall_building }
+				}
+				add_building_level = town_hall_building
+			}
+			else_if = {
+				limit = {
+					can_build_building = drilling_square_building
+					NOT = { has_building = drilling_square_building }
+				}
+				add_building_level = drilling_square_building
+			}
+		}
+		ai_chance = {
+			factor = 99
+		}
+	}
+	
+}
+
+city.21 = { #pops with non-state religion ask for protected status
+	type = country_event
+	title = "city.21.t"
+	desc = "city.21.desc"
+	picture = religious_rite
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_21_target.governor
+	
+	goto_location = scope:city_21_target
+	
+	trigger = {
+		any_owned_province = {
+			dominant_province_religion = root.religion
+			has_city_status = yes
+			any_pops_in_province = {
+				count >= 4
+				NOT = {
+					pop_religion = root.religion
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		random_owned_province = {
+			limit = {
+				dominant_province_religion = root.religion
+				has_city_status = yes
+				any_pops_in_province = {
+					count >= 4
+					NOT = {
+						pop_religion = root.religion
+					}
+				}
+			}
+			save_scope_as = city_21_target
+		}
+	}
+	
+	option = {
+		name = "city.21.a"
+		add_treasury = {
+			value = 0
+			add = root.has_monthly_income
+			multiply = 6
+			max = 100
+		}
+	}
+	
+	option = {
+		name = "city.21.b"
+		trigger = {
+			current_ruler = {
+				has_trait = sceptical
+			}
+		}
+		custom_tooltip = "sceptical_bad_tooltip"
+		exclusive = yes
+		highlight = yes
+		scope:city_21_target = {
+			add_province_modifier = {
+				name = minor_religious_disturbance
+				duration = 1825
+			}
+		}
+	}
+	
+	option = {
+		name = "city.21.c" 
+		hidden_effect = {
+			scope:city_21_target = {
+				while = {
+					count = 2
+					random_pops_in_province = {
+						limit = {
+							NOT = {
+								pop_religion = root.religion
+							}
+						}
+						set_pop_religion = root.religion
+					}
+				}
+			}
+		}
+		custom_tooltip = city.21.ct
+	}
+	
+}
+
+city.22 = { #governor state loyalty
+	type = country_event
+	title = "city.22.t"
+	desc = "city.22.desc"
+	picture = senator_conversing
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:city_22_target_governor
+	
+	goto_location = scope:city_22_target
+	
+	trigger = {
+		NOT = {
+			has_variable = city_22_toggle
+		}
+		any_owned_province = {
+			controller = root
+			exists = governor
+			governor = {
+				is_ruler = no
+				OR = {
+					has_trait = ambitious
+					has_trait = gluttonous
+					loyalty <= 70
+					corruption >= 20 
+					party = populist_party
+				}
+				any_governor_state = {
+					any_state_province = {
+						state_loyalty >= 33
+					}
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		set_variable = {
+			name = city_22_toggle
+			days = 3650
+		}
+		random_owned_province = {
+			limit = {
+				controller = root
+				exists = governor
+				governor = {
+					is_ruler = no
+					OR = {
+						has_trait = ambitious
+						has_trait = gluttonous
+						loyalty <= 70
+						corruption >= 20 
+						party = populist_party
+					}
+				}
+				state_loyalty >= 33
+			}
+			save_scope_as = city_22_target
+			governor = {
+				save_scope_as = city_22_target_governor
+			}
+		}
+	}
+	
+	option = {
+		name = "city.22.a"
+		scope:city_22_target = {
+			add_state_loyalty = {
+				value = 0
+				subtract = state_loyalty
+				divide = 3
+			}
+		}
+		scope:city_22_target_governor = {
+			add_corruption = 10
+		}
+	}
+	
+	option = {
+		name = "city.22.b"
+		scope:city_22_target = { 
+			add_state_loyalty = {
+				value = 0
+				subtract = state_loyalty
+				divide = 1.5
+			}
+		}
+		imprison = {
+			target = scope:city_22_target_governor
+		}
+	}
+	
+}

@@ -1,0 +1,241 @@
+﻿support_of_elders = {
+
+value = 0
+
+add = current_ruler.charisma
+
+multiply = 4
+
+if = { limit = { has_variable_list = current_chieftans_list } 
+
+add = elders_loyalty_average
+
+divide = 3
+
+round = yes
+
+}
+
+add = 10
+
+add = ruler_populatiry_for_votting
+
+round = yes
+
+min = 0
+max = 100
+}
+
+ruler_populatiry_for_votting = {
+
+value = root.current_ruler.popularity
+divide = 5
+
+}
+
+
+
+elders_loyalty_average = {
+
+value = 0
+
+every_character = { 
+limit = { 
+ROOT = { is_target_in_variable_list = { name = current_chieftans_list target = PREV } }
+}
+add = loyalty 
+
+}
+if = { limit = { number_of_elders > 0 } divide = number_of_elders }
+
+
+
+}
+
+number_of_elders_for_inside_of_list = {
+
+value = 0
+
+every_in_list = {
+variable = current_chieftans_list
+employer = {
+
+add = 1
+
+}
+}
+
+
+
+
+}
+
+
+
+number_of_elders = {
+
+value = 0
+
+every_character = { 
+limit = { 
+ROOT = { is_target_in_variable_list = { name = current_chieftans_list target = PREV } }
+} 
+add = 1 
+}
+
+
+
+
+}
+
+number_of_clan_cheifs = {
+
+value = 0
+
+every_character = { 
+limit = { 
+is_clan_chief = yes
+is_ruler = no
+} 
+add = 1 
+}
+
+
+
+
+}
+
+reverse_value_of_average_loyalty = {
+
+value = 100
+subtract = elders_loyalty_average
+
+}
+
+reverse_value_of_ruler_popularity = {
+
+value = 20 
+subtract = ruler_populatiry_for_votting
+
+}
+
+voice_of_denaial = {
+
+value = reverse_value_of_average_loyalty
+
+multiply = number_of_elders
+
+}
+
+the_votes_that_has_been_passed = {
+value = 2.5
+if = {  limit = { has_variable = votes_has_been_passed }
+multiply = var:votes_has_been_passed
+}
+
+}
+
+
+
+votting_treshold = {
+
+value = 10
+
+add = the_votes_that_has_been_passed
+add = voice_of_denaial
+add = reverse_value_of_ruler_popularity
+
+min = 20
+max = 100
+
+
+}
+
+
+maximal_number_of_elders = {
+
+value = 2
+
+
+
+
+
+
+
+
+}
+
+#nomads authority
+
+leader_authority_popularity_base = {
+
+value = current_ruler.popularity
+divide = 2
+add = -25
+
+
+
+}
+# -25 to 25
+
+
+
+nomadic_ruler_skills = {
+
+value = -5
+add = current_ruler.martial
+add = -5
+add = current_ruler.charisma
+
+multiply = 2
+
+round = yes
+}
+# -20 to 20
+
+
+nomadic_ruler_authority = {
+
+value = 50
+
+add = leader_authority_popularity_base
+add = nomadic_ruler_skills
+add = power_base_authority_diffrence
+
+
+min = 0
+max = 100
+
+}
+
+nomadic_ruler_authority_display = {
+
+value = nomadic_ruler_authority
+divide = 100
+
+}
+
+
+average_cheiftains_powerbase = {
+value = 0
+every_character = { 
+limit = { 
+is_clan_chief = yes
+is_ruler = no
+} 
+add = this.power_base 
+}
+divide = number_of_clan_cheifs
+
+
+
+}
+power_base_authority_diffrence = {
+value = current_ruler.power_base
+subtract = average_cheiftains_powerbase
+divide = 5
+round = yes
+}
+
+
+

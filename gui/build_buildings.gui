@@ -1,0 +1,310 @@
+window = {
+	gfxtype = windowgfx
+	name = "build_buildings"
+	parentanchor = bottom|left
+	size = { 440 428 }
+	position = { 706 3 }
+	movable = yes
+	
+	state = {
+		name = _show
+		
+		animation = {
+			position = { 708 3 }
+		}
+	}
+	
+	widget = {
+		name = "background"
+		using = standard_window_type
+		size = { 100% 100% }
+		alwaystransparent = no
+	}
+	
+	textbox = {
+		position = { 15 22 }
+		using = MarbleButtonFontL
+		text = "CITY_BUILDINGS_TOOLTIP"
+		fontsize = 20
+	}
+	
+	square_close_button = {
+		name = "close_button"
+		position = { -3 5 }
+		parentanchor = top|right
+		shortcut = "close_window"
+		onclick = "[BuildBuildingWindow.OnClose]"
+		tooltip = "CLOSE"
+	}
+	
+	icon = {
+		texture = "gfx/interface/tiles/marble_divider_vertical.dds"
+		spriteType = Corneredtiled
+		position = { 108 48 }
+		size = { 9 262 }
+		spriteborder = { 19 16 }
+		shaderfile = "gfx/FX/pdxgui_default.shader"
+	}
+	
+	icon = {
+		texture = "gfx/interface/tiles/marble_divider_vertical.dds"
+		spriteType = Corneredtiled
+		position = { 214 48 }
+		size = { 9 262 }
+		spriteborder = { 19 16 }
+		shaderfile = "gfx/FX/pdxgui_default.shader"
+	}
+	
+	scrollarea = {
+		position = { 13 50 }
+		size = { 410 360 }
+		scrollbarpolicy_horizontal = always_off
+		
+		scrollbar_vertical = {
+			using = MarbleScrollBar
+		}
+		
+		scrollwidget = {
+			dynamicgridbox = {
+				position = { 0 0 }
+				
+				datamodel_wrap = 5
+				
+				datamodel = "[BuildBuildingWindow.GetPossibleBuildings]"
+				item = {
+					flowcontainer = {
+						direction = vertical
+						
+						flowcontainer = {
+							direction = horizontal
+							ignoreinvisible = yes
+							spacing = 1
+							
+							#Hide when there is only one building of one category queued
+							
+							container = {
+								icon = {
+									name = "building_icon_cube"
+									size = { 50 50 }
+									texture = "[GetBuildingIcon(BuildingItem.GetBuilding)]"
+									tooltip = "[BuildingItem.GetEffectInfo]"
+									alpha = "[TransparentIfTrue( GreaterThan_int32(BuildingItem.GetQueueSize, '(int32)0') )]"
+									
+									container = {
+										name = "size_slot"
+										position = { 2 28 }
+										parentanchor = top|right
+										widgetanchor = top|right
+										
+										visible = "[GreaterThan_int32(BuildingItem.GetLevel, '(int32)0'))]"
+									}
+								}
+								
+								container = {
+									name = "queue_slots"
+									visible = "[BuildingItem.HasQueue]"
+									position = { 0 -6 }
+									parentanchor = center
+									
+									textbox = {
+										size = { 0 0 }
+										autoresize = yes
+										fontcolor = { 0 0 0 1 }
+										font = "BaseFont"
+										fontsize = 34
+										text = "+[BuildingItem.GetQueueSize]"
+										parentanchor = center
+									}
+								}
+							}
+							
+							widget = {
+								size = { 38 50 }
+								button = {
+									name = "build"
+									texture = "gfx/interface/buttons/marble_building_button_plus.dds"
+									onclick = "[BuildingItem.Build]"
+									clicksound = "event:/SFX/UI/Province/sfx_ui_province_build_building"
+									oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+									enabled = "[BuildingItem.CanBuild]"
+									tooltip = "[BuildingItem.GetBuildInfo]"
+									position = { 2 0 }
+									size = { 38 24 }
+									parentanchor = hcenter
+								
+								}
+								
+								cancel_button = {
+									name = "demolish"
+									visible = "[Not(BuildingItem.ShowCancel)]"
+									onclick = "[BuildingItem.Destroy]"
+									clicksound = "event:/SFX/UI/Province/sfx_ui_province_destroy_building"
+									oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+									enabled = "[BuildingItem.CanDestroy]"
+									tooltip = "[BuildingItem.GetDestroyInfo]"
+									parentanchor = hcenter
+									texture = "gfx/interface/buttons/marble_building_button_demolish.dds"
+									position = { 2 24 }
+								}
+								
+								minus_button = {
+									visible = "[BuildingItem.ShowCancel]"
+									name = "cancel"
+									onclick = "[BuildingItem.Cancel]"
+									enabled = "[BuildingItem.CanCancel]"
+									tooltip = "[BuildingItem.GetCancelInfo]"
+									texture = "gfx/interface/buttons/marble_building_button_minus.dds"
+									parentanchor = hcenter
+									position = { 2 24 }
+								}
+							}
+							
+							widget = {
+								name = "right_spacing"
+								size = { 16 0 }
+							}
+						}
+						
+						widget = {
+							name = "bottom_spacing"
+							size = { 0 2 }
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	icon = {
+		texture = "gfx/interface/tiles/marble_divider_horizontal.dds"
+		spriteType = Corneredtiled
+		position = { 10 308 }
+		size = { 414 9 }
+		spriteborder = { 16 19 }
+		shaderfile = "gfx/FX/pdxgui_default.shader"
+	
+	}
+	
+	
+	
+	DefaultHeaderBackground = {
+		position = { 10 314 }
+		size = { 420 46 }
+		
+		blockoverride "text"
+		{
+			text = "UPGRADE_CITY_TYPE_TITLE"
+			margin_left = 0
+		}
+		
+		blockoverride "position"
+		{
+			position = { 10 7 }
+		}
+	
+	}
+	
+	
+	flowcontainer = {
+		position = { 8 360 }
+		ignoreinvisible = yes
+		
+		button = {
+			texture = "gfx/interface/buttons/button_square_42.dds"
+			spriteborder = { 8 8 }
+			spriteType = corneredstretched
+			size = { 56 56 }
+			parentanchor = hcenter
+			#visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			datacontext = "[GetScriptedGui('revoke_city_status_button')]"
+			enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			tooltip = "REVOKE_CITY_STATUS_BUTTON_TOOLTIP"
+			
+			icon = {
+				parentanchor = center
+				texture = "gfx/interface/icons/shared_icons/downgrade_to_settlement.dds"
+				size = { 52 52 }
+				position = { 1 -1 }
+			}
+		}	
+
+		widget = {
+			size = { 4 4 }
+		}		
+		
+		button = {
+			texture = "gfx/interface/buttons/button_square_42.dds"
+			spriteborder = { 8 8 }
+			spriteType = corneredstretched
+			size = { 56 56 }
+			parentanchor = hcenter
+			#visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			datacontext = "[GetScriptedGui('found_city_button')]"
+			enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			tooltip = "FOUND_CITY_BUTTON_TOOLTIP"
+			
+			icon = {
+				parentanchor = center
+				texture = "gfx/interface/icons/shared_icons/city.dds"
+				size = { 52 52 }
+				position = { 1 -1 }
+			}
+		}
+		
+		widget = {
+			size = { 4 4 }
+		}
+		
+		button = {
+			texture = "gfx/interface/buttons/button_square_42.dds"
+			spriteborder = { 8 8 }
+			spriteType = corneredstretched
+			size = { 56 56 }
+			parentanchor = hcenter
+			#visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			datacontext = "[GetScriptedGui('found_metropolis_button')]"
+			enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( BuildBuildingWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			tooltip = "FOUND_METROPOLIS_BUTTON_TOOLTIP"
+			
+			icon = {
+				parentanchor = center
+				texture = "gfx/interface/icons/shared_icons/metropolis.dds"
+				size = { 52 52 }
+				position = { 1 -1 }
+			}
+		}
+		
+		widget = {
+			size = { 10 10 }
+		}
+		
+		icon = {
+			name = "progressbar_frame"
+			spriteType = Corneredtiled
+			spriteborder = { 2 5 }
+			size = { 10 56 }
+			texture = "gfx/interface/tiles/progressbar_green_frame.dds"
+			
+			progressbar = {
+				using = progressbar_green_vertical
+				size = { 7 54 }
+				position = { 2 2 }
+				visible = "[BuildBuildingWindow.AccessProvince.HasTimedModifier('founding_city_in_progress')]"
+				tooltip = "[BuildBuildingWindow.AccessProvince.GetTimedModifier('founding_city_in_progress').GetTooltip]"
+				value = "[FixedPointToFloat(BuildBuildingWindow.AccessProvince.GetTimedModifier('founding_city_in_progress').GetProgress)]"
+			}
+			progressbar = {
+				using = progressbar_green_vertical
+				size = { 7 54 }
+				position = { 2 2 }
+				visible = "[BuildBuildingWindow.AccessProvince.HasTimedModifier('founding_metropolis_in_progress')]"
+				tooltip = "[BuildBuildingWindow.AccessProvince.GetTimedModifier('founding_metropolis_in_progress').GetTooltip]"
+				value = "[FixedPointToFloat(BuildBuildingWindow.AccessProvince.GetTimedModifier('founding_metropolis_in_progress').GetProgress)]"
+			}
+		}
+	}
+}
+
