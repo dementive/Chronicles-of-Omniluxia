@@ -1,0 +1,133 @@
+﻿namespace = heir_events
+
+#Heir nominated grumpy children
+heir_events.5 = { #..and the youngest of the family, is moving with authority... 
+	type = country_event
+	title = "heir_events.5.t"
+	desc = "heir_events.5.desc" 
+	
+	left_portrait = current_ruler
+	left_portrait = scope:nominee
+	right_portrait = scope:angry_sibling
+	right_portrait = scope:lost_heir
+	picture = diadochi_coronation
+
+	immediate = {
+		hidden_effect = {
+			random_successor = {
+				limit = {
+					NOT = { has_triggered_character_modifier = nominated_heir_modifier }
+					NOT = { this = scope:lost_heir }
+					age > 5
+				}
+				save_scope_as = angry_sibling
+			}
+			random_character = { 
+				limit = {
+					is_head_of_family = yes
+					is_ruler = no
+					loyalty < 55
+				}
+				save_scope_as = conspiring_hof
+			}
+		}
+	}
+	
+	option = {
+		name = "heir_events.5.a"
+		if = {
+			limit = { exists = scope:angry_sibling }
+			scope:angry_sibling = {
+				add_loyalty = jealous_sibling
+				if = {
+					limit = {
+						exists = scope:conspiring_hof
+					}
+					add_friend = scope:conspiring_hof
+				}
+			}
+		}
+		scope:lost_heir = {
+			add_loyalty = jealous_sibling
+		}
+	}
+	
+}
+
+#Heir nomination succesful - Base
+heir_events.10 = {
+	type = country_event
+	title = "heir_events.10.t"
+	desc = "heir_events.10.desc" 
+	
+	left_portrait = current_ruler
+	right_portrait = scope:nominee
+	picture = diadochi_coronation
+
+	option = {
+		name = "heir_events.10.a"
+		scope:lost_heir = {
+			add_loyalty = jealous_sibling
+		}
+	}
+	after = {
+		every_country_culture = {
+			limit = {
+				is_culture = root.culture
+				NOT = { has_country_culture_modifier = succesful_coronation_ceremony }
+			}
+			add_country_culture_modifier = {
+				name = "succesful_coronation_ceremony"
+				duration = 730
+			}
+		}
+	}
+}
+
+#Child Nomination
+heir_events.11 = {  
+	type = country_event
+	title = "heir_events.11.t"
+	desc = "heir_events.11.desc" 
+	
+	left_portrait = current_ruler
+	right_portrait = scope:nominee
+	picture = throneroom
+
+	immediate = {
+		hidden_effect = {
+			random_character = { 
+				limit = {
+					is_head_of_family = yes
+					is_ruler = no
+					loyalty < 55
+				}
+				save_scope_as = conspiring_hof
+			}
+		}
+	}
+	
+	option = {
+		name = "heir_events.11.a"
+		if = {
+			limit = { exists = scope:angry_sibling }
+			every_successor = {
+				limit = {
+					NOT = { has_triggered_character_modifier = nominated_heir_modifier }
+					NOT = { this = scope:lost_heir }
+				}
+				add_loyalty = jealous_sibling
+			}
+		}
+		scope:lost_heir = {
+			add_loyalty = jealous_sibling
+			if = {
+				limit = {
+					exists = scope:conspiring_hof
+				}
+				add_friend = scope:conspiring_hof
+			}
+		}
+	}
+	
+}

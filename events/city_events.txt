@@ -53,6 +53,7 @@ city.1 = { # City Prospers
 		name = "city.1.a"
 		if = {
 			limit = {
+				exists = scope:city_1_target.governor_or_ruler
 				scope:city_1_target.governor_or_ruler = { 
 					NOT = { this = scope:city_1_target.owner.current_ruler }
 				}
@@ -72,9 +73,9 @@ city.1 = { # City Prospers
 		scope:city_1_target = {
 			if = {
 				limit = {
-					can_build_building = trade_district_building
+					can_build_building = commerce_building
 				}
-				add_building_level = trade_district_building
+				add_building_level = commerce_building
 			}
 			else_if = {
 				limit = {
@@ -114,21 +115,15 @@ city.1 = { # City Prospers
 				}
 				1 = {
 					trigger = {
-						can_build_building = temple_building 
+						can_build_building = library_building 
 					}
-					add_building_level = temple_building
+					add_building_level = library_building
 				}
 				1 = {
 					trigger = {
-						can_build_building = taverns_and_inns_building 
+						can_build_building = court_building 
 					}
-					add_building_level = taverns_and_inns_building
-				}
-				1 = {
-					trigger = {
-						can_build_building = craftsmans_district_building 
-					}
-					add_building_level = craftsmans_district_building
+					add_building_level = court_building
 				}
 			}
 		}
@@ -155,8 +150,8 @@ city.2 = { # Autonomy - city funds own building
 		any_owned_province = {
 			controller = root
 			OR = {
-				can_build_building = trade_district_building
-				can_build_building = drilling_square_building
+				can_build_building = commerce_building
+				can_build_building = military_building
 				can_build_building = population_building
 			}
 			has_city_status = yes
@@ -173,8 +168,8 @@ city.2 = { # Autonomy - city funds own building
 			limit = {
 				controller = root
 				OR = {
-					can_build_building = trade_district_building
-					can_build_building = drilling_square_building
+					can_build_building = commerce_building
+					can_build_building = military_building
 					can_build_building = population_building
 				}
 				has_city_status = yes
@@ -188,8 +183,8 @@ city.2 = { # Autonomy - city funds own building
 				modifier = {
 					factor = 2
 					OR = {
-						can_build_building = trade_district_building
-						can_build_building = drilling_square_building
+						can_build_building = commerce_building
+						can_build_building = military_building
 						can_build_building = population_building
 					}
 				}
@@ -209,15 +204,15 @@ city.2 = { # Autonomy - city funds own building
 			}
 			else_if = {
 				limit = {
-					can_build_building = trade_district_building
+					can_build_building = commerce_building
 				}
-				add_building_level = trade_district_building
+				add_building_level = commerce_building
 			}
 			else_if = {
 				limit = {
-					can_build_building = housing_district_building
+					can_build_building = aqueduct_building
 				}
-				add_building_level = housing_district_building
+				add_building_level = aqueduct_building
 			}
 			else = {
 				create_2_freemen_effect = yes
@@ -227,7 +222,15 @@ city.2 = { # Autonomy - city funds own building
 	
 	option = {
 		name = "city.2.b"
-		scope:city_2_target.governor_or_ruler = { add_popularity = subtract_popularity_small }
+		if = {
+			limit = {
+				exists = scope:city_2_target.governor 
+			}
+			scope:city_2_target.governor = { add_popularity = subtract_popularity_small }
+		}
+		else = {
+			scope:city_2_target.owner.current_ruler = { add_popularity = subtract_popularity_small }
+		}
 		scope:city_2_target = {
 			if = {
 				limit = {
@@ -238,17 +241,17 @@ city.2 = { # Autonomy - city funds own building
 			}
 			else_if = {
 				limit = {
-					can_build_building = town_hall_building
-					NOT = { has_building = town_hall_building }
+					can_build_building = library_building
+					NOT = { has_building = library_building }
 				}
-				add_building_level = town_hall_building
+				add_building_level = library_building
 			}
 			else_if = {
 				limit = {
-					can_build_building = drilling_square_building
-					NOT = { has_building = drilling_square_building }
+					can_build_building = military_building
+					NOT = { has_building = military_building }
 				}
-				add_building_level = drilling_square_building
+				add_building_level = military_building
 			}
 			else = {
 				owner = { add_manpower = 4 }
@@ -656,12 +659,21 @@ city.7 = { #pops flee foreign war
 	
 	trigger = {
 		war = no
+		is_ai = no
 		any_neighbour_country = {
+			is_ai = yes
 			war = yes
-			any_owned_province = {
+			any_owned_province = {	#Find destination
 				any_neighbor_province = {
 					has_owner = yes
 					owner = ROOT
+				}
+			}
+			any_owned_province = { #Find what they are fleeing from
+				non_slave_population_svalue > 2
+				OR = {
+					has_siege = yes
+					NOT = { controller = owner }
 				}
 			}
 		}
@@ -670,22 +682,153 @@ city.7 = { #pops flee foreign war
 	immediate = {
 		random_neighbour_country = {
 			limit = {
+				is_ai = yes
 				war = yes
+				any_owned_province = {	#Find destination
+					any_neighbor_province = {
+						has_owner = yes
+						owner = ROOT
+					}
+				}
+				any_owned_province = { #Find what they are fleeing from
+					non_slave_population_svalue > 2
+					OR = {
+						has_siege = yes
+						NOT = { controller = owner }
+					}
+				}
 			}
 			save_scope_as = city_7_target_country
-			random_countries_at_war_with = {
+			random_owned_province = {
+				limit = {
+					non_slave_population_svalue > 2
+					OR = {
+						has_siege = yes
+						NOT = { controller = owner }
+					}
+				}
+				random_pops_in_province = {
+					limit = { NOT = { pop_type = slaves } }
+					add_to_list = refugee_list
+				}
+				random_pops_in_province = {
+					limit = {
+						NOT = { pop_type = slaves }
+						NOT = { is_in_list = refugee_list }
+					}
+					add_to_list = refugee_list
+				}
+			}
+			if = {	#We try to move more refugees the bigger the country is that they are fleeing from.
+				limit = {
+					rank >= 3
+				}
+				random_owned_province = {
+					limit = {
+						non_slave_population_svalue > 2
+						OR = {
+							has_siege = yes
+							NOT = { controller = owner }
+						}
+						NOT = {
+							any_pops_in_province = {
+								is_in_list = refugee_list
+							}
+						}
+					}
+					random_pops_in_province = {
+						limit = { NOT = { pop_type = slaves } }
+						add_to_list = refugee_list
+					}
+					random_pops_in_province = {
+						limit = {
+							NOT = { pop_type = slaves }
+							NOT = { is_in_list = refugee_list }
+						}
+						add_to_list = refugee_list
+					}
+				}
+			}
+			if = {
+				limit = {
+					rank >= 4
+				}
+				random_owned_province = {
+					limit = {
+						non_slave_population_svalue > 2
+						OR = {
+							has_siege = yes
+							NOT = { controller = owner }
+						}
+						NOT = {
+							any_pops_in_province = {
+								is_in_list = refugee_list
+							}
+						}
+					}
+					random_pops_in_province = {
+						limit = { NOT = { pop_type = slaves } }
+						add_to_list = refugee_list
+					}
+					random_pops_in_province = {
+						limit = {
+							NOT = { pop_type = slaves }
+							NOT = { is_in_list = refugee_list }
+						}
+						add_to_list = refugee_list
+					}
+				}
+			}
+			if = {
+				limit = {
+					rank >= 5
+				}
+				random_owned_province = {
+					limit = {
+						non_slave_population_svalue > 2
+						OR = {
+							has_siege = yes
+							NOT = { controller = owner }
+						}
+						NOT = {
+							any_pops_in_province = {
+								is_in_list = refugee_list
+							}
+						}
+					}
+					random_pops_in_province = {
+						limit = { NOT = { pop_type = slaves } }
+						add_to_list = refugee_list
+					}
+					random_pops_in_province = {
+						limit = {
+							NOT = { pop_type = slaves }
+							NOT = { is_in_list = refugee_list }
+						}
+						add_to_list = refugee_list
+					}
+				}
+				ordered_countries_at_war_with = {
+					order_by = rank
+					save_scope_as = city_7_target_country_2
+				}
+			}
+			ordered_countries_at_war_with = {
+				order_by = rank
 				save_scope_as = city_7_target_country_2
 			}
 		}
-		random_owned_province = {
-			weight = {
-				modifier = {
-					factor = 10000
-					any_neighbor_province = {
-						has_owner = yes
-						owner = scope:city_7_target_country
-					}
+		ordered_owned_province = {
+			limit = {
+				any_neighbor_province = {
+					has_owner = yes
+					owner = scope:city_7_target_country
 				}
+			}
+			order_by = {
+				value = 0
+				add = population_cap
+				subtract = total_population
 			}
 			save_scope_as = city_7_target
 		}
@@ -693,12 +836,18 @@ city.7 = { #pops flee foreign war
 	
 	option = {
 		name = "city.7.a"
-		scope:city_7_target = {
-			create_2_freemen_effect = yes
+		every_in_list = {
+			list = refugee_list
+			move_pop = scope:city_7_target
+			remove_from_list = refugee_list
 		}
 	}
 	option = {
 		name = "city.7.b"
+		every_in_list = {
+			list = refugee_list
+			remove_from_list = refugee_list
+		}
 		scope:city_7_target_country = {
 			add_opinion = {
 				modifier = denied_pop_entry
@@ -720,19 +869,28 @@ city.8 = { #migrants from trade agreement
 	goto_location = scope:city_8_target
 	
 	trigger = {
-		any_neighbour_country = { 
+		any_neighbour_country = {
+			is_ai = yes
 			OR = {
 				imports_from = root
 				root = {
 					imports_from = prev
 				}
 			}
+			any_owned_province = {
+				non_slave_population_svalue > 2
+			}
+		}
+		any_owned_province = {
+			has_city_status = yes
+			non_slave_population_svalue >= 1
 		}
 	}
 	
 	immediate = {
 		random_neighbour_country = {
 			limit = {
+				is_ai = yes
 				OR = {
 					imports_from = root
 					root = {
@@ -741,11 +899,52 @@ city.8 = { #migrants from trade agreement
 				}
 			}
 			save_scope_as = city_8_target_country
+			if = {
+				limit = {
+					any_owned_province = {
+						count > 1
+						non_slave_population_svalue >= 2
+					}
+				}
+				ordered_owned_province = {
+					limit = {
+						non_slave_population_svalue >= 2
+					}
+					order_by = total_population
+					max = 2
+					check_range_bounds = no
+					random_pops_in_province = {
+						limit = { NOT = { pop_type = slaves } }
+						add_to_list = pops_for_neighbor
+					}
+				}
+			}
+			else = {
+				random_owned_province = {
+					limit = { non_slave_population_svalue > 2 }
+					random_pops_in_province = {
+						add_to_list = pops_for_neighbor
+					}
+					random_pops_in_province = {
+						limit = {
+							NOT = {
+								is_in_list = pops_for_neighbor
+								NOT = { pop_type = slaves }
+							}
+						}
+						add_to_list = pops_for_neighbor
+					}
+				}
+			}
 		}
 		random_owned_province = {
+			limit = {
+				has_city_status = yes
+				non_slave_population_svalue >= 1
+			}
 			weight = {
 				modifier = {
-					factor = 100
+					factor = 1000
 					any_neighbor_province = {
 						owner = scope:city_8_target_country
 					}
@@ -757,8 +956,10 @@ city.8 = { #migrants from trade agreement
 	
 	option = {
 		name = "city.8.a"
-		scope:city_8_target = {
-			create_2_citizens_effect = yes
+		every_in_list = {
+			list = pops_for_neighbor
+			move_pop = scope:city_8_target
+			remove_from_list = pops_for_neighbor
 		}
 	}
 	
@@ -772,6 +973,7 @@ city.8 = { #migrants from trade agreement
 			}
 		}
 		exclusive = yes
+		add_tyranny = 1
 		scope:city_8_target_country = {
 			add_opinion = {
 				modifier = enslaved_refugees
@@ -779,8 +981,24 @@ city.8 = { #migrants from trade agreement
 			}
 		}
 		scope:city_8_target = {
-			create_2_slaves_effect = yes
-			create_2_slaves_effect = yes
+			random_pops_in_province = {
+				limit = {
+					NOT = { pop_type = slaves }
+				}
+				weight = {
+					modifier = {
+						factor = 100
+						NOT = { pop_culture = root.culture }
+					}
+				}
+				set_pop_type = slaves
+			}
+		}
+		every_in_list = {
+			list = pops_for_neighbor
+			move_pop = scope:city_8_target
+			set_pop_type = slaves
+			remove_from_list = pops_for_neighbor
 		}
 	}
 	
@@ -792,8 +1010,11 @@ city.8 = { #migrants from trade agreement
 				target = root
 			}
 		}
-		scope:city_8_target = {
-			create_2_slaves_effect = yes
+		every_in_list = {
+			list = pops_for_neighbor
+			move_pop = scope:city_8_target
+			set_pop_type = slaves
+			remove_from_list = pops_for_neighbor
 		}
 	}
 
@@ -878,9 +1099,9 @@ city.9 = { #character wants to build a grand temple
 		scope:city_9_target = {
 			if = {
 				limit = {
-					can_build_building = temple_building 
+					can_build_building = library_building 
 				}
-				add_building_level = temple_building
+				add_building_level = library_building
 			}
 			add_province_modifier = {
 				name = grand_temple_built
@@ -930,9 +1151,9 @@ city.9 = { #character wants to build a grand temple
 			random_list = {
 				1 = {
 					trigger = {
-						can_build_building = taverns_and_inns_building 
+						can_build_building = court_building 
 					}
-					add_building_level = taverns_and_inns_building
+					add_building_level = court_building
 				}
 				1 = {
 					trigger = {
@@ -940,18 +1161,11 @@ city.9 = { #character wants to build a grand temple
 					}
 					add_building_level = library_building
 				}
-				
 				1 = {
 					trigger = {
 						can_build_building = town_hall_building 
 					}
 					add_building_level = town_hall_building
-				}
-				1 = {
-					trigger = {
-						can_build_building = craftsmans_district_building 
-					}
-					add_building_level = craftsmans_district_building
 				}
 			}
 		}
@@ -1206,7 +1420,7 @@ city.12 = { #grand temple collapses (city.9)
 		trigger = {
 			scope:city_12_target = {
 				free_building_slots >= 1
-				can_build_building = temple_building
+				can_build_building = library_building
 			}
 		}
 		current_ruler = { add_popularity = popularity_medium }
@@ -1224,7 +1438,7 @@ city.12 = { #grand temple collapses (city.9)
 		   subtract = 75
 		}
 		scope:city_12_target = {
-			add_building_level = temple_building
+			add_building_level = library_building
 		}
 		if = {
 			limit = {
@@ -1276,8 +1490,9 @@ city.13 = {
 				}
 				any_neighbor_province = {
 					exists = owner
-					NOT = {
+					NOR = {
 						owner = ROOT
+						owner = { war_with = ROOT } # stop migration between enemies
 					}
 				}
 			}
@@ -1427,15 +1642,16 @@ city.13 = {
 }
 
 city.14 = {
-	type = country_event
+	type = minor_country_event
 	title = "city.14.t"
 	desc = "city.14.desc"
 	picture = city_country
 	
-	left_portrait = current_ruler
-	right_portrait = scope:city_13_target.owner.current_ruler
+	left_portrait = scope:city_13_target.owner.current_ruler
 
 	goto_location = scope:city_13_target_3
+	
+	interface_lock = no
 	
 	option = {
 		name = "city.14.a"
@@ -1526,12 +1742,15 @@ city.15 = {
 }
 
 city.16 = {
-	type = country_event
+	type = minor_country_event
 	title = "city.16.t"
 	desc = "city.16.desc"
 	picture = farming
+	left_portrait = scope:city_16_target.state.governor_or_ruler
 	
 	goto_location = scope:city_16_target
+	
+	interface_lock = no
 	
 	trigger = {
 		OR = {
@@ -1810,7 +2029,7 @@ city.18 = { #city clashes with rival city SERIES
 	
 	trigger = {
 		any_owned_province = {
-			total_population < 10
+			total_population < 20
 			is_capital = no
 			has_city_status = yes
 			NOT = {
@@ -1819,7 +2038,7 @@ city.18 = { #city clashes with rival city SERIES
 			any_neighbor_province = {
 				exists = owner
 				owner = root
-				total_population >= 10
+				total_population >= 20
 				is_capital = no
 				has_city_status = yes
 				num_of_freemen >= 2
@@ -2282,12 +2501,12 @@ city.20 = {
 						NOT = { has_building = barracks_building }
 					}
 					AND = {
-						can_build_building = town_hall_building
-						NOT = { has_building = town_hall_building }
+						can_build_building = foundry_building
+						NOT = { has_building = foundry_building }
 					}
 					AND = {
-						can_build_building = drilling_square_building
-						NOT = { has_building = drilling_square_building }
+						can_build_building = military_building
+						NOT = { has_building = military_building }
 					}
 				}
 			}
@@ -2308,17 +2527,17 @@ city.20 = {
 			}
 			else_if = {
 				limit = {
-					can_build_building = town_hall_building
-					NOT = { has_building = town_hall_building }
+					can_build_building = foundry_building
+					NOT = { has_building = foundry_building }
 				}
-				add_building_level = town_hall_building
+				add_building_level = foundry_building
 			}
 			else_if = {
 				limit = {
-					can_build_building = drilling_square_building
-					NOT = { has_building = drilling_square_building }
+					can_build_building = military_building
+					NOT = { has_building = military_building }
 				}
-				add_building_level = drilling_square_building
+				add_building_level = military_building
 			}
 		}
 		ai_chance = {
@@ -2443,7 +2662,7 @@ city.22 = { #governor state loyalty
 					has_trait = gluttonous
 					loyalty <= 70
 					corruption >= 20 
-					party = populist_party
+					character_democratic_party_trigger = yes
 				}
 				any_governor_state = {
 					any_state_province = {
@@ -2470,7 +2689,7 @@ city.22 = { #governor state loyalty
 						has_trait = gluttonous
 						loyalty <= 70
 						corruption >= 20 
-						party = populist_party
+						character_democratic_party_trigger = yes
 					}
 				}
 				state_loyalty >= 33

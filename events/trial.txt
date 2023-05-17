@@ -1,0 +1,995 @@
+﻿namespace = trial #BLOCK don't touch OR convert to AFTER.
+
+trial.1 = {
+	type = country_event
+	title = "trial.1.t"
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					is_republic = yes
+				}
+				desc = "trial.1.desc_republic"
+			}
+			triggered_desc = {
+				trigger = {
+					is_monarchy = yes
+				}
+				desc = "trial.1.desc_monarchy"
+			}
+			triggered_desc = {
+				trigger = {
+					is_tribal = yes
+				}
+				desc = "trial.1.desc_tribal"
+			}
+		}
+	}
+	
+	picture = trial_govtype
+	
+	trigger = {
+		exists = scope:target
+		scope:target = {
+			has_triggered_character_modifier = currently_on_trial
+		}
+	}
+	
+	left_portrait = current_ruler
+	right_portrait = scope:target
+	
+	immediate = {
+		scope:target = {
+			save_scope_as = civil_war_candidate
+		}
+	}
+	
+	option = {
+		name = "trial.1.a" 
+		current_ruler = {
+			add_popularity = popularity_small
+		}
+		custom_tooltip = newline_tt
+		scope:target = {
+			add_trial_chance_small = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+		#BLOCK
+		trial_step_effect = yes
+		#BLOCK
+		
+	}
+	
+	option = {    
+		name = "trial.1.b"
+		trigger = {
+			scope:target = {
+				popularity <= 10
+			} 
+		}
+		highlight = yes
+		custom_tooltip = low_target_popularity_tt
+		if = {
+			limit = {
+				is_republic = yes
+			}
+			democratic_approval_effect = {
+				VALUE = party_approval_large
+			}
+		}
+		else = {
+			add_stability = -5
+		}
+		custom_tooltip = newline_tt
+		scope:target = {
+			add_trial_chance_moderate = yes 
+		}
+		custom_tooltip = office_trial_success_chance
+		
+		#BLOCK
+		trial_step_effect = yes
+		#BLOCK
+		
+	}
+	
+	option = {
+		trigger = {
+			is_monarchy = yes
+		}
+		name = "trial.1.c" 
+		custom_tooltip = trial_monarchy_c_tt
+		highlight = yes
+		add_tyranny = 10
+		custom_tooltip = newline_tt 
+		scope:target = {
+			add_trial_chance_large = yes 
+		}
+		custom_tooltip = office_trial_success_chance
+		
+		#BLOCK
+		trial_step_effect = yes
+		#BLOCK
+		
+	}
+	
+	option = {
+		trigger = {
+			is_monarchy = yes
+			scope:target = {
+				is_pretender = yes 
+			}
+		}
+		name = "trial.1.d" 
+		custom_tooltip = trial_monarchy_target_is_pretender_tt
+		exclusive = yes
+		highlight = yes
+		add_stability = -10
+		custom_tooltip = newline_tt 
+		scope:target = {
+			add_trial_chance_moderate = yes 
+		}
+		custom_tooltip = office_trial_success_chance
+		
+		#BLOCK
+		trial_step_effect = yes
+		#BLOCK
+		
+	}
+	
+	option = {
+		name = "trial.1.e" 
+		custom_tooltip = trial_ended_no_progress
+		current_ruler = {
+			add_popularity = subtract_popularity_medium
+		}
+		hidden_effect = {
+			scope:target = {
+				if = {
+					limit = {
+						has_triggered_character_modifier = currently_on_trial
+					}
+					remove_triggered_character_modifier = currently_on_trial
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "trial.1.e"
+		custom_tooltip = trial_ended_no_progress
+		trigger = {
+			is_monarchy = yes
+			scope:target = {
+				is_pretender = yes 
+			}
+		}
+		exclusive = yes
+		current_ruler = {
+			add_popularity = subtract_popularity_medium
+		}
+		hidden_effect = {
+			scope:target = {
+				if = {
+					limit = {
+						has_triggered_character_modifier = currently_on_trial
+					}
+					remove_triggered_character_modifier = currently_on_trial
+				}
+			}
+		}
+	}
+	
+}
+
+trial.2 = {
+	type = country_event
+	title = "trial.2.t"
+	desc = "trial.2.desc"
+	
+	picture = trial_govtype
+	
+	left_portrait = current_ruler
+	right_portrait = scope:target
+	
+	trigger = {
+		NOT = {
+			has_local_variable = trial_2
+		}
+	}
+	
+	immediate = {
+		random_country = {
+			limit = {
+				in_diplomatic_range = root
+				NOT = { THIS = ROOT }
+			}
+			save_scope_as = alibi_country
+		}
+	}
+	
+	option = {
+		name = "trial.2.a"
+		scope:target = {
+			subtract_trial_chance_moderate = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	option = {
+		name = "trial.2.b" 
+		scope:alibi_country = {
+			add_opinion = {
+				target = root
+				modifier = opinion_grave_insult
+			}
+		}
+		add_aggressive_expansion = 1
+		add_civil_war_chance_effect = yes
+		custom_tooltip = newline_tt
+		scope:target = {
+			add_trial_chance_small = yes
+		}
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	after = {
+		set_local_variable = {
+			name = trial_2
+		}
+		trial_step_effect = yes
+	}
+}
+
+trial.3 = {
+	type = country_event
+	title = "trial.3.t"
+	desc = "trial.3.desc"
+	
+	picture = trial_govtype
+	
+	left_portrait = current_ruler
+	right_portrait = scope:target
+	right_portrait = scope:powerful_ally
+	
+	trigger = {
+		NOT = {
+			has_local_variable = trial_3
+		}
+	}
+	
+	immediate = {
+		ordered_character = {
+			limit = {
+				is_adult = yes
+				is_ruler = no
+				trigger_if = {
+					limit = {
+						employer.current_ruler = {
+							is_minor_character = no
+						}
+					}
+					from_ruler_family = no
+				}
+				NOT = {
+					this = scope:target
+				}
+			}
+			order_by = power_base
+			position = 1
+			save_scope_as = powerful_ally
+		}
+	}
+	
+	option = {
+		name = "trial.3.a" 
+		scope:target = {
+			subtract_trial_chance_moderate = yes  
+		}
+		if = {
+			limit = {
+				exists = scope:civil_war_candidate
+				scope:target = scope:civil_war_candidate
+			}
+			scope:powerful_ally = {
+				save_scope_as = civil_war_candidate
+			}
+		}
+		add_civil_war_chance_effect = yes
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	option = {
+		name = "trial.3.b" 
+		add_treasury = {
+			value = root.has_monthly_income
+			multiply = -6
+		}
+		scope:powerful_ally = {
+			add_gold = {
+				value = root.has_monthly_income
+				multiply = 6
+			}
+		}
+		custom_tooltip = newline_tt
+		custom_tooltip = no_trial_progress
+		custom_tooltip = office_trial_success_chance
+		
+		
+		
+	}
+	
+	after = {
+		set_local_variable = {
+			name = trial_3
+		}
+		trial_step_effect = yes
+	}
+	
+}
+
+trial.4 = {
+	type = country_event
+	title = "trial.4.t"
+	desc = "trial.4.desc"
+	
+	picture = trial_govtype
+	
+	left_portrait = current_ruler
+	right_portrait = scope:target
+	
+	trigger = {
+		NOT = {
+			has_local_variable = trial_4
+		}
+	}
+	
+	immediate = {
+		
+	}
+	
+	option = {
+		name = "trial.4.a" 
+		current_ruler = {
+			if = {
+				limit = {
+					NOT = {
+						has_trait = cruel
+					}
+					number_of_personality_traits < max_number_of_traits_svalue
+				}
+				random_list = {
+					80 = {}
+					20 = {
+						show_as_tooltip = {
+							add_trait = cruel
+						}
+						hidden_effect = {
+							set_variable = {
+								name = my_piquante_trait_picker
+								value = 17
+							}
+							trigger_event = {
+								id = traits.1
+							}
+						}
+					}
+				}
+			}
+		}
+		custom_tooltip = newline_tt
+		scope:target = {
+			add_trial_chance_small = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+		#BLOCK
+		set_local_variable = {
+			name = trial_4
+		}
+		trial_step_effect = yes
+		#BLOCK
+		
+	}
+	
+	option = {
+		name = "trial.4.a" 
+		trigger = {
+			current_ruler = {
+				has_trait = zealous
+			}
+		}
+		highlight = yes
+		exclusive = yes
+		add_civil_war_chance_effect = yes
+		custom_tooltip = zealous_bad_tooltip
+		custom_tooltip = newline_tt
+		current_ruler = {
+			if = {
+				limit = {
+					NOT = {
+						has_trait = cruel
+					}
+					number_of_personality_traits < max_number_of_traits_svalue
+				}
+				random_list = {
+					80 = {}
+					20 = {
+						show_as_tooltip = {
+							add_trait = cruel
+						}
+						hidden_effect = {
+							set_variable = {
+								name = my_piquante_trait_picker
+								value = 17
+							}
+							trigger_event = {
+								id = traits.1
+							}
+						}
+					}
+				}
+			}
+		}
+		custom_tooltip = newline_tt
+		scope:target = {
+			subtract_trial_chance_small = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+		#BLOCK
+		set_local_variable = {
+			name = trial_4
+		}
+		trial_step_effect = yes
+		#BLOCK
+		
+	}
+	
+	option = {
+		name = "trial.4.b" 
+		scope:target = {
+			if = {
+				limit = {
+					wealth > 100
+				}
+				root = {
+					add_treasury = {
+						value = scope:target.wealth
+						divide = 2
+						max = 200
+					}
+				}
+				add_gold = {
+					value = 0
+					subtract = wealth 
+					divide = 2
+					min = -200
+				}
+				custom_tooltip = newline_tt
+				custom_tooltip = trial_ends_here_tt
+			}
+			else = {
+				custom_tooltip = cannot_pay_fine_tt
+				root = {
+					imprison = {
+						target = scope:target
+					}
+				}
+			}
+		}
+		hidden_effect = {
+			scope:target = {
+				if = {
+					limit = {
+						has_triggered_character_modifier = currently_on_trial
+					}
+					remove_triggered_character_modifier = currently_on_trial
+				}
+				if = {
+					limit = {
+						has_variable = trial_chance_modifier
+					}
+					remove_variable = trial_chance_modifier
+				}
+			}
+		}
+	}
+	
+}
+
+trial.5 = {
+	type = country_event
+	title = "trial.5.t"
+	desc = "trial.5.desc"
+	
+	picture = trial_govtype
+	
+	left_portrait = current_ruler
+	left_portrait = scope:scapegoat
+	right_portrait = scope:target
+	
+	trigger = {
+		NOT = {
+			has_local_variable = trial_5
+		}
+	}
+	
+	immediate = {
+		random_character = {
+			limit = {
+				NOR = {
+					is_adult = no
+					is_ruler = yes
+					prisoner = yes
+					trigger_if = {
+						limit = {
+							employer.current_ruler = {
+								is_minor_character = no
+							}
+						}
+						from_ruler_family = yes
+					}
+					this = scope:target
+					trigger_if = {
+						limit = {
+							exists = scope:powerful_ally
+						}
+						this = scope:powerful_ally
+					}
+				}
+			}
+			weight = {
+				modifier = {
+					factor = 100
+					OR = {
+						has_any_office = yes
+						is_general = yes
+					}
+				}
+				modifier = {
+					factor = 100
+					loyalty <= 50
+				}
+			}
+			save_scope_as = scapegoat
+		}
+	}
+	
+	option = {
+		name = "trial.5.a" 
+		
+		scope:scapegoat = {
+			add_loyalty = loyalty_trial_scapegoat
+		}
+		add_civil_war_chance_effect = yes
+		add_civil_war_chance_effect = yes
+		custom_tooltip = newline_tt
+		scope:target = {
+			add_trial_chance_moderate = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	option = {
+		name = "trial.5.b" 
+		scope:scapegoat = {
+			add_loyalty = loyalty_trial_not_scapegoat  
+		}
+		custom_tooltip = newline_tt
+		custom_tooltip = no_trial_progress
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	after = {
+		set_local_variable = {
+			name = trial_5
+		}
+		trial_step_effect = yes
+	}
+	
+}
+
+trial.6 = {
+	type = country_event
+	title = "trial.6.t"
+	desc = "trial.6.desc"
+	
+	picture = trial_govtype
+	
+	left_portrait = current_ruler
+	right_portrait = scope:target
+	
+	trigger = {
+		NOT = {
+			has_local_variable = trial_6
+		}
+	}
+	
+	immediate = {
+		set_local_variable = {
+			name = ruler_hurt
+			value = { integer_range = { min = 1 max = 2 } }
+		}
+	}
+	
+	option = {
+		name = "trial.6.a" 
+		trigger = {
+			local_var:ruler_hurt = 1
+		}
+		current_ruler = {
+			if = {
+				limit = {
+					health > 35 
+				}
+				add_health = -35
+			}
+			else = {
+				custom_tooltip = legal_accident_death
+				hidden_effect = {
+					death = {
+						death_reason = death_legal_accident
+					}
+				}
+			}
+		}
+		exclusive = yes
+		custom_tooltip = newline_tt
+		scope:target = {
+			add_trial_chance_moderate = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	option = {
+		name = "trial.6.b" 
+		trigger = {
+			local_var:ruler_hurt = 2
+		}
+		exclusive = yes
+		scope:target = {
+			if = {
+				limit = {
+					health > 35
+				}
+				add_health = -35
+			}
+			else = {
+				death = {
+					death_reason = death_legal_accident
+				}
+			}
+		}
+
+		custom_tooltip = newline_tt
+		scope:target = {
+			add_trial_chance_moderate = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	after = {
+		set_local_variable = {
+			name = trial_6
+		}
+		trial_step_effect = yes
+	}
+	
+}
+
+trial.7 = {
+	type = country_event
+	title = "trial.7.t"
+	desc = "trial.7.desc"
+	
+	picture = trial_govtype
+	
+	left_portrait = current_ruler
+	right_portrait = scope:target
+	
+	trigger = {
+		NOT = {
+			has_local_variable = trial_7
+		}
+	}
+	
+	immediate = {
+		
+	}
+	
+	option = {
+		name = "trial.7.a" 
+		
+		add_political_influence = subtract_influence_large
+		custom_tooltip = newline_tt
+		scope:target = {
+			add_trial_chance_large = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	option = {
+		name = "trial.7.b" 
+		
+		scope:target = {
+			add_trial_chance_small = yes  
+		}
+		custom_tooltip = office_trial_success_chance
+		
+	}
+	
+	after = {
+		set_local_variable = {
+			name = trial_7
+		}
+		trial_step_effect = yes
+	}
+	
+}
+
+trial.8 = {
+	type = country_event
+	title = "trial.8.t"
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_local_variable = outcome
+					local_var:outcome = 1
+				}
+				desc = "trial.8.desc_success"
+			}
+			triggered_desc = {
+				trigger = {
+					has_local_variable = outcome
+					local_var:outcome = 0
+				}
+				desc = "trial.8.desc_failure"
+			}
+		}
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_local_variable = civil_war_outcome
+					local_var:civil_war_outcome = 1
+				}
+				desc = "trial.8.desc_civil_war_happens"
+			}
+			triggered_desc = {
+				trigger = {
+					has_local_variable = civil_war_outcome
+					local_var:civil_war_outcome = 0
+				}
+				desc = "trial.8.desc_civil_war_prevented"
+			}
+			triggered_desc = {
+				trigger = {
+					always = yes
+				}
+				desc = "trial.8.bypass_success"
+			}
+		}
+	}
+	
+	picture = trial_govtype
+	left_portrait = current_ruler
+	right_portrait = scope:target
+	right_portrait = scope:por_3
+	
+	immediate = {
+		set_local_variable = {
+			name = sbgnq1
+			value = { integer_range = { min = 1 max = 100 } }
+		}
+		if = {
+			limit = {
+				local_var:sbgnq1 <= get_trial_success_chance 
+			}
+			set_local_variable = {
+				name = outcome
+				value = 1
+			}
+		}
+		else = {
+			set_local_variable = {
+				name = outcome
+				value = 0
+			}
+		}
+		if = {
+			limit = {
+				local_var:outcome = 0
+			}
+			if = {
+				limit = {
+					has_local_variable = civil_war_chance
+				}
+				change_local_variable = {
+					name = civil_war_chance
+					add = scope:civil_war_candidate.power_base
+				}
+			}
+			else = {
+				set_local_variable = {
+					name = civil_war_chance
+					value = scope:civil_war_candidate.power_base
+				}
+			}
+			if = {
+				limit = {
+					NOT = {
+						scope:civil_war_candidate = scope:target
+					}
+				}
+				change_local_variable = {
+					name = civil_war_chance
+					add = scope:target.power_base
+				}
+			}
+			##
+			set_local_variable = {
+				name = sbgnq2
+				value = { integer_range = { min = 1 max = 100 } }
+			}
+			if = {
+				limit = {
+					local_var:sbgnq2 < civil_war_chance_svar 
+				}
+				set_local_variable = { 
+					name = civil_war_outcome
+					value = 1
+				}
+				if = {
+					limit = {
+						NOT = {
+							scope:civil_war_candidate = scope:target
+						}
+					}
+					scope:civil_war_candidate = {
+						save_scope_as = por_3
+					}
+				}
+			}
+			else = {
+				set_local_variable = { 
+					name = civil_war_outcome 
+					value = 0
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "trial.8.o_success" 
+		trigger = {
+			has_local_variable = outcome
+			local_var:outcome = 1
+		}
+		scope:target = {
+			remove_all_positions = yes
+			root = {
+				imprison = {
+					target = scope:target
+				}
+			}
+		}
+		current_ruler = {
+			add_popularity = popularity_medium
+		}
+	}
+	
+	option = {
+		name = "trial.8.o_failure"
+		trigger = {
+			has_local_variable = outcome
+			local_var:outcome = 0
+		}
+		current_ruler = {
+			add_popularity = subtract_popularity_large
+		}
+		scope:target = {
+			add_popularity = popularity_huge
+			hidden_effect = {
+				remove_trial_items_effect = yes
+			}
+		}
+		add_stability = -10
+	}
+	
+	option = {
+		name = "trial.8.o_civil_war"
+		exclusive = yes
+		trigger = {
+			exists = local_var:civil_war_outcome
+			local_var:civil_war_outcome = 1
+			num_of_cities > 3
+			is_subject = no
+		}
+		scope:civil_war_candidate = { remove_all_positions = yes }
+		start_civil_war = scope:civil_war_candidate
+		scope:civil_war_candidate.employer = {
+			save_scope_as = civil_war_country
+		}
+		if = {
+			limit = {
+				NOT = {
+					scope:civil_war_candidate = scope:target
+				}
+			}
+			custom_tooltip = fled_to_join_tt
+			hidden_effect = {
+				scope:target = {
+					move_country = scope:civil_war_country
+					set_as_minor_character = this
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "trial.8.o_civil_war_b"
+		exclusive = yes
+		custom_tooltip = "corrupt_tooltip"
+		trigger = {
+			exists = local_var:civil_war_outcome
+			local_var:civil_war_outcome = 1
+			num_of_cities > 3
+			current_ruler = {
+				has_trait = corrupt
+			}
+			is_subject = no
+		}
+		highlight = yes
+		scope:target = {
+			add_gold = {
+				value = root.has_monthly_income
+				multiply = 18
+			}
+			add_popularity = popularity_huge
+			hidden_effect = {
+				remove_trial_items_effect = yes
+			}
+		}
+		add_treasury = {
+			value = root.has_monthly_income
+			multiply = -18
+		}
+	}
+	
+	option = {
+		name = "trial.8.o_civil_war_b"
+		exclusive = yes
+		trigger = {
+			exists = local_var:civil_war_outcome
+			local_var:civil_war_outcome = 1
+			OR = {
+				num_of_cities <= 3
+				is_subject = yes
+			}
+		}
+		scope:target = {
+			add_gold = {
+				value = root.has_monthly_income
+				multiply = 18
+			}
+			add_popularity = popularity_huge
+			hidden_effect = {
+				remove_trial_items_effect = yes
+			}
+		}
+		add_treasury = {
+			value = root.has_monthly_income
+			multiply = -18
+		}
+	}
+	
+}

@@ -1,0 +1,1741 @@
+﻿namespace = cultural_integration
+
+##
+cultural_integration.1 = { # Mass Wedding
+	type = country_event
+	title = "cultural_integration.1.t"
+	desc = "cultural_integration.1.desc"
+	picture = religious_rite
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:mass_wedding_scope
+	
+	trigger = {
+		current_ruler = {
+			is_married = no
+		}
+		trigger_if = {
+			limit = {
+				has_variable = no_repeat_mass_wedding_for_same_culture_flag
+			}
+			NOT = {
+				root.var:no_repeat_mass_wedding_for_same_culture_flag = scope:target_culture.culture
+			}
+		}
+		any_character = {
+			is_alive = yes
+			age >= 16
+			is_married = no
+			prisoner = no
+			employer = root
+			is_ruler = no
+			is_at_location = root.capital_scope
+		}
+	}
+	
+	immediate = {
+		ordered_character = {
+			limit = {
+				is_alive = yes
+				age >= 16
+				is_married = no
+				prisoner = no
+				employer = root
+				is_ruler = no
+				is_at_location = root.capital_scope
+			}
+			order_by = prominence
+			max = 1
+			check_range_bounds = no
+			save_scope_as = mass_wedding_scope
+		}
+	}
+	
+	option = {
+		trigger = {
+			any_character = {
+				count >= 4
+				is_married = no
+				prisoner = no
+			}
+		}
+		name = "cultural_integration.1.a" # Organize a mass wedding
+		scope:target_culture = {
+			add_integration_progress = 0.15
+			add_country_culture_modifier = {
+				name = "mass_wedding_happy"
+				duration = 1825
+			}
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			add_country_culture_modifier = {
+				name = "mass_wedding_to_foreigners_unhappy"
+				duration = 1825
+			}
+		}
+		ordered_character = {
+			limit = {
+				is_alive = yes
+				age >= 16
+				is_married = no
+				prisoner = no
+				employer = root
+				is_at_location = root.capital_scope
+			}
+			order_by = prominence
+			max = 10
+			check_range_bounds = no
+			save_temporary_scope_as = mass_wedding_target
+			custom_tooltip = cultural_integration.1.a_tt
+			hidden_effect = {
+				if = {
+					limit = {
+						is_female = no
+					}
+					ROOT = {
+						create_character = {
+							culture = scope:target_culture.culture
+							religion = root.capital_scope.religion
+							female = yes
+							age = mass_wedding_age_svalue
+							marry_character = scope:mass_wedding_target
+						}
+					}
+				}
+				if = {
+					limit = {
+						is_female = yes
+					}
+					ROOT = {
+						create_character = {
+							culture = scope:target_culture.culture
+							religion = root.capital_scope.religion
+							female = no
+							age = mass_wedding_age_svalue
+							marry_character = scope:mass_wedding_target
+						}
+					}
+				}
+			}
+		}
+		
+	}
+	
+	option = {
+		name = "cultural_integration.1.b" # Just marry our leader
+		current_ruler = {
+			save_temporary_scope_as = mass_wedding_target
+		}
+		custom_tooltip = cultural_integration.1.a_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					current_ruler = { is_female = no }
+				}
+				create_character = {
+					culture = scope:target_culture.culture
+					religion = root.capital_scope.religion
+					female = yes
+					age = mass_wedding_age_svalue
+					marry_character = root.current_ruler
+				}
+			}
+			if = {
+				limit = {
+					current_ruler = { is_female = yes }
+				}
+				create_character = {
+					culture = scope:target_culture.culture
+					religion = root.capital_scope.religion
+					female = no
+					age = mass_wedding_age_svalue
+					marry_character = root.current_ruler
+				}
+			}
+		}
+		scope:target_culture = {
+			add_integration_progress = 0.05
+			add_country_culture_modifier = {
+				name = "prestigious_wedding_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			add_country_culture_modifier = {
+				name = "prestigious_wedding_to_foreigner_unhappy"
+				duration = 1825
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.1.c" # We will not marry these savages
+	}
+
+	after = {
+		hidden_effect = {
+			set_variable = {
+				name = no_repeat_mass_wedding_for_same_culture_flag
+				value = scope:target_culture.culture
+			}
+		}
+	}
+}
+
+##
+cultural_integration.2 = { # Demand for replacement governor
+	type = country_event
+	title = "cultural_integration.2.t"
+	desc = "cultural_integration.2.desc"
+	picture = senator_conversing
+	
+	right_portrait = scope:cultural_desired_governor
+	left_portrait = scope:cultural_current_governor
+	
+	trigger = {
+		any_character = {
+			has_culture = scope:target_culture.culture
+			is_governor = no
+			is_general = no
+			prisoner = no
+			is_mercenary = no
+			age >= 16
+			NOT = { has_character_modifier = foreign_citizen }
+			trigger_if = {
+				limit = {
+					employer = { gender_equality = no }
+				}
+				is_female = no
+			}
+		}
+		any_owned_province = {
+			dominant_province_culture = scope:target_culture.culture
+			governorship = {
+				exists = governor
+				governor = {
+					NOT = { has_culture = scope:target_culture.culture }
+					is_ruler = no
+				}
+			}
+		}
+		trigger_if = {
+			limit = {
+				has_variable = no_repeat_replacement_governor_for_same_culture_flag
+			}
+			NOT = {
+				root.var:no_repeat_replacement_governor_for_same_culture_flag = scope:target_culture.culture
+			}
+		}
+	}
+	
+	immediate = {
+		random_character = {
+			limit = {
+				has_culture = scope:target_culture.culture
+				is_governor = no
+				is_general = no
+				prisoner = no
+				is_mercenary = no
+				age >= 16
+				NOT = { has_character_modifier = foreign_citizen }
+				trigger_if = {
+					limit = {
+						employer = { gender_equality = no }
+					}
+					is_female = no
+				}
+			}
+			save_scope_as = cultural_desired_governor
+		}
+		ordered_governorships = {
+			limit = {
+				any_governorship_state = {
+					any_state_province = {
+						dominant_province_culture = scope:target_culture.culture
+						owner = ROOT
+					}
+				}
+				exists = governor
+				governor = {
+					NOT = { has_culture = scope:target_culture.culture }
+					is_ruler = no
+				}
+			}
+			max = 1
+			check_range_bounds = no
+			order_by = {
+				value = 0
+				every_governorship_state = {
+					every_state_province = {
+						limit = {
+							dominant_province_culture = scope:target_culture.culture
+						}
+						add = 1
+					}
+				}
+			}
+			save_scope_as = cultural_governorship
+			random_governorship_state = {
+				random_state_province = {
+					save_scope_as = cultural_governorship_province
+				}
+			}
+			governor = {
+				save_scope_as = cultural_current_governor
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.2.a" # We will let them be ruled by one of their own
+		
+		scope:target_culture = {
+			add_integration_progress = 0.1
+		
+			add_country_culture_modifier = {
+				name = "governor_of_our_own_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "foreign_governor_unhappy"
+				duration = 1825
+			}
+		}
+		scope:cultural_governorship_province = {
+			governor = {
+				add_loyalty = loyalty_replaced_as_governor
+			}
+			set_as_governor = scope:cultural_desired_governor
+		}
+		scope:cultural_desired_governor = {
+			add_loyalty = loyalty_ruling_their_own
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.2.b" # The governor is doing fine and we do not take kindly to their upstart 'suggestions' on how to rule our empire
+		
+		scope:target_culture = {
+			add_integration_progress = -0.1
+		
+			add_country_culture_modifier = {
+				name = "governor_of_our_own_denied_unhappy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "governor_privileges_preserved_happy"
+				duration = 1825
+			}
+		}
+		scope:cultural_desired_governor = {
+			add_loyalty = loyalty_rejected_governorship_request
+		}
+		scope:cultural_governorship = {
+			governor = {
+				add_loyalty = loyalty_protected_governorship_position
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			set_variable = {
+				name = no_repeat_replacement_governor_for_same_culture_flag
+				value = scope:target_culture.culture
+			}
+		}
+	}
+}
+
+##
+cultural_integration.3 = { # Governor adopts cultural mannerisms
+	type = country_event
+	title = "cultural_integration.3.t"
+	desc = "cultural_integration.3.desc"
+	picture = senator_conversing
+	
+	goto_location = scope:cultural_current_governor.location
+	
+	right_portrait = scope:cultural_current_governor
+	
+	trigger = {
+		any_governorships = {
+			exists = governor
+			governor = {
+				NOT = { has_culture = scope:target_culture.culture }
+			}
+			any_governorship_state = {
+				any_state_province = {
+					dominant_province_culture = scope:target_culture.culture	
+				}
+			}
+		}
+		trigger_if = {
+			limit = {
+				has_variable = no_repeat_governor_mannerisms_for_same_culture_flag
+			}
+			NOT = {
+				root.var:no_repeat_governor_mannerisms_for_same_culture_flag = scope:target_culture.culture
+			}
+		}
+	}
+	
+	immediate = {
+		ordered_governorships = {
+			limit = {
+				any_governorship_state = {
+					any_state_province = {
+						dominant_province_culture = scope:target_culture.culture
+						owner = ROOT
+					}
+				}
+				exists = governor
+				governor = {
+					NOT = { has_culture = scope:target_culture.culture }
+				}
+			}
+			max = 1
+			check_range_bounds = no
+			order_by = {
+				value = 0
+				every_governorship_state = {
+					every_state_province = {
+						limit = {
+							dominant_province_culture = scope:target_culture.culture
+						}
+						add = 1
+					}
+				}
+			}
+			save_scope_as = cultural_governorship
+			governor = {
+				save_scope_as = cultural_current_governor
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.3.a" # He can do what he pleases
+		scope:cultural_current_governor = {
+			set_culture = scope:target_culture.culture
+			hidden_effect = { set_variable = governor_changed_culture_flag }
+		}
+		scope:target_culture = {
+			add_integration_progress = 0.1
+			add_country_culture_modifier = {
+				name = "governor_of_our_own_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "foreign_governor_unhappy"
+				duration = 1825
+			}
+		}
+		ordered_country_state = {
+			limit = {
+				governorship = {
+					this = scope:cultural_governorship
+				}
+				any_state_province = {
+					dominant_province_culture = scope:target_culture.culture
+					state_loyalty < 75
+				}
+			}
+			order_by = {
+				value = 0
+				every_governorship_state = {
+					every_state_province = {
+						limit = {
+							dominant_province_culture = scope:target_culture.culture
+						}
+						add = 1
+					}
+				}
+			}
+			random_state_province = {
+				add_state_loyalty = 25
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.3.b" # Beat it out of him!
+		
+		scope:target_culture = {
+			add_integration_progress = -0.05	
+		}
+		scope:cultural_current_governor = {
+			add_loyalty = loyalty_enforced_culture
+		}
+		ordered_country_state = {
+			limit = {
+				governorship = {
+					this = scope:cultural_governorship
+				}
+				any_state_province = {
+					dominant_province_culture = scope:target_culture.culture
+				}
+			}
+			order_by = {
+				value = 0
+				every_governorship_state = {
+					every_state_province = {
+						limit = {
+							dominant_province_culture = scope:target_culture.culture
+						}
+						add = 1
+					}
+				}
+			}
+			random_state_province = {
+				add_state_loyalty = -15
+			}
+		}
+	}
+
+	option = {
+		name = "cultural_integration.3.c" # His position is forfeit!
+		
+		scope:target_culture = {
+			add_integration_progress = -0.15
+			
+			add_country_culture_modifier = {
+				name = "governor_of_our_own_denied_unhappy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "governor_privileges_preserved_happy"
+				duration = 1825
+			}
+		}
+		
+		scope:cultural_current_governor = {
+			remove_as_governor = yes
+			add_loyalty = loyalty_replaced_as_governor
+			hidden_effect = {
+				set_culture = scope:target_culture.culture
+			}
+		}
+		ordered_country_state = {
+			limit = {
+				governorship = {
+					this = scope:cultural_governorship
+				}
+				any_state_province = {
+					dominant_province_culture = scope:target_culture.culture
+				}
+			}
+			order_by = {
+				value = 0
+				every_governorship_state = {
+					every_state_province = {
+						limit = {
+							dominant_province_culture = scope:target_culture.culture
+						}
+						add = 1
+					}
+				}
+			}
+			random_state_province = {
+				add_state_loyalty = -25
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			set_variable = {
+				name = no_repeat_governor_mannerisms_for_same_culture_flag
+				value = scope:target_culture.culture
+			}
+		}
+	}
+}
+
+##
+cultural_integration.4 = { # Pops switch to new culture | Culture Embraced
+	type = country_event
+	title = "cultural_integration.4.t"
+	desc = "cultural_integration.4.desc"
+	picture = city_country
+
+	goto_location = scope:cultural_target_province
+
+	trigger = {
+		any_owned_province = {
+			dominant_province_culture = scope:target_culture.culture
+		}
+		trigger_if = {
+			limit = {
+				has_variable = no_culture_embraced_for_same_culture_flag
+			}
+			NOT = {
+				root.var:no_culture_embraced_for_same_culture_flag = scope:target_culture.culture
+			}
+		}
+	}
+	
+	immediate = {
+		if = {
+			limit = {
+				any_owned_province = {
+					dominant_province_culture = scope:target_culture.culture
+				}
+			}
+			random_owned_province = {
+				limit = {
+					dominant_province_culture = scope:target_culture.culture
+				}
+				save_scope_as = cultural_target_province
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.4.a" # They are free to do as they please
+		custom_tooltip = cultural_integration.4.a_tt
+		hidden_effect = {
+			capital_scope = {
+				ordered_pops_in_province = {
+					limit = {
+						NOT = { pop_culture = scope:target_culture.culture }
+					}
+					order_by = pop_hapiness
+					max = 6
+					check_range_bounds = no
+					set_pop_culture = scope:target_culture.culture
+				}
+			}
+		}
+		scope:target_culture = {
+			add_integration_progress = 0.1
+			add_country_culture_modifier = {
+				name = "cultural_acceptance_happy"
+				duration = 1825
+			}
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "cultural_acceptance_unhappy"
+				duration = 1825
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.4.b" # Beat it out of them!
+		add_tyranny = 5
+		
+		scope:target_culture = {
+			add_integration_progress = -0.1
+			add_country_culture_modifier = {
+				name = "culture_enforced_unhappy"
+				duration = 1825
+			}
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "culture_enforced_happy"
+				duration = 1825
+			}
+		}
+	}
+
+	option = {
+		trigger = {
+			any_owned_province = {
+				dominant_province_culture = scope:target_culture.culture
+			}
+		}
+		name = "cultural_integration.4.c" # Maybe they should live with their kind, then!
+		custom_tooltip = cultural_integration.4.c_tt
+		hidden_effect = {
+			capital_scope = {
+				ordered_pops_in_province = {
+					limit = {
+						NOT = { pop_culture = scope:target_culture.culture }
+					}
+					order_by = pop_hapiness
+					max = 6
+					check_range_bounds = no
+					set_pop_culture = scope:target_culture.culture
+					move_pop = scope:cultural_target_province
+				}
+			}
+		}
+		scope:target_culture = {
+			add_integration_progress = -0.15
+			
+			add_country_culture_modifier = {
+				name = "populace_evicted_unhappy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "foreign_culture_evicted_happy"
+				duration = 1825
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			set_variable = {
+				name = no_culture_embraced_for_same_culture_flag
+				value = scope:target_culture.culture
+			}
+		}
+	}
+}
+
+
+cultural_integration.5 = { # Recruitment drive of integrating culture into the army
+	type = country_event
+	title = "cultural_integration.5.t"
+	desc = "cultural_integration.5.desc"
+	picture = proscription
+	
+	trigger = {
+		manpower_percentage < 0.85
+		any_owned_province = {
+			dominant_province_culture = scope:target_culture.culture
+			any_pops_in_province = {
+				count > 1
+				pop_culture = scope:target_culture.culture
+				pop_type = slaves
+			}
+		}
+		trigger_if = {
+			limit = {
+				has_variable = no_repeat_recruitment_drive_for_same_culture_flag
+			}
+			NOT = {
+				root.var:no_repeat_recruitment_drive_for_same_culture_flag = scope:target_culture.culture
+			}
+		}
+	}
+
+	weight_multiplier = {
+		modifier = {
+			factor = 1.5
+			manpower_percentage < 0.75
+		}
+		modifier = {
+			factor = 1.5
+			manpower_percentage < 0.5
+		}
+		modifier = {
+			factor = 2
+			manpower_percentage < 0.25
+		}
+		modifier = {
+			factor = 2
+			manpower_percentage < 0.1
+		}
+	}
+	
+	immediate = {
+	}
+	
+	option = {
+		name = "cultural_integration.5.a" # We will recruit them into our armies
+		set_variable = {
+			name = cultural_integration_recruitment_flag
+			value = scope:target_culture.culture
+		}
+		scope:target_culture = {
+			add_integration_progress = 0.1
+			add_country_culture_modifier = {
+				name = "recruitment_encouraged_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "recruitment_privileges_curtailed_unhappy"
+				duration = 1825
+			}
+		}
+		
+		add_manpower = {
+			value = 0
+			add = root.max_manpower
+			divide = 10
+			min = 1
+		}
+		add_country_modifier = {
+			name = "cultural_resentments"
+			duration = 1825
+		}
+		ordered_owned_province = {
+			limit = {
+				dominant_province_culture = scope:target_culture.culture
+				any_pops_in_province = {
+					count > 1
+					pop_culture = scope:target_culture.culture
+					pop_type = slaves
+				}
+			}
+			max = 3
+			check_range_bounds = no
+			order_by = total_population
+			ordered_pops_in_province = {
+				limit = {
+					pop_culture = scope:target_culture.culture
+					pop_type = slaves
+				}
+				order_by = pop_hapiness
+				max = 2
+				check_range_bounds = no
+				set_pop_type = freemen
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.5.b" # No need to upset the cultural balance in our armies
+		scope:target_culture = {
+			add_integration_progress = -0.15
+			add_country_culture_modifier = {
+				name = "recruitment_discouraged_unhappy"
+				duration = 1825
+			}
+			
+		}
+		ordered_owned_province = {
+			limit = {
+				dominant_province_culture = scope:target_culture.culture
+				any_pops_in_province = {
+					count > 1
+					pop_culture = scope:target_culture.culture
+					pop_type = slaves
+				}
+			}
+			max = 3
+			check_range_bounds = no
+			order_by = total_population
+			add_state_loyalty = -10
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			set_variable = {
+				name = no_repeat_recruitment_drive_for_same_culture_flag
+				value = scope:target_culture.culture
+			}
+		}
+	}
+
+}
+
+##
+cultural_integration.6 = { # Unrest due to cultural conflicts, established order feels neglected
+	type = country_event
+	title = "cultural_integration.6.t"
+	desc = "cultural_integration.6.desc"
+	picture = roman_trial
+	
+	trigger = {
+		capital_scope = {
+			any_pops_in_province = {
+				count > 3
+				pop_culture = prev.owner.culture
+				pop_type = citizen
+			}
+		}
+		trigger_if = {
+			limit = {
+				has_variable = no_cultural_unrest_for_same_culture_flag
+			}
+			NOT = {
+				root.var:no_cultural_unrest_for_same_culture_flag = scope:target_culture.culture
+			}
+		}
+	}
+	
+	immediate = {
+	}
+	
+	option = {
+		name = "cultural_integration.6.a" # They will have to suck it up
+		scope:target_culture = {
+			add_integration_progress = 0.1
+			add_country_culture_modifier = {
+				name = "defended_rights_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "rejected_complaints_unhappy"
+				duration = 1825
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.6.b" # We will ensure their rights are protected
+		add_political_influence = -15
+		scope:target_culture = {
+			add_integration_progress = -0.2
+			add_country_culture_modifier = {
+				name = "privileges_denied_unhappy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "privileges_protected_happy"
+				duration = 1825
+			}
+		}
+	}
+
+	option = {
+		name = "cultural_integration.6.c" # They DARE oppose our will?! ENSLAVE THEM ALL! That'll teach the rest to accept our new brothers.
+		trigger = {
+			current_ruler = {
+				OR = {
+					has_trait = arbitrary
+					has_trait = cruel
+					has_trait = vengeful
+					has_trait = reckless
+					has_trait = rash
+					
+				}
+			}
+		}
+		if = {
+			limit = { current_ruler = { has_trait = arbitrary } }
+			custom_tooltip = arbitrary_bad_tooltip
+		}
+		else_if = {
+			limit = {
+				current_ruler = {
+					OR = {
+						has_trait = cruel
+						has_trait = vengeful
+					}
+				}
+			}
+			custom_tooltip = cruel_vengeful_tooltip
+		}
+		else_if = {
+			limit = {
+				current_ruler = {
+					has_trait = reckless
+				}
+			}
+			custom_tooltip = reckless_bad_tooltip
+		}
+		else_if = {
+			limit = {
+				current_ruler = {
+					has_trait = rash
+				}
+			}
+			custom_tooltip = rash_bad_tooltip
+		}
+		add_tyranny = 5
+		scope:target_culture = {
+			add_integration_progress = 0.15
+			add_country_culture_modifier = {
+				name = "example_made_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "example_made_unhappy"
+				duration = 1825
+			}
+		}
+		capital_scope = {
+			ordered_pops_in_province = {
+				limit = {
+					pop_culture = root.culture
+					pop_type = citizen
+				}
+				order_by = pop_hapiness
+				max = 4
+				check_range_bounds = no
+				set_pop_type = slaves
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			set_variable = {
+				name = no_cultural_unrest_for_same_culture_flag
+				value = scope:target_culture.culture
+			}
+		}
+	}
+
+}
+
+##
+cultural_integration.7 = { # Integrating culture's family demands to be prominent family
+	type = country_event
+	title = "cultural_integration.7.t"
+	desc = "cultural_integration.7.desc"
+	picture = council_country
+
+	left_portrait = scope:fallen_head
+	right_portrait = scope:cultural_family_leader
+	
+	trigger = {
+		has_land = yes
+		NOT = { has_variable = "rising_from_obscurity_cooldown" }
+		num_of_families = num_allowed_families #Should not happen when you are in the middle of changing your families anyway.
+		war = no #Wait until peace. 
+		has_civil_war = no #Wait until after any ongoing civil wars.
+		NOT = { tag = PIR }
+		NOT = { tag = REB }
+		NOT = { tag = MER }
+		NOT = { tag = BAR }
+		any_character = {
+			is_adult = yes
+			is_minor_character = yes
+			has_culture = scope:target_culture.culture
+			is_mercenary = no
+			NOT = { has_character_modifier = foreign_citizen }
+			NOT = { has_variable = governor_changed_culture_flag }
+			prisoner = no
+			trigger_if = {
+				limit = {
+					employer = { gender_equality = no }
+				}
+				is_female = no
+			}
+		}
+		any_family = {
+			OR = {
+				NOT = { any_family_member = { is_ruler = yes } }
+				ROOT = { is_republic = yes }
+			}
+		}
+		NOT = { # Don't fire if you already have a family of the integrating culture
+			any_character = {
+				is_head_of_family = yes
+				has_culture = scope:target_culture.culture
+			}
+		}
+		trigger_if = {
+			limit = {
+				has_variable = no_cultural_prominent_family_for_same_culture_flag
+			}
+			NOT = {
+				root.var:no_cultural_prominent_family_for_same_culture_flag = scope:target_culture.culture
+			}
+		}
+	}
+
+	weight_multiplier = {
+		modifier = {
+			factor = 1.2
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 20
+			}
+		}
+		modifier = {
+			factor = 1.2
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 25
+			}
+		}
+		modifier = {
+			factor = 1.5
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 30
+			}
+		}
+		modifier = {
+			factor = 1.5
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 35
+			}
+		}
+		modifier = {
+			factor = 1.5
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 40
+			}
+		}
+		modifier = {
+			factor = 1.5
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 45
+			}
+		}
+		modifier = {
+			factor = 2
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 50
+			}
+		}
+	}
+	
+	immediate = {
+		set_variable = {
+		    name = "rising_from_obscurity_cooldown"
+		    days = 120
+		}
+		hidden_effect = {
+			ordered_character = {
+				limit = {
+					is_adult = yes
+					is_minor_character = yes
+					has_culture = scope:target_culture.culture
+					is_mercenary = no
+					NOT = { has_character_modifier = foreign_citizen }
+					NOT = { has_variable = governor_changed_culture_flag }
+					prisoner = no
+					trigger_if = {
+						limit = {
+							employer = { gender_equality = no }
+						}
+						is_female = no
+					}
+				}
+				max = 1
+				check_range_bounds = no
+				order_by = power_base
+				save_scope_as = cultural_family_leader
+			}
+			ordered_family = {
+				check_range_bounds = no
+				order_by = prestige
+				position = 0
+				limit = {
+					OR = {
+						NOT = { any_family_member = { is_ruler = yes } }
+						ROOT = { is_republic = yes }
+					}
+				}
+				save_scope_as = fallen_family
+				head_of_family = {
+					save_scope_as = fallen_head
+				}
+			}
+			scope:fallen_family = {
+				every_family_member = {
+					set_as_minor_character = THIS
+					add_triggered_character_modifier = {
+						name = "was_once_great"
+						duration = -1
+					}
+				}
+				remove_family = ROOT
+			}
+		}
+	}
+	
+	option = {
+		name = "cultural_integration.7.a" # We will accept all as equals
+		scope:target_culture = {
+			add_integration_progress = 0.15
+		
+			add_country_culture_modifier = {
+				name = "family_privileges_granted_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "family_privileges_revoked_unhappy"
+				duration = 1825
+			}
+		}
+		
+		new_family_generation_effect = { FAMILY_CANDIDATE = cultural_family_leader } #Scripted Effect that passes on the saved scope.
+		custom_tooltip = cultural_integration.7.a_tt
+		
+		
+	}
+	
+	option = {
+		name = "cultural_integration.7.b" # They are inferior to the established order
+		scope:target_culture = {
+			add_integration_progress = -0.1
+		
+			add_country_culture_modifier = {
+				name = "family_privileges_denied_unhappy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "family_privileges_upheld_happy"
+				duration = 1825
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			remove_variable = "rising_from_obscurity_cooldown"
+			set_variable = {
+				name = no_cultural_prominent_family_for_same_culture_flag
+				value = scope:target_culture.culture
+			}
+		}
+	}
+
+}
+
+##
+cultural_integration.8 = { # Demand to move capital to better reflect the relative prominence of cultures in the nation
+	type = country_event
+	title = "cultural_integration.8.t"
+	desc = "cultural_integration.8.desc"
+	picture = city_country
+	
+	goto_location = scope:new_capital
+
+	trigger = {
+		has_variable = biggest_country_culture_var
+		scope:target_culture = {
+			country_culture_pop_count > root.var:biggest_country_culture_var
+		}
+		any_owned_province = {
+			dominant_province_culture = scope:target_culture.culture
+		}
+		capital_scope = {
+			dominant_province_culture = root.culture
+		}
+	}
+
+	weight_multiplier = {
+		modifier = {
+			factor = 1.2
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 50
+			}
+		}
+		modifier = {
+			factor = 1.5
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 60
+			}
+		}
+		modifier = {
+			factor = 5
+			culture_pops_in_country = {
+				target = scope:target_culture
+				value >= 70
+			}
+		}
+	}
+
+	immediate = {
+		ordered_owned_province = {
+			limit = {
+				dominant_province_culture = owner.culture
+				any_pops_in_province = {
+					NOT = { pop_type = nobles }
+				}
+				is_capital = no
+			}
+			order_by = total_population
+			max = 4
+			check_range_bounds = no
+			random_pops_in_province = {
+				limit = {
+					NOT = { pop_type = nobles }
+					pop_culture = prev.owner.culture
+				}
+				add_to_list = pops_for_new_capital
+			}
+		}
+		ordered_owned_province = {
+			limit = {
+				dominant_province_culture = owner.culture
+				any_pops_in_province = {
+					pop_type = nobles
+				}
+				is_capital = no
+			}
+			order_by = total_population
+			max = 2
+			check_range_bounds = no
+			random_pops_in_province = {
+				limit = {
+					pop_type = nobles
+					pop_culture = prev.owner.culture
+				}
+				add_to_list = pops_for_new_capital
+			}
+		}
+		capital_scope = {
+			ordered_pops_in_province = {
+				limit = {
+					NOT = { pop_type = nobles }
+					pop_culture = prev.owner.culture
+				}
+				order_by = pop_hapiness
+				max = 2
+				check_range_bounds = no
+				add_to_list = pops_for_new_capital
+			}
+			ordered_pops_in_province = {
+				limit = {
+					pop_type = nobles
+					pop_culture = prev.owner.culture
+				}
+				order_by = pop_hapiness
+				max = 2
+				check_range_bounds = no
+				add_to_list = pops_for_new_capital
+			}
+		}
+		ordered_country_state = {
+			limit = {
+				any_state_province = {
+					dominant_province_culture = scope:target_culture.culture
+				}
+			}
+			order_by = {
+				every_state_province = {
+					limit = {
+						dominant_province_culture = scope:target_culture.culture
+					}
+					add = total_population
+				}
+			}
+			ordered_state_province = {
+				limit = {
+					dominant_province_culture = scope:target_culture.culture
+				}
+				max = 1
+				check_range_bounds = no
+				order_by = total_population
+				save_scope_as = new_capital
+				save_scope_as = new_capital_scope
+			}
+		}
+	}
+
+	option = {
+		name = "cultural_integration.8.a" # They have a point
+		ROOT = { set_capital = scope:new_capital }
+		hidden_effect = {
+			scope:new_capital.state = {
+				set_state_capital = scope:new_capital
+			}
+		}
+		scope:target_culture = {
+			add_integration_progress = 0.45 #Huge bump
+			add_country_culture_modifier = {
+				name = "relocated_capital_happy"
+				duration = 1825
+			}
+			
+		}
+		random_country_culture = {
+			limit = {
+				this.culture = root.culture
+			}
+			add_country_culture_modifier = {
+				name = "relocated_capital_unhappy"
+				duration = 1825
+			}
+		}
+		scope:new_capital_scope = {
+			every_in_list = {
+				list = pops_for_new_capital
+				move_pop = PREV
+				remove_from_list = pops_for_new_capital
+			}
+		}
+
+	}
+
+	option = {
+		name = "cultural_integration.8.b" # Our capital will remain where it is
+		scope:target_culture = {
+			add_integration_progress = -0.05 #Slight reduction
+			add_country_culture_modifier = {
+				name = "capital_maintained_unhappy"
+				duration = 1825
+			}
+			
+		}
+		every_in_list = {
+			list = pops_for_new_capital
+			remove_from_list = pops_for_new_capital
+		}
+	}
+}
+
+cultural_integration.9 = { # Army Mutinies
+	type = country_event
+	title = "cultural_integration.9.t"
+	desc = "cultural_integration.9.desc"
+	picture = revolt
+
+	trigger = {
+		has_variable = cultural_integration_recruitment_flag
+		root.var:cultural_integration_recruitment_flag = scope:target_culture.culture
+		any_character = {
+			is_general = yes
+			NOT = { has_culture = scope:target_culture.culture }
+		}
+	}
+
+	immediate = {
+		hidden_effect = {
+			random_character = {
+				limit = {
+					is_general = yes
+					NOT = { has_culture = scope:target_culture.culture }
+				}
+				save_scope_as = dissenting_general
+			}
+		}
+	}
+
+	option = {
+		name = "cultural_integration.9.a" # Reverse cultural recruitment drive
+		
+		scope:target_culture = {
+			add_integration_progress = -0.15
+			if = {
+				limit = {
+					has_country_culture_modifier = recruitment_encouraged_happy
+				}
+				remove_country_culture_modifier = recruitment_encouraged_happy
+			}
+			add_country_culture_modifier = {
+				name = "recruitment_discouraged_unhappy"
+				duration = 1825
+			}
+			
+		}
+		remove_country_modifier = cultural_resentments
+		add_manpower = {
+			value = 0
+			add = root.max_manpower
+			divide = -5
+			min = -2
+		}
+		
+	}
+
+	option = {
+		name = "cultural_integration.9.b" # Punish the offenders as an example
+		scope:target_culture = {
+			add_integration_progress = 0.1
+			add_country_culture_modifier = {
+				name = "mutineers_punished_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "mutineers_punished_unhappy"
+				duration = 1825
+			}
+		}
+		every_army = {
+			damage_unit_percent = 0.2
+			damage_unit_morale_percent = 0.2
+		}
+	}
+
+	option = {
+		trigger = {
+			any_character = {
+				is_general = yes
+				NOT = { has_culture = scope:target_culture.culture }
+			}
+		}
+		name = "cultural_integration.9.c" # Silence their leaders
+		scope:target_culture = {
+			add_integration_progress = 0.15
+			add_country_culture_modifier = {
+				name = "mutineer_leaders_silenced_happy"
+				duration = 1825
+			}
+			
+		}
+		every_country_culture = {
+			limit = {
+				OR = {
+					is_culture = ROOT.culture
+					is_integrated = yes
+				}
+			}
+			custom = all_integrated_and_primary_tt
+			add_country_culture_modifier = {
+				name = "mutineer_leaders_silenced_unhappy"
+				duration = 1825
+			}
+		}
+		scope:dissenting_general = {
+			death = { 
+				death_reason = death_execution
+			}
+		}
+		add_military_experience = -10
+	}
+
+}
+
+cultural_integration.10 = { # Honor Guard
+	type = country_event
+	title = "cultural_integration.10.t"
+	desc = "cultural_integration.10.desc"
+	picture = romans_marching
+	left_portrait = scope:honor_guard
+
+	trigger = {
+		any_character = {
+			has_character_modifier = honor_guard_character
+		}
+	}
+
+	immediate = {
+		hidden_effect = {
+			random_character = {
+				limit = {
+					has_character_modifier = honor_guard_character
+				}
+				save_scope_as = honor_guard
+			}
+		}
+	}
+
+	option = {
+		name = "cultural_integration.10.a"
+		scope:honor_guard = {
+			add_friend = root.current_ruler
+		}
+	}
+
+}
+
+cultural_integration.11 = { # Colonia Founded
+	type = province_event
+	title = "cultural_integration.11.t"
+	desc = "cultural_integration.11.desc"
+	picture = city_province
+	left_portrait = owner.current_ruler
+	goto_location = root
+
+	trigger = {
+		owner = {
+			any_owned_province = {
+				dominant_province_culture = owner.culture
+				any_pops_in_province = {
+					NOT = { pop_type = citizen }
+					NOT = { pop_type = nobles }
+				}
+			}
+		}
+	}
+
+	immediate = {
+		owner = {
+			ordered_owned_province = {
+				limit = {
+					dominant_province_culture = owner.culture
+					any_pops_in_province = {
+						NOT = { pop_type = citizen }
+						NOT = { pop_type = nobles }
+						pop_culture = root.owner.culture
+					}
+				}
+				order_by = total_population
+				max = 6
+				check_range_bounds = no
+				random_pops_in_province = {
+					limit = {
+						NOT = { pop_type = citizen }
+						NOT = { pop_type = nobles }
+						pop_culture = root.owner.culture
+					}
+					add_to_list = pops_for_colonia
+				}
+			}
+			ordered_owned_province = {
+				limit = {
+					dominant_province_culture = owner.culture
+					any_pops_in_province = {
+						OR = {
+							pop_type = citizen
+							pop_type = nobles
+						}
+						pop_culture = root.owner.culture
+					}
+				}
+				order_by = total_population
+				check_range_bounds = no
+				max = 2
+				random_pops_in_province = {
+					limit = {
+						OR = {
+							pop_type = citizen
+							pop_type = nobles
+						}
+						pop_culture = root.owner.culture
+					}
+					add_to_list = pops_for_colonia
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "cultural_integration.11.a"
+		every_in_list = {
+			list = pops_for_colonia
+			move_pop = ROOT
+			remove_from_list = pops_for_colonia
+		}
+	}
+
+}

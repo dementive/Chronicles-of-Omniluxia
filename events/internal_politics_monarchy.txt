@@ -1122,6 +1122,7 @@ ip_monarchy.12 = { #Final 1 - Poison!
 		exists = scope:plot_target
 		scope:plot_target = {
 			is_alive = yes
+			employer = root
 		}
 		scope:plotting_pretender = {
 			is_valid_plotter = yes
@@ -3758,7 +3759,7 @@ ip_monarchy.32 = {
 			days = 730 # 2 years
 		}
 		rival_brothers_assassination_effect = yes # Decide assassin 
-		rival_brothers_assassination_outcome_effect = yes # Decide outcome
+		rival_brothers_duel_outcome_effect = yes # Decide outcome
 	}
 	
 	option = { # Legitimize act
@@ -3918,7 +3919,6 @@ ip_monarchy.34 = {
 			can_get_rivals = yes
 		}
 		any_family = {
-			
 			any_family_member = {
 				OR = {
 					has_any_office = yes
@@ -3945,7 +3945,11 @@ ip_monarchy.34 = {
 				}
 			}
 		}
-		NOT = { has_variable = mon_34_cooldown }		
+		NOR = { 
+			has_variable = mon_34_cooldown
+			tag = MER
+			tag = REB
+		}
 	}
 	
 	immediate = {
@@ -4495,11 +4499,11 @@ ip_monarchy.36 = {
 						scope:bastard_mother = { can_get_rivals = yes }
 					}
 					AND = {
-						exists = root.consort
-						root.consort = { can_get_rivals = yes }
+						exists = scope:bastard_ruler.spouse
+						scope:bastard_ruler.spouse = { can_get_rivals = yes }
 					}	
 				}
-				root.consort = { add_rival = scope:bastard_mother }
+				scope:bastard_ruler.spouse = { add_rival = scope:bastard_mother }
 			}
 			if = { # Rulers other children unhappy
 				limit = {
@@ -4527,13 +4531,12 @@ ip_monarchy.36 = {
 				}
 				every_successor = { add_loyalty = loyalty_bastard_legitimized_pretender }
 			}
-			scope:bastard_ruler = { 
+			scope:bastard_ruler = {
 				if = {
 					limit = {
-						exists = consort
-						consort = { is_alive = yes }
+						is_married = yes
 					}
-					divorce_character = root.consort
+					divorce_character = spouse
 				}
 			}
 		}
@@ -4869,7 +4872,12 @@ ip_monarchy.39 = {
 			}
 		}
 		scope:affair_strumpet = { add_trait = mourning }
-		scope:bastard_ruler.spouse = { add_loyalty = loyalty_consort_reassured }
+		if = {
+			limit = { 
+				scope:bastard_ruler = { is_married = yes }
+			}
+			scope:bastard_ruler.spouse = { add_loyalty = loyalty_consort_reassured }
+		}
 		add_treasury = { # Payment for services rendered
 			value = has_monthly_income
 			multiply = -2
@@ -4879,17 +4887,11 @@ ip_monarchy.39 = {
 
 	option = { # They have royal blood
 		name = "ip_monarchy.39.b"
-		if = { # Rulers wife not happy
+		if = {
 			limit = { 
 				scope:bastard_ruler = { is_married = yes }
 			}
-			every_character = {
-				limit = { 
-					is_alive = yes
-					is_spouse_of = scope:bastard_ruler 
-				}
-				add_loyalty = loyalty_bastard_legitimized
-			}
+			scope:bastard_ruler.spouse = { add_loyalty = loyalty_bastard_legitimized }
 		}
 		if = {
 			limit = {
@@ -4942,11 +4944,8 @@ ip_monarchy.39 = {
 	option = { # Ruler marries mother of child
 		name = "ip_monarchy.39.c"
 		if = {
-			limit = {
-				scope:bastard_ruler.spouse = {
-					is_alive = yes
-					employer = root
-				}
+			limit = { 
+				scope:bastard_ruler = { is_married = yes }
 			}
 			scope:bastard_ruler.spouse = { add_loyalty = loyalty_old_consort }
 		}
@@ -4966,12 +4965,12 @@ ip_monarchy.39 = {
 		if = {	
 			limit = {
 				scope:affair_strumpet = { can_get_rivals = yes }
-				exists = root.consort
-				root.consort = { can_get_rivals = yes}
+				exists = scope:bastard_ruler.spouse
+				scope:bastard_ruler.spouse = { can_get_rivals = yes}
 			}
 			hidden_effect = { 
-				root.consort = { add_rival = scope:affair_strumpet }
-				scope:bastard_ruler = { divorce_character = root.consort }
+				scope:bastard_ruler.spouse = { add_rival = scope:affair_strumpet }
+				scope:bastard_ruler = { divorce_character = spouse }
 			}
 		}
 		hidden_effect = { 
@@ -5228,10 +5227,9 @@ ip_monarchy.42 = { # Consort Chain 1.1 - Conspiracy to Kill Primary Heir
 			}
 		}
 		current_ruler.spouse = {
-			OR = {
-				has_trait = ambitious
-				has_trait = crafty
-				has_trait = jealous
+			NOR = {
+				has_trait = devout
+				has_trait = content
 			}
 			num_of_children >= 1
 			loyalty <= 90
@@ -5242,15 +5240,16 @@ ip_monarchy.42 = { # Consort Chain 1.1 - Conspiracy to Kill Primary Heir
 			is_child_of = root.current_ruler.spouse
 			NOT = { is_primary_heir = yes }
 		}
-		NOR = {
-			any_character = { # There is only 1 child between consorts heir and the throne
+		any_character = { # There is only 1 child between consorts heir and the throne
+			count <= 1
+			OR = {
 				is_pretender = yes
-				is_child_of = root.current_ruler
-				NOR = { 
-					is_child_of = root.current_ruler.spouse
-					is_primary_heir = yes
-				}
+				is_primary_heir = yes
 			}
+			is_child_of = root.current_ruler
+			NOT = { is_child_of = root.current_ruler.spouse }
+		}
+		NOR = {
 			has_variable = ip_mon_42_cooldown
 			has_variable = ongoing_plot
 		}
@@ -5426,7 +5425,7 @@ ip_monarchy.43 = { # Consort Chain 1.2 - Rumours
 	
 	option = { # Offer to make child important in other ways
 		name = "ip_monarchy.43.b"
-		custom_tooltip = ip_monarchy.43.bt1
+		#custom_tooltip = ip_monarchy.43.bt1
 		scope:ip_mon_42_consort = {
 			add_loyalty = loyalty_consort_bought_off
 		}
@@ -5441,16 +5440,10 @@ ip_monarchy.43 = { # Consort Chain 1.2 - Rumours
 			}
 		}
 		scope:ip_mon_42_consorts_heir = {
-			add_prominence = prominence_huge
-			add_popularity = popularity_large	
-		}
-		hidden_effect = {
-			scope:ip_mon_42_consorts_heir = {
-				add_character_modifier = {
-					name = elevated_pretender_charmod
-					duration = -1
-				}
+			add_character_modifier = {
+				name = nominated_heir_modifier
 			}
+			add_popularity = popularity_large	
 		}
 		set_variable = {
 			name = ip_mon_42_elevated_pretender
@@ -6515,10 +6508,6 @@ ip_monarchy.53 = { # Consort 2.7 - Delayed trigger for .47
 	trigger = {
 		is_monarchy = yes
 		has_primary_heir = yes
-		OR = {
-			country_culture_group = hellenic
-			country_culture = egyptian
-		}
 		root.primary_heir = {
 			age < 16
 			prisoner = no
@@ -6535,6 +6524,7 @@ ip_monarchy.53 = { # Consort 2.7 - Delayed trigger for .47
 					}
 					is_alive = yes
 					is_previous_ruler = no
+					is_married = yes
 					is_spouse_of = root.primary_heir.mother
 					employer = ROOT
 				}
@@ -6550,6 +6540,7 @@ ip_monarchy.53 = { # Consort 2.7 - Delayed trigger for .47
 					}
 					is_alive = yes
 					is_previous_ruler = no
+					is_married = yes
 					is_spouse_of = root.primary_heir.father
 					employer = ROOT
 				}
@@ -6560,6 +6551,7 @@ ip_monarchy.53 = { # Consort 2.7 - Delayed trigger for .47
 				exists = root.primary_heir.father
 				root.primary_heir.father = {
 					is_previous_ruler = yes
+					is_married = yes
 					is_spouse_of = root.primary_heir.mother
 				}
 			}
@@ -6567,6 +6559,7 @@ ip_monarchy.53 = { # Consort 2.7 - Delayed trigger for .47
 				exists = root.primary_heir.mother
 				root.primary_heir.mother = {
 					is_previous_ruler = yes
+					is_married = yes
 					is_spouse_of = root.primary_heir.father
 				}
 			}
@@ -7502,46 +7495,6 @@ ip_monarchy.61 = { # Consort Chain 4.3 - Battle Won Wound/Death
 		}
 		random_list = {
 			20 = { 
-				trigger = {
-					scope:ip_mon_59_consort = {
-						NOT = { has_trait = wounded }
-					}
-				}
-				scope:ip_mon_59_consort = {
-					add_trait = wounded
-				}
-				set_variable = {
-					name = battle_injury
-					value = {
-						integer_range = { min = 1 max = 3 }
-					}
-				}
-			}
-			20 = { 
-				trigger = {
-					scope:ip_mon_59_consort = {
-						NOT = { has_trait = maimed }
-					}
-				}
-				scope:ip_mon_59_consort = {
-					add_trait = maimed
-				}
-				set_variable = {
-					name = battle_injury
-					value = {
-						integer_range = { min = 1 max = 3 }
-					}
-				}
-			}
-			20 = { 
-				trigger = {
-					scope:ip_mon_59_consort = {
-						NOT = { has_trait = limp }
-					}
-				}
-				scope:ip_mon_59_consort = {
-					add_trait = limp
-				}
 				set_variable = {
 					name = battle_injury
 					value = {
@@ -7550,11 +7503,6 @@ ip_monarchy.61 = { # Consort Chain 4.3 - Battle Won Wound/Death
 				}
 			}
 			10 = { 
-				scope:ip_mon_59_consort = {
-					death = {
-						death_reason = death_succumbed_to_injuries
-					}
-				}
 				set_variable = {
 					name = battle_injury
 					value = {
@@ -7567,6 +7515,30 @@ ip_monarchy.61 = { # Consort Chain 4.3 - Battle Won Wound/Death
 	
 	option = { #
 		name = "ip_monarchy.61.a"
+		if = {
+			limit = { root.var:battle_injury < 4 }
+			scope:ip_mon_59_consort = {
+				if = {
+					limit = {
+						NOT = { has_trait = wounded }
+					}
+					add_trait = wounded
+				}
+				else_if = {
+					limit = {
+						NOT = { has_trait = maimed }
+					}
+					add_trait = maimed
+				}
+				else = { add_health = -20 }
+			}
+		}
+		else_if = {
+			limit = { root.var:battle_injury > 3 }
+			scope:ip_mon_59_consort = {
+				death = { death_reason = death_succumbed_to_injuries }
+			}
+		}
 		if = {
 			limit = {
 				scope:ip_mon_59_consort = { is_alive = yes }
@@ -7687,46 +7659,6 @@ ip_monarchy.63 = { # Consort Chain 4.5 - Battle Lost Wound/Death
 		}
 		random_list = {
 			20 = { 
-				trigger = {
-					scope:ip_mon_59_consort = {
-						NOT = { has_trait = wounded }
-					}
-				}
-				scope:ip_mon_59_consort = {
-					add_trait = wounded
-				}
-				set_variable = {
-					name = battle_injury
-					value = {
-						integer_range = { min = 1 max = 3 }
-					}
-				}
-			}
-			20 = { 
-				trigger = {
-					scope:ip_mon_59_consort = {
-						NOT = { has_trait = maimed }
-					}
-				}
-				scope:ip_mon_59_consort = {
-					add_trait = maimed
-				}
-				set_variable = {
-					name = battle_injury
-					value = {
-						integer_range = { min = 1 max = 3 }
-					}
-				}
-			}
-			20 = { 
-				trigger = {
-					scope:ip_mon_59_consort = {
-						NOT = { has_trait = limp }
-					}
-				}
-				scope:ip_mon_59_consort = {
-					add_trait = limp
-				}
 				set_variable = {
 					name = battle_injury
 					value = {
@@ -7735,11 +7667,6 @@ ip_monarchy.63 = { # Consort Chain 4.5 - Battle Lost Wound/Death
 				}
 			}
 			10 = { 
-				scope:ip_mon_59_consort = {
-					death = {
-						death_reason = death_succumbed_to_injuries
-					}
-				}
 				set_variable = {
 					name = battle_injury
 					value = {
@@ -7752,6 +7679,30 @@ ip_monarchy.63 = { # Consort Chain 4.5 - Battle Lost Wound/Death
 	
 	option = {
 		name = ip_monarchy.63.a
+		if = {
+			limit = { root.var:battle_injury < 4 }
+			scope:ip_mon_59_consort = {
+				if = {
+					limit = {
+						NOT = { has_trait = wounded }
+					}
+					add_trait = wounded
+				}
+				else_if = {
+					limit = {
+						NOT = { has_trait = maimed }
+					}
+					add_trait = maimed
+				}
+				else = { add_health = -20 }
+			}
+		}
+		else_if = {
+			limit = { root.var:battle_injury > 3 }
+			scope:ip_mon_59_consort = {
+				death = { death_reason = death_succumbed_to_injuries }
+			}
+		}
 		if = {
 			limit = {
 				scope:ip_mon_59_consort = { is_alive = yes }
@@ -7879,6 +7830,7 @@ ip_monarchy.65 = { # Consort Chain 5.2 - Reassuring the Army
 				}
 				prisoner = yes
 			}
+			is_married = yes
 		}
 		consort = {
 			prisoner = no
@@ -8049,6 +8001,7 @@ ip_monarchy.66 = { # Consort Chain 5.3 - Neglected State
 				}
 				prisoner = yes
 			}
+			is_married = yes
 		}
 		consort = {
 			prisoner = no
@@ -8327,6 +8280,7 @@ ip_monarchy.67 = { # Consort Chain 5.4 - Worried Subjects
 				}
 				prisoner = yes
 			}
+			is_married = yes
 		}
 		consort = {
 			prisoner = no
@@ -8542,6 +8496,7 @@ ip_monarchy.68 = { # Consort Chain 5.5 - Religious Observances
 				}
 				prisoner = yes
 			}
+			is_married = yes
 		}
 		consort = {
 			is_alive = yes

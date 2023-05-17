@@ -14,6 +14,7 @@ monarchy_events.1 = {
 		is_monarchy = yes
 		any_character = {
 			is_pretender = yes
+			is_adult = yes
 			exists = father
 			NOT = {
 				is_child_of = root.current_ruler
@@ -33,6 +34,7 @@ monarchy_events.1 = {
 		random_character = {
 			limit = {
 				is_pretender = yes
+				is_adult = yes
 				exists = father
 				loyalty < 50
 				NOT = {
@@ -77,7 +79,6 @@ monarchy_events.2 = {
 	goto_location = scope:philosopher_move_country
 	
 	trigger = {
-		country_culture_group = hellenic
 		is_monarchy = yes
 		current_ruler = {
 			NOT = {
@@ -98,7 +99,6 @@ monarchy_events.2 = {
 		}
 		random_country = {
 			limit = {
-				country_culture_group = hellenic
 				NOT = { tag = THIS }
 			}
 			save_scope_as = philosopher_move_country
@@ -1515,6 +1515,147 @@ monarchy_events.23 = {
 	}
 }
 
+# The Cult of [your dead father]
+monarchy_events.24 = {
+	type = country_event
+	title = "monarchy_events.24.t"
+	desc = "monarchy_events.24.desc"
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:deified_father_scope
+	
+	trigger = {
+		always = no
+		current_ruler = {
+			OR = {
+				AND = {
+					exists = father
+					prominence >= 95
+					father = {
+						is_alive = no
+						is_previous_ruler = yes
+					}
+				}
+				AND = {
+					exists = mother
+					is_previous_ruler = yes
+					prominence >= 95
+					mother = {
+						is_alive = no
+						is_previous_ruler = yes
+					}
+				}
+			}
+			family = {
+				prestige = 400
+			}
+			NOT = { has_variable = father_deification_flag }
+		}
+	}
+	immediate = {
+		current_ruler = {
+			set_variable = father_deification_flag
+			if = {
+				limit = {
+					exists = mother
+					employer = {
+						gender_equality = yes
+					}
+					prominence >= 95
+					mother = {
+						is_alive = no
+						is_previous_ruler = yes
+					}
+				}
+				mother = {
+					save_scope_as = deified_father_scope
+				}
+			}
+			else = {
+				father = {
+					save_scope_as = deified_father_scope
+				}
+			}
+		}
+	}
+	option = {
+		name = "monarchy_events.24.a"
+		add_legitimacy = legitimacy_large
+	}
+	option = {
+		name = "monarchy_events.24.b"
+		add_legitimacy = legitimacy_medium
+		current_ruler = {
+			family = {
+				add_prestige = 50
+			}
+		}
+	}
+}
+
+# Deification of the current monarch
+monarchy_events.25 = {
+	type = country_event
+	title = "monarchy_events.25.t"
+	desc = "monarchy_events.25.desc"
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	
+	trigger = {
+		is_monarchy = yes
+		OR = {
+			always = no
+			current_ruler = {
+				has_trait = proud
+			}
+		}
+		current_ruler = {
+			prominence >= 95
+			NOT = { has_variable = deification_flag }
+			NOT = { has_trait = humble }
+			NOT = { has_trait = wise }
+			has_variable = father_deification_flag
+		}
+		stability > 1
+	}
+	
+	immediate = {
+		current_ruler = {
+			set_variable = {
+				name = deification_flag
+			}
+		}
+	}
+	
+	option = { # i am a god!
+		name = "monarchy_events.25.a"
+		add_stability_effect = yes
+		add_political_influence = influence_medium
+		add_legitimacy = subtract_legitimacy_large
+		current_ruler = {
+			add_character_modifier = {
+				name = "self_proclaimed_deity"
+				duration = -1
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_trait = proud
+					}
+				}
+				add_trait = proud
+			}
+		}
+	}
+	option = { # this is going too far
+		name = "monarchy_events.25.b"
+		add_legitimacy = legitimacy_small
+	}
+}
+
+
 ## Disloyal Heir Event Chain ###
 # Start
 monarchy_events.27 = {
@@ -2393,13 +2534,7 @@ monarchy_events.45 = {
 	trigger = {
 		is_monarchy = yes
 		NOT = { has_variable = monarchy_events_45_cooldown }
-		OR = {
-			tag = EGY
-			tag = SEL
-			tag = MAC
-			tag = TRE
-			tag = PRY
-		}
+		always = no
 	}
 
 	immediate = {

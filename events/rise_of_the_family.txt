@@ -35,12 +35,17 @@ family_events.1 = {
 		hidden_effect = {
 			ordered_character = {
 				limit = {
+					is_adult = yes
 					is_minor_character = yes
 					is_mercenary = no
-					NOT = { has_variable = olympic_attendee }
 					#NOT = { has_character_modifier = was_once_great }
 					NOT = { has_character_modifier = foreign_citizen }
 					prisoner = no
+					trigger_if = {
+						limit = { employer = { gender_equality = no } }
+						is_male = yes
+					}
+					citizenship_restrictions_trigger = yes
 				}
 				check_range_bounds = no
 				order_by = power_base
@@ -48,12 +53,16 @@ family_events.1 = {
 			}
 			ordered_character = {
 				limit = {
+					is_adult = yes
 					is_minor_character = yes
 					is_mercenary = no
-					NOT = { has_variable = olympic_attendee }
 					#NOT = { has_character_modifier = was_once_great }
 					NOT = { has_character_modifier = foreign_citizen }
 					prisoner = no
+					trigger_if = {
+						limit = { employer = { gender_equality = no } }
+						is_male = yes
+					}
 					trigger_if = {
 						limit = { exists = scope:family_candidate_1 }
 						NOT = { this = scope:family_candidate_1 }
@@ -61,6 +70,7 @@ family_events.1 = {
 							is_close_relative = scope:family_candidate_1
 						}
 					}
+					citizenship_restrictions_trigger = yes
 				}
 				check_range_bounds = no
 				order_by = power_base
@@ -68,14 +78,16 @@ family_events.1 = {
 			}
 			ordered_character = {
 				limit = {
+					is_adult = yes
 					is_minor_character = yes
 					is_mercenary = no
-					NOT = { has_variable = olympic_attendee }
 					#NOT = { has_character_modifier = was_once_great }
-					NOT = {
-						has_character_modifier = foreign_citizen
-					}
+					NOT = { has_character_modifier = foreign_citizen }
 					prisoner = no
+					trigger_if = {
+						limit = { employer = { gender_equality = no } }
+						is_male = yes
+					}
 					trigger_if = {
 						limit = { exists = scope:family_candidate_1 }
 						NOT = { this = scope:family_candidate_1 }
@@ -90,6 +102,7 @@ family_events.1 = {
 							is_close_relative = scope:family_candidate_2
 						}
 					}
+					citizenship_restrictions_trigger = yes
 				}
 				check_range_bounds = no
 				order_by = power_base
@@ -243,7 +256,7 @@ family_events.2 = {
 	trigger = {
 		NOR = { 
 			has_variable = "rising_from_obscurity_cooldown" 
-			has_variable = cyrenaica_dropper_flag
+			#has_variable = cyrenaica_dropper_flag
 		}
 		has_land = yes
 		num_of_families > num_allowed_families
@@ -258,6 +271,10 @@ family_events.2 = {
 			OR = {
 				NOT = { any_family_member = { is_ruler = yes } }
 				ROOT = { is_republic = yes }
+			}
+			exists = head_of_family
+			head_of_family = {
+				is_alive = yes
 			}
 		}
 	}
@@ -276,7 +293,11 @@ family_events.2 = {
 					OR = {
 						NOT = { any_family_member = { is_ruler = yes } }
 						ROOT = { is_republic = yes }
-					} 
+					}
+					exists = head_of_family
+					head_of_family = {
+						is_alive = yes
+					}
 				}
 				save_scope_as = fallen_family
 				head_of_family = {
@@ -359,7 +380,8 @@ family_events.3 = {
 						#NOT = { has_character_modifier = was_once_great }
 						is_adult = yes
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
+						is_ruler = no
+						employer = root.employer
 						OR = {
 							employer = { gender_equality = yes }
 							is_male = yes
@@ -372,6 +394,10 @@ family_events.3 = {
 						NOT = { has_trait = selfish }
 						NOT = { has_trait = arrogant }
 						NOT = { has_trait = stubborn }
+						OR = {
+							has_culture = root.culture
+							citizenship_restrictions_trigger = yes
+						}
 					}
 				}
 			}
@@ -385,7 +411,8 @@ family_events.3 = {
 						#NOT = { has_character_modifier = was_once_great }
 						is_adult = yes
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
+						is_ruler = no
+						employer = root.employer
 						OR = {
 							employer = { gender_equality = yes }
 							is_male = yes
@@ -398,6 +425,10 @@ family_events.3 = {
 						NOT = { has_trait = selfish }
 						NOT = { has_trait = arrogant }
 						NOT = { has_trait = stubborn }
+						OR = {
+							has_culture = root.culture
+							citizenship_restrictions_trigger = yes
+						}
 					}
 					set_family = root.family
 					save_scope_as = adopted_person
@@ -440,7 +471,7 @@ family_events.4 = {
 	trigger = {
 		employer =  {
 			is_ai = no
-			NOT = { has_variable = death_to_tyrants_flag }
+			#NOT = { has_variable = death_to_tyrants_flag }
 		}
 		current_date > 451.3.1 #No need to do this just when the game starts.
 		NOT = { has_variable = adoption_reminder }
@@ -474,7 +505,6 @@ family_events.4 = {
 				employer = {
 					any_character = {
 						is_minor_character = yes
-						NOT = { has_variable = olympic_attendee }
 						#NOT = { has_character_modifier = was_once_great }
 						is_mercenary = no
 						is_adult = yes
@@ -490,13 +520,7 @@ family_events.4 = {
 						NOT = { has_trait = selfish }
 						NOT = { has_trait = arrogant }
 						NOT = { has_trait = stubborn }
-						NAND = {
-							employer = c:SYR
-							OR = {
-								has_variable = me_syr_democracy_leader
-								has_variable = rebel_character_flag
-							}
-						}
+						citizenship_restrictions_trigger = yes
 					}
 				}
 			}
@@ -509,7 +533,6 @@ family_events.4 = {
 						is_minor_character = yes
 						is_mercenary = no
 						#NOT = { has_character_modifier = was_once_great }
-						NOT = { has_variable = olympic_attendee }
 						is_adult = yes
 						OR = {
 							employer = { gender_equality = yes }
@@ -523,13 +546,7 @@ family_events.4 = {
 						NOT = { has_trait = selfish }
 						NOT = { has_trait = arrogant }
 						NOT = { has_trait = stubborn }
-						NAND = {
-							employer = c:SYR
-							OR = {
-								has_variable = me_syr_democracy_leader
-								has_variable = rebel_character_flag
-							}
-						}
+						citizenship_restrictions_trigger = yes
 					}
 					save_scope_as = adopted_person
 				}
@@ -544,7 +561,6 @@ family_events.4 = {
 						#NOT = { has_character_modifier = was_once_great }
 						is_mercenary = no
 						is_adult = yes
-						NOT = { has_variable = olympic_attendee }
 						NOT = { THIS = scope:adopted_person }
 						OR = {
 							employer = { gender_equality = yes }
@@ -558,13 +574,7 @@ family_events.4 = {
 						NOT = { has_trait = selfish }
 						NOT = { has_trait = arrogant }
 						NOT = { has_trait = stubborn }
-						NAND = {
-							employer = c:SYR
-							OR = {
-								has_variable = me_syr_democracy_leader
-								has_variable = rebel_character_flag
-							}
-						}
+						citizenship_restrictions_trigger = yes
 					}
 					save_scope_as = adopted_person_2
 				}
@@ -579,7 +589,6 @@ family_events.4 = {
 				}
 			}
 		}
-
 		if = {
 			limit = {
 				NOT = { exists = scope:adopted_person_2 }
@@ -592,17 +601,14 @@ family_events.4 = {
 				}
 			}
 		}
-		
-		
 	}
 	
 	option = {
 		name = "family_events.4.a"
 		trigger = { exists = scope:adopted_person }
-
 		scope:adopted_person = {
+			save_scope_as = target
 			set_family = root.family
-
 			add_character_modifier = {
 				name = adopted_into_great_family
 				duration = -1
@@ -634,15 +640,27 @@ family_events.4 = {
 			root.family = { add_prestige = adoption_cost_event_pay_svalue }
 			save_scope_as = picked_adoption_candidate
 		}
-		trigger_event = { id = family_events.8 }
+		if = {
+			limit = {
+				employer = { is_monarchy = yes }
+			}
+			employer = {
+				add_legitimacy = {
+					subtract = adoption_legitimacy_hit_event_svalue
+				}
+			}
+		}
+		employer = {
+			trigger_event = { id = family_events.8 }
+		}
 	}
+	
 	option = {
 		name = "family_events.4.b"
 		trigger = { exists = scope:adopted_person_2 }
-
 		scope:adopted_person_2 = {
+			save_scope_as = target
 			set_family = root.family
-
 			add_character_modifier = {
 				name = adopted_into_great_family
 				duration = -1
@@ -670,12 +688,24 @@ family_events.4 = {
 			else = {
 				custom_tooltip = adoption_explanation_event_tooltip
 			} 
-			
 			root.family = { add_prestige = adoption_cost_event_pay_svalue }
 			save_scope_as = picked_adoption_candidate
 		}
-		trigger_event = { id = family_events.8 }
+		if = {
+			limit = {
+				employer = { is_monarchy = yes }
+			}
+			employer = {
+				add_legitimacy = {
+					subtract = adoption_legitimacy_hit_event_svalue
+				}
+			}
+		}
+		employer = {
+			trigger_event = { id = family_events.8 }
+		}
 	}
+
 	option = {
 		name = "family_events.4.c"
 		custom_tooltip = family_events.4.c.tooltip
@@ -798,6 +828,10 @@ family_events.6 = {
 		    name = "rising_from_obscurity_cooldown"
 		    days = 120
 		}
+		set_variable = {
+		    name = "rising_from_obscurity_bonuses_cooldown"
+		    days = 1825
+		}
 		hidden_effect = {
 			if = {
 				limit = { 
@@ -809,7 +843,6 @@ family_events.6 = {
 						is_minor_character = yes
 						is_mercenary = no
 						is_adult = yes
-						NOT = { has_variable = olympic_attendee }
 						is_governor = no
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
@@ -820,7 +853,6 @@ family_events.6 = {
 						is_minor_character = yes
 						is_mercenary = no
 						is_adult = yes
-						NOT = { has_variable = olympic_attendee }
 						is_governor = no
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
@@ -828,6 +860,7 @@ family_events.6 = {
 							limit = { employer = { gender_equality = no } }
 							is_male = yes
 						}
+						citizenship_restrictions_trigger = yes
 					}
 					check_range_bounds = no
 					order_by = power_base
@@ -863,8 +896,13 @@ family_events.6 = {
 		name = "family_events.6.a"
 		trigger = { exists = scope:clan_rising }
 		new_family_generation_effect = { FAMILY_CANDIDATE = clan_rising } #Scripted Effect that passes on the saved scope.
-		add_stability = 10
-		add_centralization = -5
+		if = {
+			limit = {
+				NOT = { has_variable = rising_from_obscurity_bonuses_cooldown }
+			}
+			add_stability = 10
+			add_centralization = -5
+		}
 		hidden_effect = {
 			scope:clan_rising = {
 				family = {
@@ -905,6 +943,14 @@ family_events.7 = {
 		is_tribal = yes
 		has_civil_war = no #Wait until after any ongoing civil wars.
 		num_of_families > num_allowed_families
+		any_family = {
+			NOT = {
+				any_family_member = {
+					is_clan_chief = yes
+					is_ruler = yes
+				}
+			}
+		}
 		NOT = { tag = PIR }
 		NOT = { tag = REB }
 		NOT = { tag = MER }
@@ -925,6 +971,10 @@ family_events.7 = {
 								is_clan_chief = yes
 							}
 						}
+						exists = head_of_family
+						head_of_family = {
+							is_alive = yes
+						}
 					}
 				}
 				random_family = {
@@ -933,6 +983,10 @@ family_events.7 = {
 							any_family_member = {
 								is_clan_chief = yes
 							}
+						}
+						exists = head_of_family
+						head_of_family = {
+							is_alive = yes
 						}
 					}
 					save_scope_as = fallen_family
@@ -973,14 +1027,20 @@ family_events.7 = {
 	
 	option = {
 		name = "family_events.7.a"
-		scope:fallen_head = {
-			remove_all_positions = yes
-			move_country = scope:tribal_destination
-			hidden_effect = {
-				set_as_minor_character = THIS
+		if = {
+			limit = {
+				exists = scope:fallen_head
+				scope:fallen_head = { is_alive = yes } #On the remote chance that we are downgrading a family with 0 members we could be looking at scope:fallen head not being saved. In this case we still want that to be the family eliminated but this part of the effect needs to be muted
 			}
+			scope:fallen_head = {
+				remove_all_positions = yes
+				move_country = scope:tribal_destination
+				hidden_effect = {
+					set_as_minor_character = THIS
+				}
+			}
+			custom_tooltip = family_events.7.a.tooltip
 		}
-		custom_tooltip = family_events.7.a.tooltip
 		add_stability = -5
 	}
 
@@ -1069,24 +1129,34 @@ family_events.9 = {
 			if = { #First we try to get a party leader - even if ruler.
 				limit = {
 					any_character = {
+						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
-						NOT = { has_variable = olympic_attendee }
 						is_mercenary = no
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						is_party_leader = yes #Prefer Party Leaders
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 				}
 				ordered_character = {
 					limit = {
+						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
-						NOT = { has_variable = olympic_attendee }
 						is_mercenary = no
 						is_party_leader = yes #Prefer Party Leaders
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 					check_range_bounds = no
 					order_by = power_base
@@ -1099,10 +1169,14 @@ family_events.9 = {
 						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
-						NOT = { has_variable = olympic_attendee }
 						is_mercenary = no
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 				}
 				ordered_character = {
@@ -1110,10 +1184,14 @@ family_events.9 = {
 						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
-						NOT = { has_variable = olympic_attendee }
 						is_mercenary = no
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 					check_range_bounds = no
 					order_by = power_base
@@ -1147,12 +1225,12 @@ family_events.9 = {
 			if = { #First we try to get a party leader - even if ruler.
 				limit = {
 					any_character = {
+						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						is_party_leader = yes #Prefer Party Leaders
 						trigger_if = {
 							limit = { exists = scope:family_candidate_1 }
@@ -1162,16 +1240,21 @@ family_events.9 = {
 							}
 							NOT = { is_same_party_as = scope:family_candidate_1 }
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 				}
 				ordered_character = {
 					limit = {
+						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						is_party_leader = yes #Prefer Party Leaders
 						trigger_if = {
 							limit = { exists = scope:family_candidate_1 }
@@ -1181,6 +1264,11 @@ family_events.9 = {
 							}
 							NOT = { is_same_party_as = scope:family_candidate_1 }
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 					check_range_bounds = no
 					order_by = power_base
@@ -1192,7 +1280,6 @@ family_events.9 = {
 					any_character = {
 						is_adult = yes
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						NOT = { has_character_modifier = foreign_citizen }
@@ -1205,13 +1292,17 @@ family_events.9 = {
 							}
 							NOT = { is_same_party_as = scope:family_candidate_1 }
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 				}
 				ordered_character = {
 					limit = {
 						is_adult = yes
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						NOT = { has_character_modifier = foreign_citizen }
@@ -1224,6 +1315,11 @@ family_events.9 = {
 							}
 							NOT = { is_same_party_as = scope:family_candidate_1 }
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 					check_range_bounds = no
 					order_by = power_base
@@ -1252,80 +1348,19 @@ family_events.9 = {
 					}
 				}
 				scope:family_candidate_2 = { #Needs to not be same party as 1
-					if = {
-						limit = {
-							exists = scope:family_candidate_1
-							is_same_party_as = scope:family_candidate_1
-							NOT = {
-								scope:family_candidate_1 = {
-									party = military_party
+					root = {
+						random_party = {
+							limit = {
+								NOT = {
+									this = scope:family_candidate_1.character_party
 								}
 							}
-						}
-						add_party_conviction = {
-							party = military_party
-							value = 100
+							save_scope_as = candidate_2_party
 						}
 					}
-					else_if = {
-						limit = {
-							exists = scope:family_candidate_1
-							is_same_party_as = scope:family_candidate_1
-							NOT = {
-								scope:family_candidate_1 = {
-									party = populist_party
-								}
-							}
-						}
-						add_party_conviction = {
-							party = populist_party
-							value = 100
-						}
-					}
-					else_if = {
-						limit = {
-							exists = scope:family_candidate_1
-							is_same_party_as = scope:family_candidate_1
-							NOT = {
-								scope:family_candidate_1 = {
-									party = mercantile_party
-								}
-							}
-						}
-						add_party_conviction = {
-							party = mercantile_party
-							value = 100
-						}
-					}
-					else_if = {
-						limit = {
-							exists = scope:family_candidate_1
-							is_same_party_as = scope:family_candidate_1
-							NOT = {
-								scope:family_candidate_1 = {
-									party = civic_party
-								}
-							}
-						}
-						add_party_conviction = {
-							party = civic_party
-							value = 100
-						}
-					}
-					else_if = {
-						limit = {
-							exists = scope:family_candidate_1
-							is_same_party_as = scope:family_candidate_1
-							NOT = {
-								scope:family_candidate_1 = {
-									party = religious_party
-								}
-							}
-						}
-						add_party_conviction = {
-							party = religious_party
-							value = 100
-						}
+					add_party_conviction = {
+						party = scope:candidate_2_party
+						value = 100
 					}
 					#No ending else since this should have gone through all parties
 				}
@@ -1337,10 +1372,10 @@ family_events.9 = {
 			if = { #First we try to get a party leader - even if ruler.
 				limit = {
 					any_character = {
+						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						is_party_leader = yes #Prefer Party Leaders
@@ -1360,14 +1395,19 @@ family_events.9 = {
 							}
 							NOT = { is_same_party_as = scope:family_candidate_2 }
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 				}
 				ordered_character = {
 					limit = {
+						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						is_party_leader = yes #Prefer Party Leaders
@@ -1387,6 +1427,11 @@ family_events.9 = {
 							}
 							NOT = { is_same_party_as = scope:family_candidate_2 }
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 					check_range_bounds = no
 					order_by = power_base
@@ -1400,7 +1445,6 @@ family_events.9 = {
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						trigger_if = {
@@ -1419,6 +1463,11 @@ family_events.9 = {
 							}
 							NOT = { is_same_party_as = scope:family_candidate_2 }
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 				}
 				ordered_character = {
@@ -1427,7 +1476,6 @@ family_events.9 = {
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						trigger_if = {
@@ -1446,6 +1494,11 @@ family_events.9 = {
 							}
 							NOT = { is_same_party_as = scope:family_candidate_2 }
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 					check_range_bounds = no
 					order_by = power_base
@@ -1474,115 +1527,20 @@ family_events.9 = {
 					}
 				}
 				scope:family_candidate_3 = { #Needs to not be same party as 1 or 2
-					if = { 
-						limit = {
-							exists = scope:family_candidate_1
-							exists = scope:family_candidate_2
-							OR = {
-								is_same_party_as = scope:family_candidate_1
-								is_same_party_as = scope:family_candidate_2
-							}
-							NOR = {
-								scope:family_candidate_1 = {
-									party = military_party
-								}
-								scope:family_candidate_2 = {
-									party = military_party
+					root = {
+						random_party = {
+							limit = {
+								NOR = {
+									this = scope:family_candidate_1.character_party
+									this = scope:family_candidate_2.character_party
 								}
 							}
-						}
-						add_party_conviction = {
-							party = military_party
-							value = 100
+							save_scope_as = candidate_3_party
 						}
 					}
-					else_if = {
-						limit = {
-							exists = scope:family_candidate_1
-							exists = scope:family_candidate_2
-							OR = {
-								is_same_party_as = scope:family_candidate_1
-								is_same_party_as = scope:family_candidate_2
-							}
-							NOR = {
-								scope:family_candidate_1 = {
-									party = populist_party
-								}
-								scope:family_candidate_2 = {
-									party = populist_party
-								}
-							}
-						}
-						add_party_conviction = {
-							party = populist_party
-							value = 100
-						}
-					}
-					else_if = {
-						limit = {
-							exists = scope:family_candidate_1
-							exists = scope:family_candidate_2
-							OR = {
-								is_same_party_as = scope:family_candidate_1
-								is_same_party_as = scope:family_candidate_2
-							}
-							NOR = {
-								scope:family_candidate_1 = {
-									party = mercantile_party
-								}
-								scope:family_candidate_2 = {
-									party = mercantile_party
-								}
-							}
-						}
-						add_party_conviction = {
-							party = mercantile_party
-							value = 100
-						}
-					}
-					else_if = {
-						limit = {
-							exists = scope:family_candidate_1
-							exists = scope:family_candidate_2
-							OR = {
-								is_same_party_as = scope:family_candidate_1
-								is_same_party_as = scope:family_candidate_2
-							}
-							NOR = {
-								scope:family_candidate_1 = {
-									party = civic_party
-								}
-								scope:family_candidate_2 = {
-									party = civic_party
-								}
-							}
-						}
-						add_party_conviction = {
-							party = civic_party
-							value = 100
-						}
-					}
-					else_if = {
-						limit = {
-							exists = scope:family_candidate_1
-							exists = scope:family_candidate_2
-							OR = {
-								is_same_party_as = scope:family_candidate_1
-								is_same_party_as = scope:family_candidate_2
-							}
-							NOR = {
-								scope:family_candidate_1 = {
-									party = religious_party
-								}
-								scope:family_candidate_2 = {
-									party = religious_party
-								}
-							}
-						}
-						add_party_conviction = {
-							party = religious_party
-							value = 100
-						}
+					add_party_conviction = {
+						party = scope:candidate_3_party
+						value = 100
 					}
 					#No ending else since this should have gone through all parties
 				}
@@ -1594,11 +1552,11 @@ family_events.9 = {
 			if = { #This one is more random, and purely by power base.
 				limit = {
 					any_character = {
+						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						is_mercenary = no
 						is_adult = yes
-						NOT = { has_variable = olympic_attendee }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						is_party_leader = no
@@ -1627,15 +1585,20 @@ family_events.9 = {
 								is_close_relative = scope:family_candidate_3
 							}
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 				}
 				ordered_character = {
 					limit = {
+						is_adult = yes
 						is_minor_character = yes
 						#NOT = { has_character_modifier = was_once_great }
 						is_party_leader = no
 						is_mercenary = no
-						NOT = { has_variable = olympic_attendee }
 						NOT = { has_character_modifier = foreign_citizen }
 						prisoner = no
 						trigger_if = {
@@ -1659,6 +1622,11 @@ family_events.9 = {
 								is_close_relative = scope:family_candidate_3
 							}
 						}
+						trigger_if = {
+							limit = { employer = { gender_equality = no } }
+							is_male = yes
+						}
+						citizenship_restrictions_trigger = yes
 					}
 					check_range_bounds = no
 					order_by = power_base
@@ -1692,10 +1660,14 @@ family_events.9 = {
 	
 	option = {
 		name = "family_events.9.a"
-		trigger = { exists = scope:family_candidate_1 }
+		trigger = {
+			exists = scope:family_candidate_1
+			scope:family_candidate_1 = {
+				is_alive = yes
+			}
+		}
 		new_family_generation_effect = { FAMILY_CANDIDATE = family_candidate_1 } #Scripted Effect that passes on the saved scope.
 		scope:family_candidate_1 = {
-			add_party_support_large_effect = yes
 			hidden_effect = {
 				family = {
 					every_family_member = {
@@ -1706,14 +1678,22 @@ family_events.9 = {
 					}
 				}
 			}
+		}
+		add_party_approval = {
+			party = scope:family_candidate_1.character_party
+			value = party_approval_large
 		}
 	}
 	option = {
 		name = "family_events.9.b"
-		trigger = { exists = scope:family_candidate_2 }
+		trigger = {
+			exists = scope:family_candidate_2
+			scope:family_candidate_2 = {
+				is_alive = yes
+			}
+		}
 		new_family_generation_effect = { FAMILY_CANDIDATE = family_candidate_2 } #Scripted Effect that passes on the saved scope.
 		scope:family_candidate_2 = {
-			add_party_support_large_effect = yes
 			hidden_effect = {
 				family = {
 					every_family_member = {
@@ -1724,14 +1704,22 @@ family_events.9 = {
 					}
 				}
 			}
+		}
+		add_party_approval = {
+			party = scope:family_candidate_2.character_party
+			value = party_approval_large
 		}
 	}
 	option = {
 		name = "family_events.9.c"
-		trigger = { exists = scope:family_candidate_3 }
+		trigger = {
+			exists = scope:family_candidate_3
+			scope:family_candidate_3 = {
+				is_alive = yes
+			}
+		}
 		new_family_generation_effect = { FAMILY_CANDIDATE = family_candidate_3 } #Scripted Effect that passes on the saved scope.
 		scope:family_candidate_3 = {
-			add_party_support_large_effect = yes
 			hidden_effect = {
 				family = {
 					every_family_member = {
@@ -1743,10 +1731,19 @@ family_events.9 = {
 				}
 			}
 		}
+		add_party_approval = {
+			party = scope:family_candidate_3.character_party
+			value = party_approval_large
+		}
 	}
 	option = {
 		name = "family_events.9.d"
-		trigger = { exists = scope:family_candidate_4 }
+		trigger = {
+			exists = scope:family_candidate_4
+			scope:family_candidate_4 = {
+				is_alive = yes
+			}
+		}
 		new_family_generation_effect = { FAMILY_CANDIDATE = family_candidate_4 } #Scripted Effect that passes on the saved scope.
 		custom_tooltip = family_events.9.d.tt
 		scope:family_candidate_4 = { #First generation are very loyal
@@ -1766,19 +1763,43 @@ family_events.9 = {
 				}
 			}
 		}
-		scope:family_candidate_1 = {
-			character_party = {
-				party_leader = { add_loyalty = loyalty_ignored_endorsement }
+		if = {
+			limit = {
+				exists = scope:family_candidate_1
+				scope:family_candidate_1 = {
+					is_alive = yes
+				}
+			}
+			scope:family_candidate_1 = {
+				character_party = {
+					party_leader = { add_loyalty = loyalty_ignored_endorsement }
+				}
 			}
 		}
-		scope:family_candidate_2 = {
-			character_party = {
-				party_leader = { add_loyalty = loyalty_ignored_endorsement }
+		if = {
+			limit = {
+				exists = scope:family_candidate_2
+				scope:family_candidate_2 = {
+					is_alive = yes
+				}
+			}
+			scope:family_candidate_2 = {
+				character_party = {
+					party_leader = { add_loyalty = loyalty_ignored_endorsement }
+				}
 			}
 		}
-		scope:family_candidate_3 = {
-			character_party = {
-				party_leader = { add_loyalty = loyalty_ignored_endorsement }
+		if = {
+			limit = {
+				exists = scope:family_candidate_3
+				scope:family_candidate_3 = {
+					is_alive = yes
+				}
+			}
+			scope:family_candidate_3 = {
+				character_party = {
+					party_leader = { add_loyalty = loyalty_ignored_endorsement }
+				}
 			}
 		}
 	}
@@ -1818,7 +1839,6 @@ family_events.10 = {
 			is_minor_character = yes
 			#NOT = { has_character_modifier = was_once_great }
 			is_adult = yes
-			NOT = { has_variable = olympic_attendee }
 			prisoner = no
 			OR = {
 				character_experience >= 80
@@ -1828,6 +1848,8 @@ family_events.10 = {
 				}
 			}
 			NOT = { has_variable = not_my_servant }
+			
+			citizenship_restrictions_trigger = yes
 		}
 	}
 
@@ -1846,13 +1868,13 @@ family_events.10 = {
 					is_minor_character = yes
 					#NOT = { has_character_modifier = was_once_great }
 					is_adult = yes
-					NOT = { has_variable = olympic_attendee }
 					prisoner = no
 					OR = {
 						character_experience >= 80
 						popularity >= 90
 					}
 					NOT = { has_variable = not_my_servant }
+					citizenship_restrictions_trigger = yes
 				}
 				save_scope_as = servant_of_the_republic
 			}

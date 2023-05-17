@@ -1,0 +1,4174 @@
+﻿namespace = country_diplomacy
+
+# Friends Across Borders
+country_diplomacy.1 = {
+	type = country_event
+	title = "country_diplomacy.1.t"
+	desc = "country_diplomacy.1.desc"
+	picture = scribe_tools
+
+	left_portrait = scope:friendly_character_root
+	right_portrait = scope:friendly_character_foreign
+	
+	goto_location = scope:friendly_character_foreign
+
+	trigger = {
+		NOT = { has_variable = country_diplomacy_cooldown }
+		any_character = {
+			has_any_office = yes
+			is_ruler = no
+		}
+		any_neighbour_country = {
+			count >= 1
+			NOT = { war_with = root }
+			any_character = {
+				has_any_office = yes
+				is_ruler = no
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = {
+			name = country_diplomacy_cooldown
+			days = 5475 # 15 years
+		}
+		random_character = {
+			limit = {
+				has_any_office = yes
+				is_ruler = no
+			}
+			weight = {
+				modifier = {
+					factor = 10
+					num_of_friends >= 1
+					any_friend = {
+						has_any_office = yes
+						is_ruler = no
+						employer = {
+							NOT = { war_with = root }
+							any_neighbour_country = {
+								this = root
+							}
+						}
+					}
+				}
+				title_importance_modifier = yes
+			}
+			save_scope_as = friendly_character_root
+			if = {
+				limit = {
+					any_friend = {
+						is_ruler = no
+						has_any_office = yes
+						employer = {
+							NOT = { war_with = root }
+							any_neighbour_country = {
+								this = root
+							}
+						}
+					}
+				}
+				random_friend = {
+					limit = {
+						has_any_office = yes
+						is_ruler = no
+						employer = {
+							NOT = { war_with = root }
+							any_neighbour_country = {
+								this = root
+							}
+						}
+					}
+					weight = {
+						title_importance_modifier = yes
+					}
+					save_scope_as = friendly_character_foreign
+					employer = {
+						save_scope_as = foreign_country
+					}
+				}
+			}
+			else = {
+				root = {
+					random_neighbour_country = {
+						limit = {
+							NOT = { war_with = root }
+						}
+						save_scope_as = foreign_country
+						random_character = {
+							limit = {
+								has_any_office = yes
+								is_ruler = no
+							}
+							weight = {
+								title_importance_modifier = yes
+							}
+							save_scope_as = friendly_character_foreign
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.1.a"
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 3
+		}
+		scope:foreign_country = {
+			add_opinion = {
+				modifier = increased_reputation
+				target = root
+			}
+		}
+		scope:friendly_character_foreign = {
+			add_gold = {
+				value = root.has_monthly_income
+				multiply = 3
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.1.b"
+		scope:friendly_character_root = {
+			add_loyalty = loyalty_friends_across_borders
+		}
+	}
+}
+
+# Feudatory Vassal: Overlord citizens settle in Capital
+country_diplomacy.2 = {
+	type = country_event
+	title = "country_diplomacy.2.t"
+	desc = "country_diplomacy.2.desc"
+	picture = council_country
+
+	left_portrait = current_ruler
+	left_portrait = scope:random_advisor
+	right_portrait = scope:overlord_country.current_ruler
+	right_portrait = scope:overlord_vassal
+
+	goto_location = scope:random_overlord_province
+	
+	trigger = {
+		is_subject_type = feudatory
+		any_character = {
+			count >= 2
+			has_any_office = yes
+			is_ruler = no
+		}
+	}
+	immediate = {
+		overlord = { save_scope_as = overlord_country }
+		scope:overlord_country = {
+			random_owned_province = {
+				limit = {
+					any_pops_in_province = {
+						count >= 3
+					}
+				}
+				weight = {
+					modifier = {
+						factor = 5
+						dominant_province_culture = scope:overlord_country.culture
+					}
+					modifier = {
+						factor = 5
+						dominant_province_religion = scope:overlord_country.religion
+					}
+					modifier = {
+						factor = 5
+						dominant_province_culture = scope:overlord_country.culture
+						dominant_province_religion = scope:overlord_country.religion
+					}
+					modifier = {
+						factor = 20
+						is_sea = yes
+					}
+				}
+				save_scope_as = random_overlord_province 
+			}
+		}
+		country_overlord_vassal_character_effect = yes
+		random_character = {
+			limit = {
+				has_any_office = yes
+				is_ruler = no
+				NOT = { has_variable = overlord_vassal }
+			}
+			weight = {
+				title_importance_modifier = yes
+			}
+			save_scope_as = random_advisor
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.2.a"
+		scope:overlord_vassal = {
+			add_loyalty = loyalty_feudatory_settlers_allowed
+		}
+		scope:random_advisor = {
+			add_loyalty = loyalty_feudatory_settlers_ignored_advisor
+		}
+		scope:random_overlord_province = {
+			random_pops_in_province = {
+				weight = {
+					modifier = {
+						factor = 10
+						pop_religion = scope:overlord_country.religion
+					}
+					modifier = {
+						factor = 10
+						pop_culture = scope:overlord_country.culture
+					}
+				}
+				move_pop = root.capital_scope
+			}
+			random_pops_in_province = {
+				weight = {
+					modifier = {
+						factor = 10
+						pop_religion = scope:overlord_country.religion
+					}
+					modifier = {
+						factor = 10
+						pop_culture = scope:overlord_country.culture
+					}
+				}
+				move_pop = root.capital_scope
+			}
+		}
+		capital_scope = {
+			random_pops_in_province = {
+				weight = {
+					modifier = {
+						factor = 10
+						pop_religion = root.religion
+					}
+					modifier = {
+						factor = 10
+						pop_culture = root.culture
+					}
+				}
+				move_pop = scope:random_overlord_province
+			}
+			random_pops_in_province = {
+				weight = {
+					modifier = {
+						factor = 10
+						pop_religion = root.religion
+					}
+					modifier = {
+						factor = 10
+						pop_culture = root.culture
+					}
+				}
+				move_pop = scope:random_overlord_province
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.2.b"
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 6
+		}
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = unruly_feudatory
+				target = root
+			}
+		}
+		scope:random_advisor = {
+			add_loyalty = loyalty_feudatory_settlers_advisor_success
+		}
+		scope:overlord_vassal = {
+			add_loyalty = loyalty_feudatory_settlers_barred
+		}
+	}
+}
+
+# Feudatory Vassal: New citizens are being difficult
+country_diplomacy.3 = {
+	type = country_event
+	title = "country_diplomacy.3.t"
+	desc = "country_diplomacy.3.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_vassal
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:troubled_province
+	
+	trigger = {
+		is_subject_type = feudatory
+		any_owned_province = {
+			any_pops_in_province = {
+				OR = {
+					AND = {
+						NOT = { pop_religion = root.religion }
+						pop_religion = root.overlord.religion
+					}
+					AND = {
+						NOT = { pop_culture = root.culture }
+						pop_culture = root.overlord.culture
+					}
+				}
+			}
+		}
+	}
+
+	immediate = {
+		overlord = { save_scope_as = overlord_country }
+		country_overlord_vassal_character_effect = yes
+		random_owned_province = {
+			limit = {
+				any_pops_in_province = {
+					OR = {
+						AND = {
+							NOT = { pop_religion = root.religion }
+							pop_religion = root.overlord.religion
+						}
+						AND = {
+							NOT = { pop_culture = root.culture }
+							pop_culture = root.overlord.culture
+						}
+					}
+				}
+			}
+			weight = {
+				modifier = {
+					factor = 20
+					any_pops_in_province = {
+						pop_religion = root.overlord.religion
+						pop_culture = root.overlord.culture
+					}
+				}
+			}
+			save_scope_as = troubled_province
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.3.a"
+		add_tyranny = tyranny_medium
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 6
+		}
+		scope:overlord_vassal = {
+			add_loyalty = loyalty_feudatory_settlers_calmed
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.3.b"
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = unruly_feudatory
+				target = root
+			}
+		}
+		scope:overlord_vassal = {
+			add_loyalty = loyalty_feudatory_settlers_killed
+		}
+		scope:troubled_province = {
+			random_pops_in_province = {
+				limit = {
+					OR = {
+						NOT = { pop_religion = root.religion }
+						NOT = { pop_culture = root.culture }
+						pop_culture = root.overlord.culture
+						pop_religion = root.overlord.religion
+					}
+				}
+				weight = {
+					modifier = {
+						factor = 20
+						pop_culture = root.overlord.culture
+					}
+					modifier = {
+						factor = 20
+						pop_religion = root.overlord.religion
+					}
+					modifier = {
+						factor = 20
+						pop_religion = root.overlord.religion
+						pop_culture = root.overlord.culture
+					}
+				}
+				kill_pop = yes
+			}
+		}
+	}
+}
+
+# Feudatory Overlord: Asking feudatory for money - Event Chain Part 1
+country_diplomacy.4 = {
+	type = country_event
+	title = "country_diplomacy.4.t"
+	desc = "country_diplomacy.4.desc"
+	picture = war_chest
+
+	left_portrait = current_ruler
+	right_portrait = scope:random_vassal.current_ruler
+	left_portrait = scope:random_advisor
+
+	goto_location = scope:random_vassal.capital_scope
+	
+	trigger = {
+		treasury <= 100
+		is_overlord = yes
+		any_subject = {
+			treasury > 100
+			is_subject_type = feudatory
+		}
+		any_character = {
+			has_any_office = yes
+			is_ruler = no
+		}
+	}
+
+	immediate = {
+		save_scope_as = overlord_country
+		random_subject = {
+			limit = {
+				treasury > 100
+				is_subject_type = feudatory
+			}
+			save_scope_as = random_vassal
+		}
+		random_character = {
+			limit = {
+				has_any_office = yes
+				is_ruler = no
+			}
+			weight = {
+				title_importance_modifier = yes
+			}
+			save_scope_as = random_advisor
+		}
+	}
+
+	option = { # Ask
+		name = "country_diplomacy.4.a"
+		custom_tooltip = "country_diplomacy.4.a.tt"
+		scope:random_vassal = {
+			add_opinion = {
+				modifier = demanding_overlord
+				target = root
+			}
+			trigger_event = {
+				id = "country_diplomacy.5"
+				days = { 5 7 }
+			}
+		}
+		every_subject = {
+			limit = {
+				NOT = {
+					this = scope:random_vassal
+				}
+			}
+			add_opinion = {
+				modifier = unpopular_overlord
+				target = root
+			}
+		}
+	}
+
+	option = { # Do not ask
+		name = "country_diplomacy.4.b"
+		custom_tooltip = "country_diplomacy.4.b.tt"
+		if = {
+			limit = {
+				is_monarchy = yes
+			}
+			add_legitimacy = subtract_legitimacy_large
+		}
+		current_ruler = {
+			add_popularity = subtract_popularity_medium
+		}
+	}
+}
+
+# Feudatory Vassal: Overlord asked for money - Event Chain Part 2
+country_diplomacy.5 = {
+	type = country_event
+	title = "country_diplomacy.5.t"
+	desc = "country_diplomacy.5.desc"
+	picture = war_chest
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+	right_portrait = scope:overlord_vassal
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = feudatory
+	}
+
+	immediate = {
+		country_overlord_vassal_character_effect = yes
+		if = {
+			limit = {
+				NOT = { exists = scope:overlord_country }
+			}
+			overlord = { save_scope_as = overlord_country }
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.5.a"
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = obedient_vassal
+				target = root
+			}
+			trigger_event = {
+				id = "country_diplomacy.6"
+				days = { 5 7 }
+			}
+		}
+		set_variable = {
+			name = overlord_payment
+			value = {
+				value = root.has_monthly_income
+				multiply = 8
+			}
+		}
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 8
+		}
+		if = {
+			limit = {
+				is_monarchy = yes
+			}
+			add_legitimacy = subtract_legitimacy_large
+		}
+		current_ruler = {
+			add_popularity = subtract_popularity_huge
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.5.b"
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = unruly_feudatory
+				target = root
+			}
+			trigger_event = {
+				id = "country_diplomacy.7"
+				days = { 5 7 }
+			}
+		}
+		scope:overlord_vassal = {
+			add_loyalty = loyalty_refused_overlord_aid
+		}
+	}
+}
+
+# Feudatory Overlord: Vassal delivered cash - Event Chain Outcome 1
+country_diplomacy.6 = {
+	type = country_event
+	title = "country_diplomacy.6.t"
+	desc = "country_diplomacy.6.desc"
+	picture = great_city
+
+	left_portrait = current_ruler
+	right_portrait = scope:random_vassal.current_ruler
+	right_portrait = scope:overlord_vassal
+
+	goto_location = scope:overlord_vassal.capital_scope
+	
+	trigger = {
+
+	}
+
+	immediate = {
+		scope:random_vassal = {
+			country_overlord_vassal_character_effect = yes
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.6.a"
+		add_treasury = {
+			value = scope:random_vassal.var:overlord_payment
+		}
+		scope:random_vassal = {
+			remove_variable = overlord_payment
+		}
+	}
+}
+
+# Feudatory Overlord: Vassal refused to pay - Event Chain Outcome 2
+country_diplomacy.7 = {
+	type = country_event
+	title = "country_diplomacy.7.t"
+	desc = "country_diplomacy.7.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+	right_portrait = scope:random_vassal.current_ruler
+
+	goto_location = scope:random_vassal.capital_scope
+	
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.7.a"
+		show_as_tooltip = {
+			scope:overlord_country = {
+				add_opinion = {
+					modifier = unruly_feudatory
+					target = scope:random_vassal
+				}
+			}
+		}
+		if = {
+			limit = {
+				is_monarchy = yes
+			}
+			add_legitimacy = subtract_legitimacy_medium
+		}
+		current_ruler = { add_popularity = subtract_popularity_small }
+	}
+}
+
+# Feudatory Vassal: Executing the old overlord's puppet
+country_diplomacy.8 = {
+	type = country_event
+	title = "country_diplomacy.8.t"
+	desc = "country_diplomacy.8.desc"
+	picture = assassination
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_vassal
+	right_portrait = scope:former_overlord.current_ruler
+
+	goto_location = scope:overlord_vassal.capital_scope
+	
+	trigger = {
+		any_character = {
+			has_any_office = yes
+			is_ruler = no
+			has_variable = overlord_vassal
+		}
+	}
+
+	immediate = {
+		country_overlord_vassal_character_effect = yes
+	}
+
+	option = { # Execute him
+		name = "country_diplomacy.8.a"
+		scope:overlord_vassal = {
+			death = {
+				killer = root.current_ruler
+				death_reason = death_execution
+			}
+		}
+		if = {
+			limit = {
+				is_monarchy = yes
+			}
+			add_legitimacy = legitimacy_medium
+		}
+		current_ruler = { add_popularity = popularity_medium }
+	}
+
+	option = { # Banish him to former overlord
+		name = "country_diplomacy.8.b"
+		scope:overlord_vassal = {
+			banish = scope:former_overlord
+		}
+		if = {
+			limit = {
+				scope:overlord_vassal = {
+					wealth >= 1
+				}
+			}
+			add_treasury = {
+				value = scope:overlord_vassal.wealth
+				max = {
+					value = root.has_monthly_income
+					multiply = 12
+				}
+			}
+			scope:overlord_vassal = {
+				add_gold = {
+					subtract = scope:overlord_vassal.wealth
+					min = {
+						subtract = root.has_monthly_income
+						multiply = 12
+					}
+				}
+			}
+		}
+	}
+}
+
+# Tributary Vassal: Portly or capital Growth
+country_diplomacy.9 = {
+	type = country_event
+	title = "country_diplomacy.9.t"
+	desc = "country_diplomacy.9.desc"
+	picture = great_city
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = tributary
+		any_owned_province = {
+			OR = {
+				is_port = yes
+				is_capital = yes
+			}
+			NOR = {
+				has_province_modifier = province_improvement_tributary_commerce_boon
+				has_province_modifier = province_improvement_tributary_growth_boon
+			}
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				OR = {
+					is_port = yes
+					is_capital = yes
+				}
+				NOR = {
+					has_province_modifier = province_improvement_tributary_commerce_boon
+					has_province_modifier = province_improvement_tributary_growth_boon
+				}
+			}
+			weight = {
+				modifier = {
+					factor = 20
+					is_port = yes
+				}
+			}
+			save_scope_as = randomized_country_province
+		}
+		overlord = { save_scope_as = overlord_country }
+	}
+
+	option = { # Increase commerce
+		name = "country_diplomacy.9.a"
+		add_treasury = {
+			value = root.has_monthly_income
+			multiply = 2
+		}
+		scope:randomized_country_province = {
+			add_province_modifier = {
+				name = province_improvement_tributary_commerce_boon
+				duration = 3650
+			}
+		}
+	}
+
+	option = { # Increase growth
+		name = "country_diplomacy.9.b"
+		scope:randomized_country_province = {
+			define_pop = {
+				type = citizen
+				religion = scope:overlord_country.religion
+				culture = scope:overlord_country.culture
+			}
+			add_province_modifier = {
+				name = province_improvement_tributary_growth_boon
+				duration = 3650
+			}
+		}
+	}
+}
+
+# Tributary Vassal: General commercial growth - Event Chain Part 1
+country_diplomacy.10 = {
+	type = country_event
+	title = "country_diplomacy.10.t"
+	desc = "country_diplomacy.10.desc"
+	picture = great_city
+
+	left_portrait = current_ruler
+	left_portrait = scope:random_advisor
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = tributary
+		NOT = { has_variable = country_diplomacy_10_cooldown }
+		any_owned_province = { is_port = yes }
+		any_character = {
+			is_ruler = no
+			has_any_office = yes
+		}
+		overlord = {
+			NOT = { has_variable = country_diplomacy_10_cooldown }
+		}
+	}
+
+	immediate = {
+		save_scope_as = vassal_country
+		overlord = { 
+			set_variable = {
+				name = country_diplomacy_10_cooldown
+				days = 1825
+			}
+			save_scope_as = overlord_country 
+		}
+		set_variable = {
+			name = country_diplomacy_10_cooldown
+			days = 3650
+		}
+		random_character = {
+			limit = {
+				is_ruler = no
+				has_any_office = yes
+			}
+			weight = {
+				title_importance_modifier = yes
+			}
+			save_scope_as = random_advisor
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.10.a"
+		add_country_modifier = {
+			name = country_improvement_tributary_commerce_boon
+			duration = 3650
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.10.b"
+		add_country_modifier = {
+			name = country_improvement_tributary_minor_commerce_boon
+			duration = 3650
+		}
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = friendly_tributary_vassal
+				target = root
+			}
+			show_as_tooltip = {
+				add_treasury = {
+					value = root.has_monthly_income
+					multiply = 6
+				}
+			}
+			trigger_event = {
+				id = country_diplomacy.11
+				days = { 3 5 }
+			}
+		}
+	}
+}
+
+# Tributary Overlord: Receive wealth from tributary - Event Chain Part 2
+country_diplomacy.11 = {
+	type = country_event
+	title = "country_diplomacy.11.t"
+	desc = "country_diplomacy.11.desc"
+	picture = war_chest
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.11.a"
+		add_treasury = {
+			value = scope:vassal_country.has_monthly_income
+			multiply = 6
+		}
+	}
+}
+
+# Tributary Overlord: Influx of traders from the tributary
+country_diplomacy.12 = {
+	type = country_event
+	title = "country_diplomacy.12.t"
+	desc = "country_diplomacy.12.desc"
+	picture = great_city
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+		is_overlord = yes
+		NOT = { has_variable = country_diplomacy_12_cooldown }
+		any_subject = { is_subject_type = tributary }
+		any_owned_province = {
+			OR = {
+				is_capital = yes
+				is_port = yes
+			}
+			NOR = {
+				has_province_modifier = province_improvement_tributary_overlord_commerce_boon
+				has_province_modifier = province_improvement_tributary_overlord_growth_boon
+			}
+
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = tributary
+			}
+			save_scope_as = vassal_country
+		}
+		random_owned_province = {
+			limit = {
+				OR = {
+					is_capital = yes
+					is_port = yes
+				}
+				NOR = {
+					has_province_modifier = province_improvement_tributary_overlord_commerce_boon
+					has_province_modifier = province_improvement_tributary_overlord_growth_boon
+				}
+			}
+			save_scope_as = randomized_country_province
+		}
+		set_variable = {
+			name = country_diplomacy_12_cooldown
+			days = 1825
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.12.a"
+		add_treasury = {
+			value = scope:vassal_country.has_monthly_income
+			multiply = 8
+		}
+		scope:randomized_country_province = {
+			add_province_modifier = {
+				name = province_improvement_tributary_overlord_commerce_boon
+				duration = 3650
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.12.b"
+		scope:randomized_country_province = {
+			add_province_modifier = {
+				name = province_improvement_tributary_overlord_growth_boon
+				duration = 3650
+			}
+			define_pop = {
+				type = citizen
+				religion = scope:vassal_country.religion
+				culture = scope:vassal_country.culture
+			}
+			define_pop = {
+				type = citizen
+				religion = scope:vassal_country.religion
+				culture = scope:vassal_country.culture
+			}
+		}
+	}
+}
+
+# Tribal Vassal: Civilized people settling in the tribe - Event Chain Part 1
+country_diplomacy.13 = {
+	type = country_event
+	title = "country_diplomacy.13.t"
+	desc = "country_diplomacy.13.desc"
+	picture = celtic_village
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = vassal_tribe
+		NOT = { has_variable = country_diplomacy_13_cooldown }
+		any_owned_province = {
+			count >= 1
+		}
+	}
+
+	immediate = {
+		save_scope_as = vassal_country
+		overlord = { save_scope_as = overlord_country }
+		random_owned_province = {
+			weight = {
+				modifier = {
+					factor = 20
+					any_neighbor_province = {
+						exists = owner
+						owner = scope:overlord_country
+					}
+				}
+				modifier = {
+					factor = 20
+					is_capital = yes
+				}
+			}
+			save_scope_as = randomized_country_province
+		}
+		scope:overlord_country = {
+			random_owned_province = {
+				limit = {
+					any_pops_in_province = {
+						pop_type = citizen
+					}
+				}
+				weight = {
+					modifier = {
+						factor = 20
+						any_neighbor_province = {
+							this = scope:randomized_country_province
+						}
+					}
+				}
+				save_scope_as = overlord_province
+			}
+		}
+		set_variable = {
+			name = "country_diplomacy_13_cooldown"
+			days = 1825
+		}
+		set_variable = {
+			name = tribal_vassal_citizens_moved
+			value = 0
+			days = 220
+		}
+	}
+
+	option = { 
+		name = "country_diplomacy.13.a"
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 4
+		}
+		scope:randomized_country_province = {
+			add_civilization_value = 2
+			add_province_modifier = {
+				name = province_diminishment_tribal_vassal_frustrated_populace
+				duration = 1825
+			}
+		}
+		scope:overlord_province = {
+			if = {
+				limit = {
+					any_pops_in_province = {
+						count >= 1
+						pop_type = citizen
+					}
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = citizen
+					}
+					weight = {
+						modifier = {
+							factor = 10
+							pop_religion = scope:overlord_country.religion
+						}
+						modifier = {
+							factor = 10
+							pop_culture = scope:overlord_country.culture
+						}
+					}
+					move_pop = scope:randomized_country_province
+				}
+				root = {
+					change_variable = {
+						name = tribal_vassal_citizens_moved
+						add = 1
+					}
+				}
+				if = {
+					limit = {
+						any_pops_in_province = {
+							count >= 1
+							pop_type = citizen
+						}
+					}
+					root = {
+						change_variable = {
+							name = tribal_vassal_citizens_moved
+							add = 1
+						}
+					}
+					random_pops_in_province = {
+						limit = {
+							pop_type = citizen
+						}
+						weight = {
+							modifier = {
+								factor = 10
+								pop_religion = scope:overlord_country.religion
+							}
+							modifier = {
+								factor = 10
+								pop_culture = scope:overlord_country.culture
+							}
+						}
+						move_pop = scope:randomized_country_province
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				has_variable = tribal_vassal_citizens_moved
+			}
+			scope:overlord_country = {
+				trigger_event = {
+					id = "country_diplomacy.14"
+					days = { 3 5 }
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.13.b"
+		trigger = {
+			scope:randomized_country_province = {
+				any_pops_in_province = {
+					pop_type = freemen
+				}
+			}
+			scope:overlord_province = {
+				any_pops_in_province = {
+					pop_type = citizen
+				}
+			}
+		}
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 6
+		}
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = friendly_vassal_tribe
+				target = root
+			}
+		}
+		scope:randomized_country_province = {
+			add_civilization_value = 3
+			add_province_modifier = {
+				name = province_diminishment_tribal_vassal_frustrated_populace
+				duration = 3650
+			}
+		}
+		scope:overlord_province = {
+			if = {
+				limit = {
+					any_pops_in_province = {
+						count >= 1
+						pop_type = citizen
+					}
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = citizen
+					}
+					weight = {
+						modifier = {
+							factor = 10
+							pop_religion = scope:overlord_country.religion
+						}
+						modifier = {
+							factor = 10
+							pop_culture = scope:overlord_country.culture
+						}
+					}
+					move_pop = scope:randomized_country_province
+				}
+				root = {
+					change_variable = {
+						name = tribal_vassal_citizens_moved
+						add = 1
+					}
+				}
+				if = {
+					limit = {
+						any_pops_in_province = {
+							count >= 1
+							pop_type = citizen
+						}
+					}
+					random_pops_in_province = {
+						limit = {
+							pop_type = citizen
+						}
+						weight = {
+							modifier = {
+								factor = 10
+								pop_religion = scope:overlord_country.religion
+							}
+							modifier = {
+								factor = 10
+								pop_culture = scope:overlord_country.culture
+							}
+						}
+						move_pop = scope:randomized_country_province
+					}
+					root = {
+						change_variable = {
+							name = tribal_vassal_citizens_moved
+							add = 1
+						}
+					}
+				}
+			}
+		}
+		scope:randomized_country_province = {
+			root = {
+				set_variable = {
+					name = tribal_vassal_freemen_moved
+					value = 1
+					days = 120
+				}
+			}
+			random_pops_in_province = {
+				limit = {
+					pop_type = freemen
+				}
+				weight = {
+					modifier = {
+						factor = 10
+						pop_religion = root.religion
+					}
+					modifier = {
+						factor = 10
+						pop_culture = root.culture
+					}
+				}
+				move_pop = scope:overlord_province
+			}
+			if = {
+				limit = {
+					any_pops_in_province = {
+						count >= 1
+						pop_type = freemen
+					}
+				}
+				root = {
+					change_variable = {
+						name = tribal_vassal_freemen_moved
+						add = 1
+					}
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = freemen
+					}
+					weight = {
+						modifier = {
+							factor = 10
+							pop_religion = root.religion
+						}
+						modifier = {
+							factor = 10
+							pop_culture = root.culture
+						}
+					}
+					move_pop = scope:overlord_province
+				}
+			}
+		}
+		scope:overlord_country = {
+			trigger_event = {
+				id = "country_diplomacy.15"
+				days = { 3 5 }
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.13.c"
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = unruly_vassal_tribe
+				target = root
+			}
+		}
+		scope:randomized_country_province = {
+			add_civilization_value = -3
+		}
+	}
+}
+
+# Tribal Overlord: Citizens left one of our cities - Event Chain Outcome 1
+country_diplomacy.14 = {
+	type = country_event
+	title = "country_diplomacy.14.t"
+	desc = "country_diplomacy.14.desc"
+	picture = hellenic_marketplace
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+		any_subject = {
+			this = scope:vassal_country
+		}
+	}
+
+	immediate = {
+		show_as_tooltip = {
+			custom_tooltip = "country_diplomacy.14.1.tt"
+			if = {
+				limit = {
+					scope:vassal_country.var:tribal_vassal_citizens_moved > 1
+				}
+				custom_tooltip = "country_diplomacy.14.1.tt"
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.14.a"
+		scope:vassal_country = {
+			remove_variable = tribal_vassal_citizens_moved
+		}
+	}
+}
+
+# Tribal Overlord: Citizens left one of our cities, and freemen were sent in return - Event Chain Outcome 2
+country_diplomacy.15 = {
+	type = country_event
+	title = "country_diplomacy.15.t"
+	desc = "country_diplomacy.15.desc"
+	picture = hellenic_marketplace
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+		any_subject = {
+			this = scope:vassal_country
+		}
+	}
+
+	immediate = {
+		show_as_tooltip = {
+			custom_tooltip = "country_diplomacy.14.1.tt"
+			if = {
+				limit = {
+					scope:vassal_country.var:tribal_vassal_citizens_moved > 1
+				}
+				custom_tooltip = "country_diplomacy.14.1.tt"
+			}
+			custom_tooltip = "country_diplomacy.15.1.tt"
+			if = {
+				limit = {
+					scope:vassal_country.var:tribal_vassal_freemen_moved > 1
+				}
+				custom_tooltip = "country_diplomacy.15.1.tt"
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.15.a"
+		scope:vassal_country = {
+			remove_variable = tribal_vassal_citizens_moved
+			remove_variable = tribal_vassal_freemen_moved
+		}
+	}
+}
+
+# Tribal Vassal: Some freemen leaving to settle down among Overlord - Event Chain Part 1
+country_diplomacy.16 = {
+	type = country_event
+	title = "country_diplomacy.16.t"
+	desc = "country_diplomacy.16.desc"
+	picture = celtic_diplomacy
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = vassal_tribe
+		NOT = { has_variable = country_diplomacy_16_cooldown }
+		any_owned_province = {
+			any_pops_in_province = {
+				pop_type = freemen
+			}
+		}
+	}
+
+	immediate = {
+		save_scope_as = vassal_country
+		overlord = { save_scope_as = overlord_country }
+		random_owned_province = {
+			limit = {
+				any_pops_in_province = {
+					pop_type = freemen
+				}
+			}
+			weight = {
+				modifier = {
+					factor = 10
+					any_neighbor_province = {
+						exists = owner
+						owner = scope:overlord_country
+					}
+				}
+			}
+			save_scope_as = vassal_province
+		}
+		scope:overlord_country = {
+			random_owned_province = {
+				weight = {
+					modifier = {
+						factor = 10
+						any_neighbor_province = {
+							this = scope:vassal_province
+						}
+					}
+					modifier = {
+						factor = 0.1
+						has_province_modifier = province_diminishment_tribal_overlord_settlers
+					}
+				}
+				save_scope_as = overlord_province
+			}
+		}
+		set_variable = {
+			name = country_diplomacy_16_cooldown
+			days = 3650
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.16.a"
+		show_as_tooltip = {
+			scope:vassal_province = {
+				random_pops_in_province = {
+					limit = {
+						pop_type = freemen
+					}
+					weight = {
+						modifier = {
+							factor = 10
+							pop_religion = scope:vassal_country.religion
+						}
+						modifier = {
+							factor = 10
+							pop_culture = scope:vassal_country.culture
+						}
+					}
+					move_pop = scope:overlord_province
+				}
+				if = {
+					limit = {
+						any_pops_in_province = {
+							count >= 1
+							pop_type = freemen
+						}
+					}
+					random_pops_in_province = {
+						limit = {
+							pop_type = freemen
+						}
+						weight = {
+							modifier = {
+								factor = 10
+								pop_religion = scope:vassal_country.religion
+							}
+							modifier = {
+								factor = 10
+								pop_culture = scope:vassal_country.culture
+							}
+						}
+						move_pop = scope:overlord_province
+					}
+				}
+			}
+		}
+		scope:overlord_country = {
+			trigger_event = {
+				id = "country_diplomacy.17"
+				days = { 3 5 }
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.16.b"
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 8
+		}
+		add_tyranny = tyranny_small
+		add_stability = 5
+	}
+}
+
+# Tribal Overlord: Some freemen settling down - Event Chain Part 2
+country_diplomacy.17 = {
+	type = country_event
+	title = "country_diplomacy.17.t"
+	desc = "country_diplomacy.17.desc"
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+		is_overlord = yes
+		any_subject = { this = scope:vassal_country }
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.17.a"
+		scope:overlord_province = {
+			add_province_modifier = {
+				name = province_diminishment_tribal_overlord_settlers
+				duration = 3650
+			}
+		}
+		scope:vassal_province = {
+			random_pops_in_province = {
+				limit = {
+					pop_type = freemen
+				}
+				weight = {
+					modifier = {
+						factor = 10
+						pop_religion = scope:vassal_country.religion
+					}
+					modifier = {
+						factor = 10
+						pop_culture = scope:vassal_country.culture
+					}
+				}
+				move_pop = scope:overlord_province
+			}
+			if = {
+				limit = {
+					any_pops_in_province = {
+						count >= 1
+						pop_type = freemen
+					}
+				}
+				random_pops_in_province = {
+					limit = {
+						pop_type = freemen
+					}
+					weight = {
+						modifier = {
+							factor = 10
+							pop_religion = scope:vassal_country.religion
+						}
+						modifier = {
+							factor = 10
+							pop_culture = scope:vassal_country.culture
+						}
+					}
+					move_pop = scope:overlord_province
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.17.b"
+		trigger = {
+			is_ai = no
+		}
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 4
+		}
+		add_tyranny = tyranny_small
+		add_stability = 5
+		scope:vassal_country = {
+			trigger_event = {
+				id = country_diplomacy.18
+				days = { 3 5 }
+			}
+		}
+	}
+}
+
+# Tribal Vassal: Freemen weren't allowed into Overlords lands - Event Chain Part 3
+country_diplomacy.18 = {
+	type = country_event
+	title = "country_diplomacy.18.t"
+	desc = "country_diplomacy.18.desc"
+	picture = celtic_village
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = vassal_tribe
+		overlord = { this = scope:overlord_country }
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.18.a"
+		custom_tooltip = "country_diplomacy.18.a.tt"
+	}
+}
+
+# Tribal Overlod: Freemen causing issues
+country_diplomacy.19 = {
+	type = country_event
+	title = "country_diplomacy.19.t"
+	desc = "country_diplomacy.19.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+	right_portrait = scope:random_advisor
+
+	goto_location = scope:overlord_country
+	
+	trigger = {
+		any_subject = { is_subject_type = vassal_tribe }
+		any_owned_province = {
+			has_province_modifier = province_diminishment_tribal_overlord_settlers
+			any_pops_in_province = {
+				pop_type = freemen
+				OR = {
+					NOT = { pop_religion = root.religion }
+					NOT = { pop_culture = root.culture }
+				}
+			}
+		}
+		any_character = {
+			has_any_office = yes
+			is_ruler = no
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				has_province_modifier = province_diminishment_tribal_overlord_settlers
+				any_pops_in_province = {
+					pop_type = freemen
+					OR = {
+						NOT = { pop_religion = root.religion }
+						NOT = { pop_culture = root.culture }
+					}
+				}
+			}
+			save_scope_as = overlord_province
+		}
+		random_character = {
+			limit = {
+				has_any_office = yes
+				is_ruler = no
+			}
+			weight = {
+				title_importance_modifier = yes
+			}
+			save_scope_as = random_advisor
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.19.a"
+		if = {
+			limit = {
+				is_monarchy = yes
+			}
+			add_legitimacy = subtract_legitimacy_large
+		}
+		every_subject = {
+			limit = {
+				is_subject_type = vassal_tribe
+			}
+			add_opinion = {
+				modifier = reliable_overlord
+				target = root
+			}
+		}
+		current_ruler = {
+			add_popularity = subtract_popularity_medium
+		}
+		scope:overlord_province = {
+			add_province_modifier = {
+				name = province_diminishment_tribal_overlord_local_outrage
+				duration = 730
+			}
+			hidden_effect = {
+				remove_province_modifier = province_diminishment_tribal_overlord_settlers
+			}
+			add_province_modifier = {
+				name = province_diminishment_tribal_overlord_settlers
+				duration = 5475
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.19.b"
+		add_political_influence = subtract_influence_small
+		every_subject = {
+			limit = {
+				is_subject_type = vassal_tribe
+			}
+			add_opinion = {
+				modifier = unreliable_overlord
+				target = root
+			}
+		}
+		scope:random_advisor = {
+			add_loyalty = loyalty_feudatory_settlers_advisor_success
+		}
+		scope:overlord_province = {
+			remove_province_modifier = province_diminishment_tribal_overlord_settlers
+			random_pops_in_province = {
+				limit = {
+					pop_type = freemen
+					OR = {
+						NOT = { pop_religion = root.religion }
+						NOT = { pop_culture = root.culture }
+					}
+				}
+				kill_pop = yes
+			}
+		}
+	}
+}
+
+# Satrapy Vassal: Project - Start
+country_diplomacy.20 = {
+	type = country_event
+	title = "country_diplomacy.20.t"
+	desc = "country_diplomacy.20.desc"
+	picture = greek_court
+
+	left_portrait = current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = satrapy
+		NOT = { has_variable = country_diplomacy_20_cooldown }
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				has_variable = satrap_project_army
+			}
+			remove_variable = satrap_project_army
+		}
+		if = {
+			limit = {
+				has_variable = satrap_project_income
+			}
+			remove_variable = satrap_project_income
+		}
+		if = {
+			limit = {
+				has_variable = satrap_project_peace
+			}
+			remove_variable = satrap_project_peace
+		}
+		if = {
+			limit = {
+				has_variable = satrap_project_quality
+			}
+			remove_variable = satrap_project_quality
+		}
+		overlord = { save_scope_as = overlord_country }
+		set_variable = {
+			name = country_diplomacy_20_cooldown
+			days = 18250
+		}
+	}
+
+	option = { # Army Boon
+		name = "country_diplomacy.20.a"
+		custom_tooltip = "country_diplomacy.20.a.tt"
+		set_variable = {
+			name = satrap_project_army
+			days = 3650
+		}
+	}
+
+	option = { # Income Boon
+		name = "country_diplomacy.20.b"
+		custom_tooltip = "country_diplomacy.20.b.tt"
+		set_variable = {
+			name = satrap_project_income
+			days = 3650
+		}
+	}
+
+	option = { # National Unrest Boon
+		name = "country_diplomacy.20.c"
+		custom_tooltip = "country_diplomacy.20.c.tt"
+		set_variable = {
+			name = satrap_project_peace
+			days = 3650
+		}
+	}
+
+	after = {
+		set_variable = {
+			name = satrap_project_progress
+			value = 1
+			days = 3650
+		}
+		set_variable = {
+			name = satrap_project_quality
+			value = 1
+			days = 3650
+		}
+		trigger_event = {
+			id = country_diplomacy.21
+			days = { 300 600 }
+		}
+	}
+}
+
+# Satrapy Vassal: Project - Tombola Complications
+country_diplomacy.21 = {
+	type = country_event
+	hidden = yes
+	
+	trigger = {
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				var:satrap_project_progress < 3
+			}
+			random_list = {
+				10 = {
+					trigger = {
+						NOT = { has_variable = country_diplomacy_22_cooldown }
+					}
+					trigger_event = {
+						id = country_diplomacy.22
+					}
+				}
+				10 = {
+					trigger = {
+						NOT = { has_variable = country_diplomacy_23_cooldown }
+					}
+					trigger_event = {
+						id = country_diplomacy.23
+					}
+				}
+				10 = {
+					trigger = {
+						NOT = { has_variable = country_diplomacy_24_cooldown }
+					}
+					trigger_event = {
+						id = country_diplomacy.24
+					}
+				}
+				10 = {
+					trigger = {
+						NOT = { has_variable = country_diplomacy_25_cooldown }
+					}
+					trigger_event = {
+						id = country_diplomacy.25
+					}
+				}
+			}
+			change_variable = {
+				name = satrap_project_progress
+				add = 1
+			}
+			trigger_event = {
+				id = country_diplomacy.21
+				days = { 150 300 }
+			}
+		}
+		else_if = {
+			limit = {
+				var:satrap_project_quality <= 1
+			}
+			if = {
+				limit = {
+					has_variable = satrap_project_progress
+				}
+				remove_variable = satrap_project_progress
+			}
+
+			trigger_event = {
+				id = country_diplomacy.27
+			}
+		}
+		else = {
+			if = {
+				limit = {
+					has_variable = satrap_project_progress
+				}
+				remove_variable = satrap_project_progress
+			}
+
+			trigger_event = {
+				id = country_diplomacy.26
+			}
+		}
+	}
+}
+
+# Satrapy Vassal: Tombola Complication 1 - Bandits
+country_diplomacy.22 = {
+	type = country_event
+	title = "country_diplomacy.22.t"
+	desc = "country_diplomacy.22.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+	
+	goto_location = root.capital_scope
+
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.22.a"
+		custom_tooltip = "country_diplomacy.25.a.tt"
+		change_variable = {
+			name = satrap_project_quality
+			add = 2
+		}
+		add_stability = -10
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 6
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.22.b"
+		custom_tooltip = "country_diplomacy.25.b.tt"
+		change_variable = {
+			name = satrap_project_quality
+			add = 1
+		}
+		add_stability = -5
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 2
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.22.c"
+		custom_tooltip = "country_diplomacy.25.c.tt"
+		change_variable = {
+			name = satrap_project_quality
+			subtract = 1
+		}
+		capital_scope = {
+			add_province_modifier = {
+				name = province_diminishment_satrap_project_bandits
+				duration = 1825
+			}
+		}
+	}
+
+	after = {
+		set_variable = {
+			name = country_diplomacy_22_cooldown
+			days = 3650
+		}
+	}
+}
+
+# Satrapy Vassal: Tombola Complication 2 - Disloyal Bureaucrat
+country_diplomacy.23 = {
+	type = country_event
+	title = "country_diplomacy.23.t"
+	desc = "country_diplomacy.23.desc"
+	picture = scribe_tools
+
+	left_portrait = current_ruler
+
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.23.a"
+		custom_tooltip = "country_diplomacy.25.a.tt"
+		change_variable = {
+			name = satrap_project_quality
+			add = 2
+		}
+		add_political_influence = subtract_influence_large
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 8
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.23.b"
+		custom_tooltip = "country_diplomacy.25.b.tt"
+		change_variable = {
+			name = satrap_project_quality
+			add = 1
+		}
+		add_political_influence = subtract_influence_medium
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 3
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.23.c"
+		custom_tooltip = "country_diplomacy.25.c.tt"
+		change_variable = {
+			name = satrap_project_quality
+			subtract = 1
+		}
+		every_character = {
+			limit = {
+				has_any_office = yes
+			}
+			add_corruption = corruption_medium
+		}
+	}
+
+	after = {
+		set_variable = {
+			name = country_diplomacy_23_cooldown
+			days = 3650
+		}
+	}
+}
+
+# Satrapy Vassal: Tombola Complication 3 - Lost People 
+country_diplomacy.24 = {
+	type = country_event
+	title = "country_diplomacy.24.t"
+	desc = "country_diplomacy.24.desc"
+	picture = scribe_tools
+
+	left_portrait = current_ruler
+
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.24.a"
+		custom_tooltip = "country_diplomacy.25.a.tt"
+		change_variable = {
+			name = satrap_project_quality
+			add = 2
+		}
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 14
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.24.b"
+		custom_tooltip = "country_diplomacy.25.b.tt"
+		change_variable = {
+			name = satrap_project_quality
+			add = 1
+		}
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 5
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.24.c"
+		custom_tooltip = "country_diplomacy.25.c.tt"
+		change_variable = {
+			name = satrap_project_quality
+			subtract = 1
+		}
+		every_character = {
+			limit = {
+				has_any_office = yes
+				is_ruler = no
+			}
+			add_loyalty = loyalty_lost_ones_abandoned
+		}
+	}
+
+	after = {
+		set_variable = {
+			name = country_diplomacy_24_cooldown
+			days = 3650
+		}
+	}
+}
+
+# Satrapy Vassal: Tombola Complication 4 - Religious blessing
+country_diplomacy.25 = {
+	type = country_event
+	title = "country_diplomacy.25.t"
+	desc = "country_diplomacy.25.desc"
+	picture = religious_rite
+
+	left_portrait = current_ruler
+
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.25.a"
+		custom_tooltip = "country_diplomacy.25.a.tt"
+		change_variable = {
+			name = satrap_project_quality
+			add = 2
+		}
+		current_ruler = {
+			add_popularity = -20
+		}
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 12
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.25.b"
+		custom_tooltip = "country_diplomacy.25.b.tt"
+		change_variable = {
+			name = satrap_project_quality
+			add = 1
+		}
+		current_ruler = {
+			add_popularity = -10
+		}
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 4
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.25.c"
+		custom_tooltip = "country_diplomacy.25.c.tt"
+		change_variable = {
+			name = satrap_project_quality
+			subtract = 1
+		}
+		if = {
+			limit = {
+				is_monarchy = yes
+			}
+			add_legitimacy = subtract_legitimacy_medium
+		}
+		current_ruler = {
+			add_popularity = -30
+		}
+	}
+
+	after = {
+		set_variable = {
+			name = country_diplomacy_25_cooldown
+			days = 3650
+		}
+	}
+}
+
+# Satrapy Vassal: Project - Final Outcome Positive
+country_diplomacy.26 = {
+	type = country_event
+	title = "country_diplomacy.26.t"
+	desc = "country_diplomacy.26.desc"
+	picture = aqueducts
+
+	left_portrait = current_ruler
+
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = { # Army Great
+		name = "country_diplomacy.26.a"
+		trigger = {
+			has_variable = satrap_project_army
+			var:satrap_project_quality >= 5
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_great_army
+			duration = 7300
+		}
+	}
+
+	option = { # Army Good
+		name = "country_diplomacy.26.b"
+		trigger = {
+			has_variable = satrap_project_army
+			var:satrap_project_quality >= 3 
+			var:satrap_project_quality < 5
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_good_army
+			duration = 7300
+		}
+	}
+
+	option = { # Army OK
+		name = "country_diplomacy.26.c"
+		trigger = {
+			has_variable = satrap_project_army
+			var:satrap_project_quality < 3
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_ok_army
+			duration = 7300
+		}
+	}
+
+	option = { # Income Great
+		name = "country_diplomacy.26.d"
+		trigger = {
+			has_variable = satrap_project_income
+			var:satrap_project_quality >= 5
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_great_income
+			duration = 7300
+		}
+	}
+
+	option = { # Income Good
+		name = "country_diplomacy.26.e"
+		trigger = {
+			has_variable = satrap_project_income
+			var:satrap_project_quality >= 3 
+			var:satrap_project_quality < 5
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_good_income
+			duration = 7300
+		}
+	}
+
+	option = { # Income OK
+		name = "country_diplomacy.26.f"
+		trigger = {
+			has_variable = satrap_project_income
+			var:satrap_project_quality < 3
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_ok_income
+			duration = 7300
+		}
+	}
+
+	option = { # Peace Great
+		name = "country_diplomacy.26.g"
+		trigger = {
+			has_variable = satrap_project_peace
+			var:satrap_project_quality >= 5
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_great_peace
+			duration = 7300
+		}
+	}
+
+	option = { # Peace Good
+		name = "country_diplomacy.26.h"
+		trigger = {
+			has_variable = satrap_project_peace
+			var:satrap_project_quality >= 3 
+			var:satrap_project_quality < 5
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_good_peace
+			duration = 7300
+		}
+	}
+
+	option = { # Peace OK
+		name = "country_diplomacy.26.i"
+		trigger = {
+			has_variable = satrap_project_peace
+			var:satrap_project_quality < 3
+		}
+		add_country_modifier = {
+			name = country_improvement_satrap_project_ok_peace
+			duration = 7300
+		}
+	}
+
+	after = {
+		if = {
+			limit = {
+				has_variable = satrap_project_army
+			}
+			remove_variable = satrap_project_army
+		}
+		if = {
+			limit = {
+				has_variable = satrap_project_income
+			}
+			remove_variable = satrap_project_income
+		}
+		if = {
+			limit = {
+				has_variable = satrap_project_peace
+			}
+			remove_variable = satrap_project_peace
+		}
+		remove_variable = satrap_project_quality
+	}
+}
+
+# Satrapy Vassal: Project - Final Outcome Failure
+country_diplomacy.27 = {
+	type = country_event
+	title = "country_diplomacy.27.t"
+	desc = "country_diplomacy.27.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.27.a"
+		custom_tooltip = "country_diplomacy.27.a.tt"
+	}
+
+	after = {
+		if = {
+			limit = {
+				has_variable = satrap_project_army
+			}
+			remove_variable = satrap_project_army
+		}
+		if = {
+			limit = {
+				has_variable = satrap_project_income
+			}
+			remove_variable = satrap_project_income
+		}
+		if = {
+			limit = {
+				has_variable = satrap_project_peace
+			}
+			remove_variable = satrap_project_peace
+		}
+		remove_variable = satrap_project_quality
+	}
+}
+
+# Satrapy Vassal: Finding an appropriate advisor to send to overlord
+country_diplomacy.28 = {
+	type = country_event
+	title = "country_diplomacy.28.t"
+	desc = "country_diplomacy.28.desc"
+	picture = greek_court
+
+	left_portrait = current_ruler
+	left_portrait = scope:random_advisor
+	left_portrait = scope:random_advisor_2
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = satrapy
+		NOT = { has_variable = country_diplomacy_28_cooldown }
+		overlord = { NOT = {  has_variable = satrapy_vassal_advisor_gift_cooldown } }
+		any_character = {
+			OR = {
+				martial > 7
+				finesse > 7
+				charisma > 7
+				zeal > 7
+			}
+			has_any_office = yes
+			is_ruler = no
+		}
+	}
+
+	immediate = {
+		save_scope_as = vassal_country
+		overlord = { save_scope_as = overlord_country }
+		random_character = {
+			limit = {
+				OR = {
+					martial >= 7
+					finesse >= 7
+					charisma >= 7
+					zeal >= 7
+				}
+				has_any_office = yes
+				is_ruler = no
+			}
+			weight = {
+				title_importance_modifier = yes
+			}
+			save_scope_as = random_advisor
+		}
+		if = {
+			limit = {
+				any_character = {
+					OR = {
+						martial >= 7
+						finesse >= 7
+						charisma >= 7
+						zeal >= 7
+					}
+					has_any_office = yes
+					is_ruler = no
+					NOT = { this = scope:random_advisor }
+				}
+			}
+			random_character = {
+				limit = {
+					OR = {
+						martial >= 7
+						finesse >= 7
+						charisma >= 7
+						zeal >= 7
+					}
+					has_any_office = yes
+					is_ruler = no
+					NOT = { this = scope:random_advisor }
+				}
+				weight = {
+					title_importance_modifier = yes
+				}
+				save_scope_as = random_advisor_2
+			}
+			if = {
+				limit = {
+					any_character = {
+						OR = {
+							martial >= 7
+							finesse >= 7
+							charisma >= 7
+							zeal >= 7
+						}
+						has_any_office = yes
+						is_ruler = no
+						NOR = { 
+							this = scope:random_advisor 
+							this = scope:random_advisor_2
+						}
+					}
+				}
+				random_character = {
+					limit = {
+						OR = {
+							martial >= 7
+							finesse >= 7
+							charisma >= 7
+							zeal >= 7
+						}
+						has_any_office = yes
+						is_ruler = no
+						NOR = { 
+							this = scope:random_advisor 
+							this = scope:random_advisor_2
+						}
+					}
+					weight = {
+						title_importance_modifier = yes
+					}
+					save_scope_as = random_advisor_3
+				}
+			}
+		}
+		scope:overlord_country = {
+			set_variable = {
+				name = satrapy_vassal_advisor_gift_cooldown
+				days = 300
+			}
+		}
+		set_variable = {
+			name = country_diplomacy_28_cooldown
+			days = 1825
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.28.a"
+		
+		scope:random_advisor = {
+			save_scope_as = sent_advisor
+			remove_all_positions = yes
+			move_country = scope:overlord_country
+			remove_character_modifier = foreign_citizen
+			set_as_minor_character = this
+		}
+		scope:overlord_country = {
+			trigger_event = {
+				id = country_diplomacy.29
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.28.b"
+		trigger = {
+			exists = scope:random_advisor_2
+		}
+		scope:random_advisor_2 = {
+			save_scope_as = sent_advisor
+			remove_all_positions = yes
+			move_country = scope:overlord_country
+			remove_character_modifier = foreign_citizen
+			set_as_minor_character = this
+		}
+		scope:overlord_country = {
+			trigger_event = {
+				id = country_diplomacy.29
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.28.c"
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = unruly_satrapy
+				target = root
+			}
+		}
+	}
+}
+
+# Satrapy Overlord: Receive befitting advisor
+country_diplomacy.29 = {
+	type = country_event
+	title = "country_diplomacy.29.t"
+	desc = "country_diplomacy.29.desc"
+	picture = greek_court
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+	right_portrait = scope:sent_advisor
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+
+	}
+
+	immediate = {
+		
+	}
+
+	option = {
+		name = "country_diplomacy.29.a"
+		scope:vassal_country = {
+			add_opinion = {
+				modifier = reliable_overlord
+				target = root
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.29.b"
+		trigger = {
+			is_ai = no
+		}
+		scope:sent_advisor = {
+			remove_all_positions = yes
+			move_country = scope:vassal_country
+			hidden_effect = {
+				remove_character_modifier = foreign_citizen
+				set_as_minor_character = this
+			}
+		}
+		scope:vassal_country = {
+			add_opinion = {
+				modifier = unreliable_overlord
+				target = root
+			}
+			add_country_modifier = {
+				name = satrapy_refused_advisor
+				duration = 1825
+			}
+		}
+	}
+}
+
+# Satrapy Vassal: Send gift or troops
+country_diplomacy.30 = {
+	type = country_event
+	title = "country_diplomacy.30.t"
+	desc = "country_diplomacy.30.desc"
+	picture = greek_court
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = satrapy
+		NOT = { 
+			overlord = { has_variable = satrapy_overlord_gift_cooldown }
+		}
+		overlord = {
+			any_army = {
+				count >= 1
+			}
+		}
+	}
+
+	immediate = {
+		save_scope_as = vassal_country
+		overlord = { 
+			save_scope_as = overlord_country 
+			set_variable = {
+				name = satrapy_overlord_gift_cooldown
+				days = 200
+			}
+		}
+	}
+
+	option = { # Gift gold
+		name = "country_diplomacy.30.a"
+		add_treasury = -20
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = loyal_satrapy
+				target = root
+			}
+			set_variable = {
+				name = satrapy_overlord_gift_gold
+				days = 100
+			}
+			trigger_event = { 
+				id = "country_diplomacy.31"
+			}
+		}
+	}
+
+	option = { # No Gifts Given
+		name = "country_diplomacy.30.e"
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = unruly_satrapy
+				target = root
+			}
+		}
+		add_country_modifier = {
+			name = satrapy_not_following_traditions
+			duration = 3650
+		}
+	}
+}
+
+# Satrapy Overlord: Receive Gift
+country_diplomacy.31 = {
+	type = country_event
+	title = "country_diplomacy.31.t"
+	desc = "country_diplomacy.31.desc"
+	picture = greek_court
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+
+	}
+
+	immediate = {
+		random_army = {
+			limit = {
+				trigger_if = {
+					limit = {
+						exists = commander
+					}
+					commander = { is_mercenary = no }
+				}
+			}
+			save_scope_as = overlord_army
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.31.a"
+		trigger = {
+			has_variable = satrapy_overlord_gift_gold
+		}
+		add_treasury = 20
+	}
+
+	option = {
+		name = "country_diplomacy.31.b"
+		trigger = {
+			has_variable = satrapy_overlord_gift_elephants
+		}
+		scope:overlord_army = {
+			add_subunit = heavy_cavalry
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.31.c"
+		trigger = {
+			has_variable = satrapy_overlord_gift_camels
+		}
+		scope:overlord_army = {
+			add_subunit = camels
+			add_subunit = camels
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.31.d"
+		trigger = {
+			has_variable = satrapy_overlord_gift_horses
+		}
+		scope:overlord_army = {
+			add_subunit = heavy_infantry
+			add_subunit = heavy_infantry
+		}
+	}
+
+	after = {
+		remove_variable = satrapy_overlord_gift_gold
+		remove_variable = satrapy_overlord_gift_elephants
+		remove_variable = satrapy_overlord_gift_camels
+		remove_variable = satrapy_overlord_gift_horses
+	}
+}
+
+# Satrapy Vassal: Unfit Overlord
+country_diplomacy.32 = {
+	type = country_event
+	title = "country_diplomacy.32.t"
+	desc = "country_diplomacy.32.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = satrapy
+		NOR = { 
+			has_variable = country_diplomacy_32_cooldown 
+			has_variable = satrap_vassal_paid_off
+		}
+		NOT = {  overlord = { has_variable = country_diplomacy_32_overlord_cooldown } }
+		opinion = {
+			target = overlord
+			value < 50
+		}
+		has_subject_loyalty <= 20
+		NOT = { has_variable = satrap_vassal_paid_off }
+		overlord = {
+			OR = {
+				num_of_cities < 150
+				is_monarchy = yes
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = {
+			name = country_diplomacy_32_cooldown
+			days = 3650
+		}
+		save_scope_as = vassal_country
+		overlord = { 
+			save_scope_as = overlord_country 
+			set_variable = {
+				name = country_diplomacy_32_overlord_cooldown
+				days = 3650
+			}
+		}
+		remove_variable = satrap_overlord_cash
+	}
+
+	option = {
+		name = "country_diplomacy.32.a"
+		current_ruler = {
+			add_popularity = popularity_small
+		}
+		show_as_tooltip = {
+			add_opinion = {
+				modifier = unfit_overlord
+				target = scope:overlord_country
+			}
+		}
+		scope:overlord_country = {
+			trigger_event = {
+				id = country_diplomacy.33
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.32.b"
+		trigger = {
+			is_ai = no
+		}
+		add_country_modifier = {
+			name = country_diminishment_satrap_unfit_overlord
+			duration = 730
+		}
+	}
+}
+
+# Satrapy Overlord: Vassal find us unfitting
+country_diplomacy.33 = {
+	type = country_event
+	title = "country_diplomacy.33.t"
+	desc = "country_diplomacy.33.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.33.a"
+		scope:vassal_country = {
+			add_opinion = {
+				modifier = unfit_overlord
+				target = scope:overlord_country
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.33.b"
+		custom_tooltip = "country_diplomacy.33.b.tt"
+		scope:vassal_country = {
+			set_variable = {
+				name = "satrap_vassal_paid_off"
+				days = 3650
+			}
+			set_variable = {
+				name = "satrap_overlord_cash"
+				days = 50
+				value = {
+					value = root.has_monthly_income
+					multiply = 4
+				}
+			}
+		}
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 4
+		}
+		show_as_tooltip = {
+			scope:vassal_country = {
+				add_treasury = {
+					value = root.has_monthly_income
+					multiply = 4
+				}
+			}
+		}
+		scope:vassal_country = {
+			trigger_event = {
+				id = country_diplomacy.34
+				days = { 3 5 }
+			}
+		}
+	}
+}
+
+# Satrapy Vassal: Paid off, for now
+country_diplomacy.34 = {
+	type = country_event
+	title = "country_diplomacy.34.t"
+	desc = "country_diplomacy.34.desc"
+	picture = war_chest
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		is_subject_type = satrapy
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.34.a"
+		add_treasury = {
+			value = var:satrap_overlord_cash
+		}
+		add_country_modifier = {
+			name = satrapy_bought_loyalty
+			duration = 3650
+		}
+	}
+}
+
+# Satrapy Overlord: Bureaucratic Issues
+country_diplomacy.35 = {
+	type = country_event
+	title = "country_diplomacy.35.t"
+	desc = "country_diplomacy.35.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+
+	trigger = {
+		is_overlord = yes
+		any_subject = {
+			NOT = { has_variable = satrap_vassal_paid_off }
+			is_subject_type = satrapy
+		}
+		OR = {
+			num_of_cities < 150
+			is_monarchy = yes
+		}
+		NOT = { has_variable = country_diplomacy_35_cooldown }
+	}
+
+	immediate = {
+		set_variable = {
+			name = country_diplomacy_35_cooldown
+			days = 9125 # 25 years
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.35.a"
+		add_country_modifier = {
+			name = country_diminishment_satrap_overlord_bureaucratic_issues
+			duration = 1825
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.35.b"
+		add_country_modifier = {
+			name = country_modifier_unfit_overlord
+			duration = 1825
+		}
+		every_subject = {
+			limit = {
+				is_subject_type = satrapy
+			}
+			add_opinion = {
+				modifier = unfit_overlord
+				target = root
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.35.c"
+		add_treasury = {
+			subtract = root.has_monthly_income
+			multiply = 8
+		}
+	}
+}
+
+# Subject Vassal: Unfit Overlord
+country_diplomacy.36 = {
+	type = country_event
+	title = "country_diplomacy.36.t"
+	desc = "country_diplomacy.36.desc"
+	picture = proscription
+
+	left_portrait = current_ruler
+	right_portrait = scope:overlord_country.current_ruler
+
+	goto_location = scope:overlord_country.capital_scope
+	
+	trigger = {
+		OR = {
+			is_subject_type = feudatory
+			is_subject_type = vassal_tribe
+			is_subject_type = client_state
+		}
+		NOT = { has_variable = country_diplomacy_36_cooldown }
+		NOT = { overlord = { has_variable = country_diplomacy_32_overlord_cooldown } }
+		opinion = {
+			target = overlord
+			value < 50
+		}
+		NOT = { has_variable = loyal_subject }
+		OR = {
+			AND = {
+				OR = {
+					is_subject_type = feudatory
+					num_of_cities > 10
+					overlord = {
+						OR = {
+							num_of_cities >20
+							NOT = { this.culture.culture_group = root.culture.culture_group }
+						}
+					}
+				}
+			}
+			AND = {
+				is_subject_type = vassal_tribe
+				OR = {
+					is_tribal = no
+					overlord = {
+						OR = {
+							is_tribal = yes
+							capital_scope = {
+								civilization_value < root.capital_scope.civilization_value
+							}
+							any_subject = {
+								count > 10
+								is_subject_type = vassal_tribe
+							}
+						}
+					}
+				}
+			}
+			AND = {
+				is_subject_type = client_state
+				OR = {
+					num_of_cities > 150
+					is_tribal = yes
+					overlord = {
+						is_tribal = yes
+					}
+				}
+			}
+		}
+		has_subject_loyalty <= 20
+	}
+
+	immediate = {
+		save_scope_as = vassal_country
+		overlord = { 
+			save_scope_as = overlord_country 
+			set_variable = {
+				name = country_diplomacy_32_overlord_cooldown
+				days = 300
+			}
+		}
+		set_variable = {
+			name = "country_diplomacy_36_cooldown"
+			days = 1825
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.36.a"
+		show_as_tooltip = {
+			add_opinion = {
+				modifier = unfit_overlord
+				target = scope:overlord_country
+			}
+		}
+		current_ruler = {
+			add_popularity = popularity_small
+		}
+		scope:overlord_country = {
+			trigger_event = { 
+				id = country_diplomacy.37
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.36.b"
+		trigger = {
+			is_ai = no
+		}
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = obedient_vassal
+				target = root
+			}
+		}
+		add_country_modifier = {
+			name = subject_loyal_to_unfit_overlord
+			duration = 1825
+		}
+		current_ruler = {
+			add_popularity = subtract_popularity_small
+		}
+		set_variable = {
+			name = loyal_subject
+			days = 7300
+		}
+	}
+}
+
+# Subject Overlord: Unfit Overlord
+country_diplomacy.37 = {
+	type = country_event
+	title = "country_diplomacy.37.t"
+	desc = "country_diplomacy.37.desc"
+	picture = revolt
+
+	left_portrait = current_ruler
+	right_portrait = scope:vassal_country.current_ruler
+
+	goto_location = scope:vassal_country.capital_scope
+	
+	trigger = {
+
+	}
+
+	immediate = {
+
+	}
+
+	option = {
+		name = "country_diplomacy.37.a"
+		scope:vassal_country = {
+			add_opinion = {
+				modifier = unfit_overlord
+				target = scope:overlord_country
+			}
+		}
+		add_opinion = {
+			modifier = unruly_subject
+			target = scope:vassal_country
+		}
+	}
+}
+
+#Vassal Tribe Transforms into Tributary
+country_diplomacy.38 = {
+	type = country_event
+	title = "country_diplomacy.38.t"
+	desc = "country_diplomacy.38.desc"
+	picture = city_country
+	
+	immediate = {
+		overlord = {
+			save_scope_as = overlord_country
+			hidden_effect = {
+				release_subject = ROOT
+				remove_opinion = {
+					target = root
+					modifier = broke_tributary_status
+				}
+			}
+			make_subject = { 
+				target = ROOT
+				type = tributary 
+			}
+		}
+	}
+	
+	option = { 
+		name = "country_diplomacy.38.a"
+		scope:overlord_country = {
+			add_opinion = {
+				modifier = obedient_vassal
+				target = root
+			}  
+		}
+		current_ruler = {
+			add_popularity = popularity_small
+		}
+	}
+}
+
+#Tributary wants more
+country_diplomacy.39 = {
+	type = country_event
+	title = "country_diplomacy.39.t"
+	desc = "country_diplomacy.39.desc"
+	picture = war_chest
+	left_portrait = scope:tributary_more.current_ruler
+	
+	trigger = {
+		is_overlord = yes
+		any_subject = {
+			is_subject_type = tributary
+			has_land = yes
+			is_ai = yes
+			NOT = { has_truce_with = overlord }
+			war = no
+			has_subject_loyalty >= 60
+			NOT = { has_variable = subject_wants_more_cooldown }
+		}
+	}
+	
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = tributary
+				has_land = yes
+				is_ai = yes
+				NOT = { has_truce_with = overlord }
+				war = no
+				has_subject_loyalty >= 60
+				NOT = { has_variable = subject_wants_more_cooldown }
+			}
+			save_scope_as = tributary_more
+			set_variable = subject_wants_more_cooldown
+		}
+	}
+	
+	option = { 
+		name = "country_diplomacy.39.a"
+		ai_chance = {
+			factor = 100
+		}
+		release_subject = scope:tributary_more
+		make_subject = { 
+			target = scope:tributary_more
+			type = client_state 
+		}
+		add_opinion = {
+			modifier = reliable_overlord
+			target = scope:tributary_more
+		}
+	}
+	option = { 
+		name = "country_diplomacy.39.b"
+		ai_chance = {
+			factor = 0
+		}
+		add_opinion = {
+			modifier = unreliable_overlord
+			target = scope:tributary_more
+		}
+	}
+}
+
+#Tributary has had enough
+country_diplomacy.40 = {
+	type = country_event
+	title = "country_diplomacy.40.t"
+	desc = "country_diplomacy.40.desc"
+	picture = war_chest
+	left_portrait = scope:tributary_enough.current_ruler
+	
+	trigger = {
+		is_overlord = yes
+		current_date > 460.1.1 #You get some time to build yourself a normal army after startup.
+		any_subject = {
+			is_subject_type = tributary
+			has_land = yes
+			is_ai = yes
+			NOT = { has_truce_with = overlord }
+			war = no
+			OR = {
+				num_of_cohorts > overlord.num_of_cohorts
+				has_subject_loyalty < 35
+				AND = {
+					has_subject_loyalty < 50
+					num_of_cities > 3
+					any_neighbour_country = {
+						PREV = { is_subject_of = THIS }
+					}
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = tributary
+				has_land = yes
+				is_ai = yes
+				NOT = { has_truce_with = overlord }
+				war = no
+				OR = {
+					num_of_cohorts > overlord.num_of_cohorts
+					has_subject_loyalty < 35
+					AND = {
+						has_subject_loyalty < 50
+						num_of_cities > 3
+						any_neighbour_country = {
+							PREV = { is_subject_of = THIS }
+						}
+					}
+				}
+			}
+			save_scope_as = tributary_enough
+			capital_scope = { save_scope_as = tributary_capital }
+		}
+	}
+	
+	option = { 
+		name = "country_diplomacy.40.a"
+		release_subject = scope:tributary_enough
+		add_opinion = {
+			modifier = broke_tributary_status
+			target = scope:tributary_enough
+		}
+		scope:tributary_capital = { add_claim = root }
+	}
+}
+
+country_diplomacy.41 = { 
+	type = character_event
+	hidden = yes
+	
+	trigger = {
+		has_variable = on_espionage_mission_origin
+		has_variable = on_espionage_mission_recipient
+		var:on_espionage_mission_origin = {
+			exists = this
+			has_land = yes
+		}
+		var:on_espionage_mission_recipient = {
+			exists = this
+			has_land = yes
+		}
+	}
+	
+	immediate = {
+		set_variable = {
+			name = roll
+			value = { integer_range = { min = 1 max = 13 } }
+		}
+		var:on_espionage_mission_origin = {
+			save_scope_as = spier
+		}
+		var:on_espionage_mission_recipient = {
+			save_scope_as = spied_upon
+		}
+		root = {
+			save_scope_as = spy
+		}
+		if = { 
+			limit = {
+				has_variable = roll
+				var:roll <= root.charisma
+			}
+			var:on_espionage_mission_origin = {
+				add_to_variable_list = {
+					name = foreign_intel
+					target = root.var:on_espionage_mission_recipient
+				}
+				trigger_event = {
+					id = country_diplomacy.42
+				}
+			}
+			trigger_event = {
+				on_action = espionage_character_pulse
+				days = { 150 300 }
+			}
+		}
+		else = {
+			var:on_espionage_mission_recipient = {
+				trigger_event = {
+					id = country_diplomacy.43
+				}
+			}
+			remove_espionage_variables_effect = yes
+		}
+		remove_variable = roll
+	}
+}
+
+country_diplomacy.42 = {
+	type = country_event
+	title = "country_diplomacy.42.t"
+	desc = "country_diplomacy.42.desc"
+	picture = dagger_behind_back
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	
+	trigger = {
+		#Theoretically not needed...
+	}
+	
+	immediate = {
+		
+	}
+	
+	option = { 
+		name = "country_diplomacy.42.a"
+		custom_tooltip = "country_diplomacy.42.a.tt"
+	}
+}
+
+country_diplomacy.43 = {
+	type = country_event
+	title = "country_diplomacy.43.t"
+	desc = "country_diplomacy.43.desc"
+	picture = dagger_behind_back
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spier.current_ruler
+	
+	trigger = {
+		#Theoretically not needed...
+	}
+	
+	immediate = {
+		
+	}
+	
+	option = { 
+		name = "country_diplomacy.43.a"
+		scope:spy = {
+			death = {
+				death_reason = death_execution
+			}
+		}
+		current_ruler = {
+			add_popularity = popularity_large
+		}
+		show_as_tooltip = {
+			scope:spier = {
+				current_ruler = {
+					add_popularity = subtract_popularity_medium
+				}
+			}
+		}
+		scope:spier = {
+			trigger_event = {
+				id = country_diplomacy.44 #Death
+			}
+		}
+	}
+	option = { 
+		name = "country_diplomacy.43.b"
+		scope:spy = {
+			remove_all_positions = yes
+			move_country = scope:spier
+			hidden_effect = {
+				remove_character_modifier = foreign_citizen
+				if = {
+					limit = {
+						has_variable = on_espionage_mission_family
+					}
+					if = {
+						limit = {
+							exists = var:on_espionage_mission_family
+							scope:actor = {
+								any_family = { THIS = scope:target.var:on_espionage_mission_family }
+							}
+						}
+						set_family = var:on_espionage_mission_family
+					}
+					else = { set_as_minor_character = THIS }
+					remove_variable = on_espionage_mission_family
+				}
+				else = { set_as_minor_character = THIS }
+			}
+		}
+		add_tyranny = -5
+		show_as_tooltip = {
+			scope:spier = {
+				current_ruler = {
+					add_popularity = subtract_popularity_huge
+				}
+			}
+		}
+		scope:spier = {
+			trigger_event = {
+				id = country_diplomacy.45
+			}
+		}
+	}
+}
+
+country_diplomacy.44 = { #Death
+	type = country_event
+	title = "country_diplomacy.44.t"
+	desc = "country_diplomacy.44.desc"
+	picture = dagger_behind_back
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spied_upon.current_ruler
+	
+	trigger = {
+		#Theoretically not needed...
+	}
+	
+	immediate = {
+		show_as_tooltip = {
+			scope:spy = {
+				death = {
+					death_reason = death_execution
+				}
+			}
+		}	
+	}
+	
+	option = { 
+		name = "country_diplomacy.44.a"
+		current_ruler = {
+			add_popularity = subtract_popularity_medium
+		}
+	}
+}
+
+country_diplomacy.45 = { #Return
+	type = country_event
+	title = "country_diplomacy.45.t"
+	desc = "country_diplomacy.45.desc"
+	picture = dagger_behind_back
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spied_upon.current_ruler
+	
+	trigger = {
+		#Theoretically not needed...
+	}
+	
+	immediate = {
+		
+	}
+	
+	option = { 
+		name = "country_diplomacy.45.a"
+		current_ruler = {
+			add_popularity = subtract_popularity_huge
+		}
+	}
+}
+
+country_diplomacy.46 = { #Return
+	type = country_event
+	title = "country_diplomacy.46.t"
+	desc = "country_diplomacy.46.desc"
+	picture = dagger_behind_back
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spied_upon.current_ruler
+	
+	trigger = {
+		#Theoretically not needed...
+	}
+	
+	immediate = {
+		show_as_tooltip = {
+			scope:spy = {
+				death = {
+					death_reason = death_execution
+				}
+			}
+		}	
+	}
+	
+	option = { 
+		name = "country_diplomacy.46.a"
+		
+	}
+}
+
+country_diplomacy.47 = { #Periodic spy shenanigans
+	type = character_event
+	hidden = yes
+	
+	trigger = {
+		has_variable = on_espionage_mission_origin
+		has_variable = on_espionage_mission_recipient
+		OR = {
+			AND = {
+				var:on_espionage_mission_origin = { war_with = ROOT.var:on_espionage_mission_recipient }
+				var:on_espionage_mission_recipient = {
+					any_army = { unit_size >= 5 }
+				}
+			}
+			OR = {
+				var:on_espionage_mission_origin.civic_tech < var:on_espionage_mission_recipient.civic_tech
+				var:on_espionage_mission_origin.military_tech < var:on_espionage_mission_recipient.military_tech
+				var:on_espionage_mission_origin.oratory_tech < var:on_espionage_mission_recipient.oratory_tech
+				var:on_espionage_mission_origin.religious_tech < var:on_espionage_mission_recipient.religious_tech
+			}
+		}
+	}
+	
+	immediate = {
+		var:on_espionage_mission_origin = { save_scope_as = spier }
+		var:on_espionage_mission_recipient = { save_scope_as = spied_upon }
+		save_scope_as = spy
+		random_list = {
+			2 = {
+				trigger = {
+					var:on_espionage_mission_origin = { war_with = ROOT.var:on_espionage_mission_recipient }
+					var:on_espionage_mission_recipient = {
+						any_army = { unit_size >= 5 }
+					}
+				}
+				var:on_espionage_mission_recipient = {
+					ordered_army = {
+						limit = { unit_size >= 5 }
+						order_by = unit_size
+						save_scope_as = sabotage_army
+						#TODO legion weight?
+					}
+				}
+				var:on_espionage_mission_origin = { trigger_event = country_diplomacy.48 }
+			}
+			2 = {
+				trigger = {
+					OR = {
+						var:on_espionage_mission_origin.civic_tech < var:on_espionage_mission_recipient.civic_tech
+						var:on_espionage_mission_origin.military_tech < var:on_espionage_mission_recipient.military_tech
+						var:on_espionage_mission_origin.oratory_tech < var:on_espionage_mission_recipient.oratory_tech
+						var:on_espionage_mission_origin.religious_tech < var:on_espionage_mission_recipient.religious_tech
+					}
+				}
+				var:on_espionage_mission_origin = { trigger_event = country_diplomacy.52 }
+			}
+		}
+	}
+
+	after = {
+		trigger_event = {
+			on_action = espionage_character_pulse 
+			days = { 300 600 }
+		}
+	}
+}
+
+country_diplomacy.48 = { #Army sabotage decision
+	type = country_event
+	title = "country_diplomacy.48.t"
+	desc = "country_diplomacy.48.desc"
+	picture = senator_conversing
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spied_upon.current_ruler
+	
+	option = { 
+		name = "country_diplomacy.48.a"
+		add_treasury = {
+			value = has_monthly_income
+			multiply = -2
+			max = 50
+		}
+		custom_tooltip = country_diplomacy.48.at
+		show_as_tooltip = {
+			scope:sabotage_army = {
+				add_unit_modifier = {
+					name = espionage_army_sabotage_modifier
+					duration = 730 # 2 years
+				}
+			}
+		}
+		custom_tooltip = espionage_suspicion_tooltip
+		set_variable = {
+			name = roll
+			value = { integer_range = { min = 1 max = 13 } }
+		}
+		if = { 
+			limit = {
+				has_variable = roll
+				var:roll <= scope:spy.martial
+			}
+			scope:spied_upon = {
+				trigger_event = { id = country_diplomacy.50 }
+			}
+		}
+		else = {
+			scope:spied_upon = {
+				trigger_event = { id = country_diplomacy.49 }
+			}
+		}
+		remove_variable = roll
+	}
+
+	option = { 
+		name = "country_diplomacy.48.b"
+		custom_tooltip = no_effect_tooltip
+	}
+}
+
+country_diplomacy.49 = { #Army sabotage ping fail
+	type = country_event
+	title = "country_diplomacy.48.t"
+	desc = "country_diplomacy.49.desc"
+	picture = dagger_behind_back
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spier.current_ruler
+	
+	option = {
+		name = "country_diplomacy.49.a" 
+		current_ruler = { add_popularity = popularity_small }
+		scope:spy = {
+			death = {
+				death_reason = death_execution
+			}
+		}
+	}
+}
+
+country_diplomacy.50 = { #Army sabotage ping success
+	type = country_event
+	title = "country_diplomacy.48.t"
+	desc = "country_diplomacy.50.desc"
+	picture = great_work_supplies
+	left_portrait = current_ruler
+	right_portrait = scope:spier.current_ruler
+	
+	immediate = {
+		scope:sabotage_army = {
+			add_unit_modifier = {
+				name = espionage_army_sabotage_modifier
+				duration = 730 # 2 years
+			}
+		}
+	}
+	
+	option = {
+		name = "country_diplomacy.50.a" 
+		current_ruler = { add_popularity = subtract_popularity_small }
+	}
+
+	after = {
+		scope:spier = {
+			trigger_event = { id = country_diplomacy.51 }
+		}
+	}
+}
+
+country_diplomacy.51 = { #Army sabotage origin success ping
+	type = country_event
+	title = "country_diplomacy.48.t"
+	desc = "country_diplomacy.51.desc"
+	picture = great_work_supplies
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spied_upon.current_ruler
+	
+	immediate = {
+		show_as_tooltip = {
+			scope:sabotage_army = {
+				add_unit_modifier = {
+					name = espionage_army_sabotage_modifier
+					duration = 730 # 2 years
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "country_diplomacy.51.a" 
+		set_variable = {
+			name = espionage_shenanigans_cooldown
+			days = 1460
+		} 
+	}
+}
+
+country_diplomacy.52 = { #Tech theft decision
+	type = country_event
+	title = "country_diplomacy.52.t"
+	desc = "country_diplomacy.52.desc"
+	picture = senator_conversing
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spied_upon.current_ruler
+	
+	option = { 
+		name = "country_diplomacy.52.a"
+		add_treasury = {
+			value = has_monthly_income
+			multiply = -2
+			max = 50
+		}
+		custom_tooltip = country_diplomacy.52.at
+		random_list = {
+			10 = {
+				trigger = { civic_tech < scope:spied_upon.civic_tech }
+				add_research = { technology = civic_tech value = 15 }
+			}
+			10 = {		
+				trigger = { military_tech < scope:spied_upon.military_tech }
+				add_research = { technology = military_tech value = 15 }
+			}
+			10 = {
+				trigger = { oratory_tech < scope:spied_upon.oratory_tech }
+				add_research = { technology = oratory_tech value = 15 }
+			}
+			10 = {
+				trigger = { religious_tech < scope:spied_upon.religious_tech }
+				add_research = { technology = religious_tech value = 15 }
+			}
+			1 = { add_innovation = 1 }
+		}
+		custom_tooltip = espionage_suspicion_tooltip
+		set_variable = {
+			name = roll
+			value = { integer_range = { min = 1 max = 13 } }
+		}
+		if = { 
+			limit = {
+				has_variable = roll
+				var:roll <= scope:spy.finesse
+			}
+			scope:spied_upon = {
+				trigger_event = { id = country_diplomacy.54 }
+			}
+		}
+		else = {
+			scope:spied_upon = {
+				trigger_event = { id = country_diplomacy.53 }
+			}
+		}
+		remove_variable = roll
+	}
+
+	option = { 
+		name = "country_diplomacy.52.b"
+		custom_tooltip = no_effect_tooltip
+	}
+}
+
+country_diplomacy.53 = { #Tech theft ping fail
+	type = country_event
+	title = "country_diplomacy.52.t"
+	desc = "country_diplomacy.53.desc"
+	picture = dagger_behind_back
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spier.current_ruler
+	
+	option = {
+		name = "country_diplomacy.49.a" 
+		current_ruler = { add_popularity = popularity_small }
+		scope:spy = {
+			death = { death_reason = death_execution }
+		}
+	}
+}
+
+country_diplomacy.54 = { #Tech theft ping success
+	type = country_event
+	title = "country_diplomacy.52.t"
+	desc = "country_diplomacy.54.desc"
+	picture = scribe_tools
+	left_portrait = current_ruler
+	right_portrait = scope:spier.current_ruler
+	
+	immediate = {
+		scope:spier = {
+			random_list = {
+				10 = {
+					trigger = { civic_tech < scope:spied_upon.civic_tech }
+					set_variable = {
+						name = esp_tech_theft
+						value = 1
+					}
+				}
+				10 = {		
+					trigger = { military_tech < scope:spied_upon.military_tech }
+					set_variable = {
+						name = esp_tech_theft
+						value = 1
+					}
+				}
+				10 = {
+					trigger = { oratory_tech < scope:spied_upon.oratory_tech }
+					set_variable = {
+						name = esp_tech_theft
+						value = 1
+					}
+				}
+				10 = {
+					trigger = { religious_tech < scope:spied_upon.religious_tech }
+					set_variable = {
+						name = esp_tech_theft
+						value = 1
+					}
+				}
+				1 = {
+					set_variable = {
+						name = esp_tech_theft
+						value = 5
+					}
+				}
+			}
+		}
+		if = {
+			limit = { scope:spier.var:esp_tech_theft = 1 }
+			add_country_modifier = {
+				name = tech_theft_1_cmod
+				duration = 1825
+			}
+		}
+		else_if = {
+			limit = { scope:spier.var:esp_tech_theft = 2 }
+			add_country_modifier = {
+				name = tech_theft_2_cmod
+				duration = 1825
+			}
+		}
+		else_if = {
+			limit = { scope:spier.var:esp_tech_theft = 3 }
+			add_country_modifier = {
+				name = tech_theft_3_cmod
+				duration = 1825
+			}
+		}
+		else_if = {
+			limit = { scope:spier.var:esp_tech_theft = 4 }
+			add_country_modifier = {
+				name = tech_theft_4_cmod
+				duration = 1825
+			}
+		}
+		else = {
+			add_country_modifier = {
+				name = tech_theft_2_cmod
+				duration = 1825
+			}
+		}
+	}
+
+	option = {
+		name = "country_diplomacy.50.a" 
+		current_ruler = { add_popularity = subtract_popularity_small }
+	}
+
+	after = {
+		scope:spier = {
+			trigger_event = { id = country_diplomacy.55 }
+		}
+	}
+}
+
+country_diplomacy.55 = { #Tech theft origin success ping
+	type = country_event
+	title = "country_diplomacy.52.t"
+	desc = "country_diplomacy.55.desc"
+	picture = scribe_tools
+	left_portrait = current_ruler
+	right_portrait = scope:spy
+	right_portrait = scope:spied_upon.current_ruler
+	
+	immediate = {
+		if = {
+			limit = { var:esp_tech_theft = 1 }
+			add_research = { technology = civic_tech value = 15 }
+			show_as_tooltip = {
+				scope:spied_upon = {
+					add_country_modifier = {
+						name = tech_theft_1_cmod
+						duration = 1825
+					}
+				}
+			}
+		}
+		else_if = {
+			limit = { var:esp_tech_theft = 2 }
+			add_research = { technology = military_tech value = 15 }
+			show_as_tooltip = {
+				scope:spied_upon = {
+					add_country_modifier = {
+						name = tech_theft_2_cmod
+						duration = 1825
+					}
+				}
+			}
+		}
+		else_if = {
+			limit = { var:esp_tech_theft = 3 }
+			add_research = { technology = oratory_tech value = 15 }
+			show_as_tooltip = {
+				scope:spied_upon = {
+					add_country_modifier = {
+						name = tech_theft_3_cmod
+						duration = 1825
+					}
+				}
+			}
+		}
+		else_if = {
+			limit = { var:esp_tech_theft = 4 }
+			add_research = { technology = religious_tech value = 15 }
+			show_as_tooltip = {
+				scope:spied_upon = {
+					add_country_modifier = {
+						name = tech_theft_4_cmod
+						duration = 1825
+					}
+				}
+			}
+		}
+		else = {
+			add_innovation = 1
+			show_as_tooltip = {
+				scope:spied_upon = {
+					add_country_modifier = {
+						name = tech_theft_2_cmod
+						duration = 1825
+					}
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "country_diplomacy.55.a" 
+		set_variable = {
+			name = espionage_shenanigans_cooldown
+			days = 1460
+		} 
+		remove_variable = esp_tech_theft
+	}
+}
+
+country_diplomacy.56 = { #Guarantee invention
+	type = country_event
+	title = "country_diplomacy.56.t"
+	desc = "country_diplomacy.56.desc"
+	picture = greek_court
+	left_portrait = current_ruler
+	right_portrait = scope:guarantee_target.current_ruler
+	
+	trigger = {
+		invention = tribute_income_modifier_inv_2
+		num_of_cities > 12
+		num_active_relations < max_diplomatic_relations
+		NOT = {
+			has_variable = country_diplomacy_56_toggle
+		}
+		any_neighbour_country = {
+			is_guaranteed_by = ROOT
+			num_of_cities < 12
+			is_subject = no
+			war = no
+			has_civil_war = no
+			is_ai = yes
+		}
+	}
+	
+	weight_multiplier = {
+		modifier = {
+			add = {
+				value = root.current_ruler.charisma
+			}
+		}
+	}
+	
+	immediate = {
+		random_neighbour_country = {
+			limit = {
+				is_guaranteed_by = ROOT
+				num_of_cities < 12
+				is_subject = no
+				war = no
+				has_civil_war = no
+				is_ai = yes
+			}
+			save_scope_as = guarantee_target
+		}
+		set_variable = {
+			name = country_diplomacy_56_toggle
+			days = 1825
+		}
+	}
+	
+	option = {
+		name = "country_diplomacy.56.a"
+		make_subject = {
+			target = scope:guarantee_target
+			type = feudatory
+		}
+		add_political_influence = -15
+	}
+	
+	option = {
+		name = "country_diplomacy.56.b"
+		custom_tooltip = "no_effect_tooltip"
+	}
+	
+}
+	

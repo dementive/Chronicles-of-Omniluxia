@@ -1,0 +1,120 @@
+﻿namespace = provincial_events
+# Events with a local scope and effect, not necessarily province events.
+
+provincial_events.1 = {
+	type = country_event
+	title = "provincial_events.1.t"
+	desc = "provincial_events.1.desc"
+	picture = city_construction
+	
+	left_portrait = current_ruler
+	right_portrait = scope:governor_of_province
+	
+	goto_location = scope:governorship_capital
+	
+	trigger = {
+		num_of_cities >= 1
+		NOT = { has_variable = local_conflict_happened }
+		scope:governorship_capital = {
+			dominant_province_culture = root.culture
+			is_capital = no
+			exists = governor
+			any_neighbor_province = {
+				exists = owner
+				owner = ROOT
+				NOT = { dominant_province_culture = root.culture }
+			}
+		}
+	}
+	
+	immediate = {
+		hidden_effect = {
+			scope:governorship_capital = {
+				governor = {
+					save_scope_as = governor_of_province
+				}
+			}
+		}
+		set_variable = {
+			name = local_conflict_happened
+			days = 365
+		}
+	}
+	
+	option = {
+		name = provincial_events.1.a
+		ai_chance = {
+			factor = 90
+		}
+		if = {
+			limit = {
+				exists = scope:governor_of_province
+				scope:governor_of_province = {
+					has_culture = root.culture
+				}
+			}
+			scope:governor_of_province = {
+				add_loyalty = loyalty_defended_colonists
+			}
+		}
+		scope:governorship_capital = {
+			if = {
+				limit = {
+					any_pops_in_province = {
+						NOT = { pop_culture = root.culture }
+					}
+				}
+				ordered_pops_in_province = {
+					limit = { NOT = { pop_culture = root.culture } }
+					max = 2
+					order_by = pop_hapiness
+					set_pop_culture = root.culture
+					check_range_bounds = no
+				}
+			}
+			else = {
+				create_state_pop = freemen
+				create_state_pop = freemen
+			}
+			every_neighbor_province = {
+				limit = { owner = ROOT }
+				add_province_modifier = {
+					name = "colonial_unrest"
+					duration = 1825
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = provincial_events.1.b
+		ai_chance = { factor = 10 }
+		if = {
+			limit = {
+				exists = scope:governor_of_province
+				scope:governor_of_province = {
+					has_culture = root.culture
+				}
+			}
+			scope:governor_of_province = {
+				add_loyalty = loyalty_defended_locals
+			}
+		}
+		scope:governorship_capital = {
+			add_province_modifier = {
+				name = "stunted_growth"
+				duration = 1825
+			}
+			ordered_neighbor_province = {
+				limit = { owner = ROOT }
+				order_by = total_population
+				max = 3
+				check_range_bounds = no
+				add_province_modifier = {
+					name = "support_from_central_government"
+					duration = 1825
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,428 @@
+﻿namespace = pirate_events
+
+#Pirate Haven
+pirate_events.1 = {
+	type = country_event
+	title = "pirate_events.1.t"
+	desc = "pirate_events.1.desc"
+	picture = trade_port
+
+	left_portrait = current_ruler
+
+	trigger = {
+		is_tribal = no
+		NOR = {
+			has_law = antipiracy_edict
+			has_law = republican_mediterranean_4
+		}
+		any_owned_province = {
+			has_province_modifier = pirate_haven_modifier
+			NOT = {
+				has_province_modifier = province_unrest_pirate_colony
+			}
+		}
+		current_ruler = {
+			ruler_is_available = yes
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				has_province_modifier = pirate_haven_modifier
+				NOT = {
+					has_province_modifier = province_unrest_pirate_colony
+				}
+			}
+			save_scope_as = pirate_cove
+		}
+		current_ruler = {
+			save_scope_as = pirate_event_current_ruler
+		}
+	}
+
+	option = {
+		name = "pirate_events.1.a"
+		current_ruler = {
+			if = {
+				limit = {
+					NOT = { has_trait = just }
+					number_of_personality_traits < max_number_of_traits_svalue
+				}
+				add_trait = just
+			}
+			add_popularity = popularity_medium
+		}
+		scope:pirate_cove = {
+			add_province_modifier = {
+				name = province_unrest_pirate_colony
+				duration = 365
+			}
+			state = {
+				add_state_modifier = {
+					name = pirates_hunted_down_state_modifier
+					duration = 365
+				}
+			}
+		}
+		trigger_event = {
+			id = pirate_events.2
+			days = { 300 450 }
+		}
+	}
+
+	option = {
+		name = "pirate_events.1.b"
+		current_ruler = {
+			if = {
+				limit = {
+					NOT = { has_trait = shrewd }
+					number_of_personality_traits < max_number_of_traits_svalue
+				}
+				add_trait = shrewd
+			}
+			add_popularity = subtract_popularity_medium
+		}
+		scope:pirate_cove.state = {
+			add_state_modifier = {
+				name = pirate_colony_established_modifier
+				duration = 365
+			}
+		}
+		trigger_event = {
+			id = pirate_events.3
+			days = { 300 450 }
+		}
+	}
+}
+
+# Root Out Pirates
+pirate_events.2 = {
+	type = country_event
+	title = "pirate_events.2.t"
+	picture = naval_battle
+
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = scope:pirate_event_current_ruler
+					scope:pirate_event_current_ruler = {
+						is_ruler = yes
+						popularity >= 50
+					}
+				}
+				desc = popular_ruler_pirate_attack
+			}
+			triggered_desc = {
+				trigger = {
+					exists = scope:pirate_event_current_ruler
+					scope:pirate_event_current_ruler = {
+						is_ruler = yes
+						has_trait = arrogant
+					}
+				}
+				desc = arrogant_ruler_pirate_attack
+			}
+			triggered_desc = {
+				desc = generic_attack_pirate_attack
+				trigger = {
+					always = yes
+				}
+			}
+		}
+		
+	}
+
+	left_portrait = current_ruler
+
+	trigger = {
+		exists = scope:pirate_cove
+		scope:pirate_cove = {
+			has_province_modifier = pirate_haven_modifier
+		}
+	}
+
+	option = {
+		name = "pirate_events.2.a"
+		add_country_modifier = {
+			name = morale_boost
+			duration = 1825
+		}
+		scope:pirate_cove = {
+			remove_province_modifier = pirate_haven_modifier
+		}
+	}
+
+	option = {
+		name = "pirate_events.2.b"
+		add_country_modifier = {
+			name = naval_advancements
+			duration = 1825
+		}
+		scope:pirate_cove = {
+			remove_province_modifier = pirate_haven_modifier
+		}
+	}
+}
+
+# Pirate Free State
+pirate_events.3 = {
+	type = country_event
+	title = "pirate_events.3.t"
+	desc = "pirate_events.3.desc"
+	picture = tyre_city
+
+	left_portrait = current_ruler
+
+	trigger = {
+		exists = scope:pirate_cove
+		scope:pirate_cove = {
+			has_province_modifier = pirate_haven_modifier
+		}
+	}
+
+	immediate = {
+		scope:pirate_cove = {
+			random_neighbor_province = {
+				limit = {
+					is_sea = yes
+				}
+				save_scope_as = nearby_sea_province
+			}
+		}
+	}
+
+	option = {
+		name = "pirate_events.3.a"
+		scope:pirate_cove.state = {
+			add_state_modifier = {
+				name = ruler_establish_pirates_free_state_modifier
+				duration = 1825
+			}
+		}
+	}
+
+	option = {
+		name = "pirate_events.3.b"
+		scope:pirate_cove.state = {
+			add_state_modifier = {
+				name = pirate_shipwrights_in_fleet_modifier
+				duration = 1825
+			}
+		}
+
+		create_unit = {
+			navy = yes
+			location = scope:nearby_sea_province
+			add_subunit = trireme
+			add_subunit = trireme
+			add_subunit = trireme
+			add_subunit = trireme
+			add_subunit = trireme
+			add_subunit = trireme			
+		}
+	}
+}
+
+#Neighbours harbour pirates
+pirate_events.4 = {
+	type = country_event
+	title = "pirate_events.4.t"
+	desc = "pirate_events.4.desc"
+	picture = council_country
+
+	left_portrait = current_ruler
+
+	trigger = {
+		is_tribal = no
+		NOR = {
+			has_law = antipiracy_edict
+			has_law = republican_mediterranean_4
+		}
+		any_owned_province = {
+			has_province_modifier = province_unrest_pirate
+		}
+		any_neighbour_country = {
+			any_country_state = {
+				OR = {
+					has_state_modifier = ruler_establish_pirates_free_state_modifier
+					has_state_modifier = pirate_shipwrights_in_fleet_modifier
+				}
+			}
+			any_owned_province = {
+				has_province_modifier = pirate_haven_modifier
+			}
+		}
+		NOT = { has_variable = "pirate_events_4_cooldown" }
+	}
+
+	immediate = {
+		set_variable = {
+		    name = "pirate_events_4_cooldown"
+		    days = 3650
+		}
+		save_scope_as = original_country
+		random_owned_province = {
+			limit = {
+				has_province_modifier = province_unrest_pirate
+			}
+			save_scope_as = raided_province
+		}
+		random_neighbour_country = {
+			limit = {
+				any_country_state = {
+					OR = {
+						has_state_modifier = ruler_establish_pirates_free_state_modifier
+						has_state_modifier = pirate_shipwrights_in_fleet_modifier
+					}
+				}
+			}
+			save_scope_as = pirate_neighbor
+			random_country_state = {
+				limit = {
+					OR = {
+						has_state_modifier = ruler_establish_pirates_free_state_modifier
+						has_state_modifier = pirate_shipwrights_in_fleet_modifier
+					}
+				}
+				save_scope_as = pirate_free_state
+			}
+		}
+	}
+
+	option = {
+		name = "pirate_events.4.a"
+		current_ruler = {
+			add_popularity = popularity_medium
+		}
+		scope:raided_province.state = {
+			add_state_modifier = {
+				name = pirate_event_landowners_happy_modifier
+				duration = 1825
+			}
+		}
+		hidden_effect = {
+			scope:pirate_neighbor = {
+				trigger_event = {
+					id = pirate_events.5
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "pirate_events.4.b"
+		current_ruler = {
+			add_popularity = subtract_popularity_medium
+		}
+		scope:raided_province.state = {
+			add_state_modifier = {
+				name = pirate_event_landowners_unhappy_modifier
+				duration = 1825
+			}
+			if = {
+				limit = {
+					exists = governor
+				}
+				governor = { add_loyalty = loyalty_pirates_tolerated }
+			}
+		}
+	}
+}
+
+# Neighbours request anti-piracy
+pirate_events.5 = {
+    type = country_event
+    title = pirate_events.5.t
+    desc = pirate_events.5.desc
+    picture = trial_govtype
+    
+    left_portrait = current_ruler
+
+    trigger = {
+    	exists = scope:original_country
+    	exists = scope:pirate_neighbor
+    	exists = scope:pirate_free_state
+		any_owned_province = {
+			has_province_modifier = pirate_haven_modifier
+		}
+    }
+
+    option = {      
+        name = pirate_events.5.a
+        current_ruler = {
+        	if = {
+        		limit = {
+        			has_trait = assertive
+        		}
+        		remove_trait = assertive
+        	}
+        	else_if = {
+        		limit = {
+        			NOT = {	has_trait = submissive }
+        			number_of_personality_traits < max_number_of_traits_svalue
+        		}
+        		add_trait = submissive
+        	}
+        }
+        show_as_tooltip = {
+        	scope:original_country = {
+	        	add_opinion = {
+	        		modifier = trade_contact_well_treated
+	        		target = scope:pirate_neighbor
+	        	}
+	        }
+        }
+        scope:pirate_free_state = {
+        	if = {
+        	    limit = {
+        			any_state_province = {
+        				has_province_modifier = pirate_haven_modifier
+        			}
+        	    }
+        	    random_state_province = {
+        	    	limit = {
+        	    		has_province_modifier = pirate_haven_modifier
+        	    	}
+        	    	remove_province_modifier = pirate_haven_modifier
+        	    }
+        	}
+	        add_state_modifier = {
+        		name = pirates_hunted_down_state_modifier
+        		duration = 1825
+        	}
+		}
+	}
+
+    option = {      
+        name = pirate_events.5.b
+        current_ruler = {
+        	if = {
+        		limit = {
+        			has_trait = submissive
+        		}
+        		remove_trait = submissive
+        	}
+        	else_if = {
+        		limit = {
+        			NOT = {	has_trait = assertive }
+        			number_of_personality_traits < max_number_of_traits_svalue
+        		}
+        		add_trait = assertive
+        	}
+        }
+        scope:original_country = {
+        	add_opinion = {
+        		modifier = opinion_grave_insult
+        		target = scope:pirate_neighbor
+        	}
+        }
+        scope:pirate_free_state = {
+			add_state_modifier = {
+				name = defended_pirate_haven_from_neighbour
+				duration = 1850
+			}
+        }
+    }
+}

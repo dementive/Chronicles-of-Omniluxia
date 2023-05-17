@@ -34,37 +34,6 @@ civil_war.1 = { #Civil war end event notifications for ORIGINAL COUNTRY WINNING
 		scope:target = {
 			save_scope_as = resistance_ruler
 		}
-		every_neighbour_country = {
-			limit = {
-				NOT = {
-					war_with = ROOT
-				}
-			}
-			trigger_event = { #Trigger infomercial
-				id = civil_war.2 
-				days = { 2 10 }
-			}
-		}
-		if = {
-			limit = {
-				num_of_cities >= 100
-			}
-			every_country = {
-				limit = {
-					NOR = {
-						this = ROOT
-						any_neighbour_country = {
-							this = ROOT
-						}
-					}
-					num_of_cities >= 100
-				}
-				trigger_event = { #Trigger infomercial for great powers, if civil war target is great.
-					id = civil_war.2 
-					days = { 2 10 }
-				}
-			}
-		}
 	}
 
 }
@@ -148,39 +117,7 @@ civil_war.3 = { #Civil war end event notifications for REBEL COUNTRY WINNING
 		scope:target = {
 			save_scope_as = resistance_ruler 
 		}
-		every_neighbour_country = {
-			limit = {
-				NOT = {
-					war_with = ROOT
-				}
-			}
-			trigger_event = { #Trigger infomercial
-				id = civil_war.4
-				days = { 2 10 }
-			}
-		}
-		if = {
-			limit = {
-				num_of_cities >= 100
-			}
-			every_country = {
-				limit = {
-					NOR = {
-						this = ROOT
-						any_neighbour_country = {
-							this = ROOT
-						}
-					}
-					num_of_cities >= 100
-				}
-				trigger_event = { #Trigger infomercial for great powers, if civil war target is great.
-					id = civil_war.4
-					days = { 2 10 }
-				}
-			}
-		}
 	}
-
 }
 
 civil_war.4 = {
@@ -229,4 +166,214 @@ civil_war.4 = {
 		name = "civil_war.4.a"
 	}
 	
+}
+
+civil_war.5 = {
+	type = country_event
+	title = "civil_war.5.t"
+	desc = "civil_war.5.desc"
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:target
+	
+	picture = romans_marching
+	
+	immediate = {
+		add_stability_effect = yes
+		add_country_modifier = {
+			name = civil_war_benefits
+			duration = 1825
+		}
+		hidden_effect = {
+			scope:civil_war_target = {
+				every_family = {
+					move_family = ROOT
+					every_living_character = {
+						limit = {
+							family = PREV
+							from_ruler_family = no
+						}
+						if = {
+							limit = {
+								OR = {
+									employer = scope:civil_war_target
+									employer = ROOT
+								}
+							}
+							set_home_country = ROOT
+							move_country = ROOT
+						}
+					}
+				}
+				every_character = {
+					limit = { is_minor_character = yes }
+					move_country = ROOT
+					set_home_country = ROOT
+					set_as_minor_character = THIS
+				}
+				every_character = {
+					death = {
+						death_reason = death_crucified
+					}
+				}
+			}
+			ROOT = {
+				every_character = {
+					limit = { is_minor_character = yes }
+					set_as_minor_character = THIS
+					set_home_country = ROOT
+				}
+			}
+		}
+	}
+	
+	option = {
+		name = "civil_war.5.a"
+		add_manpower = {
+			value = root.max_manpower
+			divide = 4
+		}
+	}
+	
+	option = {
+		name = "civil_war.5.b"
+		custom_tooltip = "forgiving_bad_tooltip"
+		trigger = {
+			current_ruler = {
+				has_trait = forgiving
+			}
+		}
+		exclusive = yes
+		highlight = yes
+		every_neighbour_country = {
+			add_opinion = {
+				modifier = poor_conflict_resolution
+				target = root
+			}
+		}
+		
+	}
+	
+	option = {
+		name = "civil_war.5.c"
+		add_country_modifier = {
+			name = civil_war_decimation
+			duration = 1825
+		}
+		custom_tooltip = civil_war_5_kill_all
+		hidden_effect = {
+			every_character = {
+				add_loyalty = loyalty_civil_war_victory
+			}
+		}
+	}
+	
+}
+
+civil_war.6 = {
+	type = country_event
+	title = "civil_war.6.t"
+	desc = "civil_war.6.desc"
+	picture = successors
+	
+	left_portrait = root.current_ruler
+	right_portrait = scope:target
+	
+	immediate = {
+		add_stability_effect = yes
+		add_country_modifier = {
+			name = civil_war_benefits
+			duration = 1825
+		}
+		hidden_effect = {
+			scope:civil_war_target = {
+				every_family = {
+					move_family = ROOT
+					every_living_character = {
+						limit = {
+							family = PREV
+							from_ruler_family = no
+						}
+						if = {
+							limit = {
+								OR = {
+									employer = scope:civil_war_target
+									employer = ROOT
+								}
+							}
+							move_country = ROOT
+							set_home_country = ROOT
+						}
+					}
+				}
+				every_character = {
+					limit = { is_minor_character = yes }
+					move_country = ROOT
+					set_home_country = ROOT
+					set_as_minor_character = THIS
+				}
+				every_character = {
+					death = {
+						death_reason = death_crucified
+					}
+				}
+			}
+			ROOT = {
+				every_character = {
+					limit = { is_minor_character = yes }
+					set_as_minor_character = THIS
+					set_home_country = ROOT
+				}
+			}
+		}
+	}
+	
+	
+	option = {
+		name = "civil_war.5.a"
+		add_manpower = {
+			value = root.max_manpower
+			divide = 4
+		}
+	}
+	
+	option = {
+		name = "civil_war.5.b"
+		custom_tooltip = "forgiving_bad_tooltip"
+		trigger = {
+			current_ruler = {
+				has_trait = forgiving
+			}
+		}
+		exclusive = yes
+		highlight = yes
+		every_neighbour_country = {
+			add_opinion = {
+				modifier = poor_conflict_resolution
+				target = root
+			}
+		}
+		
+	}
+	
+	option = {
+		name = "civil_war.5.c"
+		add_country_modifier = {
+			name = civil_war_decimation
+			duration = 1825
+		}
+		custom_tooltip = civil_war_5_kill_all
+		hidden_effect = {
+			every_character = {
+				add_loyalty = loyalty_civil_war_victory
+			}
+		}
+	}
+	after = {
+		every_character = {
+			hidden_effect = {
+				set_home_country = ROOT
+			}
+		}
+	}
 }
