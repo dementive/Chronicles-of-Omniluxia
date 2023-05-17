@@ -17,6 +17,63 @@ class ProvinceChecker:
                 self.data[key] = value
         setattr(self, "data", self.data)
 
+    def rebuild_province(self):
+        text = f"{self.key}={{\n"
+
+        terrain = self.data["terrain"]
+        text += f"\tterrain={terrain}\n"
+        culture = self.data["culture"]
+        text += f"\tculture={culture}\n"
+        religion = self.data["religion"]
+        text += f"\treligion={religion}\n"
+        trade_goods = self.data["trade_goods"]
+        text += f"\ttrade_goods={trade_goods}\n"
+        civilization_value = self.data["civilization_value"]
+        text += f"\tcivilization_value={civilization_value}\n"
+        barbarian_power = self.data["barbarian_power"]
+        text += f"\tbarbarian_power={barbarian_power}\n"
+        province_rank = self.data["province_rank"]
+        text += f"\tprovince_rank={province_rank}\n"
+        text += "}"
+
+        return text
+
+    def rebuild_and_clear_province(self):
+        text = f"{self.key}={{\n"
+
+        terrain = self.data["terrain"].replace("\"", "")
+        if terrain == "impassable_terrain":
+            text += f"\tterrain={terrain}\n"
+            culture = self.data["culture"]
+            text += f"\tculture=\"placeholder\"\n"
+            religion = self.data["religion"]
+            text += f"\treligion=\"the_first_emperor\"\n"
+            trade_goods = self.data["trade_goods"]
+            text += f"\ttrade_goods={trade_goods}\n"
+            civilization_value = self.data["civilization_value"]
+            text += f"\tcivilization_value={civilization_value}\n"
+            barbarian_power = self.data["barbarian_power"]
+            text += f"\tbarbarian_power={barbarian_power}\n"
+            province_rank = self.data["province_rank"]
+            text += f"\tprovince_rank={province_rank}\n"
+        else:
+            text += f"\tterrain=\"impassable_terrain\"\n"
+            culture = self.data["culture"]
+            text += f"\tculture=\"placeholder\"\n"
+            religion = self.data["religion"]
+            text += f"\treligion=\"the_first_emperor\"\n"
+            trade_goods = self.data["trade_goods"]
+            text += f"\ttrade_goods=\"\"\n"
+            civilization_value = self.data["civilization_value"]
+            text += f"\tcivilization_value=0\n"
+            barbarian_power = self.data["barbarian_power"]
+            text += f"\tbarbarian_power=0\n"
+            province_rank = self.data["province_rank"]
+            text += f"\tprovince_rank=\"\"\n"
+
+        text += "}"
+        return text
+
     def check_province(self):
         terrain = True
         culture = True
@@ -60,6 +117,8 @@ class ProvinceChecker:
 if __name__ == '__main__':
 
     directory = "C:\\Users\\demen\\Documents\\Paradox Interactive\\Imperator\\mod\\Chronicles-of-Omniluxia\\setup\\provinces"
+    province_list = list()
+    key_list = list()
 
     for filename in Path(directory).iterdir():
         with open(filename, 'r', encoding="utf-8-sig") as file:
@@ -71,6 +130,8 @@ if __name__ == '__main__':
         for i in provinces:
             broken = False
             province = ProvinceChecker(i[1])
+            province_list.append(province)
+            key_list.append(i[0])
             checked = province.check_province()
 
             if not checked[0]:
@@ -111,3 +172,18 @@ if __name__ == '__main__':
 
         if error_list:
             print(f"{filename.name} - {error_list}")
+
+    #print(len(province_list))
+    #for i, prov in enumerate(province_list):
+        #print(f"{key_list[i]}{prov.rebuild_and_clear_province()}")
+
+    # with open("ids.txt", 'r', encoding="utf-8-sig") as file:
+    #     seas = file.readlines()
+    # sea_provs = list()
+    # for i in seas:
+    #     i = i.replace("\n", "")
+    #     sea_provs.append(int(i))
+    out = list()
+    for i in range(5550):
+        i += 1
+        print(i)
