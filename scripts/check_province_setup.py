@@ -114,6 +114,13 @@ class ProvinceChecker:
 
         return (terrain, culture, religion, trade_goods, civilization_value, barbarian_power, province_rank)
 
+def get_provinces_in_file(filename):
+    with open(filename, 'r', encoding="utf-8-sig") as file:
+        text = file.read()
+
+    provinces = re.findall(r'(\d+)=\{(.+?)\n\}', text, re.DOTALL)
+    return provinces
+
 if __name__ == '__main__':
 
     directory = "C:\\Users\\demen\\Documents\\Paradox Interactive\\Imperator\\mod\\Chronicles-of-Omniluxia\\setup\\provinces"
@@ -170,8 +177,13 @@ if __name__ == '__main__':
             if broken:
                 error_list.append(i[0])
 
-        if error_list:
-            print(f"{filename.name} - {error_list}")
+        # if error_list:
+        #     print(f"{filename.name} - {error_list}")
+
+    fn = "C:\\Users\\demen\\Desktop\\provinces\\provinces\\00_arteon_eastern_region.txt"
+    ids = get_provinces_in_file(fn)
+    for i in ids:
+        print(i[0])
 
     #print(len(province_list))
     #for i, prov in enumerate(province_list):
@@ -183,7 +195,3 @@ if __name__ == '__main__':
     # for i in seas:
     #     i = i.replace("\n", "")
     #     sea_provs.append(int(i))
-    out = list()
-    for i in range(5550):
-        i += 1
-        print(i)
