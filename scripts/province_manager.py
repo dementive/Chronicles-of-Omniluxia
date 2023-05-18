@@ -20,9 +20,13 @@ def get_provinces_in_file(filename):
             provs.append(pid)
         if '"riverine_terrain"' in p_data or '"coastal_terrain"' in p_data or '"ocean"' in p_data:
             sea_provs.append(pid)
+        # else:
+        #     provs.append(pid)
     return (provs, sea_provs)
 
 def write_list(li, name, comment):
+    if len(li) < 1:
+        return
     with open(f"{name}.txt", 'a', encoding="utf-8-sig") as file:
         file.write(f"# {comment}\n")
         file.write(f"{name} = LIST {{ ")
@@ -38,5 +42,5 @@ def add_new_region_file(file):
 
 if __name__ == '__main__':
     path_to_province_setup = "C:\\Users\\demen\\Desktop\\provinces\\provinces"
-    for filename in Path(path_to_province_setup).iterdir():
-        add_new_region_file(filename)
+    for file in Path(path_to_province_setup).iterdir():
+        add_new_region_file(file)
