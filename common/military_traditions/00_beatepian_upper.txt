@@ -1,0 +1,221 @@
+﻿beatepian_upper_philosophy = {
+	image = levantine_arabian_path_3
+	color = hsv { 1.72 0.64 0.6 }
+
+	allow = {
+		trigger_if = {
+			limit = { country_culture_group = beatepian_upper }
+			custom_tooltip = {
+				text = "began_with_tradition_group"
+			}
+			country_culture_group = beatepian_upper
+		}
+	}
+
+	levantine_arabian_path_1 = {
+		icon = levantine_arabian_path_1
+		modifier = {
+			hostile_attrition = 0.25
+		}
+	}
+	levantine_arabian_path_2 = {
+		icon = levantine_arabian_path_2
+		requires = { levantine_arabian_path_1 }
+		modifier = {
+			ship_cost = -0.1
+		}
+	}
+	levantine_arabian_path_3 = {
+		icon = levantine_arabian_path_3
+		requires = { levantine_arabian_path_2 }
+		modifier = {
+			camels_offensive = 0.1
+		}
+	}
+	levantine_arabian_path_4 = {
+		icon = levantine_arabian_path_4
+		requires = { levantine_arabian_path_2 }
+		modifier = {
+			camels_desert_combat_bonus = 0.1
+			light_cavalry_desert_combat_bonus = 0.1
+			heavy_cavalry_desert_combat_bonus = 0.1
+		}
+	}
+	levantine_arabian_path_5 = {
+		icon = levantine_arabian_path_5
+		requires = { levantine_arabian_path_2 }
+		modifier = {
+			naval_damage_taken = -0.1
+		}
+		allow_unit_type = octere
+	}
+	levantine_arabian_path_6 = {
+		icon = levantine_arabian_path_6
+		requires = { levantine_arabian_path_3 levantine_arabian_path_4 levantine_arabian_path_5 }
+		modifier = {
+			global_building_slot = 1
+		}
+	}
+	levantine_arabian_path_7 = {
+		icon = levantine_arabian_path_7
+		requires = { levantine_arabian_path_6 }
+		modifier = {
+			light_cavalry_cost = -0.1
+			camels_cost = -0.1
+			heavy_cavalry_cost = -0.1
+		}
+	}
+
+
+	levantine_egyptian_path_1 = {
+		icon = levantine_egyptian_path_1
+		modifier = {
+			light_infantry_discipline = 0.1
+		}
+	}
+	levantine_egyptian_path_2 = {
+		icon = levantine_egyptian_path_2
+		requires = { levantine_egyptian_path_1 }
+		modifier = {
+			trireme_discipline = 0.1
+			liburnian_discipline = 0.1
+		}
+		allow_unit_type = mega_galley
+	}
+	levantine_egyptian_path_3 = {
+		icon = levantine_egyptian_path_3
+		requires = { levantine_egyptian_path_2 }
+		modifier = {
+			global_defensive = 0.05
+		}
+	}
+	levantine_egyptian_path_4 = {
+		icon = levantine_egyptian_path_4
+		requires = { levantine_egyptian_path_3 }
+		modifier = {
+			price_found_city_cost_modifier = -0.1
+		}
+		enable_ability = military_colonies #note: abilities can no longer be enabled here. They are enabled in the allow section of the ability
+		on_activate = {
+			ordered_owned_province = {
+				limit = {
+					NOT = { dominant_province_culture_group = root.culture_group }
+					any_neighbor_province = {
+						count > 1
+						NOT = { dominant_province_culture_group = root.culture_group }
+					}
+					state = {
+						NOT = {
+							any_state_province = {
+								is_capital = yes
+							}
+						}
+					}
+				}
+				order_by = {
+					value = 0
+					add = population_cap
+					subtract = total_population
+				}
+				add_province_modifier = {
+					name = "local_colonia"
+					duration = -1
+				}
+				custom_tooltip = military_colonia_here_tt
+				trigger_event = { id = cultural_integration.11 }
+			}
+		}
+	}
+	levantine_egyptian_path_5 = {
+		icon = levantine_egyptian_path_5
+		requires = { levantine_egyptian_path_4 }
+		modifier = {
+			naval_morale_modifier = 0.1
+		}
+	}
+	levantine_egyptian_path_6 = {
+		icon = levantine_egyptian_path_6
+		requires = { levantine_egyptian_path_4 }
+		modifier = {
+			camels_defensive = 0.1
+		}
+	}
+	levantine_egyptian_path_7 = {
+		icon = levantine_egyptian_path_7
+		requires = { levantine_egyptian_path_5 levantine_egyptian_path_6 }
+		modifier = {
+			global_manpower_modifier = 0.1
+		}
+		on_activate = {
+			custom_tooltip = "create_high_martial_rising_star"
+			hidden_effect = {
+				create_character = {
+					add_martial = 8
+					add_trait = confident
+				}
+			}
+		}
+	}
+
+	levantine_greco_path_1 = {
+		icon = levantine_greco_path_1
+		modifier = {
+			heavy_infantry_cost = -0.1
+		}
+	}
+	levantine_greco_path_2 = {
+		icon = levantine_greco_path_2
+		requires = { levantine_egyptian_path_1 levantine_greco_path_1 }
+		modifier = {
+			light_infantry_offensive = 0.1
+		}
+	}
+	levantine_greco_path_3 = {
+		icon = levantine_greco_path_3
+		requires = { levantine_egyptian_path_1 }
+		modifier = {
+			heavy_infantry_offensive = 0.1
+		}
+	}
+	levantine_greco_path_4 = {
+		icon = levantine_greco_path_4
+		requires = { levantine_egyptian_path_2 levantine_egyptian_path_3 }
+		enable_tactic = greek_phalanx
+		modifier = {
+			light_infantry_discipline = 0.05
+		}
+	}
+	levantine_greco_path_5 = {
+		icon = levantine_greco_path_5
+		requires = { levantine_egyptian_path_4 }
+		modifier = {
+			mercenary_land_maintenance_cost = -0.1
+		}
+		on_activate = {
+			ordered_owned_province = {
+				order_by = {
+					value = 0
+					add = population_cap
+					subtract = total_population
+				}
+				check_range_bounds = no
+				max = 6
+				create_2_freemen_effect = yes
+			}
+		}
+	}
+	levantine_greco_path_6 = {
+		icon = levantine_greco_path_6
+		requires = { levantine_egyptian_path_5 }
+		modifier = {
+			naval_damage_done = 0.1
+		}
+	}
+	levantine_greco_path_7 = {
+		icon = levantine_greco_path_7
+		requires = { levantine_egyptian_path_6 }
+		modifier = {
+			general_loyalty = 1
+		}
+	}
+}
