@@ -15,6 +15,7 @@ deva_and_pros.1 = {
 				NOT = { controller = ROOT }
 				has_variable = in_plague
 				has_siege = yes
+				var:devastation_level > 1
 			}		
 		}
 	}
@@ -26,16 +27,23 @@ deva_and_pros.1 = {
 					NOT = { controller = ROOT } 
 					has_variable = in_plague 
 					has_siege = yes 
+					var:devastation_level > 1
 				}  
 			}									
-			change_devastation_level = { VALUE = devastation_inverse_growth } 			
-			check_is_devastation_at_proper_level = yes
+			 			
+			if = { 
+				limit = {
+					OR = { 
+						NOT = { controller = ROOT } 
+						has_variable = in_plague 
+						has_siege = yes 
+					} 
+				}
+				change_devastation_level = { VALUE = devastation_inverse_growth }
+			}
+			
 			assing_proper_devastation_modifier = yes			
-			decrease_prosperity_if_deva = { VALUE = -1 }
-			if = { limit = { var:devastation_level > 10 } decrease_prosperity_if_deva = { VALUE = -1 } }
-			if = { limit = { var:devastation_level > 20 } decrease_prosperity_if_deva = { VALUE = -1 } }
-			if = { limit = { var:devastation_level > 30 } decrease_prosperity_if_deva = { VALUE = -1 } }
-			if = { limit = { var:devastation_level > 40 } decrease_prosperity_if_deva = { VALUE = -1 } }
+			decrease_prosperity_if_deva = { VALUE = prosp_drop_on_devastation }
 			check_is_prosperity_at_proper_level = yes
 		}	
 	}	
@@ -65,7 +73,9 @@ deva_and_pros.2 = {
 					has_variable = prosperity_level 
 				} 
 				change_devastation_level = { VALUE = devastation_inverse_decay } 		
+				
 				assing_proper_devastation_modifier = yes		
+				
 				if = { 
 					limit = { 
 						owner = { war = no } 
@@ -76,8 +86,7 @@ deva_and_pros.2 = {
 						85 = {}
 					}
 				}
-				check_is_prosperity_at_proper_level = yes
-				check_is_devastation_at_proper_level = yes
+
 				assing_proper_prosperity_modifier = yes						
 			}
 			else = {
