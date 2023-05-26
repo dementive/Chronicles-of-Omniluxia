@@ -41,6 +41,6 @@ def add_new_region_file(file):
     write_list(sea_ids, "sea_zones", comment)
 
 if __name__ == '__main__':
-    path_to_province_setup = "C:\\Users\\demen\\Desktop\\provinces\\provinces"
+    path_to_province_setup = "C:\\Users\\demen\\Documents\\Paradox Interactive\\Imperator\\mod\\Chronicles-of-Omniluxia\\setup\\provinces"
     for file in Path(path_to_province_setup).iterdir():
         add_new_region_file(file)
