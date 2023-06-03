@@ -1931,3 +1931,518 @@ types OmniluxiaTypes
 		}
 	}
 }
+
+
+types ChoomTypes
+{
+
+	type province_decision_textbox = textbox {
+		position = { 38 1 }
+		parentanchor = vcenter
+		align = nobaseline
+		autoresize = yes
+		using = BaseFontM
+		using = White_FontColor 
+		fontsize = 13
+		block "province_decision_text"
+		{
+			text = "text"
+		}
+		max_width = 120
+		fontsize_min = 10
+		elide = right
+
+		block "p_d_context"
+		{
+		datacontext = "[GetScriptedGui('')]"
+		}
+		
+		block "p_d_visible"
+		{
+		visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+		}
+
+	}
+
+	type province_decision_button = button {
+		
+		block "p_d_context"
+		{
+		datacontext = "[GetScriptedGui('')]"
+		}
+		size = { 32 32 }
+		block "p_d_visible"
+		{
+		visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+		}
+		block "p_d_enabled"
+		{
+		enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+		}
+		block "p_d_effect"
+		{
+		onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+		}
+		block "p_d_tooltip"
+		{
+			tooltip = "PROVINCE_DECISION_TOOLTIP"
+
+		}
+
+		
+
+		texture = "gfx/interface/buttons/button_plus.dds"
+		clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+		oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+	
+	}
+
+
+	type province_decisions_list_window = base_window_black {
+		size = { 300 376 }
+		position = { 764 -2 }
+		movable = no
+		
+		visible = "[GetVariableSystem.Exists( 'province_decisions_list')]"
+		
+
+
+		container = {
+			icon = {
+				size = { 300 35 }
+				using = flat_background_white
+				
+				modify_texture = {
+					name = "Alpha"
+					texture = "gfx/interface/base_parts/background_x60bd_alpha.dds"
+					blend_mode = alphamultiply
+					spriteType = Corneredtiled
+					spriteborder = { 60 60 }
+				}
+				
+			}
+			
+			textbox = {
+				position = { 25  5 }
+				autoresize = yes
+				using = MarbleButtonFont
+				text = "PROVINCE_DECISIONS_PANEL"
+				fontcolor = { 0 0 0 1 }
+				align = center
+				fontsize = 16
+			}
+
+			
+
+		}
+
+		flowcontainer = {
+	
+			size = { 140 370 }
+			position = { 10 30 }
+			spacing = 25
+			ignoreinvisible = yes
+
+			direction = vertical
+		
+			container = {
+				 visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"   
+				 datacontext = "[GetScriptedGui('reclaim_land_pd')]" 
+				 province_decision_textbox = { 
+					blockoverride "province_decision_text" { text = "DECISION_RECLAIM_THE_LAND" } 
+			}
+				province_decision_button = { 
+			blockoverride "p_d_tooltip" {  tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('reclaim_land_pd')]"   }
+				}
+			}
+			container = {
+
+				 datacontext = "[GetScriptedGui('grant_local_titles_pd')]" 
+				 visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" 
+		
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_GRANT_NOBLE_TITLES" } 
+	
+			}
+				province_decision_button = { 
+					blockoverride "p_d_tooltip" {  tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('grant_local_titles_pd')]"   }
+				}
+			}							
+			container = {
+
+				datacontext = "[GetScriptedGui('restore_deva_pd')]"  
+				visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" 
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "RESTORE_DEVASTATED_LAND" } 
+				
+				
+		
+			
+			}
+				province_decision_button = { 
+					blockoverride "p_d_tooltip" {  tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('restore_deva_pd')]"   }
+				}
+			}
+			container = {
+			 datacontext = "[GetScriptedGui('grant_land_to_serfs')]" 
+			 visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" 
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "GRANT_LOCAL_LAND_TO_SERFS" } 
+				
+		
+			}
+				province_decision_button = { 
+					blockoverride "p_d_tooltip" {  tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('grant_land_to_serfs')]"   }
+				}
+			}
+			container = {
+				datacontext = "[GetScriptedGui('support_local_aristocracy_pd')]"
+				visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"  
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_SUPPORT_LOCAL_NOBLE_FAMILY" } 
+
+		
+			}
+				province_decision_button = { 
+				blockoverride "p_d_tooltip" {  tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }  
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('support_local_aristocracy_pd')]"   }
+				}
+			}
+			container = {
+			 datacontext = "[GetScriptedGui('hold_local_festival_pd')]" 
+			 visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_HOLD_LOCAL_FESTIVAL" } 
+ 
+		
+			
+			}
+				province_decision_button = { 
+				blockoverride "p_d_tooltip" {  tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('hold_local_festival_pd')]"   }
+				}
+			}
+
+		}
+		
+		flowcontainer = {
+	
+			size = { 140 370 }
+			position = { 150 30 }
+			spacing = 25
+			direction = vertical
+			container = {
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_INCREASE_TAX" } 
+				blockoverride "p_d_context" { datacontext = "[GetScriptedGui('increase_taxation_of_province')]" } 
+				blockoverride "p_d_visible" { visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"  } 
+		
+			}
+				province_decision_button = { 
+				blockoverride "p_d_tooltip" {  tooltip = "DECISION_INCREASE_TAX_TTP" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('increase_taxation_of_province')]"   }
+				}
+			}			
+			container = {
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_DECREASE_TAX" } 
+				blockoverride "p_d_context" { datacontext = "[GetScriptedGui('decrease_taxation_of_province')]" } 
+				blockoverride "p_d_visible" { visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"  } 
+		
+			}
+				province_decision_button = { 
+				blockoverride "p_d_tooltip" {  tooltip = "DECISION_DEREASE_TAX_TTP" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('decrease_taxation_of_province')]"   }
+				}
+			}
+			container = {
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_INCREASE_DRAFT" } 
+				blockoverride "p_d_context" { datacontext = "[GetScriptedGui('increase_draft_of_province')]" } 
+				blockoverride "p_d_visible" { visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"  } 
+		
+			
+			}
+				province_decision_button = { 
+				blockoverride "p_d_tooltip" {  tooltip = "DECISION_INCREASE_DRAFT_TTP" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('increase_draft_of_province')]"   }
+				}
+			}
+			container = {
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_DECREASE_DRAFT" } 
+				blockoverride "p_d_context" { datacontext = "[GetScriptedGui('decrease_draft_of_province')]" } 
+				blockoverride "p_d_visible" { visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"  } 
+		
+			
+			}
+				province_decision_button = { 
+				blockoverride "p_d_tooltip" {  tooltip = "DECISION_DECREASE_DRAFT_TTP" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('decrease_draft_of_province')]"   }
+				}
+			}
+			container = {
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_INCREASE_TRAIFS" } 
+				blockoverride "p_d_context" { datacontext = "[GetScriptedGui('increase_tradecharges_of_province')]" } 
+				blockoverride "p_d_visible" { visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"  } 
+		
+			}
+				province_decision_button = { 
+				blockoverride "p_d_tooltip" {  tooltip = "DECISION_INCREASE_TRAIFS_TTP" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('increase_tradecharges_of_province')]"   }
+				}
+			}
+			container = {
+				province_decision_textbox = { blockoverride "province_decision_text" { text = "DECISION_DECREASE_TRAIFS" } 
+				blockoverride "p_d_context" { datacontext = "[GetScriptedGui('decrease_tradecharges_of_province')]" } 
+				blockoverride "p_d_visible" { visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( ProvinceWindow.GetProvince.MakeScope ).AddScope('player', Player.MakeScope ).End )]"  } 
+		
+			}
+				province_decision_button = { 
+				blockoverride "p_d_tooltip" {  tooltip = "DECISION_DECREASE_TRAIFS_TTP" } 
+				blockoverride "p_d_context" {  datacontext = "[GetScriptedGui('decrease_tradecharges_of_province')]"   }
+				}
+			}			
+
+		}
+
+
+
+	
+	}
+
+	type devastation_and_prosperity_informations = base_window_black {
+
+
+
+
+
+		block "position_n_size" {
+			size = { 48 208 }
+			position = { 764 -206 }
+		}
+		movable = no
+		container =	{
+
+			icon = {
+				size = { 48 204 }
+				texture = "gfx/interface/bg/law_entry_scroll_bg.dds"
+				
+			}
+
+	flowcontainer =	{
+		direction = vertical
+		spacing = 5
+		position = { 8 25 }
+		
+		container = {
+			icon = {
+				size = { 32 32 }
+				texture = "gfx/interface/buttons/deva_n_pros/prosp.dds"
+				tooltip = "prosperity_text"
+				
+			}
+			textbox = {
+				position = { 4 32 }
+				autoresize = yes
+				using = MarbleButtonFont
+				text = "[ProvinceWindow.GetProvince.MakeScope.Var('prosperity_level').GetValue|2]"
+				fontcolor = { 0 0 0 1 }
+				align = center
+				fontsize = 12
+				
+			}
+
+		}
+
+		container = {
+			icon = {
+				size = { 32 32 }
+				texture = "gfx/interface/buttons/deva_n_pros/deva.dds"
+				tooltip = "devastation_text"
+				
+			}
+			textbox = {
+				position = { 4 32 }
+				autoresize = yes
+				using = MarbleButtonFont
+				text = "[ProvinceWindow.GetProvince.MakeScope.Var('devastation_level').GetValue|2]"
+				fontcolor = { 0 0 0 1 }
+				align = center
+				fontsize = 12
+			}
+
+		}
+
+
+	}
+	
+
+	}
+
+	}
+	type items_container = flowcontainer {
+		
+		name = "character_items_list"
+		ignoreinvisible = yes
+		#choo_items_container
+		visible = "[GetVariableSystem.Exists('open_list_panel')]"
+		direction = vertical
+		size = { 300 576 }
+		
+		background = {
+			name = "background_banner_tempmodifiers"
+			shaderfile = "gfx/FX/pdxgui_default.shader"
+			size = { 100% 100% }
+			texture = "gfx/interface/base_parts/background_noninteractable_texture.dds"
+			alpha = 1.0
+			using = border_slightly_torn_alpha
+			margin = { 10 4 }
+		}
+
+			container = {
+				
+				icon = {
+					name = "background_banner_tempmodifiers"
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					size = { 300 60 }
+					texture = "gfx/interface/bg/law_entry_scroll_bg.dds"
+					alpha = 1.0
+					using = border_slightly_torn_alpha
+					margin = { 10 4 }
+				}
+
+				textbox = {
+					using = MarbleButtonFont
+					position = { 150 25 }
+					datacontext = "[GetScriptedGui('char_has_no_items')]"
+					visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(CharacterWindow.GetCharacter.MakeScope).End)]"
+					fontsize = 16
+					align = center
+					text = "ITEMS_NONE"
+				}
+ 
+				 
+				textbox = {
+					using = MarbleButtonFont
+					position = { 150 25 }
+					datacontext = "[GetScriptedGui('char_has_no_items')]"
+					visible = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(CharacterWindow.GetCharacter.MakeScope).End))]"
+					fontsize = 16
+					align = center
+					text = "CHARACTER_ITEMS"
+				}
+
+			}
+
+			scrollarea = {
+				
+				scrollbarpolicy_horizontal = always_off
+				size = { 300 506 }
+				
+
+				scrollbar_vertical = {
+					using = VerticalScrollBar
+				}
+
+
+				scrollwidget = {
+					
+					dynamicgridbox = {
+						size = { 290 476 }
+						position = { 5 30 }
+						
+						datamodel = "[CharacterWindow.GetCharacter.MakeScope.GetList( 'item_list' )]"
+						
+
+
+
+						item = {
+							
+
+								container = {
+									textbox = {
+										
+										text = "[Concatenate(Concatenate('@icon_',Scope.GetFlagName), '!')]"
+										
+										size = { 80 80 }
+										position = { 5 0 }
+										align = left|vcenter
+									}
+									textbox = {
+										size = { 290 60 }
+										position = { 90 10 }
+										using = MarbleButtonFont
+										multiline = yes
+										datacontext = "[Scope]"
+										text = "GET_ITEM_NAME_LOC"
+										fontsize = 16
+										align = left|top
+										}
+ 
+										button = {
+											position = {  260 20  }
+											datacontext = "[GetScriptedGui(Concatenate('equip_',Scope.GetFlagName))]"
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											onclick = "[GetVariableSystem.Toggle(Scope.GetFlagName)]"
+											
+											tooltip = "EQUIP_ITEM" 
+											texture = "gfx/interface/buttons/button_plus.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+
+										button = {
+											position = {  228 20  }
+											datacontext = "[GetScriptedGui(Concatenate('discard_',Scope.GetFlagName))]"
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											tooltip = "DISCARD_ITEM" 
+											texture = "gfx/interface/buttons/button_plus.dds"
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+										}
+										icon = {
+											position = {  276 36  }
+											visible = "[GetVariableSystem.Exists(Scope.GetFlagName)]"
+											size = { 16 16 }
+											texture = "gfx/interface/buttons/button_plus.dds"
+										}
+										textbox = {
+											size = { 195 80 }
+											position = { 90 32 }
+											using = MarbleButtonFont
+											multiline = yes
+											datacontext = "[Scope]"
+											text = "GET_ITEM_DESC_LOC"
+											fontsize = 12
+											align = left|vcenter
+											}
+										icon = {
+											position = {  264 96  }
+											datacontext = "[Scope]"
+											size = { 24 24 }
+											texture = "gfx/interface/buttons/button_plus.dds"
+											tooltip = "ITEM_EFFECT_LOC"
+										}
+									}
+
+							
+
+
+
+								}
+							}
+						}
+				
+					}
+
+				}
+
+
+
+
+
+
+
+}

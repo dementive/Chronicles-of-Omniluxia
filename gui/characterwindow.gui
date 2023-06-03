@@ -20,7 +20,9 @@ base_window = {
 	name = "character_window"
 	
 	parentanchor = top|left
-	size = { 755 930 }
+
+	size = { 755 900 }
+
 	movable = no
 	using = main_window_template
 	
@@ -57,7 +59,10 @@ base_window = {
 				onclick = "[CharacterWindow.OnClose]"
 				tooltip = "CLOSE"
 			}
+
+		}
 		}	
+
 		hbox = {
 			layoutpolicy_vertical = expanding
 			layoutpolicy_horizontal = expanding
@@ -76,18 +81,17 @@ base_window = {
 						layoutpolicy_horizontal = expanding
 						margin_right = 8
 						margin_widget = {
-							size = { 0 318 }
+							size = { 0 288 }
 							layoutpolicy_horizontal = expanding
 							margin_right = 5
 							margin_left = 5
-							charpt_button_large_with_data = {
+							cpt_button_large_with_data = {
 								blockoverride "ShowIcons" { visible = no }
-								blockoverride "traits" {}
 								scissor = yes
-								scale = 1.08
-								blockoverride "Size" { size = { 683 256 } }
+								scale = 1
+								blockoverride "Size" { size = { 736 252 } }
 								blockoverride "Context" { datacontext = "[CharacterWindow.GetCharacter]" }
-								blockoverride "BottomPortraitPosition" { position = { -10 45 } }
+								blockoverride "BottomPortraitPosition" { position = { -10 40 } }
 								blockoverride "portrait_button_template_tooltip" {}
 								blockoverride "PartyIconVisibility" 
 								{
@@ -96,13 +100,12 @@ base_window = {
 								dynamicgridbox = {
 									#using = NoninteractableBG
 									datamodel = "[CharacterWindow.GetTraitItems]"
-									datamodel_wrap = 15
 									parentanchor = bottom|left
 									position = { 8 -2 }
 									flipdirection = yes
 									item = {
 										icon = {
-											size = { 30 30 }
+											size = { 40 40 }
 											texture = "[TraitItem.GetIcon]"
 											tooltip = "[TraitItem.GetTooltip]"
 										}
@@ -111,7 +114,6 @@ base_window = {
 								}
 							}
 							widget = {
-								visible = "[Not(CharacterWindow.GetCharacter.IsPregnant)]"
 								size = { 180 34 }
 								using = NoninteractableBG
 								blockoverride "Margins" { margin = { 2 3 } margin_top = 3 }
@@ -133,23 +135,35 @@ base_window = {
 									fontsize_min = 12
 								}
 							}
-							widget = {
-								visible = "[CharacterWindow.GetCharacter.IsPregnant]"
-								size = { 110 39 }
-								using = NoninteractableBG
-								blockoverride "Margins" { margin = { 2 3 } margin_top = 3 }
-								parentanchor = bottom
-
-								icon_and_text = {
-									size = { 110 0 }
-									parentanchor = bottom|hcenter
-									position = { -5 -5 }
-									blockoverride "Icon" { texture = "gfx/interface/icons/pregnant.dds" }
-									blockoverride "Text" { text = is_pregnant_loc }
-									tooltip = "[CharacterWindow.GetCharacter.GetPregnacyInfo]"
-									visible = "[CharacterWindow.GetCharacter.IsPregnant]"
-								}
+							button = {
+			
+								#choo_button
+								position = { 180 250 }
+								size = { 60 55 }
+								onclick = "[GetVariableSystem.Toggle('open_list_panel')]"
+								tooltip = "open_item_list_tt"
+								texture = "gfx/interface/buttons/parliment/bookmark_parliment.dds"
+								clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+								oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
 							}
+							#icon_and_text_progress = {
+							#	parentanchor = bottom
+							#	position = { 0 0 }
+							#	blockoverride "Icon" { using = icon_health }
+							#	blockoverride "Value" { value = "[FixedPointToFloat( CharacterWindow.GetCharacter.GetHealth )]" }
+							#	blockoverride "Text" { text = "[FixedPointToFloat( CharacterWindow.GetCharacter.GetHealth )]%" }
+							#	tooltip = "[CharacterWindow.GetCharacter.GetHealthInformation]"
+							#}
+							
+							#tag = {
+							#	datacontext = "[CharacterWindow]"
+							#	text = "PREFERRED_HEIR_CWINDOW" 
+							#	parentanchor = bottom|hcenter
+							#	autoresize = yes
+							#	max_width = 300
+							#	tooltip = "[CharacterWindow.GetCharacter.GetPreferredHeir.GetSuccessionScoreInfo]"
+							#	visible = "[CharacterWindow.GetCharacter.CanHavePreferredHeir]"
+							#}
 							icon_and_text = {
 								size = { 128 0 }
 								parentanchor = bottom|hcenter
@@ -202,7 +216,7 @@ base_window = {
 											}
 											blockoverride "Text" 
 											{ 
-												text = "[ConvictionGlue.GetValue]" 
+												text = "[ConvictionGlue.GetValue|1]" 
 											}
 											tooltip = "[ConvictionGlue.GetTooltip]"
 											
@@ -221,8 +235,15 @@ base_window = {
 							}
 							
 						}
-					
 						
+
+
+				
+
+
+
+
+
 						margin_widget = {
 							size = { 0 538 }
 							layoutpolicy_horizontal = expanding
@@ -517,6 +538,17 @@ base_window = {
 									widget = {
 										size = { 210 130 }
 
+
+										#background = {
+										#	name = "background_banner_schemes"
+										#	shaderfile = "gfx/FX/pdxgui_default.shader"
+										#	size = { 100% 100% }
+										#	using = beige_background
+										#	using = border_slightly_torn_alpha
+										#	alpha = @categoryBGalpha
+										#	margin_right = 20
+										#}
+
 										tag = {
 											maximumsize = { 190 32 }
 											visible = "[CharacterWindow.GetCharacter.HasActiveAmbition]"
@@ -601,6 +633,15 @@ base_window = {
 										
 									widget = {
 										size = { 256 130 }
+										#background = {
+										#	name = "background_banner_scheme"
+										#	shaderfile = "gfx/FX/pdxgui_default.shader"
+										#	size = { 100% 100% }
+										#	texture = "gfx/interface/base_parts/background_noninteractable_texture.dds"
+										#	alpha = @categoryBGalpha
+										#	using = border_slightly_torn_alpha
+										#	margin = { 14 6 }
+										#}
 
 										tag = {
 											maximumsize = { 190 32 }
@@ -717,18 +758,24 @@ base_window = {
 		}	
 	}
 	
+
+	
+
+
+
+
 	dynamicgridbox = {
 		datamodel = "[CharacterWindow.GetHeirSupport]"
-		size = { 200 83 }
-		parentanchor = left
-		position = { 74 57 }
+		size = { 200 88 }
+		parentanchor = hcenter
+		position = { 74 222 }
 		flipdirection = yes
 		item = {
 			widget = {
 				size = { 54 90 }
 				
 				cpt_button = {
-					size = { 38 55 }
+					size = { 40 60 }
 					datacontext = "[HeirSupportGlue.GetHeir]"
 					position = { 0 24 }
 				}
@@ -757,6 +804,21 @@ base_window = {
 		}
 		visible = "[And( And( CharacterWindow.GetCharacter.CanHavePreferredHeir, LessThanOrEqualTo_CFixedPoint( CharacterWindow.GetCharacter.GetSuccessionScore, '(CFixedPoint)3' ) ), CharacterWindow.GetCharacter.IsAlive )]"
 	}
-	
+
+	vbox = {
+		position = { 25 145 }
+		size = { 300 500 }
+		
+
+
+
+		items_container = {  
+			
+
+		}
+			
+		
+	}
+
 }
 
