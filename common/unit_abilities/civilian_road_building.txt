@@ -10,20 +10,21 @@
 	is_road_building = yes #blocks disband/reorganization and makes AI try to move armies acccordingly
 	cancel_on_combat_end = yes
 	
-	# hidden = { #makes no sense without unlocked mil trad. currently not set to any.
-	# 	trigger_if = {
-	# 		limit = {
-	# 			has_legion_trigger = yes
-	# 		}
-	# 		AND = {
-	# 			NOT = { is_unit_ability_used = civilian_road_building }
-	# 		}
-	# 		unit_owner = { has_military_bonus = latin_roman_path_4 }
-	# 	}
-	# 	trigger_else = {
-	# 		always = no
-	# 	}
-	# }
+	hidden = {
+		# Enable this if there are any military traditions that allow legions to build roads, also enable the ability in road_building.txt
+		#trigger_if = {
+		#	limit = {
+		#		has_legion_trigger = yes
+		#	}
+		#	AND = {
+		#		NOT = { is_unit_ability_used = civilian_road_building }
+		#	}
+		#	unit_owner = { has_military_bonus = latin_roman_path_4 }
+		#}
+		trigger_else = {
+			always = no
+		}
+	}
 
 	map = yes
 	
@@ -48,10 +49,11 @@
 		scope:province = { #not unit_location since AI needs to be able to reason about this 
 			trigger_if = {
 				limit = {
-					exists = owner 
+					exists = owner
 				}
 				OR = {
-					owner =  root.unit_owner
+					has_owner = no
+					owner = root.unit_owner
 					owner = {
 						is_subject_of = root.unit_owner
 					}
@@ -112,14 +114,15 @@
 					unit_owner = { can_pay_price = build_expensive_roads }
 				}
 				unit_location = {
-					has_owner = yes
 					OR = {
+						has_owner = no
 						owner = root.unit_owner 
 						owner = {
 							is_subject_of = root.unit_owner
 						}
 					}
 					OR = {
+						has_owner = no
 						controller = root.unit_owner 
 						controller = {
 							is_subject_of = root.unit_owner
