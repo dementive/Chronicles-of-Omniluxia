@@ -1,6 +1,8 @@
 ﻿succession_law = {
 	potential = {
-		is_monarchy = yes
+					is_monarchy = yes
+		NOT = { government = monastic_order }
+		
 	}
 	
 	agnatic_succession_law = {
@@ -57,50 +59,27 @@
 
 monarchy_military_reforms = {
 	potential = {
-		is_monarchy = yes
+					is_monarchy = yes
+		NOT = { government = monastic_order }
 	}
 	
-	relaxed_recruiting_standards = { #Noble Retinues - Macedon
+	noble_warriors = {
 		modifier = {
-			levy_size_multiplier = 0.05
-			global_cohort_start_experience = 5
+		levy_size_multiplier = 0.05
+		global_nobles_city_desired_pop_ratio = 0.05
+		army_maintenance_cost = 0.1
 		}
 		on_enact = {
 			custom_tooltip = legions_in_no_region
 			set_legion_recruitment = disabled
 		}
 	}
-	
-	recruit_from_nobles = {	#Military Service - Sparta
+
+	prince_retunies = { 
 		modifier = {
-			levy_size_multiplier = 0.1
-			happiness_for_same_culture_modifier = 0.05
-			happiness_for_wrong_culture_modifier = -0.04
-		}
-		on_enact = {
-			custom_tooltip = legions_in_no_region
-			set_legion_recruitment = disabled
-		}
-	}
-	
-	mercenary_reliance = {
-		modifier = {
-			mercenary_land_maintenance_cost = -0.1
-			recruit_mercenary_cost_modifier = -0.25
-		}
-		on_enact = {
-			custom_tooltip = legions_in_no_region
-			set_legion_recruitment = disabled
-		}
-	}
-	
-	work_for_the_best = { #Royal Guard - Diadochi
-		allow = {
-			rank >= regional_power
-		}
-		modifier = {
-			discipline = 0.05
-			levy_size_multiplier = 0.025
+			heavy_cavalry_cost = -0.25
+			light_infantry_cost = -0.33
+			levy_size_multiplier = -0.33
 		}
 		on_enact = {
 			custom_tooltip = legions_in_capital_region
@@ -108,177 +87,49 @@ monarchy_military_reforms = {
 		}
 	}
 	
-	standing_army_law = { #Roman Empire
+	banner_host_armies = {	
 		allow = {
-			invention = discipline_inv_5
-			rank >= great_power
+		NOT = { has_law = noble_warriors }
+		government = feudal_monarchy 	
+			}
+		modifier = {	
+		global_nobles_desired_pop_ratio = 0.1
+		knights_discipline = 0.05
+		levy_size_multiplier = -0.1
+		}
+		on_enact = {
+			custom_tooltip = legions_in_capital_region
+			set_legion_recruitment = capital
+			custom_tooltip = allows_direct_recruitment_of_knights
+		}
+	}
+
+	mercenary_reliance = {
+		
+		modifier = {
+			mercenary_land_maintenance_cost = -0.1
+			recruit_mercenary_cost_modifier = -0.25
+			manpower_recovery_speed = -0.1
+		}
+		on_enact = {
+			custom_tooltip = legions_in_capital_region
+			set_legion_recruitment = capital
+		}
+	}
+	
+	imperial_army = {	
+		allow = {
+		NOT = { has_law = noble_warriors }
+		government = imperium
 		}
 		modifier = {
-			army_maintenance_cost = -0.15
+		levy_size_multiplier = 0.05	
+		manpower_recovery_speed = 0.1
+		army_maintenance_cost = 0.15
 		}
 		on_enact = {
 			custom_tooltip = legions_in_any_region
 			set_legion_recruitment = enabled
-		}
-	}
-}
-
-monarchy_maritime_laws = {
-	potential = {
-		is_monarchy = yes
-	}
-	
-	slave_oarsmen = {
-		modifier = {
-			price_state_investment_oratory_cost_modifier = -0.1
-		}
-	}
-	
-	free_ports_monarchy_law = {
-		allow  = {
-			num_of_ports >= 1
-			invention = trireme_discipline_inv_1
-		}
-		on_enact = {
-			if = {
-				limit = {
-					any_owned_province = {
-						NOT = { has_province_modifier = pirate_haven_modifier }
-					}
-				}
-				custom_tooltip = pirate_will_be_placed_tt
-				hidden_effect = {
-					random_owned_province = {
-						limit = {
-							is_port = yes
-						}
-						weight = {
-							modifier = {
-								factor = 1000
-								controller = root
-							}
-						}
-						add_permanent_province_modifier = {
-							name = pirate_haven_modifier
-							duration = -1
-						}
-					}
-				}
-			}
-		}
-		modifier = {
-			global_commerce_modifier = 0.15
-			diplomatic_reputation = -5
-		}
-	}
-	
-	antipiracy_edict = {
-		allow = {
-			num_of_ports >= 1
-			invention = trireme_discipline_inv_1
-		}
-		on_enact = {
-			custom_tooltip = enables_root_out_pirates_tt
-		}
-		modifier = {
-			anti_piracy_cb = yes
-			global_citizen_happyness = 0.04
-		}
-	}
-	
-}
-
-monarchy_economic_law = {
-	potential = {
-		is_monarchy = yes
-	}
-	
-	land_tithe = {
-
-	}
-	
-	local_investment_policy = {
-		
-		allow = {
-			invention = global_tribesmen_output_inv_3
-		}
-		modifier = {
-			global_population_growth = 0.05
-			global_tax_modifier = -0.15
-		}
-	}
-	
-	heritage_tax_exemption = {
-	
-		allow = {
-			invention = global_tribesmen_output_inv_3
-		}
-		modifier = {
-			global_nobles_happyness = 0.06
-			global_nobles_output = -0.03
-		}
-	}
-	
-}
-
-monarchy_citizen_law = {
-	potential = {
-		is_monarchy = yes
-	}
-	
-	foreign_law_for_minorities = {
-		
-	}
-	
-	increased_citizenship_quotas = {
-		
-		allow  = {
-			invention = citizen_promotion_cost_modifier_inv
-		}
-		modifier = {
-			global_citizen_city_desired_pop_ratio = 0.10
-		}
-	}
-	
-	established_courts_for_landholders = {
-	
-		allow  = {
-			invention = citizen_promotion_cost_modifier_inv
-		}
-		modifier = {
-			global_freemen_city_desired_pop_ratio = 0.10
-		}
-	}
-	
-}
-
-monarchy_religious_laws = {
-	potential = {
-		is_monarchy = yes
-	}
-	
-	religious_tolerance_monarchy = {
-
-	}
-	
-	religious_integration_efforts = {
-		
-		allow  = {
-			invention = omen_power_inv_4
-		}
-		modifier = {
-			global_pop_conversion_speed = 0.25
-			global_pop_conversion_speed_modifier = 0.3
-		}
-	}
-	
-	monarchy_religious_mandate_military = { 
-		allow  = {
-			invention = omen_power_inv_4
-		}
-		modifier = {
-			global_pop_assimilation_speed = 0.25
-			global_pop_assimilation_speed_modifier = 0.3
 		}
 	}
 	
@@ -286,166 +137,493 @@ monarchy_religious_laws = {
 
 monarchy_legitimacy_laws = {
 	potential = {
-		is_monarchy = yes
+					is_monarchy = yes
+		NOT = { government = monastic_order }
 	}
 	
 	renowned_lineage = {
 		
 	}
 	
-	scholarly_pursuits_law = {
-	
-		allow = {
-			invention = scientific_patronage_inv
-		}
+	hereditary_right = {
 		modifier = {
-			research_points_modifier = 0.2
-			global_citizen_happyness = 0.06
+		next_ruler_legitimacy = 20
+		primary_heir_attraction = 25
+		civil_war_threshold = -0.05
 		}
 	}
 	
-	royal_bureaucracy = {
-	
-		allow = {
-			invention = scientific_patronage_inv
+	divine_rule = {
+		allow = { 
+			OR = { 
+			religion = helluvian 
+			religion = zainuddian 
+			religion = yedidyhan 
+			}   
 		}
 		modifier = {
-			monthly_legitimacy = 0.2
-			global_nobles_happyness = 0.06
+		monthly_legitimacy = 0.05
+		character_loyalty = 5
+		monarchy_new_ruler_cost_modifier = 0.5
 		}
 	}
+
+	imperial_codex_of_authority = {
+		
+		allow = { government = imperium }
+	modifier = {	
+	ruler_popularity_gain = 0.04
+	fabricate_claim_cost_modifier = -0.12
+	monarchy_new_ruler_cost_modifier = 0.5
+	}
+	}
+
+	king_of_its_people = {
+	modifier = {
+	happiness_for_same_culture_modifier = 0.1
+	happiness_for_wrong_culture_modifier = -0.1
+	monthly_legitimacy = 0.1
+	}
+	}
+
+
+}
+
+
+
+monarchy_economic_law = {
+	potential = {
+					is_monarchy = yes
+		NOT = { government = monastic_order }
+	}
+	local_economic_laws = {
+	modifier = {
+	global_unrest = -2
+	price_state_investment_civic = -0.1
+	global_tax_modifier = -0.1
+	global_commerce_modifier = -0.1
+	}
+	}
+	
+	crown_administration = {
+	allow = { OR = { has_law = patrimonisalism has_law = high_authority }  }
+	modifier = {
+	global_tax_modifier = 0.1
+	global_commerce_modifier = 0.1
+	global_nobles_happyness = -0.1
+	character_loyalty = -5
+	}
+	}
+	
+	enforcment_of_noble_rights = {
+	modifier = {
+	global_nobles_happyness = 0.05
+	character_loyalty = 5
+	global_freemen_happyness = -0.05
+	global_serfs_happyness = -0.05
+		}
+	}
+	
+	merchantry_support_policy = {
+		modifier = {
+		global_citizen_happyness = 0.05
+		global_state_trade_routes = 1
+		global_freemen_output = -0.1
+		price_state_investment_oratory = -0.1
+		}
+	}
+	
+	free_flow_rights = {
+		modifier = {
+	global_freemen_happyness = 0.05
+	global_commerce_modifier = -0.2
+	global_freemen_output = 0.1
+	build_cost = -0.1
+		}
+	}
+	
+	
+}
+
+monarchy_subject_laws = {
+	potential = { 
+					is_monarchy = yes
+		NOT = { government = monastic_order }
+	}
+	
+	subject_no_contracts = {
+		allow = {
+
+		NOT = { government = feudal_monarchy }
+
+		}
+		modifier = {
+		tribute_income_modifier = -0.2
+		subject_opinions = -10
+		diplomatic_relations = 1
+		}
+	}
+
+	subject_feudal_contracts = {
+		allow = {
+
+			government = feudal_monarchy
+
+		}
+		modifier = {
+		county_subject_pays_cost_modifier = 0.1
+		princedoom_subject_pays_cost_modifier = 0.1
+		subject_opinions = 5
+		}
+		on_enact = {
+			custom_tooltip = allows_rising_knights_host
+		}
+	}
+
+	subject_increased_tribute = {
+	allow = {
+		NOT = { government = feudal_monarchy }
+	}	
+		modifier = {
+		tribute_income_modifier = 0.33
+		subject_opinions = -15
+		subject_loyalty = -5
+		}
+	}
+	
+	subject_imperial_autonomies = {
+		allow = {
+			 government = imperium 
+		}	
+			modifier = {
+			tribute_income_modifier = -0.2
+			subject_opinions = 30
+			subject_loyalty = 10
+			}
+		}
+	
+	subject_imperial_control = {
+			allow = {
+				 government = imperium 
+			}	
+				modifier = {
+				tribute_income_modifier = 0.4
+				subject_opinions = -30
+				subject_loyalty = -10
+				}
+			}	
+
+	
+}
+
+
+
+monarchy_authority_law = {
+	potential = {
+					is_monarchy = yes
+		NOT = { government = monastic_order }
+	}
+	balance_of_authority = {
+	
+	}
+	
+	despotism = {
+		modifier = {
+	agressive_expansion_impact = -0.1
+	war_exhaustion = -0.01
+	ruler_popularity_gain = -0.01
+		}
+	}
+	
+	general_estates = {
+	modifier = {	
+	global_nobles_happyness = 0.025
+	global_citizen_happyness = 0.025
+	character_loyalty = 5
+	}
+	}
+	
+	patrimonisalism = {
+		modifier = {
+	global_serfs_output = 0.1
+	monthly_wage_modifier = -0.1
+	character_loyalty = -2.5
+		}
+	}
+	
+	shared_authority = {
+		modifier = {
+	subject_opinions = 30
+	subject_loyalty = 15
+	integrate_speed = -0.5
+		}
+	}
+	
+}
+
+
+
+
+monarchy_land_ownage_law = {
+	potential = {
+					is_monarchy = yes
+		NOT = { government = monastic_order }
+	}
+	
+	local_landowners_rights = {
+	
+		modifier = {
+		global_nobles_output = 0.1
+		global_nobles_happyness = 0.05
+		global_serfs_happyness = -0.1
+		
+		}
+	}
+	
+	crown_managment_of_land = {
+	
+	allow = { OR = { has_law = patrimonisalism has_law = crown_administration }  }
+	
+	modifier = {
+		global_building_slot = 1
+		global_monthly_state_loyalty = 0.05
+		build_cost = -0.1
+	}
+	
+	}
+	highborn_right = {
+	allow = { 
+		OR = { 
+			has_law = patrimonisalism 
+			has_law = crown_administration 
+			has_law = aristocratic_dynasties 
+		}  
+	}
+	modifier = {
+	global_nobles_happyness = 0.05
+	global_nobles_output = 0.1
+	global_serfs_happyness = -0.1
+	}
+	
+	}
+	
+	free_landowners_right = {
+	allow = {
+	NOR = {	has_law = harash_serfdom  has_law = medicore_serfdom }
+	}
+	modifier = {
+	global_freemen_happyness = 0.025
+	global_monthly_food_modifier = 0.2
+	global_freemen_desired_pop_ratio = 0.05
+	}
+
+	}
+	
 }
 
 monarchy_contract_law = {
 	potential = {
-		is_monarchy = yes
+					is_monarchy = yes
+		NOT = { government = monastic_order }
 	}
 	
 	no_contract_law = {
 	
 	}
 	
-	public_notaries_law = {
-		allow = {
-			invention = tyranny_inv_2
-		}
+	local_landlords_contracts_law = {
 		modifier = {
-			monthly_wage_modifier = -0.2
-			character_loyalty = -5
+		
+			character_loyalty = 5
+			global_nobles_output = -0.05
+
 		}
 	}
 	
-	vast_bureaucracy = {
+	imperial_bureaucracy = {
 		allow = {
-			invention = tyranny_inv_2
+		government = imperium
 		}
 		modifier = {
-			monthly_governor_wage = -0.15
-			governor_loyalty = -10
+		monthly_governor_wage = -0.1
+		governor_loyalty = -5
+
+		}
+	}
+
+	feudal_contracts = {
+		allow = {
+		government = feudal_monarchy
+		}
+		modifier = {
+		character_loyalty = 5
+		knights_cost = 0.2
 		}
 	}
 }
-
-monarchy_divinity_statutes = {
+monarchy_religion_culture_laws = {
 	potential = {
-		is_monarchy = yes
+					is_monarchy = yes
+		NOT = { government = monastic_order }
 	}
 	
-	humility_status_law = { 
-	
-		allow = {
-			always = yes
-		}
-	
-		modifier = {
-			global_freemen_happyness = happiness_large_svalue
-		}
+	our_place_to_live = {
 		
+		modifier = {
+		happiness_for_same_culture_modifier = 0.05
+		happiness_for_same_religion_modifier = 0.05
+		cultural_integration_speed_modifier = -0.05
+		global_pop_assimilation_speed = -0.05
+		}
+
+	}
+	
+	religious_primacy = {
+		
+		modifier = {
+			cultural_integration_speed_modifier = -0.1
+			global_pop_conversion_speed_modifier = 0.1
+			global_pop_conversion_speed = 0.05
+		}
+
+	}
+	
+	religious_persecutions = {
+		
+		modifier = {
+			global_pop_conversion_speed_modifier = 0.3
+			global_pop_conversion_speed = 0.25
+		}
 		on_enact = {
-			custom_tooltip = can_nominate_heir_at_high_legitimacy
+			custom_tooltip = intolerance_law_mechanic
 		}
 	}
 	
-	elevate_monarch_monarchy = {
-		
-		allow  = {
-			current_ruler = {
-				zeal >= 10
-				popularity >= 90
-			}
-			legitimacy >= 90
-		}
+	tolerance_for_the_other = {
 		
 		modifier = {
-			ruler_popularity_gain = 0.25
-			agressive_expansion_impact = -0.2
-		}
+
+			cultural_integration_speed_modifier = 0.2
+			global_pop_assimilation_speed = -0.2
+			global_pop_conversion_speed = -0.2
 			
-		on_enact = {
-			custom_tooltip = can_always_nominate_heirs
 		}
+		on_enact = {
+			custom_tooltip = tolerance_law_mechanic
+		}
+	}
+
+
+}
+
+
+
+
+
+monarchy_serfdom_law = {
+	potential = {
+					is_monarchy = yes
+		NOT = { government = monastic_order }
+	}
+	medicore_serfdom = {
+		modifier = {
+	global_serfs_desired_pop_ratio = 0.05
+	global_nobles_happyness = 0.025
+	global_serfs_output = 0.05
+	global_serfs_happyness = -0.025
+		}
+	}
+	harash_serfdom = {
+		modifier = {
+	global_serfs_desired_pop_ratio = 0.1
+	global_nobles_happyness = 0.05
+	global_serfs_output = 0.15
+	global_serfs_happyness = -0.075
+		}
+	}
+	mild_serfdom = {
+		modifier = {
+				
+	global_serfs_desired_pop_ratio = 0.025
+	global_nobles_happyness = -0.05
+	global_serfs_output = -0.15
+	global_serfs_happyness = 0.075
+		}
+	}	
+	free_serfs = {
+	allow = { AND = { has_law = patrimonisalism has_law = crown_administration }  }
+	modifier = {
+	global_unrest = -1
+	global_nobles_happyness = -0.075
+	global_freemen_city_desired_pop_ratio = 0.2
+	global_serfs_city_desired_pop_ratio = -0.2
+	}
 	}
 	
 }
 
-#jewish_monarchy_divinity_statutes = {
-#	potential = {
-#		is_monarchy = yes
-#		religion = judaism
-#	}
-#	
-#	humility_status_law = { 
-#		modifier = {
-#			global_freemen_happyness = happiness_large_svalue
-#		}
-#		
-#		on_enact = {
-#			custom_tooltip = can_nominate_heir_at_high_legitimacy
-#		}
-#	}
-#	
-#	elevate_prophet_monarch_monarchy = {
-#		
-#		allow  = {
-#			current_ruler = {
-#				zeal >= 10
-#				popularity >= 90
-#			}
-#			legitimacy >= 90
-#		}
-#		
-#		modifier = {
-#			ruler_popularity_gain = 0.25
-#			agressive_expansion_impact = -0.2
-#		}
-#			
-#		on_enact = {
-#			custom_tooltip = can_always_nominate_heirs
-#		}
-#	}
-#}
 
-monarchy_subject_laws = {
-	potential = { 
-		is_monarchy = yes
+
+
+monarchy_slavery_law = {
+	potential = {
+					is_monarchy = yes
+		NOT = { government = monastic_order }
+	}
+
+	monarchy_unregulated_slavery = {
+
+
 	}
 	
-	trusted_beyond_measure = {
-		modifier = {
-			subject_opinions = 15
-		}
-	} 
+	monarchy_prohibited_slavery = {
+	modifier = {
+	global_slaves_desired_pop_ratio = -0.5
+	enslavement_efficiency = -0.2
+	agressive_expansion_impact = -0.1
 	
-	king_of_kings = {
-		
-		allow = {
-			num_of_cities >= 100
-			
-		}
-		modifier = {
-			integrate_speed = 0.3
-			diplomatic_relations = 2
-		}
+	}
 	}
 	
+	monarchy_state_regulated_slavery = {
+	modifier = {
+	global_slaves_city_desired_pop_ratio = 0.05
+	enslavement_efficiency = 0.025
+	agressive_expansion_impact = 0.1
+	}
+
+	}
+	
+}
+
+monarchy_magic_law = {
+	potential = {
+					is_monarchy = yes
+		NOT = { government = monastic_order }
+	}
+	
+	magic_only_for_entrusted = {
+	
+	modifier = {
+	global_tmages_city_desired_pop_ratio = 0.01
+	}
+	}
+	magic_compleatly_baned = {
+	allow = { NOT = { primary_culture = zani_seeker } }
+	modifier = { global_tmages_city_desired_pop_ratio = -0.05 }
+	}
+	magic_permitted = {
+	allow = { 
+	OR = { 
+		has_country_modifier = tolerance_for_arcane 
+		primary_culture = zani_seeker 
+		has_country_modifier = orcish_race_modifier 
+		has_country_modifier = high_elven_race_modifier 
+	}  
+	}
+	modifier = {
+	global_tmages_city_desired_pop_ratio = 0.025
+	global_tmages_desired_pop_ratio = 0.025	
+	}	
+	}
 }

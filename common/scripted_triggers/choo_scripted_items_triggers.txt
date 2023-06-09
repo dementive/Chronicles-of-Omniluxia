@@ -25,14 +25,87 @@ has_equiped_item = {
 
 }
 
-check_item_category = {
+is_item_in_item_category = {
 
-    is_target_in_global_variable_list = {
-        name = item_$item_category$
-        target = flag:$item_ID$
+    AND = {
+        
+        is_target_in_global_variable_list = {
+            name = item_$item_category$
+            target = flag:$item_ID$
+    
+        }
+        is_target_in_variable_list = {
+            name = item_list
+            target = flag:$item_ID$
+    
+        }
 
     }
 
 
 }
 
+has_any_other_same_category_item_equipped = {
+       
+        # is_target_in_global_variable_list = {
+        #     name = item_$item_category$
+        #     target = flag:$item_ID$
+    
+        # }
+
+        # is_target_in_variable_list = {
+        #     name = equiped_item_list
+        #     target = flag:$item_ID$
+        # }
+        
+        trigger_if = {
+
+            limit = {  
+                
+                root = {
+                    
+                    NOT = {
+    
+                        is_target_in_variable_list = {
+                            name = equiped_item_list
+                            target = flag:$item_ID$
+                        }
+                    }
+    
+                }
+    
+            
+            }
+            custom_tooltip = {
+                text = no_other_same_category_item_equipped
+            any_in_global_list = {
+                variable = item_$item_category$
+                count < 1
+                root = {
+               
+                        
+                        is_target_in_variable_list = {
+                            name = equiped_item_list
+                            target = PREV
+                        }
+            
+                    
+    
+        
+                    }
+                }
+            }
+        }
+        trigger_else = {
+            
+            custom_tooltip = {
+                text = item_always_can_be_unequiped
+                always = yes
+            }
+            
+    
+        }
+
+
+
+}
