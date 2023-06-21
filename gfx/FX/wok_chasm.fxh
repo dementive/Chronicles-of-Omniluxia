@@ -4,6 +4,18 @@ Includes = {
 
 PixelShader
 {
+	TextureSampler MagmaTexture
+	{
+		file = "gfx/magma.dds"
+		srgb = yes
+
+		Index = 13
+		MagFilter = "Linear"
+		MinFilter = "Linear"
+		MipFilter = "Linear"
+		SampleModeU = "Wrap"
+		SampleModeV = "Wrap"
+	}
 	Code
 	[[
 		//
@@ -333,6 +345,23 @@ PixelShader
 			#endif // WOK_CHASM_ENABLED
 		}
 
+		// IMPERATOR CHANGES
+		float4 MultiplyColorAboveThreshold(float4 color, float thresholdMin, float thresholdMax, float multiplier)
+		{
+		    // Calculate the luminosity using the dot product with the rgb2lum vector
+		    float3 rgb2lum = float3(0.30, 0.59, 0.11);
+		    float luminosity = dot(color.rgb, rgb2lum);
+
+		    // Use smoothstep() to interpolate between 0 and 1 based on the luminosity and threshold range
+		    float blend = smoothstep(thresholdMin, thresholdMax, luminosity);
+
+		    // Multiply the color with the interpolated value
+		    color.rgb *= 1.0 + blend * (multiplier - 1.0);
+
+		    return color;
+		}
+		//
+
 		void WoKAdjustChasmFinalColor(inout float3 FinalColor, in float RelativeChasmDepth, in float2 WorldSpacePosXZ)
 		{
 			#ifdef WOK_CHASM_ENABLED
@@ -342,7 +371,22 @@ PixelShader
 
 				// Fade color to CHASM_BOTTOM_COLOR as "depth" increases
 				
+				// IMPERATOR CHANGES
+				// float2 magma_UV = WorldSpacePosXZ *= 0.1;
+				// float4 magma_color = PdxTex2D( MagmaTexture, magma_UV );
+
+				// // Define the luminosity threshold range and multiplier
+				// float thresholdMin = 0.8;
+				// float thresholdMax = 1.0;
+				// float multiplier = 5.0;
+
+				// // Multiply the color using the updated MultiplyColorAboveThreshold function
+				// magma_color = MultiplyColorAboveThreshold(magma_color, thresholdMin, thresholdMax, multiplier);
+
+				// FinalColor = lerp(magma_color.rgb, FinalColor, FinalColorLerpValue);
 				FinalColor = lerp(CHASM_BOTTOM_COLOR, FinalColor, FinalColorLerpValue);
+				//
+
 
 				#ifdef WOK_CHASM_SYMMETRY_GUIDES_ENABLED
 					WoKDrawChasmSymmetryGuides(WorldSpacePosXZ, FinalColor);
