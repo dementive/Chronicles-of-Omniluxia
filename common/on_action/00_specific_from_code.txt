@@ -170,6 +170,12 @@ on_ruler_change = {
 				}
 			}
 		}
+		if = {
+			limit = { has_variable = accepted_vassalage_1 }
+			scope:former_ruler = { save_scope_as = dead_supported_ruler }
+			save_scope_as = supported_country
+			trigger_event = character_interactions_inv.8
+		}
 	}
 	on_actions = {
 		on_republic_ruler_change #Party approval stuff, this is needed.
@@ -208,25 +214,429 @@ on_civil_war_won = {
 }
 
 on_character_death = {
+	###Section 0.01 Foreign holdings removal before inheritance
+	###Section 1: Vanilla events and variable removals.
+	###Section 2: Vanilla inheritance rules applied to republics/tribes
+	###Section 3: Inheritance rules changed for Vanilla Monarchies			
+	###Section 6: Various Fixes
 	effect = {
+		###Section 0.01 Foreign holdings removal before inheritance
+		if = {
+		  limit = {
+		    num_holdings_owned > 0
+		  }
+		  employer = {
+		    save_scope_as = my_country
+		  }
+		  while = {
+		    limit = {
+		      any_holdings = {
+		        NOT = { owner = scope:my_country }
+		      }
+		    }
+		    random_holdings = {
+		      limit = {
+		        NOT = { owner = scope:my_country }
+		      }
+		      save_scope_as = removing_the_holding
+		    }
+		    remove_holding = scope:removing_the_holding
+		  }
+		}
+		###Section 1: Vanilla events and variable removals.
 		clear_ambition_effect = yes
+		befriend_removal_effect = yes
+		clear_befriending_var_effect = yes
 		if = {
 			limit = {
+				has_variable = on_espionage_mission_origin
+				var:on_espionage_mission_origin = {
+					exists = this
+					has_land = yes
+				}
+				has_variable = on_espionage_mission_recipient
+				var:on_espionage_mission_recipient = {
+					exists = this
+					has_land = yes
+				}
+			}
+			save_scope_as = spy
+			var:on_espionage_mission_recipient = {
+				save_scope_as = spied_upon
+			}
+			var:on_espionage_mission_origin = {
+				save_scope_as = esp_o
+			}
+			scope:esp_o = {
+				trigger_event = {
+					id = country_diplomacy.46
+				}
+			}
+		}
+		remove_espionage_variables_effect = yes
+		if = {
+			limit = {
+				has_triggered_character_modifier = disloyal_family_head_cmod
+				is_general = yes
+			}
+			every_character_unit = {
+				destroy_unit = yes
+			}
+		}
+		if = {
+			limit = {
+				is_ruler = yes
+				employer = {
+					is_monarchy = yes
+					has_land = yes
+				}
+			}
+			save_scope_as = former_ruler
+			employer = {
+				if = {
+					limit = {
+						NOR = {
+							has_variable = recent_succession_crisis
+							has_civil_war = yes
+						}
+						any_successor = {
+							loyalty < 33
+							is_adult = yes
+							is_ruler = no
+							is_pretender = yes
+							is_primary_heir = no
+							NOT = {
+								has_character_modifier = disloyal_successor_cmod
+							}
+						}
+					}
+					every_successor = {
+						limit = {
+							loyalty < 33
+							is_adult = yes
+							is_ruler = no
+							is_pretender = yes
+							is_primary_heir = no
+							NOT = {
+								has_character_modifier = disloyal_successor_cmod
+							}
+						}
+						if = {
+							limit = {
+								NOT = {
+									exists = scope:successor_general_1
+								}
+							}
+							save_scope_as = successor_general_1
+						}
+						else_if = {
+							limit = { 
+								NOT = {
+									exists = scope:successor_general_2
+								}
+							}
+							save_scope_as = successor_general_2
+						}
+						else_if = {
+							limit = {
+								NOT = {
+									exists = scope:successor_general_3
+								}
+							}
+							save_scope_as = successor_general_3
+						}
+						else_if = {
+							limit = {
+								NOT = {
+									exists = scope:successor_general_4
+								}
+							}
+							save_scope_as = successor_general_4
+						}
+					}
+					trigger_event = {
+						id = succession_crisis.1
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				has_variable = adventuring_from
+				NOT = {
+					employer = var:adventuring_from
+				}
+				var:adventuring_from = {
+					has_land = yes
+				}
+			}
+			if = {
+				limit = {
+					has_variable = next_in_succession
+				}
+				set_local_variable = next_in_succession
+			}
+			location = {
+				save_scope_as = death_location
+			}
+			save_scope_as = dead_merc
+			var:adventuring_from = {
+				trigger_event = {
+					id = character_events.48
+				}
+			}
+		}
+		if = {
+			limit = {
+				has_variable = ip_mon_47_regent_consort
+				employer = {
+					has_land = yes
+					current_ruler = {
+						is_child_of = root
+					}
+				}
+			}
+			remove_variable = ip_mon_47_regent_consort
+			save_scope_as = ip_mon_47_consort
+			if = {
+				limit = {
+					NAND = {
+						this = char:287
+						employer.current_ruler = char:289
+					}
+				}
+				employer = {
+					trigger_event = { id = ip_monarchy.52 }
+				}
+			}
+			else = {
+				employer.current_ruler = { 
+					remove_variable = ip_mon_47_regent_child
+					remove_regent_modifier_effect = yes
+				}
+			}
+		}
+		if = {
+			limit = {
+				has_variable = ip_mon_47_regent_child
+			}
+			remove_variable = ip_mon_47_regent_child
+			if = {
+				limit = {
+					remove_regent_modifier_trigger = yes
+				}
+				remove_regent_modifier_effect = yes
+			}
+			employer = {
+				trigger_event = {
+					id = ip_monarchy.49
+				}
+			}
+		}
+		###Section 2: Vanilla inheritance rules applied to republics/tribes
+		if = {
+			limit = {
+				employer = {
+					is_monarchy = no
+				}
 				is_head_of_family = yes
 				exists = next_in_family
 			}
 			next_in_family = {
+				save_scope_as = holding_target
 				add_gold = family_inheritance_svalue
-				
 			}
 			add_gold = {
 				value = 0
 				subtract = wealth
 			}
-			transfer_all_items_to = {  transfer_from = root transfer_to = next_in_family }
 		}
 		else_if = {
 			limit = {
+				employer = {
+					is_monarchy = no
+				}
+				is_head_of_family = no
+				exists = family.head_of_family
+				family.head_of_family = {
+					employer = root.employer
+				}
+			}
+			family.head_of_family = {
+				save_scope_as = holding_target
+				add_gold = family_individual_inheritance_svalue
+			}
+		}
+		if = { 
+			limit = { num_holdings_owned > 0 }
+			if = { # Give holdings to relevant character based on above
+				limit = { 
+					exists = scope:holding_target 
+					NOT = {
+						scope:holding_target = root
+					}
+				}
+				while = {
+					limit = { num_holdings_owned > 0 }
+					random_holdings = { save_scope_as = holding_transfer }
+					remove_holding = scope:holding_transfer
+					scope:holding_target = { add_holding = scope:holding_transfer }
+				}
+				scope:holding_target = {
+					trigger_event = {
+						id = holding_mech.1
+						days = 1 #Necessary
+					}
+				}
+			}
+		}
+		###Section 3: Inheritance rules changed for Vanilla Monarchies			
+		## Give Holdings and Gold to the primary heir only if he belongs to the same family as the ruler. 	
+		if = { 
+			limit = {
+				is_ruler = yes
+				employer = {
+					OR = {
+						government = dictatorship
+						government = despotic_monarchy
+						government = aristocratic_monarchy
+						government = stratocratic_monarchy
+						government = theocratic_monarchy
+						government = plutocratic_monarchy
+						government = imperium
+						government = imperial_cult
+					}
+					any_character = {
+						is_primary_heir = yes
+						has_same_family = ROOT				
+					}
+				}
+				num_holdings_owned > 0
+			}
+			
+			save_scope_as = ruler_with_holdings
+			
+			employer = {
+				random_character = {
+					limit = {
+						is_primary_heir = yes
+						has_same_family = scope:ruler_with_holdings
+					}
+					save_scope_as = holding_target
+				}
+			}
+			
+			if = {
+				limit = {
+					exists = scope:holding_target
+				}
+				
+				scope:holding_target = {
+					add_gold = family_inheritance_svalue
+				}
+
+				add_gold = {
+					value = 0
+					subtract = wealth
+				}				
+				
+				while = {
+					limit = {
+						num_holdings_owned > 0
+					}
+					random_holdings = {
+						save_scope_as = holding_transfer
+					}
+					remove_holding = scope:holding_transfer
+					scope:holding_target = {
+						add_holding = scope:holding_transfer
+					}
+				}
+			}
+		}
+		
+		else_if = {
+			limit = {
+				is_ruler = yes
+				employer = {
+					OR = {
+						government = dictatorship
+						government = despotic_monarchy
+						government = aristocratic_monarchy
+						government = stratocratic_monarchy
+						government = theocratic_monarchy
+						government = plutocratic_monarchy
+						government = imperium
+						government = imperial_cult
+					}
+					any_character = {
+						is_primary_heir = yes
+						has_same_family = ROOT			
+					}
+				}
+			}
+			
+			employer = {
+				random_character = {
+					limit = {
+						is_primary_heir = yes
+						has_same_family = ROOT
+					}
+					save_scope_as = next_king
+				}
+			}
+			
+			scope:next_king = {
+				add_gold = family_inheritance_svalue	
+			}
+			
+			add_gold = {
+				value = 0
+				subtract = wealth
+			}
+		}
+		
+		if = { 
+			limit = {
+				employer = {
+					OR = {
+						government = dictatorship
+						government = despotic_monarchy
+						government = aristocratic_monarchy
+						government = stratocratic_monarchy
+						government = theocratic_monarchy
+						government = plutocratic_monarchy
+						government = imperium
+						government = imperial_cult
+					}
+				}
+				is_head_of_family = yes
+				exists = next_in_family
+			}
+			next_in_family = {
+				add_gold = family_inheritance_svalue
+			}
+			add_gold = {
+				value = 0
+				subtract = wealth
+			}
+		}
+
+		if = {
+			limit = {
+				employer = {
+					OR = {
+						government = dictatorship
+						government = despotic_monarchy
+						government = aristocratic_monarchy
+						government = stratocratic_monarchy
+						government = theocratic_monarchy
+						government = plutocratic_monarchy
+						government = imperium
+						government = imperial_cult
+					}
+				}
+				is_adult = yes
 				is_head_of_family = no
 				exists = family.head_of_family
 				family.head_of_family = {
@@ -236,10 +646,23 @@ on_character_death = {
 			family.head_of_family = {
 				add_gold = family_individual_inheritance_svalue
 			}
-			transfer_all_items_to = {  transfer_from = root transfer_to =  family.head_of_family }
 		}
+
 		if = {
 			limit = {
+				employer = {
+					OR = {
+						government = dictatorship
+						government = despotic_monarchy
+						government = aristocratic_monarchy
+						government = stratocratic_monarchy
+						government = theocratic_monarchy
+						government = plutocratic_monarchy
+						government = imperium
+						government = imperial_cult
+					}
+				}
+				is_head_of_family = yes
 				num_holdings_owned > 0
 				exists = next_in_family
 			}
@@ -263,11 +686,192 @@ on_character_death = {
 					}
 				}
 			}
-			scope:holding_target = {
-				trigger_event = {
-					id = holding_mech.1
-					days = 1 #Necessary
+		}
+		
+		if = {
+			limit = {
+				employer = {
+					OR = {
+						government = dictatorship
+						government = despotic_monarchy
+						government = aristocratic_monarchy
+						government = stratocratic_monarchy
+						government = theocratic_monarchy
+						government = plutocratic_monarchy
+						government = imperium
+						government = imperial_cult
+					}
 				}
+				is_head_of_family = no
+				num_holdings_owned > 0
+				exists = family.head_of_family
+				family.head_of_family = {
+					employer = root.employer
+				}
+			}
+			family.head_of_family = {
+				save_scope_as = holding_target
+			}
+			if = {
+				limit = {
+					exists = scope:holding_target
+				}
+				set_variable = {
+					name = while_count
+					value = num_holdings_owned
+				}
+				while = {
+					count = var:while_count
+					limit = {
+						num_holdings_owned > 0
+					}
+					random_holdings = {
+						save_scope_as = holding_transfer
+					}
+					remove_holding = scope:holding_transfer
+					scope:holding_target = {
+						add_holding = scope:holding_transfer
+					}
+				}
+				remove_variable = while_count
+			}
+		}
+		###Section 6: Various Fixes
+
+		# Remove negative (non-congenital and non-dna-modified) health traits that effect stats from dead deified characters so apotheosis effects work correctly
+		# This is so silly things like a dead guy being stressed preventing apotheosis effects from working because they reduce the character's stats.
+
+		# traits = ["stressed", "invalid", "hemorrhagic_fever", "plague", "mentagra", "arthritis", "pox", "dysentery", "inflammation", "wounded", "gangrene", "leper", "maimed", "frail", "paralysis", "brain_damaged", "mourning", "depressed", "dementia", "cancer", "gout"]
+		# for i in traits: print(f"if = {{\n\tlimit = {{\n\t\thas_trait = {i}\n\t}}\n\tremove_trait = {i}\n}}")
+		if = {
+			limit = {
+				is_deified = yes
+			}
+			if = {
+				limit = {
+					has_trait = stressed
+				}
+				remove_trait = stressed
+			}
+			if = {
+				limit = {
+					has_trait = invalid
+				}
+				remove_trait = invalid
+			}
+			if = {
+				limit = {
+					has_trait = hemorrhagic_fever
+				}
+				remove_trait = hemorrhagic_fever
+			}
+			if = {
+				limit = {
+					has_trait = plague
+				}
+				remove_trait = plague
+			}
+			if = {
+				limit = {
+					has_trait = mentagra
+				}
+				remove_trait = mentagra
+			}
+			if = {
+				limit = {
+					has_trait = arthritis
+				}
+				remove_trait = arthritis
+			}
+			if = {
+				limit = {
+					has_trait = pox
+				}
+				remove_trait = pox
+			}
+			if = {
+				limit = {
+					has_trait = dysentery
+				}
+				remove_trait = dysentery
+			}
+			if = {
+				limit = {
+					has_trait = inflammation
+				}
+				remove_trait = inflammation
+			}
+			if = {
+				limit = {
+					has_trait = wounded
+				}
+				remove_trait = wounded
+			}
+			if = {
+				limit = {
+					has_trait = gangrene
+				}
+				remove_trait = gangrene
+			}
+			if = {
+				limit = {
+					has_trait = leper
+				}
+				remove_trait = leper
+			}
+			if = {
+				limit = {
+					has_trait = maimed
+				}
+				remove_trait = maimed
+			}
+			if = {
+				limit = {
+					has_trait = frail
+				}
+				remove_trait = frail
+			}
+			if = {
+				limit = {
+					has_trait = paralysis
+				}
+				remove_trait = paralysis
+			}
+			if = {
+				limit = {
+					has_trait = brain_damaged
+				}
+				remove_trait = brain_damaged
+			}
+			if = {
+				limit = {
+					has_trait = mourning
+				}
+				remove_trait = mourning
+			}
+			if = {
+				limit = {
+					has_trait = depressed
+				}
+				remove_trait = depressed
+			}
+			if = {
+				limit = {
+					has_trait = dementia
+				}
+				remove_trait = dementia
+			}
+			if = {
+				limit = {
+					has_trait = cancer
+				}
+				remove_trait = cancer
+			}
+			if = {
+				limit = {
+					has_trait = gout
+				}
+				remove_trait = gout
 			}
 		}
 	}
@@ -692,6 +1296,28 @@ on_move_country = { #scope:old_country is the origin country
 			set_variable = {
 				name = came_from
 				value = scope:old_country
+			}
+		}
+		if = {
+			limit = {
+				is_mercenary = yes
+				has_variable = pretender_from
+				exists = var:pretender_from
+				var:pretender_from = {
+					has_land = yes
+				}
+				var:pretender_from = employer
+				employer = {
+					is_monarchy = yes
+					has_land = yes
+				}
+			}
+			save_scope_as = returning_pretender
+			employer = {
+				trigger_event = {
+					id = succession_crisis.3
+					days = { 1 720 }
+				}
 			}
 		}
 		if = {
