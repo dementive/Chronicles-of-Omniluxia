@@ -2276,6 +2276,103 @@ types ChoomTypes
 	}
 
 	}
+	type item_transfer_character_list = base_window_black {
+
+		name = "item_transfer_character_list"
+		ignoreinvisible = yes
+		#choo_items_container
+		visible = "[And(GetVariableSystem.Exists('item_recipient_list'),GetVariableSystem.Exists('open_list_panel'))]"
+		direction = vertical
+		size = { 195 600 }
+	
+
+		movable = no
+
+			scrollarea = {
+				
+				scrollbarpolicy_horizontal = always_off
+				size = { 150 570 }
+				position = { 20 15 }
+				
+				background = {
+					name = "background_banner_tempmodifiers"
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					size = { 100% 100% }
+					texture = "gfx/interface/base_parts/background_noninteractable_texture.dds"
+					alpha = 1.0
+					using = border_slightly_torn_alpha
+					margin = { 10 4 }
+				}
+
+
+				scrollbar_vertical = {
+					using = VerticalScrollBar
+				}
+
+
+				scrollwidget = {
+					
+
+
+
+					dynamicgridbox = {
+						size = { 290 476 }
+						position = { 5 30 }
+						
+						datamodel = "[CharacterWindow.GetCharacter.MakeScope.GetList( 'item_transfer_recipients_list' )]"
+						item = {
+
+
+							# button = {
+							# 	using = portrait_60
+							# 	datacontext = "[Scope.GetCharacter]
+							# 	size = { 60 90 }
+							# 	parentanchor = top|left
+								
+							# }
+							flowcontainer = {
+
+								textbox = {
+									size = { 120 20 }
+									position = { 10 10 }
+									using = MarbleButtonFont
+									multiline = yes
+									datacontext = "[Scope]"
+									text = "[Scope.GetCharacter.GetName]"
+									fontsize = 11
+									align = left|top
+								}				
+	
+	
+								button = {
+									position = {  0 30  }
+									datacontext = "[GetScriptedGui('transfer_item_to_the_character')]"
+									size = { 32 32 }
+									visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Scope.GetCharacter.MakeScope ).AddScope('sender', CharacterWindow.GetCharacter.MakeScope ).End )]"
+									enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Scope.GetCharacter.MakeScope ).AddScope('sender', CharacterWindow.GetCharacter.MakeScope ).End )]"
+									onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Scope.GetCharacter.MakeScope ).AddScope('sender', CharacterWindow.GetCharacter.MakeScope ).End )]"
+									onclick = "[GetVariableSystem.Toggle('item_recipient_list')]"
+									tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Scope.GetCharacter.MakeScope ).AddScope('sender', CharacterWindow.GetCharacter.MakeScope ).End )]"
+									texture = "gfx/interface/buttons/button_plus.dds"
+									clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+									oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+								}
+							
+							}
+
+
+
+
+						}
+				
+				
+					}
+			}
+		}
+
+
+	
+	}	
 	type items_container = flowcontainer {
 		
 
@@ -2295,6 +2392,7 @@ types ChoomTypes
 			using = border_slightly_torn_alpha
 			margin = { 10 4 }
 		}
+
 
 			container = {
 				
@@ -2330,7 +2428,7 @@ types ChoomTypes
 				}
 
 			}
-
+ 
 			scrollarea = {
 				
 				scrollbarpolicy_horizontal = always_off
@@ -2349,8 +2447,6 @@ types ChoomTypes
 						position = { 5 30 }
 						
 						datamodel = "[CharacterWindow.GetCharacter.MakeScope.GetList( 'item_list' )]"
-						
-
 
 
 						item = {
@@ -2362,22 +2458,28 @@ types ChoomTypes
 										text = "[Concatenate(Concatenate('@icon_',Scope.GetFlagName), '!')]"
 										
 										size = { 80 80 }
-										position = { 5 0 }
+										position = { 5 38 }
 										align = left|vcenter
 									}
 									textbox = {
-										size = { 290 60 }
-										position = { 90 10 }
+										size = { 280 30 }
+										position = { 10 10 }
 										using = MarbleButtonFont
 										multiline = yes
 										datacontext = "[Scope]"
 										text = "GET_ITEM_NAME_LOC"
 										fontsize = 16
 										align = left|top
-										}
+									}
  
+
+										container = {  
+											position = { 110 118 }
+										container = {
+										
+											position = {  0 0  }
 										button = {
-											position = {  228 20  }
+											position = {  0 0  }
 											datacontext = "[GetScriptedGui(Concatenate('equip_',Scope.GetFlagName))]"
 											size = { 32 32 }
 											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
@@ -2391,8 +2493,16 @@ types ChoomTypes
 											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
 										}
 
+										icon = {
+											position = {  16 16  }
+											visible = "[GetVariableSystem.Exists(Scope.GetFlagName)]"
+											size = { 16 16 }
+											texture = "gfx/interface/buttons/button_plus.dds"
+										}
+									}
+
 										button = {
-											position = {  196 20  }
+											position = {  140 0  }
 											datacontext = "[GetScriptedGui(Concatenate('discard_',Scope.GetFlagName))]"
 											size = { 32 32 }
 											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
@@ -2405,7 +2515,7 @@ types ChoomTypes
 										}
 
 										button = {
-											position = {  260 20  }
+											position = {  38 0  }
 											datacontext = "[GetScriptedGui(Concatenate('effect_',Scope.GetFlagName))]"
 											size = { 32 32 }
 											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
@@ -2416,32 +2526,35 @@ types ChoomTypes
 											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
 											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
 										}
-										icon = {
-											position = {  246 36  }
-											visible = "[GetVariableSystem.Exists(Scope.GetFlagName)]"
-											size = { 16 16 }
+
+										button = {
+											position = {  76 0  }
+											datacontext = "[GetScriptedGui(Concatenate('gift_',Scope.GetFlagName))]"
+											size = { 32 32 }
+											visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).End )]"
+											onclick = "[GetVariableSystem.Toggle('item_recipient_list')]"
 											texture = "gfx/interface/buttons/button_plus.dds"
+											tooltip = "GIFT_ITEM" 
+											clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+											oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
 										}
+
+
+
+									}
 										textbox = {
-											size = { 195 80 }
-											position = { 90 32 }
+											size = { 195 120 }
+											position = { 90 68 }
 											using = MarbleButtonFont
 											multiline = yes
 											datacontext = "[Scope]"
 											text = "GET_ITEM_DESC_LOC"
 											fontsize = 12
-											align = left|vcenter
+											align = left|top
 											}
-										icon = {
-											position = {  264 96  }
-											datacontext = "[Scope]"
-											size = { 24 24 }
-											texture = "gfx/interface/buttons/button_plus.dds"
-											tooltip = "ITEM_EFFECT_LOC"
-										}
 									}
-
-							
 
 
 
@@ -2460,3 +2573,23 @@ types ChoomTypes
 
 
 }
+
+
+type choom_sg_button = button {
+	block "sg_context"
+	{
+	datacontext = "[GetScriptedGui('')]"
+	}
+	size = { 32 32 }
+	visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Player.MakeScope ).End )]"
+	enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).End )]"
+	onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).End )]"
+	tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).End )]"
+	texture = "gfx/interface/buttons/button_plus.dds"
+	clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_sub_tab"
+	oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+
+}
+
+
+
