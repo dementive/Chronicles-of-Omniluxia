@@ -18,17 +18,24 @@ template character_experience_bar
 
 base_window = {
 	name = "character_window"
-	
+
 	parentanchor = top|left
 	size = { 755 900 }
-	movable = no
 	using = main_window_template
-	
+
+	using = movable_windows
+
+	state = {
+		name = reset_char
+		using = default_position
+		trigger_when = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+	}
+
 	vbox = {
 		using = MainWindowHeaderBox
-		
+
 		blockoverride "Title_text" { text = "[CharacterWindow.GetCharacter.GetName]"  }
-		
+
 		blockoverride "White_buttons"
 		{
 			container = {
@@ -51,24 +58,30 @@ base_window = {
 				onclick = "[CharacterWindow.OnPrevious]"
 				tooltip = "PREVIOUS_CHARACTER_WINDOW"
 			}
-			
+
+			button_reset = {
+				blockoverride "On_click" {
+					onclick = "[PdxGuiTriggerAllAnimations('reset_char')]"
+				}
+			}
+
 			button_close = {
 				name = "close_button"
 				onclick = "[CharacterWindow.OnClose]"
 				tooltip = "CLOSE"
 			}
 		}
-		
+
 		hbox = {
 			layoutpolicy_vertical = expanding
 			layoutpolicy_horizontal = expanding
-			
-			margin_widget = { 
+
+			margin_widget = {
 				size = { 0 0 }
 				layoutpolicy_vertical = expanding
 				layoutpolicy_horizontal = expanding
 				margin_left = 4
-				
+
 				margin_top = 10
 				hbox = {
 					layoutpolicy_horizontal = expanding
@@ -89,10 +102,11 @@ base_window = {
 								blockoverride "Context" { datacontext = "[CharacterWindow.GetCharacter]" }
 								blockoverride "BottomPortraitPosition" { position = { -10 40 } }
 								blockoverride "portrait_button_template_tooltip" {}
-								blockoverride "PartyIconVisibility" 
+								blockoverride "PartyIconVisibility"
 								{
 									visible = no
 								}
+								blockoverride "traits" {}
 								dynamicgridbox = {
 									#using = NoninteractableBG
 									datamodel = "[CharacterWindow.GetTraitItems]"
@@ -105,11 +119,12 @@ base_window = {
 											texture = "[TraitItem.GetIcon]"
 											tooltip = "[TraitItem.GetTooltip]"
 										}
-										
+
 									}
 								}
 							}
 							widget = {
+								visible = "[CharacterWindow.GetCharacter.IsAlive]"
 								size = { 180 34 }
 								using = NoninteractableBG
 								blockoverride "Margins" { margin = { 2 3 } margin_top = 3 }
@@ -131,25 +146,17 @@ base_window = {
 									fontsize_min = 12
 								}
 							}
-							#icon_and_text_progress = {
-							#	parentanchor = bottom
-							#	position = { 0 0 }
-							#	blockoverride "Icon" { using = icon_health }
-							#	blockoverride "Value" { value = "[FixedPointToFloat( CharacterWindow.GetCharacter.GetHealth )]" }
-							#	blockoverride "Text" { text = "[FixedPointToFloat( CharacterWindow.GetCharacter.GetHealth )]%" }
-							#	tooltip = "[CharacterWindow.GetCharacter.GetHealthInformation]"
-							#}
-							
+
 							#tag = {
 							#	datacontext = "[CharacterWindow]"
-							#	text = "PREFERRED_HEIR_CWINDOW" 
+							#	text = "PREFERRED_HEIR_CWINDOW"
 							#	parentanchor = bottom|hcenter
 							#	autoresize = yes
 							#	max_width = 300
 							#	tooltip = "[CharacterWindow.GetCharacter.GetPreferredHeir.GetSuccessionScoreInfo]"
 							#	visible = "[CharacterWindow.GetCharacter.CanHavePreferredHeir]"
 							#}
-							
+
 							icon_and_text = {
 								size = { 128 0 }
 								parentanchor = bottom|hcenter
@@ -165,9 +172,9 @@ base_window = {
 								#blockoverride "Margins" { margin = { 9 3 } margin_bottom = 7 }
 								parentanchor = bottom
 								position = { 184 -2 }
-								blockoverride "Icon" 
-								{ 
-									texture = "gfx/interface/icons/shared_icons/senate_seat.dds" 
+								blockoverride "Icon"
+								{
+									texture = "gfx/interface/icons/shared_icons/senate_seat.dds"
 									size = { 29 29 }
 								}
 								blockoverride "Text" { text = "[CharacterWindow.GetCharacter.GetSenatorialInfluence|1]" }
@@ -190,9 +197,9 @@ base_window = {
 											size = { 80 0 }
 											parentanchor = center
 											position = { 0 0 }
-											blockoverride "Icon" 
-											{ 
-												texture = "[GetPartyIcon( ConvictionGlue.GetType )]" 
+											blockoverride "Icon"
+											{
+												texture = "[GetPartyIcon( ConvictionGlue.GetType )]"
 												size = { 31 31 }
 												glow = {
 													glow_radius = 3
@@ -200,12 +207,12 @@ base_window = {
 													visible = "[EqualTo_string( ConvictionGlue.GetType.GetName, CharacterWindow.GetCharacter.GetParty.GetName )]"
 												}
 											}
-											blockoverride "Text" 
-											{ 
-												text = "[ConvictionGlue.GetValue|1]" 
+											blockoverride "Text"
+											{
+												text = "[ConvictionGlue.GetValue|1]"
 											}
 											tooltip = "[ConvictionGlue.GetTooltip]"
-											
+
 										}
 									}
 								}
@@ -219,9 +226,9 @@ base_window = {
 								blockoverride "Text" { text = "[CharacterWindow.GetCharacter.GetExperience|1]%" }
 								tooltip = "[CharacterWindow.GetCharacter.GetExperienceInformation]"
 							}
-							
+
 						}
-						
+
 						margin_widget = {
 							size = { 0 538 }
 							layoutpolicy_horizontal = expanding
@@ -234,7 +241,7 @@ base_window = {
 									position = { -2 0 }
 									blockoverride "Title_text" { text = "FAMILY" }
 								}
-								
+
 								margin_widget = {
 									size = { 478 106 }
 									position = { 0 32 }
@@ -307,7 +314,7 @@ base_window = {
 										datamodel = "[CharacterWindow.GetCharacter.GetChildren]"
 										size = { 238 80 }
 										spacing = 6
-										
+
 										item = {
 											cpt_button = {
 												name = "Child"
@@ -398,7 +405,7 @@ base_window = {
 										datamodel = "[CharacterWindow.GetSiblings]"
 										size = { 168 80 }
 										spacing = 6
-										
+
 										item = {
 											cpt_button = {
 												blockoverride "ShowIcons" { visible = no }
@@ -407,7 +414,7 @@ base_window = {
 											}
 										}
 									}
-									
+
 								}
 								margin_widget = {
 									size = { 478 106 }
@@ -443,9 +450,9 @@ base_window = {
 									overlappingitembox = {
 										size = { 146 86 }
 										position = { 76 23 }
-										
+
 										datamodel = "[CharacterWindow.GetCharacter.GetFriends]"
-										
+
 										item = {
 											cpt_button = {
 												size = { @rival_portrait_width @rival_portrait_height }
@@ -487,7 +494,7 @@ base_window = {
 										position = { 306 23 }
 										spacing = 6
 										datamodel = "[CharacterWindow.GetCharacter.GetRivals]"
-										
+
 										item = {
 											cpt_button = {
 												size = { @rival_portrait_width @rival_portrait_height }
@@ -495,16 +502,16 @@ base_window = {
 											}
 										}
 									}
-									
+
 								}
 							}
-							
+
 							margin_widget = {
 								size = { 478 170 }
 								parentanchor = bottom
 								margin_top = 6
 								#margin_left = 10
-								
+
 								sub_header_v = {
 									size = { 100% 100% }
 									position = { -2 0 }
@@ -532,68 +539,68 @@ base_window = {
 											position = { 0 0 }
 											tooltip = "[CharacterWindow.GetCharacter.GetAmbitionInformation]"
 										}
-										
+
 										cpt_button = {
-											visible = "[And(CharacterWindow.GetCharacter.HasCheckedAmbition, GreaterThan_int32(CharacterWindow.GetCharacter.GetAge, '(int32)15'))]" 
+											visible = "[And(CharacterWindow.GetCharacter.HasCheckedAmbition, GreaterThan_int32(CharacterWindow.GetCharacter.GetAge, '(int32)15'))]"
 											size = { @rival_portrait_width @rival_portrait_height }
 											position = { 0 30 }
 											datacontext = "[CharacterWindow.GetCharacter.MakeScope.GetVariable('ongoing_scheme_target').GetCharacter]"
 											blockoverride "ShowIcons" { visible = no }
 										}
-										
+
 										flowcontainer = {
 											position = { 68 54 }
 											spacing = 6
 											ignoreinvisible = yes
 											visible = "[CharacterWindow.GetCharacter.HasCheckedAmbition]"
 											icon_button_square = {
-												datacontext = "[GetScriptedGui('scheme_assist')]" 
+												datacontext = "[GetScriptedGui('scheme_assist')]"
 												visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												tooltip = "ASSIST_SCHEME_BUTTON_TOOLTIP"
-												blockoverride "On_click" { 
+												blockoverride "On_click" {
 													onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												}
-												blockoverride "Icon" 
+												blockoverride "Icon"
 												{
-													texture = "gfx/interface/icons/shared_icons/assist_with_scheme.dds" 
+													texture = "gfx/interface/icons/shared_icons/assist_with_scheme.dds"
 													size = { 34 34 }
-												}							
+												}
 											}
 											icon_button_square = {
 												datacontext = "[GetScriptedGui('scheme_interfere')]"
 												visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												tooltip = "SCHEME_INTERFERE_BUTTON_TOOLTIP"
-												blockoverride "On_click" { 
+												blockoverride "On_click" {
 													onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												}
-												blockoverride "Icon" 
+												blockoverride "Icon"
 												{
-													texture = "gfx/interface/icons/shared_icons/interfere_in_scheme.dds"  
+													texture = "gfx/interface/icons/shared_icons/interfere_in_scheme.dds"
 													size = { 34 34 }
-												}							
+												}
 											}
 											icon_button_square = {
 												datacontext = "[GetScriptedGui('scheme_abort')]"
 												visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												tooltip = "SCHEME_ABORT_TOOLTIP"
-												blockoverride "On_click" { 
+												blockoverride "On_click" {
 													onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 												}
-												blockoverride "Icon" 
-												{ 
-													texture = "gfx/interface/icons/shared_icons/persuade_to_drop_scheme.dds" 
+												blockoverride "Icon"
+												{
+													texture = "gfx/interface/icons/shared_icons/persuade_to_drop_scheme.dds"
 													size = { 34 34 }
-												}							
+												}
 											}
 										}
-										
+
 										container = {
 											position = { 64 100 }
 											visible = "[And(CharacterWindow.GetCharacter.HasCheckedAmbition, GreaterThan_int32(CharacterWindow.GetCharacter.GetAge, '(int32)15'))]"
-											
+
 											fixed_size_progressbar = {
 												blockoverride "size" { size = { 138 7 } }
 												blockoverride "Value" { value = "[FixedPointToFloat( CharacterWindow.GetCharacter.GetAmbitionProgress )]" }
@@ -606,7 +613,7 @@ base_window = {
 										#texture = "gfx/interface/base_parts/start_menu_vertical_line.dds"
 										alpha = 0.7
 									}
-										
+
 									widget = {
 										size = { 256 130 }
 										#background = {
@@ -623,22 +630,22 @@ base_window = {
 											datacontext = "[CharacterWindow]"
 											text = "TARGETED_BY_SCHEME"
 										}
-										
+
 										overlappingitembox = {
 											size = { 218 78 }
 											position = { 2 30 }
 											datamodel = "[CharacterWindow.GetCharacter.MakeScope.GetList('targeted_by')]"
-											
+
 											item = {
 												cpt_button = {
 													size = { @rival_portrait_width @rival_portrait_height }
-													blockoverride "Context" 
-													{ 
-														datacontext = "[Scope.Char]" 
+													blockoverride "Context"
+													{
+														datacontext = "[Scope.Char]"
 													}
-													blockoverride "ShowIcons" 
-													{ 
-													visible = no 
+													blockoverride "ShowIcons"
+													{
+													visible = no
 													}
 												}
 											}
@@ -646,7 +653,7 @@ base_window = {
 									}
 								}
 							}
-							
+
 							container = {
 								parentanchor = right
 								position = { -8 0 }
@@ -655,25 +662,26 @@ base_window = {
 									widgetanchor = right
 									position = { 0 0 }
 									size = { 250 0 }
-									blockoverride "Title_text" 
+									blockoverride "Title_text"
 									{
 										text = CHARACTER_INTERACTIONS_SUBTITLE
-									} 
+									}
 								}
-								margin_widget = { 
+								margin_widget = {
 									size = { 256 462 }
 									parentanchor = left
 									position = { 0 30 }
-									
+
 									vbox = {
 										using = vbox_item_grid_button
 										margin_bottom = 8
 										margin_top = 8
 										margin_left = 8
 										margin_right = 0
-										
+
 										blockoverride "DataModel" { datamodel = "[CharacterWindow.GetInteractions]" }
-										
+
+
 										blockoverride "On_click" {
 											onclick = "[InteractionItem.OnClick]"
 											enabled = "[InteractionItem.IsEnabled]"
@@ -690,10 +698,10 @@ base_window = {
 											text = "[InteractionItem.GetName]"
 										}
 									}
-									
+
 								}
 							}
-							
+
 							margin_widget = {
 								size = { 222 34 }
 								position = { -22 -8 }
@@ -707,19 +715,19 @@ base_window = {
 									using = border_slightly_torn_alpha
 									margin = { 10 4 }
 								}
-								
+
 								overlappingitembox = {
 									size = { 100% 100% }
 									position = { 0 0 }
 									datamodel = "[CharacterWindow.GetCharacter.GetTemporaryModifiers]"
-									
+
 									item = {
 										container = {
 											icon = {
-												texture = "[TimedModifier.GetModifier.GetIcon]"  
+												texture = "[TimedModifier.GetModifier.GetIcon]"
 												size = { 32 32 }
 											}
-											
+
 											tooltip = "[TimedModifier.GetTooltip]"
 										}
 									}
@@ -730,9 +738,9 @@ base_window = {
 					}
 				}
 			}
-		}	
+		}
 	}
-	
+
 	dynamicgridbox = {
 		datamodel = "[CharacterWindow.GetHeirSupport]"
 		size = { 200 88 }
@@ -742,7 +750,7 @@ base_window = {
 		item = {
 			widget = {
 				size = { 54 90 }
-				
+
 				cpt_button = {
 					size = { 40 60 }
 					datacontext = "[HeirSupportGlue.GetHeir]"
@@ -773,6 +781,5 @@ base_window = {
 		}
 		visible = "[And( And( CharacterWindow.GetCharacter.CanHavePreferredHeir, LessThanOrEqualTo_CFixedPoint( CharacterWindow.GetCharacter.GetSuccessionScore, '(CFixedPoint)3' ) ), CharacterWindow.GetCharacter.IsAlive )]"
 	}
-	
-}
 
+}

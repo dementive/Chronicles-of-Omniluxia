@@ -1,7 +1,7 @@
 types economy_types {
 	type policy_button = container {
 		tooltip = "[EconomicPolicyGlue.GetTooltip]"
-		
+
 		button_radial = {
 			layoutpolicy_horizontal = expanding
 			block "transparency" {}
@@ -10,23 +10,23 @@ types economy_types {
 				#onclick = "[ClickHighlight(EconomicPolicyGlue.GetHighlightKey)]" #TODO Red King stuff?
 				onclick = "[EconomicPolicyGlue.OnClick]"
 			}
-			
+
 			blockoverride "ShowDot"
 			{
 				trigger_when = "[EconomicPolicyGlue.IsSelected]"
-			} 
-			
-			blockoverride "HideDot" 
+			}
+
+			blockoverride "HideDot"
 			{
 				trigger_when = "[Not(EconomicPolicyGlue.IsSelected)]"
-			} 
-			
+			}
+
 			#icon = { #TODO Red King stuff?
 			#	using = highlight_button_circle_45
 			#	visible = "[ShouldHighlight(EconomicPolicyGlue.GetHighlightKey)]"
 			#}
-			
-		} 
+
+		}
 	}
 }
 
@@ -36,12 +36,19 @@ base_window = {
 	parentanchor = top|left
 	size = { 640 900 }
 	widgetanchor = top|left
-	movable = no
 	using = main_window_template
 	using = FadeStates
 
+	using = movable_windows
+
+	state = {
+		name = reset_economy
+		using = default_position
+		trigger_when = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+	}
+
 	using = advice_trigger_highlights
-	
+
 	### Audio ###
 	state = {
 		name = _show
@@ -55,7 +62,7 @@ base_window = {
 			soundeffect = "event:/SFX/UI/Generic/2.0/sfx_ui_window_tab_close"
 		}
 	}
-	
+
 	icon = {
 		texture = "gfx/interface/event_window/Event_open_chest.dds"
 		scale = 0.4
@@ -63,7 +70,7 @@ base_window = {
 		parentanchor = top|right
 		position = { 0 70 }
 	}
-	
+
 	vbox = {
 		using = MainWindowHeaderBox
 
@@ -87,41 +94,47 @@ base_window = {
 			text = "ECONOMY_MENU_HEADER"
 		}
 
-		blockoverride "White_buttons" 
+		blockoverride "White_buttons"
 		{
-			button_back = { 
+			button_back = {
 				shortcut = "previous_window"
 				onclick = "[EconomyView.OnPrevious]"
 				tooltip = "PREVIOUS_ECONOMY_VIEW"
 			}
-			
+
+			button_reset = {
+				blockoverride "On_click" {
+					onclick = "[PdxGuiTriggerAllAnimations('reset_economy')]"
+				}
+			}
+
 			button_close = {
 				onclick = "[EconomyView.OnClose]"
 				tooltip = "CLOSE"
 				shortcut = "close_window"
 			}
 		}
-		
+
 		vbox = {
 			layoutpolicy_vertical = expanding
 			layoutpolicy_horizontal = expanding
-			
+
 			margin_widget = {
 				name = "Balance"
 				minimumsize = { 0 198 }
 				margin_top = 20
 				margin_left = 28
 				layoutpolicy_horizontal = expanding
-				
+
 				flowcontainer = {
-					direction = vertical 
+					direction = vertical
 					spacing = 6
 
 					icon_and_text = {
 						tooltip = "BALANCE_TOOLTIP"
 						size = { 182 0 }
 						blockoverride "Icon" { texture = "gfx/interface/icons/shared_icons/treasury.dds" }
-						blockoverride "Text" { text = "[EconomyView.GetBalance]" }	
+						blockoverride "Text" { text = "[EconomyView.GetBalance]" }
 					}
 
 					flowcontainer = {
@@ -133,7 +146,7 @@ base_window = {
 							tooltip = "BALANCE_TOOLTIP"
 							size = { 182 0 }
 							blockoverride "Icon" { using = icon_bankruptcy }
-							blockoverride "Text" { text = "IN_DEFICIT" }	
+							blockoverride "Text" { text = "IN_DEFICIT" }
 						}
 					}
 					flowcontainer = {
@@ -145,7 +158,7 @@ base_window = {
 							tooltip = "BALANCE_TOOLTIP"
 							size = { 182 0 }
 							blockoverride "Icon" { visible = no }
-							blockoverride "Text" { text = "NO_DEFICIT_TEXT" }	
+							blockoverride "Text" { text = "NO_DEFICIT_TEXT" }
 						}
 					}
 				}
@@ -155,7 +168,7 @@ base_window = {
 				layoutpolicy_vertical = expanding
 				container = {
 					container = {
-					
+
 						container = {
 							name = "income header"
 							position = { 5 0 }
@@ -176,8 +189,8 @@ base_window = {
 								position = { 273 0 }
 							}
 						}
-						
-						
+
+
 						dynamicgridbox = {
 							name = "income_grid"
 							position = { 0 47 }
@@ -190,14 +203,14 @@ base_window = {
 										ignoreinvisible = yes
 										alpha = "[TransparentIfTrue( And( EqualTo_int32( EconomyView.GetPlayer.GetNumOfSubjects, '(int32)0' ), IncomeItem.IsTribute ) )]"
 										using = NoninteractableBG
-										
-										blockoverride "Margins" 
+
+										blockoverride "Margins"
 										{
 											margin = { 4 4 }
 											margin_bottom = 0
 											margin_top = 6
 										}
-										
+
 										container = {
 											tooltip = "[IncomeItem.GetTooltip]"
 
@@ -208,7 +221,7 @@ base_window = {
 												using = Black_FontColor
 												text = "[IncomeItem.GetName]"
 											}
-											
+
 											icon_and_text = {
 												position = { 152 -2 }
 												size = { 132 0 }
@@ -224,7 +237,7 @@ base_window = {
 											blockoverride "Icon" { texture = "[IncomeItem.GetModifierIcon]" }
 											tooltip = "[IncomeItem.GetModifierTooltip]"
 										}
-										
+
 										dynamicgridbox = {
 											position = { 12 40 }
 											datamodel = "[IncomeItem.GetPolicies]"
@@ -249,7 +262,7 @@ base_window = {
 					}
 					container = {
 						position = { 307 0 }
-						
+
 						container = {
 							name = "expenses header"
 							position = { 5 0 }
@@ -270,7 +283,7 @@ base_window = {
 								position = { 273 0 }
 							}
 						}
-						
+
 						dynamicgridbox = {
 							name = "expense_grid"
 							position = { 0 47 }
@@ -283,14 +296,14 @@ base_window = {
 										ignoreinvisible = yes
 										alpha = "[TransparentIfTrue(Not(ExpenseItem.IsEnabled))]"
 										using = NoninteractableBG
-										
-										blockoverride "Margins" 
+
+										blockoverride "Margins"
 										{
 											margin = { 4 4 }
 											margin_bottom = 0
 											margin_top = 6
 										}
-										
+
 										container = {
 											tooltip = "[ExpenseItem.GetTooltip]"
 
@@ -301,7 +314,7 @@ base_window = {
 												using = Black_FontColor
 												text = "[ExpenseItem.GetName]"
 											}
-											
+
 											icon_and_text = {
 												position = { 152 -4 }
 												size = { 132 0 }
@@ -318,7 +331,7 @@ base_window = {
 											blockoverride "Icon" { texture = "[ExpenseItem.GetModifierIcon]" }
 											tooltip = "[ExpenseItem.GetModifierTooltip]"
 										}
-										
+
 										dynamicgridbox = {
 											position = { 12 40 }
 											datamodel = "[ExpenseItem.GetPolicies]"

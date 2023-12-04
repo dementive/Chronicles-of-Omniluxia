@@ -1,5 +1,4 @@
 @portraittopspacer = 304
-@portraittopspacerbig = 400
 
 template event_portrait
 {
@@ -51,6 +50,7 @@ template event_portrait
 		}
 	}
 }
+
 
 base_window = {
 	name = "event_window"
@@ -266,17 +266,6 @@ base_window = {
 							tooltip = "[EventWindow.GetDebugInfo]"
 							alpha = 0.8
 						}
-						icon = {
-							name = "event_theme_icon"
-							size = { 600 239 }
-							texture = "[EventWindow.GetThemeIcon]"
-							tooltip = "[EventWindow.GetDebugInfo]"
-							modify_texture = {
-								texture = "gfx/interface/base_parts/event_picture_alpha_big.dds"
-								blend_mode = alphamultiply
-							}
-							alpha = 0.8
-						}
 					}
 
 					scrollarea = {
@@ -341,17 +330,6 @@ base_window = {
 							size = { 600 239 }
 							texture = "[EventWindow.GetEventPicture]"
 							tooltip = "[EventWindow.GetDebugInfo]"
-							alpha = 0.8
-						}
-						icon = {
-							name = "event_theme_icon"
-							size = { 600 239 }
-							texture = "[EventWindow.GetThemeIcon]"
-							tooltip = "[EventWindow.GetDebugInfo]"
-							modify_texture = {
-								texture = "gfx/interface/base_parts/event_picture_alpha_big.dds"
-								blend_mode = alphamultiply
-							}
 							alpha = 0.8
 						}
 					}
@@ -420,6 +398,43 @@ base_window = {
 							#
 							# 	on_start = "[PdxGuiTriggerAllAnimations('show_hotkey_marker')]"
 							# }
+
+							button = {
+								name = "hotkey_marker"
+								position = { 16 0 }
+								size = { 30 30 }
+								visible = no
+								tooltip = "enter_hotkey"
+
+								gfxtype = togglepushbuttongfx
+								shaderfile = "gfx/FX/pdxgui_pushbutton.shader"
+								framesize = { 40 40 }
+								datacontext = "[GetScriptedGui('confirm_hotkey')]"
+								down = "[ScriptedGui.IsShown( GuiScope.SetRoot( Player.MakeScope ).End )]"
+
+								button = { # this actually triggers the button
+									size = { 0 0 }
+									shortcut = "confirm"
+									datacontext = "[GetScriptedGui('confirm_hotkey')]"
+									visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Player.MakeScope ).End )]"
+									onclick = "[PdxGuiWidget.AccessParent.AccessParent.TriggerAnimation('first_button')]"
+								}
+
+								icon = {
+									texture = "gfx/icons/confirm.dds"
+									size = { 18 18 }
+									parentanchor = center
+									alpha = 0.9
+									visible = "[Not(EventOption.IsHighlighted)]"
+								}
+
+								icon = {
+									texture = "gfx/icons/confirm_blue.dds"
+									visible = "[EventOption.IsHighlighted]"
+									size = { 18 18 }
+									parentanchor = center
+								}
+							}
 						}
 					}
 				}
@@ -476,24 +491,24 @@ window = { ####Currently unused
 	gfxtype = windowgfx
 	name = "major_event_window"
 	parentanchor = center
-	
+
 	flowcontainer = {
 		name = "Bottom"
 		resizeparent = yes
 		direction = horizontal
 		ignoreinvisible = yes
-		
+
 		flowcontainer = {
 			name = "Center_Box"
 			direction = vertical
 			margin = { 30 0 }
 			ignoreinvisible = yes
-			
+
 			widget = {
 				name = "spacing_w"
 				size = { 10 52 }
 			}
-			
+
 			background = {
 				texture = "gfx/interface/tiles/marble_tile_l.dds"
 				spriteType = Corneredtiled
@@ -502,7 +517,7 @@ window = { ####Currently unused
 				margin_top = -38
 				shaderfile = "gfx/FX/pdxgui_default.shader"
 			}
-			
+
 			background = {
 				texture = "gfx/interface/tiles/small_window_frame_p_corners.dds"
 				spriteType = Corneredtiled
@@ -512,7 +527,7 @@ window = { ####Currently unused
 				spriteborder = { 32 24 }
 				shaderfile = "gfx/FX/pdxgui_default.shader"
 			}
-			
+
 			widget = {
 				size = { 800 264 }
 				widgetanchor = top|hcenter
@@ -529,18 +544,18 @@ window = { ####Currently unused
 					alwaystransparent = yes
 				}
 			}
-			
+
 			scrollarea = {
 				name = "description_scrollarea"
 				maximumsize = { -1 300 }
 				scrollbarpolicy_horizontal = always_off
-				
+
 				using = ScrollMessageBackground_2
-				
+
 				scrollbar_vertical = {
 					using = VerticalScrollBar
 				}
-				
+
 				scrollwidget = {
 					textbox = {
 						name = "description"
@@ -556,12 +571,12 @@ window = { ####Currently unused
 					}
 				}
 			}
-			
+
 			widget = {
 				name = "spacer_2"
 				size = { 0 10 }
 			}
-			
+
 			fixedgridbox = {
 				name = "option_grid"
 				parentanchor = hcenter
@@ -573,14 +588,14 @@ window = { ####Currently unused
 					}
 				}
 			}
-			
+
 			widget = {
 				name = "spacer_3"
 				size = { 0 20 }
 			}
 		}
 	}
-	
+
 	icon = {
 		texture = "gfx/interface/tiles/small_window_title_header_corners.dds"
 		spriteType = Corneredtiled
@@ -589,7 +604,7 @@ window = { ####Currently unused
 		spriteborder = { 16 10 }
 		shaderfile = "gfx/FX/pdxgui_default.shader"
 	}
-	
+
 	textbox = {
 		name = "title"
 		position = { 0 11 }
@@ -603,7 +618,7 @@ window = { ####Currently unused
 		align = center
 		text = "[EventWindow.GetTitle]"
 	}
-	
+
 	go_to_button = {
 		name = "close_button"
 		position = { 8 10 }
@@ -621,14 +636,14 @@ base_sub_window = {
 	movable = yes
 	position = { 0 400 }
 	size = { 480 340 }
-	
+
 	blockoverride "Title_text" { text = "[EventWindow.GetTitle]" }
-	
+
 	blockoverride "White_buttons"
 	{
-		
+
 	}
-	
+
 	goto_button = {
 		name = "close_button"
 		shortcut = "go_to_button"
@@ -638,15 +653,15 @@ base_sub_window = {
 		blockoverride "On_click" { onclick = "[EventWindow.GoToLocation]" }
 		tooltip = "go_to"
 	}
-	
+
 	cpt_button = {
 		name = "portrait_left"
 		visible = "[EventWindow.HasLeftPortraitCharacter('0')]"
 		datacontext = "[EventWindow.GetLeftPortraitCharacter('0')]"
-		size = { 100 150 }      
+		size = { 100 150 }
 		position = { 14 44 }
 	}
-	
+
 	textbox = {
 		name = "description"
 		size = { 350 300 }
@@ -658,7 +673,7 @@ base_sub_window = {
 		align = top
 		text = "[EventWindow.GetDescription]"
 	}
-		
+
 	fixedgridbox = {
 		name = "option_grid"
 		addcolumn = 340
@@ -674,33 +689,33 @@ base_sub_window = {
 					blockoverride "On_click" { onclick = "[EventOption.Select]" }
 					size = { 340 0 }
 				}
-				
+
 				# For Highlighted Event Options
 				text_button_square_highlighted = {
-					visible = "[EventOption.IsHighlighted]" 
-					blockoverride "Center_text" 
-					{ 
-						text = "[EventOption.GetText]" 
+					visible = "[EventOption.IsHighlighted]"
+					blockoverride "Center_text"
+					{
+						text = "[EventOption.GetText]"
 						max_width = 340
 					}
 					tooltip = "[EventOption.GetTooltip]"
-					blockoverride "On_click" { onclick = "[EventOption.Select]" }	
+					blockoverride "On_click" { onclick = "[EventOption.Select]" }
 					size = { 340 0 }
 				}
 			}
 		}
 	}
-	
+
 	state = {
 		name = on_appear
-		
+
 		animation = {
 			position = { 0 -400 }
 		}
-		
+
 		trigger_on_create = yes
 		duration = 0.10
-		
+
 	}
 
 }

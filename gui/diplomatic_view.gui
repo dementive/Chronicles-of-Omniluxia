@@ -16,6 +16,14 @@ base_window = {
 
 	using = main_window_template
 
+	using = movable_windows
+
+	state = {
+		name = reset_diplo
+		using = default_position
+		trigger_when = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+	}
+
 	### Audio ###
 	state = {
 		name = _show
@@ -51,6 +59,19 @@ base_window = {
 					blend_mode = alphamultiply
 				}
 			}
+
+			button = {
+				position = { 35 2 }
+				clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+				oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				framesize = { 50 50 }
+				size = { 26 26 }
+				texture = "gfx/interface/icons/shared_icons/star.dds"
+				datacontext = "[GetScriptedGui('fav_countries')]"
+				frame = "[Select_int32(ScriptedGui.IsShown(GuiScope.SetRoot(DiplomaticView.GetTargetCountry.MakeScope).AddScope('player', Player.MakeScope).End),'(int32)2','(int32)1'))]"
+				onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( DiplomaticView.GetTargetCountry.MakeScope ).AddScope('player', Player.MakeScope).End )]"
+				tooltip = "fav"
+			}
 		}
 
 		blockoverride "Title_text"
@@ -64,6 +85,12 @@ base_window = {
 				shortcut = "previous_window"
 				onclick = "[DiplomaticView.OnPrevious]"
 				tooltip = "PREVIOUS_DIPLOMATIC_VIEW"
+			}
+
+			button_reset = {
+				blockoverride "On_click" {
+					onclick = "[PdxGuiTriggerAllAnimations('reset_diplo')]"
+				}
 			}
 
 			button_close = {
@@ -1133,56 +1160,6 @@ base_window = {
 									}
 								}
 							}
-
-							margin_widget = {
-								size = { 0 28 }
-								layoutpolicy_horizontal = expanding
-								margin = { 14 0 }
-								margin_right = 7
-
-
-								text_button_square = {
-									size = { 100% 28 }
-									layoutpolicy_horizontal = expanding
-									datacontext = "[GetScriptedGui('sell_provinces')]"
-									enabled = "[And(ScriptedGui.IsValid(GuiScope.SetRoot( Player.MakeScope ).AddScope('target', DiplomaticView.GetTargetCountry.MakeScope ).End), Not(GetVariableSystem.Exists('sell_provinces_open')))]"
-									visible = "[And(Not(DiplomaticView.GetTargetCountry.IsBarbarian), Not(EqualTo_int32( DiplomaticView.GetTargetCountry.GetId, Player.GetId )))]"
-									blockoverride "On_click" {
-										onclick = "[ScriptedGui.Execute(GuiScope.SetRoot( Player.MakeScope ).AddScope('target', DiplomaticView.GetTargetCountry.MakeScope ).End)]"
-										onclick = "[GetVariableSystem.Toggle('sell_provinces_open')]"
-										onclick = "[ExecuteConsoleCommand('gui.createwidget gui/sell_provinces.gui sell_provinces_window')]"
-									}
-									blockoverride "Center_text"
-									{
-										text = "sell_province"
-									}
-								}
-							}
-
-							margin_widget = {
-								size = { 0 28 }
-								layoutpolicy_horizontal = expanding
-								margin = { 14 0 }
-								margin_right = 7
-
-
-								text_button_square = {
-									size = { 100% 28 }
-									layoutpolicy_horizontal = expanding
-									datacontext = "[GetScriptedGui('give_up_claims')]"
-									enabled = "[ScriptedGui.IsValid(GuiScope.SetRoot( Player.MakeScope ).AddScope('target', DiplomaticView.GetTargetCountry.MakeScope ).End)]"
-									visible = "[And(Not(DiplomaticView.GetTargetCountry.IsBarbarian), Not(EqualTo_int32( DiplomaticView.GetTargetCountry.GetId, Player.GetId )))]"
-									blockoverride "On_click" {
-										onclick = "[ScriptedGui.Execute(GuiScope.SetRoot( Player.MakeScope ).AddScope('target', DiplomaticView.GetTargetCountry.MakeScope ).End)]"
-									}
-									blockoverride "Center_text"
-									{
-										text = "give_up_claims"
-									}
-								}
-							}
-
-
 							vbox = {
 								layoutpolicy_vertical = expanding
 							}
