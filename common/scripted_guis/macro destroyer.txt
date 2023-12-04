@@ -1,0 +1,2982 @@
+﻿#### macrobuilder tab
+
+destroy_toggle = {
+  scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = destroy_toggle
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = destroy_toggle
+      }
+      remove_variable = destroy_toggle
+    }
+		else = {
+			set_variable = destroy_toggle
+
+      #300
+      count_city_buildings_300 = { building = foundry_building }
+      count_city_buildings_300 = { building = temple_building }
+      count_city_buildings_300 = { building = theathre_building }
+
+      #200
+      count_buildings = { building = hill_fort }
+      count_buildings = { building = barracks_building }
+      count_buildings = { building = latifundia_building }
+      count_buildings = { building = local_forum_building }
+      count_buildings = { building = basic_settlement_infratructure_building }
+      count_buildings = { building = slave_mine_building }
+
+      #150
+      count_city_buildings_150 = { building = fortress_building }
+      count_city_buildings_150 = { building = fortress_ramparts_building }
+      count_city_buildings_150 = { building = port_building }
+      count_city_buildings_150 = { building = court_building }
+      count_city_buildings_150 = { building = academy_building }
+      count_city_buildings_150 = { building = forum_building }
+      count_city_buildings_150 = { building = workshop_building }
+      count_city_buildings_150 = { building = aqueduct_building }
+
+      #100
+      count_city_buildings_100 = { building = military_building }
+      count_city_buildings_100 = { building = commerce_building }
+      count_city_buildings_100 = { building = town_hall_building }
+      count_city_buildings_100 = { building = population_building }
+      count_city_buildings_100 = { building = library_building }
+		}
+  }
+}
+
+destroy_toggle_off = {
+  scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = { has_variable = destroy_toggle }
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = destroy_toggle
+      }
+      remove_variable = destroy_toggle
+    }
+  }
+}
+
+#runs when you hover over the window to refresh everything
+
+update_building_list = {
+  scope = country
+
+  ai_is_valid = {
+    always = no
+  }
+
+  effect = {
+      #300
+      count_city_buildings_300 = { building = foundry_building }
+      count_city_buildings_300 = { building = temple_building }
+      count_city_buildings_300 = { building = theathre_building }
+
+      #200
+      count_buildings = { building = hill_fort }
+      count_buildings = { building = barracks_building }
+      count_buildings = { building = latifundia_building }
+      count_buildings = { building = local_forum_building }
+      count_buildings = { building = basic_settlement_infratructure_building }
+      count_buildings = { building = slave_mine_building }
+
+      #150
+      count_city_buildings_150 = { building = fortress_building }
+      count_city_buildings_150 = { building = fortress_ramparts_building }
+      count_city_buildings_150 = { building = port_building }
+      count_city_buildings_150 = { building = court_building }
+      count_city_buildings_150 = { building = academy_building }
+      count_city_buildings_150 = { building = forum_building }
+      count_city_buildings_150 = { building = workshop_building }
+      count_city_buildings_150 = { building = aqueduct_building }
+
+      #100
+      count_city_buildings_100 = { building = military_building }
+      count_city_buildings_100 = { building = commerce_building }
+      count_city_buildings_100 = { building = town_hall_building }
+      count_city_buildings_100 = { building = population_building }
+      count_city_buildings_100 = { building = library_building }
+  }
+}
+
+# show the list of buildings
+
+
+expand_macro = {
+	scope = country
+
+  ai_is_valid = {
+    always = no
+  }
+
+  is_shown = {
+    NOT = {
+      has_variable = expand_list
+    }
+  }
+
+  effect = {
+    remove_variable = expand_list
+  }
+}
+
+
+### SPECIAL BUILDINGS
+
+### 300 ###
+
+###
+
+expand_foundry_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 7
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 7
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 7
+      }
+      add_buildings_to_list = { building = foundry_building }
+    }
+  }
+}
+
+d_foundry_building = {
+  scope = country
+  confirm_title = "d_foundry_building"
+	confirm_text = "foundry_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_foundry_building
+    var:num_foundry_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = foundry_building }
+    every_owned_province = {
+      limit = {
+        has_building = foundry_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_foundry_building
+        }
+      }
+      ###
+      while = {
+        count = real_num_of_foundry_building
+        remove_building_level = foundry_building
+        prev = {
+          add_treasury = city_building_cost_300
+        }
+      }
+    }
+    clear_variable_list = all_foundry_building
+    count_city_buildings_300 = { building = foundry_building }
+		close_list = { building = foundry_building }
+  }
+}
+
+d_1_foundry_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_foundry_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_foundry_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = foundry_building
+    if = {
+      limit = {
+        real_num_of_foundry_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_foundry_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_300
+      count_city_buildings_300 = { building = foundry_building }
+			close_list = { building = foundry_building }
+    }
+  }
+}
+
+dont_remove_foundry_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = foundry_building }
+    owner = {
+      count_city_buildings_300 = { building = foundry_building }
+    }
+  }
+}
+
+
+###
+
+expand_temple_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 16
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 16
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 16
+      }
+      add_buildings_to_list = { building = temple_building }
+    }
+  }
+}
+
+d_temple_building = {
+  scope = country
+  confirm_title = "d_temple_building"
+	confirm_text = "temple_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_temple_building
+    var:num_temple_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = temple_building }
+    every_owned_province = {
+      limit = {
+        has_building = temple_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_temple_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_temple_building
+      	remove_building_level = temple_building
+      	prev = {
+      		add_treasury = city_building_cost_300
+      	}
+      }
+    }
+    clear_variable_list = all_temple_building
+    count_city_buildings_300 = { building = temple_building }
+		close_list = { building = temple_building }
+  }
+}
+
+d_1_temple_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_temple_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_temple_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = temple_building
+    if = {
+      limit = {
+        real_num_of_temple_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_temple_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_300
+      count_city_buildings_300 = { building = temple_building }
+			close_list = { building = temple_building }
+    }
+  }
+}
+
+dont_remove_temple_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = temple_building }
+    owner = {
+      count_city_buildings_300 = { building = temple_building }
+    }
+  }
+}
+
+
+###
+
+expand_theathre_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 17
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 17
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 17
+      }
+      add_buildings_to_list = { building = theathre_building }
+    }
+  }
+}
+
+d_theathre_building = {
+  scope = country
+  confirm_title = "d_theathre_building"
+	confirm_text = "theathre_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_theathre_building
+    var:num_theathre_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = theathre_building }
+    every_owned_province = {
+      limit = {
+        has_building = theathre_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_theathre_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_theathre_building
+      	remove_building_level = theathre_building
+      	prev = {
+      		add_treasury = city_building_cost_300
+      	}
+      }
+    }
+    clear_variable_list = all_theathre_building
+    count_city_buildings_300 = { building = theathre_building }
+		close_list = { building = theathre_building }
+  }
+}
+
+d_1_theathre_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_theathre_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_theathre_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = theathre_building
+    if = {
+      limit = {
+        real_num_of_theathre_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_theathre_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_300
+      count_city_buildings_300 = { building = theathre_building }
+			close_list = { building = theathre_building }
+    }
+  }
+}
+
+dont_remove_theathre_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = theathre_building }
+    owner = {
+      count_city_buildings_300 = { building = theathre_building }
+    }
+  }
+}
+
+
+
+### SETTLEMENT BUILDINGS
+
+### 200 ###
+
+expand_hill_fort = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 1
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 1
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 1
+      }
+      add_buildings_to_list = { building = hill_fort }
+    }
+    #expand_list = { building = hill_fort }
+  }
+}
+
+d_hill_fort = {
+  scope = country
+  confirm_title = "d_hill_fort"
+	confirm_text = "hill_fort_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_hill_fort
+    var:num_hill_fort > 0
+  }
+
+  effect = {
+    #count_buildings = { building = hill_fort }
+    every_owned_province = {
+      limit = {
+        has_building = hill_fort
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_hill_fort
+        }
+      }
+      ###
+      remove_building_level = hill_fort
+      ###
+      prev = {
+        add_treasury = settlement_building_cost
+      }
+    }
+    clear_variable_list = all_hill_fort
+    count_buildings = { building = hill_fort }
+		close_list = { building = hill_fort }
+  }
+}
+
+d_1_hill_fort = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_hill_fort
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_hill_fort
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = hill_fort
+    owner = {
+      remove_list_variable = {
+        name = all_hill_fort
+        target = prev
+      }
+      add_treasury = settlement_building_cost
+      count_buildings = { building = hill_fort }
+			close_list = { building = hill_fort }
+    }
+  }
+}
+
+dont_remove_hill_fort = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = dont_remove_hill_fort
+  }
+
+  effect = {
+    dont_remove = { building = hill_fort }
+    owner = {
+      count_buildings = { building = hill_fort }
+    }
+  }
+}
+
+###
+
+expand_barracks_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 2
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 2
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 2
+      }
+      add_buildings_to_list = { building = barracks_building }
+    }
+  }
+}
+
+d_barracks_building = {
+  scope = country
+  confirm_title = "d_barracks_building"
+	confirm_text = "barracks_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_barracks_building
+    var:num_barracks_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = barracks_building }
+    every_owned_province = {
+      limit = {
+        has_building = barracks_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_barracks_building
+        }
+      }
+      ###
+      remove_building_level = barracks_building
+      ###
+      prev = {
+        add_treasury = settlement_building_cost
+      }
+    }
+    clear_variable_list = all_barracks_building
+    count_buildings = { building = barracks_building }
+		close_list = { building = barracks_building }
+  }
+}
+
+d_1_barracks_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_barracks_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_barracks_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = barracks_building
+    owner = {
+      remove_list_variable = {
+        name = all_barracks_building
+        target = prev
+      }
+      add_treasury = settlement_building_cost
+      count_buildings = { building = barracks_building }
+			close_list = { building = barracks_building }
+    }
+  }
+}
+
+dont_remove_barracks_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = dont_remove_barracks_building
+  }
+
+  effect = {
+    dont_remove = { building = barracks_building }
+    owner = {
+      count_buildings = { building = barracks_building }
+    }
+  }
+}
+
+###
+
+expand_latifundia_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 3
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 3
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 3
+      }
+      add_buildings_to_list = { building = latifundia_building }
+    }
+  }
+}
+
+d_latifundia_building = {
+  scope = country
+  confirm_title = "d_latifundia_building"
+	confirm_text = "latifundia_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_latifundia_building
+    var:num_latifundia_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = latifundia_building }
+    every_owned_province = {
+      limit = {
+        has_building = latifundia_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_latifundia_building
+        }
+      }
+      ###
+      remove_building_level = latifundia_building
+      ###
+      prev = {
+        add_treasury = settlement_building_cost
+      }
+    }
+    clear_variable_list = all_latifundia_building
+    count_buildings = { building = latifundia_building }
+		close_list = { building = latifundia_building }
+  }
+}
+
+d_1_latifundia_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_latifundia_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_latifundia_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = latifundia_building
+    owner = {
+      remove_list_variable = {
+        name = all_latifundia_building
+        target = prev
+      }
+      add_treasury = settlement_building_cost
+      count_buildings = { building = latifundia_building }
+			close_list = { building = latifundia_building }
+    }
+  }
+}
+
+dont_remove_latifundia_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = latifundia_building }
+    owner = {
+      count_buildings = { building = latifundia_building }
+    }
+  }
+}
+
+###
+
+expand_local_forum_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 4
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 4
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 4
+      }
+      add_buildings_to_list = { building = local_forum_building }
+    }
+  }
+}
+
+d_local_forum_building = {
+  scope = country
+  confirm_title = "d_local_forum_building"
+	confirm_text = "local_forum_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_local_forum_building
+    var:num_local_forum_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = local_forum_building }
+    every_owned_province = {
+      limit = {
+        has_building = local_forum_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_local_forum_building
+        }
+      }
+      ###
+      remove_building_level = local_forum_building
+      ###
+      prev = {
+        add_treasury = settlement_building_cost
+      }
+    }
+    clear_variable_list = all_local_forum_building
+    count_buildings = { building = local_forum_building }
+		close_list = { building = local_forum_building }
+  }
+}
+
+d_1_local_forum_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_local_forum_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_local_forum_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = local_forum_building
+    owner = {
+      remove_list_variable = {
+        name = all_local_forum_building
+        target = prev
+      }
+      add_treasury = settlement_building_cost
+      count_buildings = { building = local_forum_building }
+			close_list = { building = local_forum_building }
+    }
+  }
+}
+
+dont_remove_local_forum_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = local_forum_building }
+    owner = {
+      count_buildings = { building = local_forum_building }
+    }
+  }
+}
+
+###
+
+expand_basic_settlement_infratructure_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 19
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 19
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 19
+      }
+      add_buildings_to_list = { building = basic_settlement_infratructure_building }
+    }
+  }
+}
+
+d_basic_settlement_infratructure_building = {
+  scope = country
+  confirm_title = "d_basic_settlement_infratructure_building"
+	confirm_text = "basic_settlement_infratructure_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_basic_settlement_infratructure_building
+    var:num_basic_settlement_infratructure_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = basic_settlement_infratructure_building }
+    every_owned_province = {
+      limit = {
+        has_building = basic_settlement_infratructure_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_basic_settlement_infratructure_building
+        }
+      }
+      ###
+      remove_building_level = basic_settlement_infratructure_building
+      ###
+      prev = {
+        add_treasury = settlement_building_cost
+      }
+    }
+    clear_variable_list = all_basic_settlement_infratructure_building
+    count_buildings = { building = basic_settlement_infratructure_building }
+		close_list = { building = basic_settlement_infratructure_building }
+  }
+}
+
+d_1_basic_settlement_infratructure_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_basic_settlement_infratructure_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_basic_settlement_infratructure_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = basic_settlement_infratructure_building
+    owner = {
+      remove_list_variable = {
+        name = all_basic_settlement_infratructure_building
+        target = prev
+      }
+      add_treasury = settlement_building_cost
+      count_buildings = { building = basic_settlement_infratructure_building }
+			close_list = { building = basic_settlement_infratructure_building }
+    }
+  }
+}
+
+dont_remove_basic_settlement_infratructure_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = basic_settlement_infratructure_building }
+    owner = {
+      count_buildings = { building = basic_settlement_infratructure_building }
+    }
+  }
+}
+
+
+###
+
+expand_slave_mine_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 20
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 20
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 20
+      }
+      add_buildings_to_list = { building = slave_mine_building }
+    }
+  }
+}
+
+d_slave_mine_building = {
+  scope = country
+  confirm_title = "d_slave_mine_building"
+	confirm_text = "slave_mine_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_slave_mine_building
+    var:num_slave_mine_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = slave_mine_building }
+    every_owned_province = {
+      limit = {
+        has_building = slave_mine_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_slave_mine_building
+        }
+      }
+      ###
+      remove_building_level = slave_mine_building
+      ###
+      prev = {
+        add_treasury = settlement_building_cost
+      }
+    }
+    clear_variable_list = all_slave_mine_building
+    count_buildings = { building = slave_mine_building }
+		close_list = { building = slave_mine_building }
+  }
+}
+
+d_1_slave_mine_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_slave_mine_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_slave_mine_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = slave_mine_building
+    owner = {
+      remove_list_variable = {
+        name = all_slave_mine_building
+        target = prev
+      }
+      add_treasury = settlement_building_cost
+      count_buildings = { building = slave_mine_building }
+			close_list = { building = slave_mine_building }
+
+    }
+  }
+}
+
+dont_remove_slave_mine_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = slave_mine_building }
+    owner = {
+      count_buildings = { building = slave_mine_building }
+    }
+  }
+}
+
+###
+
+
+
+### CITY BUILDINGS
+
+### 150 ###
+
+expand_fortress_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 5
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 5
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 5
+      }
+      add_buildings_to_list = { building = fortress_building }
+    }
+  }
+}
+
+d_fortress_building = {
+  scope = country
+  confirm_title = "d_fortress_building"
+	confirm_text = "fortress_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_fortress_building
+    var:num_fortress_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = fortress_building }
+    every_owned_province = {
+      limit = {
+        has_building = fortress_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_fortress_building
+        }
+      }
+      ###
+      remove_building_level = fortress_building
+      ###
+      prev = {
+        add_treasury = city_building_cost_150
+      }
+    }
+    clear_variable_list = all_fortress_building
+    count_city_buildings_150 = { building = fortress_building }
+		close_list = { building = fortress_building }
+  }
+}
+
+d_1_fortress_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_fortress_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_fortress_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = fortress_building
+    if = {
+      limit = {
+        real_num_of_fortress_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_fortress_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_150
+      count_city_buildings_150 = { building = fortress_building }
+			close_list = { building = fortress_building }
+    }
+  }
+}
+
+dont_remove_fortress_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = fortress_building }
+    owner = {
+      count_city_buildings_150 = { building = fortress_building }
+    }
+  }
+}
+
+
+###
+
+expand_fortress_ramparts_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 21
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 21
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 21
+      }
+      add_buildings_to_list = { building = fortress_ramparts_building }
+    }
+  }
+}
+
+d_fortress_ramparts_building = {
+  scope = country
+  confirm_title = "d_fortress_ramparts_building"
+	confirm_text = "fortress_ramparts_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_fortress_ramparts_building
+    var:num_fortress_ramparts_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = fortress_ramparts_building }
+    every_owned_province = {
+      limit = {
+        has_building = fortress_ramparts_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_fortress_ramparts_building
+        }
+      }
+      ###
+      remove_building_level = fortress_ramparts_building
+      ###
+      prev = {
+        add_treasury = city_building_cost_150
+      }
+    }
+    clear_variable_list = all_fortress_ramparts_building
+    count_city_buildings_150 = { building = fortress_ramparts_building }
+		close_list = { building = fortress_ramparts_building }
+  }
+}
+
+d_1_fortress_ramparts_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_fortress_ramparts_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_fortress_ramparts_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = fortress_ramparts_building
+    if = {
+      limit = {
+        real_num_of_fortress_ramparts_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_fortress_ramparts_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_150
+      count_city_buildings_150 = { building = fortress_ramparts_building }
+			close_list = { building = fortress_ramparts_building }
+    }
+  }
+}
+
+dont_remove_fortress_ramparts_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = fortress_ramparts_building }
+    owner = {
+      count_city_buildings_150 = { building = fortress_ramparts_building }
+    }
+  }
+}
+
+###
+
+expand_port_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 22
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 22
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 22
+      }
+      add_buildings_to_list = { building = port_building }
+    }
+  }
+}
+
+d_port_building = {
+  scope = country
+  confirm_title = "d_port_building"
+	confirm_text = "port_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_port_building
+    var:num_port_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = port_building }
+    every_owned_province = {
+      limit = {
+        has_building = port_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_port_building
+        }
+      }
+      ###
+      remove_building_level = port_building
+      ###
+      prev = {
+        add_treasury = city_building_cost_150
+      }
+    }
+    clear_variable_list = all_port_building
+    count_city_buildings_150 = { building = port_building }
+		close_list = { building = port_building }
+  }
+}
+
+d_1_port_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_port_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_port_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = port_building
+    if = {
+      limit = {
+        real_num_of_port_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_port_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_150
+      count_city_buildings_150 = { building = port_building }
+			close_list = { building = port_building }
+    }
+  }
+}
+
+dont_remove_port_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = port_building }
+    owner = {
+      count_city_buildings_150 = { building = port_building }
+    }
+  }
+}
+
+###
+
+expand_court_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 10
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 10
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 10
+      }
+      add_buildings_to_list = { building = court_building }
+    }
+  }
+}
+
+d_court_building = {
+  scope = country
+  confirm_title = "d_court_building"
+	confirm_text = "court_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_court_building
+    var:num_court_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = court_building }
+    every_owned_province = {
+      limit = {
+        has_building = court_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_court_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_court_building
+      	remove_building_level = court_building
+      	prev = {
+      		add_treasury = city_building_cost_150
+      	}
+      }
+    }
+    clear_variable_list = all_court_building
+    count_city_buildings_150 = { building = court_building }
+		close_list = { building = court_building }
+  }
+}
+
+d_1_court_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_court_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_court_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = court_building
+    if = {
+      limit = {
+        real_num_of_court_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_court_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_150
+      count_city_buildings_150 = { building = court_building }
+			close_list = { building = court_building }
+    }
+  }
+}
+
+dont_remove_court_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = court_building }
+    owner = {
+      count_city_buildings_150 = { building = court_building }
+    }
+  }
+}
+
+###
+
+expand_academy_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 11
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 11
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 11
+      }
+      add_buildings_to_list = { building = academy_building }
+    }
+  }
+}
+
+d_academy_building = {
+  scope = country
+  confirm_title = "d_academy_building"
+	confirm_text = "academy_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_academy_building
+    var:num_academy_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = academy_building }
+    every_owned_province = {
+      limit = {
+        has_building = academy_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_academy_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_academy_building
+      	remove_building_level = academy_building
+      	prev = {
+      		add_treasury = city_building_cost_150
+      	}
+      }
+    }
+    clear_variable_list = all_academy_building
+    count_city_buildings_150 = { building = academy_building }
+		close_list = { building = academy_building }
+  }
+}
+
+d_1_academy_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_academy_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_academy_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = academy_building
+    if = {
+      limit = {
+        real_num_of_academy_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_academy_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_150
+      count_city_buildings_150 = { building = academy_building }
+			close_list = { building = academy_building }
+    }
+  }
+}
+
+dont_remove_academy_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = academy_building }
+    owner = {
+      count_city_buildings_150 = { building = academy_building }
+    }
+  }
+}
+
+###
+
+expand_forum_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 14
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 14
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 14
+      }
+      add_buildings_to_list = { building = forum_building }
+    }
+  }
+}
+
+d_forum_building = {
+  scope = country
+  confirm_title = "d_forum_building"
+	confirm_text = "forum_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_forum_building
+    var:num_forum_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = forum_building }
+    every_owned_province = {
+      limit = {
+        has_building = forum_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_forum_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_forum_building
+      	remove_building_level = forum_building
+      	prev = {
+      		add_treasury = city_building_cost_150
+      	}
+      }
+    }
+    clear_variable_list = all_forum_building
+    count_city_buildings_150 = { building = forum_building }
+		close_list = { building = forum_building }
+  }
+}
+
+d_1_forum_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_forum_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_forum_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = forum_building
+    if = {
+      limit = {
+        real_num_of_forum_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_forum_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_150
+      count_city_buildings_150 = { building = forum_building }
+			close_list = { building = forum_building }
+    }
+  }
+}
+
+dont_remove_forum_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = forum_building }
+    owner = {
+      count_city_buildings_150 = { building = forum_building }
+    }
+  }
+}
+
+###
+
+expand_workshop_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 15
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 15
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 15
+      }
+      add_buildings_to_list = { building = workshop_building }
+    }
+  }
+}
+
+d_workshop_building = {
+  scope = country
+  confirm_title = "d_workshop_building"
+	confirm_text = "workshop_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_workshop_building
+    var:num_workshop_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = workshop_building }
+    every_owned_province = {
+      limit = {
+        has_building = workshop_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_workshop_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_workshop_building
+      	remove_building_level = workshop_building
+      	prev = {
+      		add_treasury = city_building_cost_150
+      	}
+      }
+    }
+    clear_variable_list = all_workshop_building
+    count_city_buildings_150 = { building = workshop_building }
+		close_list = { building = workshop_building }
+  }
+}
+
+d_1_workshop_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_workshop_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_workshop_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = workshop_building
+    if = {
+      limit = {
+        real_num_of_workshop_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_workshop_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_150
+      count_city_buildings_150 = { building = workshop_building }
+			close_list = { building = workshop_building }
+    }
+  }
+}
+
+dont_remove_workshop_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = workshop_building }
+    owner = {
+      count_city_buildings_150 = { building = workshop_building }
+    }
+  }
+}
+
+###
+
+expand_aqueduct_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 18
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 18
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 18
+      }
+      add_buildings_to_list = { building = aqueduct_building }
+    }
+  }
+}
+
+d_aqueduct_building = {
+  scope = country
+  confirm_title = "d_aqueduct_building"
+	confirm_text = "aqueduct_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_aqueduct_building
+    var:num_aqueduct_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = aqueduct_building }
+    every_owned_province = {
+      limit = {
+        has_building = aqueduct_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_aqueduct_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_aqueduct_building
+      	remove_building_level = aqueduct_building
+      	prev = {
+      		add_treasury = city_building_cost_150
+      	}
+      }
+    }
+    clear_variable_list = all_aqueduct_building
+    count_city_buildings_150 = { building = aqueduct_building }
+		close_list = { building = aqueduct_building }
+  }
+}
+
+d_1_aqueduct_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_aqueduct_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_aqueduct_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = aqueduct_building
+    if = {
+      limit = {
+        real_num_of_aqueduct_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_aqueduct_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_150
+      count_city_buildings_150 = { building = aqueduct_building }
+			close_list = { building = aqueduct_building }
+    }
+  }
+}
+
+dont_remove_aqueduct_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = aqueduct_building }
+    owner = {
+      count_city_buildings_150 = { building = aqueduct_building }
+    }
+  }
+}
+
+
+
+### CHEAP CITY BUILDINGS
+
+### 100
+
+expand_military_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 6
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 6
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 6
+      }
+      add_buildings_to_list = { building = military_building }
+    }
+  }
+}
+
+d_military_building = {
+  scope = country
+  confirm_title = "d_military_building"
+	confirm_text = "military_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_military_building
+    var:num_military_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = military_building }
+    every_owned_province = {
+      limit = {
+        has_building = military_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_military_building
+        }
+      }
+      ###
+      while = {
+        count = real_num_of_military_building
+        remove_building_level = military_building
+        prev = {
+          add_treasury = city_building_cost_100
+        }
+      }
+    }
+    clear_variable_list = all_military_building
+    count_city_buildings_100 = { building = military_building }
+		close_list = { building = military_building }
+  }
+}
+
+d_1_military_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_military_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_military_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = military_building
+    if = {
+      limit = {
+        real_num_of_military_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_military_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_100
+      count_city_buildings_100 = { building = military_building }
+			close_list = { building = military_building }
+    }
+  }
+}
+
+dont_remove_military_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = military_building }
+    owner = {
+      count_city_buildings_100 = { building = military_building }
+    }
+  }
+}
+
+###
+
+expand_commerce_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 8
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 8
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 8
+      }
+      add_buildings_to_list = { building = commerce_building }
+    }
+  }
+}
+
+d_commerce_building = {
+  scope = country
+  confirm_title = "d_commerce_building"
+	confirm_text = "commerce_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_commerce_building
+    var:num_commerce_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = commerce_building }
+    every_owned_province = {
+      limit = {
+        has_building = commerce_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_commerce_building
+        }
+      }
+      ###
+      while = {
+        count = real_num_of_commerce_building
+        remove_building_level = commerce_building
+        prev = {
+          add_treasury = city_building_cost_100
+        }
+      }
+      ###
+    }
+    clear_variable_list = all_commerce_building
+    count_city_buildings_100 = { building = commerce_building }
+		close_list = { building = commerce_building }
+  }
+}
+
+d_1_commerce_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_commerce_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_commerce_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = commerce_building
+    if = {
+      limit = {
+        real_num_of_commerce_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_commerce_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_100
+      count_city_buildings_100 = { building = commerce_building }
+			close_list = { building = commerce_building }
+    }
+  }
+}
+
+dont_remove_commerce_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = commerce_building }
+    owner = {
+      count_city_buildings_100 = { building = commerce_building }
+    }
+  }
+}
+
+###
+
+expand_town_hall_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 9
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 9
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 9
+      }
+      add_buildings_to_list = { building = town_hall_building }
+    }
+  }
+}
+
+d_town_hall_building = {
+  scope = country
+  confirm_title = "d_town_hall_building"
+	confirm_text = "town_hall_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_town_hall_building
+    var:num_town_hall_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = town_hall_building }
+    every_owned_province = {
+      limit = {
+        has_building = town_hall_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_town_hall_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_town_hall_building
+      	remove_building_level = town_hall_building
+      	prev = {
+      		add_treasury = city_building_cost_100
+      	}
+      }
+    }
+    clear_variable_list = all_town_hall_building
+    count_city_buildings_100 = { building = town_hall_building }
+		close_list = { building = town_hall_building }
+  }
+}
+
+d_1_town_hall_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_town_hall_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_town_hall_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = town_hall_building
+    if = {
+      limit = {
+        real_num_of_town_hall_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_town_hall_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_100
+      count_city_buildings_100 = { building = town_hall_building }
+			close_list = { building = town_hall_building }
+    }
+  }
+}
+
+dont_remove_town_hall_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = town_hall_building }
+    owner = {
+      count_city_buildings_100 = { building = town_hall_building }
+    }
+  }
+}
+
+###
+
+expand_population_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 12
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 12
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 12
+      }
+      add_buildings_to_list = { building = population_building }
+    }
+  }
+}
+
+d_population_building = {
+  scope = country
+  confirm_title = "d_population_building"
+	confirm_text = "population_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_population_building
+    var:num_population_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = population_building }
+    every_owned_province = {
+      limit = {
+        has_building = population_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_population_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_population_building
+      	remove_building_level = population_building
+      	prev = {
+      		add_treasury = city_building_cost_100
+      	}
+      }
+    }
+    clear_variable_list = all_population_building
+    count_city_buildings_100 = { building = population_building }
+		close_list = { building = population_building }
+  }
+}
+
+d_1_population_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_population_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_population_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = population_building
+    if = {
+      limit = {
+        real_num_of_population_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_population_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_100
+      count_city_buildings_100 = { building = population_building }
+			close_list = { building = population_building }
+    }
+  }
+}
+
+dont_remove_population_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = population_building }
+    owner = {
+      count_city_buildings_100 = { building = population_building }
+    }
+  }
+}
+
+###
+
+expand_library_building = {
+	scope = country
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = expand_list
+    var:expand_list = 13
+  }
+
+  effect = {
+    if = {
+      limit = {
+        has_variable = expand_list
+        var:expand_list = 13
+      }
+      remove_variable = expand_list
+    }
+    else = {
+      set_variable = {
+        name = expand_list
+        value = 13
+      }
+      add_buildings_to_list = { building = library_building }
+    }
+  }
+}
+
+d_library_building = {
+  scope = country
+  confirm_title = "d_library_building"
+	confirm_text = "library_building_cost_tooltip"
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    has_variable = num_library_building
+    var:num_library_building > 0
+  }
+
+  effect = {
+    #count_buildings = { building = library_building }
+    every_owned_province = {
+      limit = {
+        has_building = library_building
+        has_siege = no
+        state_loyalty >= 33
+        NOT = {
+          has_variable = dont_remove_library_building
+        }
+      }
+      ###
+      while = {
+      	count = real_num_of_library_building
+      	remove_building_level = library_building
+      	prev = {
+      		add_treasury = city_building_cost_100
+      	}
+      }
+    }
+    clear_variable_list = all_library_building
+    count_city_buildings_100 = { building = library_building }
+		close_list = { building = library_building }
+  }
+}
+
+d_1_library_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    NOT = {
+      has_variable = dont_remove_library_building
+    }
+  }
+
+  is_valid = {
+    NOT = {
+      has_variable = dont_remove_library_building
+      has_siege = yes
+      state_loyalty < 33
+    }
+  }
+
+  effect = {
+    remove_building_level = library_building
+    if = {
+      limit = {
+        real_num_of_library_building = 0
+      }
+      owner = {
+        remove_list_variable = {
+          name = all_library_building
+          target = prev
+        }
+      }
+    }
+    owner = {
+      add_treasury = city_building_cost_100
+      count_city_buildings_100 = { building = library_building }
+			close_list = { building = library_building }
+    }
+  }
+}
+
+dont_remove_library_building = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  effect = {
+    dont_remove = { building = library_building }
+    owner = {
+      count_city_buildings_100 = { building = library_building }
+    }
+  }
+}
+
+###
+
+blocking_farm = {
+  scope = province
+
+  ai_is_valid = {
+		always = no
+	}
+
+  is_shown = {
+    owner = {
+      NOT = {
+        invention = global_settlement_building_slot_inv
+      }
+    }
+    has_city_status = no
+    OR = {
+      trade_goods = grain
+      trade_goods = fish
+      trade_goods = cattle
+      trade_goods = vegetables
+
+      trade_goods = stone
+      trade_goods = iron
+      trade_goods = marble
+      trade_goods = precious_metals
+      trade_goods = base_metals
+    }
+  }
+}

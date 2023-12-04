@@ -1,0 +1,180 @@
+﻿income = {
+	value = has_monthly_income
+}
+
+balance = {
+	value = has_monthly_balance
+}
+
+state_loyalty_prov = {
+	value = state_loyalty
+}
+
+﻿check = {
+	value = 1
+}
+
+integrated_population = {
+	value = 0
+
+	every_integrated_culture = {
+		add = country_culture_pop_count
+	}
+}
+
+inversed_population = {
+	value = 100
+
+	divide = integrated_population
+	multiply = 12
+}
+
+income = {
+	value = has_monthly_income
+}
+
+free_pops = {
+	value = 0
+
+	if = {
+		limit = {
+			has_variable = free_pops
+		}
+		add = var:free_pops
+	}
+}
+
+province_research = {
+	value = 0
+	add = prov_nobles
+	add = prov_citizens
+}
+
+prov_nobles = {
+	value = 0
+
+	every_state_province = {
+		limit = { num_of_nobles > 0}
+		add = nobles_research
+	}
+
+	multiply = province_research_modifiers
+}
+
+nobles_research = {
+	value = 0
+	if = {
+		limit = {
+			num_of_nobles > 0
+		}
+
+		add = num_of_nobles
+		multiply = 0.5
+		multiply = nobles_happiness
+
+		multiply = territory_research_modifiers
+	}
+}
+
+prov_citizens = {
+	value = 0
+
+	every_state_province = {
+		limit = { num_of_citizen > 0 }
+		add = citizens_research
+	}
+}
+
+territory_research = {
+	if = {
+		limit = { num_of_citizen > 0 }
+		add = citizens_research
+	}
+	if = {
+		limit = { num_of_nobles > 0 }
+		add = nobles_research
+	}
+}
+
+citizens_research = {
+	value = 0
+
+	add = num_of_citizen
+	multiply = 0.2
+	multiply = citizen_happiness
+
+	multiply = territory_research_modifiers
+}
+
+territory_research_modifiers = {
+	value = 1
+
+	if = {
+		limit = {
+			has_city_status = no
+		}
+		add = -0.25
+	}
+
+	if = {
+		limit = {
+			num_of_academy_building > 0
+		}
+		add = academy_bonus
+	}
+
+
+	if = {
+		limit = {
+			OR = {
+				is_state_capital = yes
+				is_capital = yes
+			}
+		}
+		add = 0.1
+	}
+
+	if = {
+		limit = { state = { is_capital_state = yes }  }
+		add = 0.1
+	}
+
+	if = {
+		limit = {
+			this.region = owner.capital_scope.region
+		}
+		add = 0.1
+	}
+
+
+	if = {
+		limit = {
+			exists = this.governor_or_ruler
+		}
+		add = governor_skills
+
+		# if = {
+		# 	limit = { governor_policy = local_autonomy }
+		# 	add = -0.37
+		# }
+		# if = {
+		# 	limit = { governor_policy = harsh_treatment }
+		# 	add = -0.04
+		# }
+	}
+}
+
+governor_skills = {
+	value = 0
+	add = governor_or_ruler.finesse
+	multiply = 0.02501
+}
+
+academy_bonus = {
+  value = num_of_academy_building
+  multiply = 0.075
+}
+
+province_research_modifiers = {
+	value = 1
+}
