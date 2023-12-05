@@ -1,0 +1,3607 @@
+@SideBarButtonSize = 36
+
+@PauseVignetteAnimationSpeed = 0.15
+@PauseVignetteAlpha = 0.5
+
+@cred = 0.24
+@cblue = 0.012
+@cgreen = 0.05
+@calpha = 0.8
+
+template sidebar_button_ani {
+	onmousehierarchyenter = "[PdxGuiWidget.FindChild('button_icon').TriggerAnimation('mouse_hierarchy_enter')]"
+	onmousehierarchyleave = "[PdxGuiWidget.FindChild('button_icon').TriggerAnimation('mouse_hierarchy_leave')]"
+}
+
+#
+types IngameTopbar
+{
+	type topbar_tab_button = container {
+
+		button = {
+			name = "button"
+			position = { 0 0 }
+			gfxtype = updownframedbuttongfx
+			effectname = "NoHighlight"
+			upframe = 1
+			downframe = 2
+			overframe = 3
+			framesize = { 32 32 }
+			parentanchor = top|left
+			clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+			oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+
+		# Set these:
+		# texture
+		# onclick
+		# shortcut
+		# down
+		# tooltip
+
+		}
+
+		widget = {
+			state = {
+				name = _show
+				start_sound = {soundeffect = "event:/SFX/Ambience/2DMapEmitters/Nature/sfx_amb_base_wind"}
+			}
+		}
+	}
+
+	type button_icon_and_text_with_change = button {
+		# Size needed
+		minimumsize = { 0 32 }
+
+
+		icon = {
+			size = { 65% 6 }
+			parentanchor = bottom
+			texture = "gfx/interface/base_parts/brown_underline_x60bd.dds"
+			spriteType = Corneredtiled
+			spriteborder = { 30 0 }
+			block "LineVisibility"
+			{
+
+			}
+		}
+
+		hbox = {
+			layoutpolicy_vertical = expanding
+
+			widget = {
+				size = { 4 4 }
+				layoutpolicy_horizontal = fixed
+			}
+
+			icon = {
+				framesize = { 50 50 }
+				size = { 34 34 }
+				layoutpolicy_horizontal = fixed
+
+				block "Icon"
+				{
+					texture = "gfx/interface/icons/shared_icons/leader.dds"
+				}
+			}
+
+			widget = {
+				size = { 4 4 }
+				layoutpolicy_horizontal = fixed
+			}
+
+			widget = {
+				size = { 0 30 }
+				layoutpolicy_horizontal = expanding
+
+				textbox = {
+					name = "Text"
+					position = { 0 -1 }
+					size = { 100% 24 }
+					align = right|nobaseline
+					elide = right
+					using = BaseFontM
+					using = Black_FontColor
+					fontsize_min = 14
+					block "Text"
+					{
+
+						text = "888.88%"
+					}
+				}
+
+				textbox = {
+					using = BaseFontS
+					using = Black_FontColor
+					block "Change" { text = "999.99" }
+					parentanchor = bottom|right
+					align = right|nobaseline
+					position = { 1 6 }
+					fontcolor = { 0.4 0.4 0.4 1 }
+					fontsize = 14
+					autoresize = yes
+				}
+			}
+
+			widget = {
+				size = { 6 6 }
+				layoutpolicy_horizontal = fixed
+			}
+		}
+	}
+
+	type button_icon_and_text = button {
+		# Size needed
+		minimumsize = { 0 32 }
+		@Minimum_button_size = 28
+		icon = {
+			position = { 0 @Minimum_button_size }
+			texture = "gfx/interface/base_parts/brown_underline_x60bd.dds"
+			spriteType = Corneredtiled
+			spriteborder = { 30 0 }
+			size = { 100% 6 }
+			block "LineVisibility"
+			{
+
+			}
+		}
+
+		hbox = {
+
+			widget = {
+				size = { 4 4 }
+				layoutpolicy_horizontal = fixed
+			}
+
+			icon = {
+				#position = { 0 0 }
+				framesize = { 50 50 }
+				size = { 34 34 }
+				layoutpolicy_horizontal = fixed
+
+				block "Icon"
+				{
+					texture = "gfx/interface/icons/shared_icons/leader.dds"
+				}
+			}
+
+			widget = {
+				size = { 4 4 }
+				layoutpolicy_horizontal = fixed
+			}
+
+			widget = {
+				size = { 0 24 }
+				layoutpolicy_horizontal = expanding
+
+				textbox = {
+					name = "Text"
+					position = { 0 1 }
+					size = { 100% 24 }
+					align = right|nobaseline
+					elide = right
+					using = BaseFontM
+					using = Black_FontColor
+					fontsize_min = 14
+					block "Text"
+					{
+
+						text = "888.88%"
+					}
+				}
+			}
+
+			widget = {
+				size = { 6 6 }
+				layoutpolicy_horizontal = fixed
+			}
+		}
+	}
+}
+
+types Mapmodestuff
+{
+	type mapmodebutton = button {
+		shaderfile = "gfx/FX/pdxgui_pushbutton.shader"
+		gfxtype = togglepushbuttongfx
+		effectname = "NoHighlight"
+
+		upframe = 1
+		uphoverframe = 2
+		uppressedframe = 3
+		downframe = 4
+		downhoverframe = 5
+		downpressedframe = 6
+
+		clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_map_mode"
+		oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+
+		block "visibility"
+		{
+			visible = "[CanChangeMapMode]"
+			enabled = "[CanChangeMapMode]"
+		}
+	}
+}
+
+template minimap_view
+{
+	### MAP ACTIONS ROW 1
+	container = {
+		name = "minimap_view_1"
+		container = {
+			name = "actual_map"
+
+			mini_map = {
+				position = { -11 -8 }
+				name = "mini_map"
+				parentanchor = bottom|right
+				widgetanchor = bottom|right
+				texture = "gfx/interface/minimap/minimap.dds"
+				size = { 359 175 }
+			}
+			container = {
+				position = { 0 -50 }
+
+				icon = {
+					texture = "gfx/interface/tiles/small_window_title_header_corners.dds"
+					spriteType = Corneredtiled
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					size = { 100% 54 }
+					spriteborder = { 10 20 }
+					position = { 1 -42 }
+				}
+
+				icon = {
+					texture = "gfx/interface/tiles/small_window_title_header_corners.dds"
+					spriteType = Corneredtiled
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					size = { 100% 54 }
+					spriteborder = { 10 20 }
+					position = { 1 0 }
+				}
+
+				#icon = {
+				#	texture = "gfx/interface/tiles/small_window_title_header_corners.dds"
+				#	spriteType = Corneredtiled
+				#	shaderfile = "gfx/FX/pdxgui_default.shader"
+				#	size = { 100% 42 }
+				#	spriteborder = { 10 20 }
+				#	position = { 1 10 }
+				#}
+			}
+		}
+	}
+}
+
+template toolbar
+{
+	### MAP ACTIONS ROW 1
+
+	@mmi_width = 37
+	@mmi_height = 31
+
+	flowcontainer = {
+		name = "Mapmode_empty_slots"
+		direction = horizontal
+		position = { 0 2 }
+		spacing = 3
+
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+	}
+
+
+
+
+	flowcontainer = {
+		name = "mapactions_row_1"
+		position = { 0 2 }
+		spacing = 3
+
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "0"
+			button = {
+				name = "quick_action_1"
+				shortcut = map_mode_1
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('0')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('0')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('0')]"
+				using = tooltip_ws_mm
+				onrightclick = "[GetQuickAccessBar.DropSlot('0')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('0')]"
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "1"
+			button = {
+				name = "quick_action_2"
+				shortcut = map_mode_2
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('1')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('1')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('1')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('1')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('1')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "2"
+			button = {
+				name = "quick_action_3"
+				shortcut = map_mode_3
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('2')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('2')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('2')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('2')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('2')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "3"
+			button = {
+				name = "quick_action_4"
+				shortcut = map_mode_4
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('3')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('3')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('3')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('3')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('3')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "4"
+			button = {
+				name = "quick_action_5"
+				shortcut = map_mode_5
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('4')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('4')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('4')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('4')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('4')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "5"
+			button = {
+				name = "quick_action_6"
+				shortcut = map_mode_6
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('5')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('5')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('5')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('5')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('5')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "6"
+			button = {
+				name = "quick_action_7"
+				shortcut = map_mode_7
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('6')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('6')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('6')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('6')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('6')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "7"
+			button = {
+				name = "quick_action_8"
+				shortcut = map_mode_8
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('7')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('7')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('7')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('7')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('7')]"
+				using = tooltip_ws_mm
+			}
+		}
+
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "8"
+			button = {
+				name = "quick_action_9"
+				shortcut = map_mode_9
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('8')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('8')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('8')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('8')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('8')]"
+				using = tooltip_ws_mm
+				tooltip_offset = { 0 10 }
+			}
+		}
+	}
+
+}
+
+template toolbar2
+{
+	### MAP ACTIONS ROW 2
+
+
+
+	flowcontainer = {
+		name = "Mapmode_empty_slots2"
+		direction = horizontal
+		position = { 0 2 }
+		spacing = 3
+
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+		icon = {
+			size = { @mmi_width @mmi_height }
+			spriteType = Corneredtiled
+			spriteborder = { 10 10 }
+			texture = "gfx/interface/tiles/sharp_dent_tiles.dds"
+		}
+	}
+
+
+
+
+	flowcontainer = {
+		name = "mapactions_row_2"
+		position = { 0 2 }
+		spacing = 3
+
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "11"
+			button = {
+				name = "quick_action_12"
+				shortcut = map_mode_12
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('11')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('11')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('11')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('11')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('11')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "12"
+			button = {
+				name = "quick_action_13"
+				shortcut = map_mode_13
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('12')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('12')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('12')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('12')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('12')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "13"
+			button = {
+				name = "quick_action_14"
+				shortcut = map_mode_14
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('13')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('13')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('13')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('13')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('13')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "14"
+			button = {
+				name = "quick_action_15"
+				shortcut = map_mode_15
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('14')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('14')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('14')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('14')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('14')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "15"
+			button = {
+				name = "quick_action_16"
+				shortcut = map_mode_16
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('15')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('15')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('15')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('15')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('15')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "16"
+			button = {
+				name = "quick_action_17"
+				shortcut = map_mode_17
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('16')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('16')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('16')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('16')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('16')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "17"
+			button = {
+				name = "quick_action_18"
+				shortcut = map_mode_18
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('17')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('17')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('17')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('17')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('17')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "18"
+			button = {
+				name = "quick_action_19"
+				shortcut = map_mode_19
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('18')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('18')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('18')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('18')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('18')]"
+				using = tooltip_ws_mm
+			}
+		}
+		dragdroptarget = {
+			using = droptarget
+			dragdropargs = "19"
+			button = {
+				name = "quick_action_20"
+				shortcut = map_mode_20
+				using = droptargetbutton
+				blockoverride "IconTexture" { texture = "[GetQuickAccessBar.QuickActionIcon('19')]" }
+				onclick = "[GetQuickAccessBar.QuickActionApply('19')]"
+				tooltip = "[GetQuickAccessBar.QuickActionDesc('19')]"
+				onrightclick = "[GetQuickAccessBar.DropSlot('19')]"
+				enabled = "[GetQuickAccessBar.QuickActionEnabled('19')]"
+				using = tooltip_ws_mm
+			}
+		}
+	}
+}
+
+
+
+vbox = {
+	name = "ingame_topbar"
+	layer = middle
+	window = {
+		visible = "[Not(IsReplayShown)]"
+		layer = top
+		#layoutpolicy_horizontal = Expanding
+		layoutpolicy_vertical = Expanding
+		#layoutstretchfactor_vertical = 20
+		alwaystransparent = yes
+		allow_outside = yes
+
+		window = {
+			name = "pause visuals"
+			size = { 100% 100% }
+			alwaystransparent = yes
+			layer = pause_vignette
+			icon = {
+				texture = "gfx/interface/base_parts/pause_vignette.dds"
+				alwaystransparent = yes
+				visible = "[IsGamePaused]"
+				size = { 100% 100% }
+				layer = pause_vignette
+				alpha = 0.5
+				state = {
+					name = _show
+
+					on_start = "[PdxGuiWidget.TriggerAnimation('pausedown')]"
+				}
+
+				state = {
+					name = pausedown
+
+					animation = {
+						alpha = @PauseVignetteAlpha
+					}
+
+					duration = @PauseVignetteAnimationSpeed
+					next = pauseback
+				}
+
+				state = {
+					name = _hide
+
+					animation = {
+						alpha = 0
+					}
+
+					duration = @PauseVignetteAnimationSpeed
+				}
+
+			}
+
+			flowcontainer = {
+				name = "pause text"
+				parentanchor = hcenter|top
+				position = { 0 66 }
+				visible = "[IsGamePaused]"
+				background = {
+					shaderfile = "gfx/FX/pdxgui_default.shader"
+					alpha = 0.55
+					spriteType = Corneredtiled
+					spriteborder = { 40 0 }
+					texture = "gfx/interface/base_parts/pause_banner.dds"
+				}
+
+				widget = {
+					size = { 56 30 }
+				}
+
+				textbox = {
+					autoresize = yes
+					using = HeaderFont
+					using = White_FontColor
+					text = "Game_Paused"
+					align = top
+					parentanchor = bottom
+				}
+
+				widget = {
+					size = { 54 30 }
+				}
+			}
+		}
+
+		datacontext = "[GetScriptedGui('tiny_flag')]"
+		# GUI REWORK
+		icon = {
+			name = "SideBar"
+			position = { -10 160 }
+			size = { 70 600 }
+			using = flat_background
+
+			state = {
+				name = tiny_flag
+				position = { -10 55 }
+				trigger_when = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+			}
+
+			state = {
+				name = big_flag
+				position = { -10 160 }
+				trigger_when = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+			}
+
+			spriteType = Corneredtiled
+			alwaystransparent = no
+			modify_texture = {
+				name = "Alpha"
+				blend_mode = alphamultiply
+				texture = "gfx/interface/base_parts/side_bar_alpha_y200bd.dds"
+				spriteType = Corneredtiled
+				spriteborder = { 0 148 }
+			}
+
+			icon = {
+				name = "Top Gradient"
+				size = { 70 140 }
+				texture = "gfx/interface/base_parts/gradient_black.dds"
+				spriteType = corneredstretched
+				spriteborder = { 0 6 }
+				position = { 0 -20 }
+
+				modify_texture = {
+					name = "Alpha"
+					blend_mode = alphamultiply
+					texture = "gfx/interface/base_parts/side_bar_alpha_y200bd.dds"
+					spriteType = Corneredtiled
+					#spriteborder = { 0 148 }
+				}
+			}
+
+			icon = {
+				name = "Bottom Color"
+				size = { 70 300 }
+				using = flat_background
+				spriteType = corneredstretched
+				spriteborder = { 0 6 }
+				color = { 0 0 0 0.2 }
+
+				widgetanchor = bottom|hcenter
+				parentanchor = bottom|hcenter
+
+				modify_texture = {
+					name = "Alpha1"
+					blend_mode = alphamultiply
+					texture = "gfx/interface/base_parts/side_bar_bottom_decore_y300bd.dds"
+					spriteType = Corneredtiled
+					spriteborder = { 0 150 }
+				}
+
+				modify_texture = {
+					name = "Alpha2"
+					blend_mode = alphamultiply
+					texture = "gfx/interface/base_parts/side_bar_alpha_y200bd.dds"
+					spriteType = Corneredtiled
+					spriteborder = { 0 150 }
+				}
+			}
+			icon = {
+				using = flat_background
+				color = { 0 0 0 0.2 }
+				position = { 1 -24 }
+				alpha = 1
+				size = { 68 192 }
+				modify_texture = {
+					name = "Alpha2"
+					blend_mode = alphamultiply
+					texture = "gfx/interface/base_parts/side_bar_alpha_macro.dds"
+					spriteType = Corneredtiled
+					spriteborder = { 0 10 }
+				}
+			}
+			icon = {
+				using = flat_background_white
+				position = { 2 -44 }
+				alpha = 1
+				size = { 68 192 }
+				modify_texture = {
+					name = "Alpha2"
+					blend_mode = alphamultiply
+					texture = "gfx/interface/base_parts/side_bar_alpha_macro.dds"
+					spriteType = Corneredtiled
+					spriteborder = { 0 10 }
+				}
+			}
+
+			button = {
+				size = { 70 @SideBarButtonSize }
+				position = { 0 39 }
+				using = sidebar_button_ani
+				onclick = "[InGameTopbar.OpenView('macro_builder')]"
+				tooltip = "MACRO_BUILDER_MENU"
+				shortcut = macro_builder
+
+				TopBarWindowButton = {
+					name = "sdfsfs"
+					position = { 4 0 }
+					blockoverride "ButtonColor"
+					{
+						using = button_tiled_texture
+					}
+					blockoverride "Details"
+					{
+						visible = "[Not(IsGameViewOpen('macro_builder'))]"
+						onclick = "[InGameTopbar.OpenView('macro_builder')]"
+						# tooltip = "MACRO_BUILDER_MENU"
+						shortcut = macro_builder
+
+						# ToDo: Add Sound.
+						clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+						oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+					}
+
+					blockoverride "Details_toggled"
+					{
+						visible = "[IsGameViewOpen('macro_builder')]"
+					}
+
+					blockoverride "Icon"
+					{
+						texture = "gfx/interface/icons/menu_buttons/macrobuilder.dds"
+					}
+				}
+			}
+
+			flowcontainer = {
+				name = "Buttons_Container"
+				direction = vertical
+				spacing = 11
+				resizeparent = yes
+				#parentanchor = top|hcenter
+				ignoreinvisible = yes
+
+				widget = {
+					size = { 70 106 }
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('overview')]"
+					tooltip = "NATION_OVERVIEW_MENU"
+					shortcut = "top_bar_1"
+
+					datacontext = "[GetScriptedGui('nation_button')]"
+					visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+
+					TopBarWindowButton = {
+						position = { 2 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('overview'))]"
+							onclick = "[ToggleGameView('overview')]"
+							# tooltip = "NATION_OVERVIEW_MENU"
+							shortcut = "top_bar_1"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('overview')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_overview.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					onclick = "[ToggleGameView('government')]"
+					using = sidebar_button_ani
+					tooltip = "GOVERNMENT_MENU"
+					shortcut = "top_bar_2"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('government'))]"
+							onclick = "[ToggleGameView('government')]"
+							# tooltip = "GOVERNMENT_MENU"
+							shortcut = "top_bar_2"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('government')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_government.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('economy')]"
+					tooltip = "ECONOMY_MENU"
+					shortcut = "top_bar_3"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('economy'))]"
+							onclick = "[ToggleGameView('economy')]"
+							# tooltip = "ECONOMY_MENU"
+							shortcut = "top_bar_3"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('economy')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_economy.dds"
+						}
+					}
+				}
+
+				icon = {
+					#position = { 4 0 }
+					size = { 43 2 }
+					texture = "gfx/interface/base_parts/macro_divider.dds"
+					parentanchor = hcenter
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('religion')]"
+					tooltip = "RELIGION_MENU"
+					shortcut = "top_bar_4"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('religion'))]"
+							onclick = "[ToggleGameView('religion')]"
+							# tooltip = "RELIGION_MENU"
+							shortcut = "top_bar_4"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('religion')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_religion.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('culture')]"
+					tooltip = "CULTURE_MENU"
+					shortcut = "top_bar_5"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('culture'))]"
+							onclick = "[ToggleGameView('culture')]"
+							# tooltip = "CULTURE_MENU"
+							shortcut = "top_bar_5"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('culture')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_culture.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('trade')]"
+					tooltipwidget = {
+						using = double_tooltip_vert
+						blockoverride "TopText" {
+							text = "TRADE_MENU"
+						}
+						blockoverride "line" {}
+						blockoverride "BotText" {
+							text = "rmb_trade_toggle"
+						}
+					}
+					shortcut = "top_bar_6"
+					onrightclick = "[ToggleGameView('trade')]"
+					onrightclick = "[PdxGuiTriggerAllAnimations('toggle_auto_trade')]"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('trade'))]"
+							onclick = "[ToggleGameView('trade')]"
+							# tooltipwidget = {
+							# 	using = double_tooltip_vert
+							# 	blockoverride "TopText" {
+							# 		text = "TRADE_MENU"
+							# 	}
+							# 	blockoverride "line" {}
+							# 	blockoverride "BotText" {
+							# 		text = "rmb_trade_toggle"
+							# 	}
+							# }
+							shortcut = "top_bar_6"
+							onrightclick = "[ToggleGameView('trade')]"
+							onrightclick = "[PdxGuiTriggerAllAnimations('toggle_auto_trade')]"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('trade')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_trade.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('military')]"
+					tooltip = "MILITARY_MENU"
+					shortcut = "top_bar_7"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('military'))]"
+							onclick = "[ToggleGameView('military')]"
+							# tooltip = "MILITARY_MENU"
+							shortcut = "top_bar_7"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('military')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_military.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('mercenary')]"
+					tooltip = "MERCENARY_MENU"
+					shortcut = "top_bar_8"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('mercenary'))]"
+							onclick = "[ToggleGameView('mercenary')]"
+							# tooltip = "MERCENARY_MENU"
+							shortcut = "top_bar_8"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('mercenary')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_mercenary.dds"
+						}
+					}
+				}
+
+				icon = {
+					size = { 43 2 }
+					texture = "gfx/interface/base_parts/macro_divider.dds"
+					parentanchor = hcenter
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('diplomacy')]"
+					tooltip = "DIPLOMACY_MENU"
+					shortcut = "top_bar_9"
+
+					datacontext = "[GetScriptedGui('diplo_button')]"
+					visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('diplomacy'))]"
+							onclick = "[ToggleGameView('diplomacy')]"
+							# tooltip = "DIPLOMACY_MENU"
+							shortcut = "top_bar_9"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('diplomacy')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_diplomacy.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('technology')]"
+					tooltip = "TECHNOLOGY_MENU"
+					shortcut = "top_bar_10"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('technology'))]"
+							onclick = "[ToggleGameView('technology')]"
+							# tooltip = "TECHNOLOGY_MENU"
+							shortcut = "top_bar_10"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('technology')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_technology.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('characters')]"
+					tooltip = "CHARACTERS_MENU"
+					shortcut = "top_bar_11"
+
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('characters'))]"
+							onclick = "[ToggleGameView('characters')]"
+							# tooltip = "CHARACTERS_MENU"
+							shortcut = "top_bar_11"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('characters')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_character.dds"
+						}
+					}
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[ToggleGameView('mission')]"
+					tooltip = "MISSION_MENU"
+					shortcut = "top_bar_12"
+
+					TopBarWindowButton = {
+						position = { 4 2 }
+						blockoverride "Details"
+						{
+							visible = "[Not(IsGameViewOpen('mission'))]"
+							onclick = "[ToggleGameView('mission')]"
+							# tooltip = "MISSION_MENU"
+							shortcut = "top_bar_12"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[IsGameViewOpen('mission')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_mission.dds"
+						}
+					}
+				}
+
+				icon = {
+					size = { 43 2 }
+					texture = "gfx/interface/base_parts/macro_divider.dds"
+					parentanchor = hcenter
+					visible = "[GetVariableSystem.Exists('browser_button')]"
+				}
+
+				button = {
+					size = { 70 @SideBarButtonSize }
+					using = sidebar_button_ani
+					onclick = "[GetVariableSystem.Toggle('browser')]"
+					shortcut = "top_bar_13"
+					tooltip = "browser_button"
+					visible = "[GetVariableSystem.Exists('browser_button')]"
+
+					TopBarWindowButton = {
+						position = { 4 2 }
+						blockoverride "Details"
+						{
+							visible = "[Not(GetVariableSystem.Exists('browser'))]"
+							onclick = "[GetVariableSystem.Toggle('browser')]"
+							shortcut = "top_bar_13"
+
+							# ToDo: Add Sound.
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+
+						blockoverride "Details_toggled"
+						{
+							visible = "[GetVariableSystem.Exists('browser')]"
+						}
+
+						blockoverride "Icon"
+						{
+							texture = "gfx/icons/browser/browser.dds"
+						}
+					}
+				}
+
+				widget = {
+					size = { 70 120 }
+				}
+			}
+		}
+
+		# GUI REWORK
+
+		icon = {
+			name = "TopBarLeft"
+			position = { 0 -2 }
+			size = { 800 46 }
+			using = flat_background_white
+			spriteType = Corneredtiled
+			alpha = 0.95
+			alwaystransparent = no
+
+			modify_texture = {
+				name = "Alpha"
+				texture = "gfx/interface/base_parts/top_bar_alpha_x120bd.dds"
+				blend_mode = alphamultiply
+				spriteType = Corneredtiled
+				spriteborder = { 60 0 }
+				using = bigger_text_hide
+			}
+
+			using = bigger_texture
+
+			flowcontainer = {
+				ignoreinvisible = yes
+				resizeparent = yes
+
+				flowcontainer = {
+					margin_top = -1
+					spacing = 4
+					ignoreinvisible = yes
+					using = bigger_text_hide
+
+
+					widget = {
+						name = "Spacing_widget_behind_flag"
+						size = { 140 46 }
+
+						state = {
+							name = tiny_flag
+							size = { 65 46 }
+							trigger_when = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+						}
+
+						state = {
+							name = big_flag
+							size = { 140 46 }
+							trigger_when = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+						}
+					}
+
+					container = {
+						name = "Treasury"
+
+						button_icon_and_text_with_change = {
+							onclick = "[ToggleGameView('economy')]"
+							position = { 0 6 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetTreasuryTooltip]"
+							using = tooltip_se
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/treasury.dds"
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetTreasury|0]"
+							}
+							blockoverride "Change"
+							{
+								text = "[InGameTopbar.GetPlayer.GetTreasuryChange|2+=]"
+							}
+						}
+					}
+
+					container = {
+						name = "Manpower"
+
+						button_icon_and_text_with_change = {
+							onclick = "[ToggleGameView('military')]"
+							position = { 0 6 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetManpowerTooltip]"
+							using = tooltip_se
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/manpower.dds"
+
+								#icon = {
+								#	name = "plus"
+								#	position = { -1 3 }
+								#	size = { 36 36 }
+								#	using = icon_plus
+								#	visible = "[InGameTopbar.GetPlayer.HasPositiveManpower]"
+								#}
+								#
+								#icon = {
+								#	name = "minus"
+								#	position = { -1 3 }
+								#	size = { 36 36 }
+								#	using = icon_minus
+								#	visible = "[Not(InGameTopbar.GetPlayer.HasPositiveManpower)]"
+								#}
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetManpower]"
+							}
+
+							blockoverride "Change"
+							{
+								text = "[InGameTopbar.GetPlayer.GetManpowerChange]"
+							}
+
+						}
+					}
+
+					container = {
+						datacontext = "[GetScriptedGui('topbar_maintenance')]"
+						visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+
+						button_icon_and_text = {
+							position = { 0 6 }
+							size = { 70 36 }
+							onclick = "[ToggleGameView('economy')]"
+
+							#tooltip = ""
+
+							blockoverride "LineVisibility" {
+								visible = no
+							}
+
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/modifiers/army_maintenance_cost.dds"
+							}
+
+							blockoverride "Text"
+							{
+							}
+
+							icon = {
+								parentanchor = right|bottom
+								using = negative_color_texture
+								size = { 30 30 }
+								position = { 0 0 }
+
+								modify_texture = {
+									blend_mode = alphamultiply
+									texture = "gfx/icons/arrow_down.dds"
+								}
+
+								datacontext = "[GetScriptedGui('low_maintenance')]"
+								visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+							}
+
+							icon = {
+								parentanchor = right|bottom
+								using = positive_color_texture
+								size = { 20 30 }
+								position = { -5 0 }
+
+								modify_texture = {
+									blend_mode = alphamultiply
+									texture = "gfx/icons/bar.dds"
+								}
+
+								datacontext = "[GetScriptedGui('med_maintenance')]"
+								visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+							}
+
+							icon = {
+								parentanchor = right|bottom
+								using = positive_color_texture
+								frame = 9
+								size = { 30 30 }
+								position = { 0 -2 }
+
+								modify_texture = {
+									blend_mode = alphamultiply
+									texture = "gfx/icons/arrow_up.dds"
+								}
+
+								datacontext = "[GetScriptedGui('high_maintenance')]"
+								visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+
+							}
+						}
+					}
+
+					widget = {
+						Name = "Red_line_divider_1"
+						size = { 10 46 }
+
+						icon = {
+							#position = { 0 -5 }
+							size = { 10 46 }
+							texture = "gfx/interface/base_parts/background_noninteractable_texture_dark.dds"
+							spriteType = Corneredtiled
+							parentanchor = top|hcenter
+							widgetanchor = top|hcenter
+							using = tooltip_se
+							modify_texture = {
+								name = "Alpha"
+								blend_mode = alphamultiply
+								texture = "gfx/interface/base_parts/scroll_bar_vertical_line_y20bd.dds"
+								spriteType = Corneredtiled
+							}
+						}
+					}
+
+					container = {
+						name = "Political_Influence"
+
+						button_icon_and_text_with_change = {
+							onclick = "[ToggleGameView('government')]"
+							position = { 0 6 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetPoliticalInfluenceDescription]"
+							using = tooltip_se
+							# DO NOT set an alpha value to this. Even when the value is irelevant.
+							# If you want to deemphasize it, add "using = Disabled_FontColor" to the Text blockoverride instead.
+
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/political_influence.dds"
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetPoliticalInfluence|0]"
+							}
+							blockoverride "Change"
+							{
+								text = "[InGameTopbar.GetPlayer.GetPoliticalInfluenceChange|2+=]"
+							}
+						}
+					}
+
+					container = {
+						name = "Military_Experience"
+
+						button_icon_and_text_with_change = {
+							onclick = "[ToggleGameView('military')]"
+							position = { 0 6 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetMilitaryExperienceDescription]"
+
+							# DO NOT set an alpha value to this. Even when the value is irelevant.
+							# If you want to deemphasize it, add "using = Disabled_FontColor" to the Text blockoverride instead when relevant.
+							using = tooltip_se
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/military_experience.dds"
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetMilitaryExperience|2]"
+							}
+
+							blockoverride "Change"
+							{
+								text = "[InGameTopbar.GetPlayer.GetMilitaryExperienceChange|2+=]"
+							}
+
+						}
+					}
+
+					widget = {
+						Name = "Red_line_divider_2"
+						size = { 10 46 }
+
+						icon = {
+							#position = { 0 -5 }
+							size = { 10 46 }
+							texture = "gfx/interface/base_parts/background_noninteractable_texture_dark.dds"
+							spriteType = Corneredtiled
+							parentanchor = top|hcenter
+							widgetanchor = top|hcenter
+
+							modify_texture = {
+								name = "Alpha"
+								blend_mode = alphamultiply
+								texture = "gfx/interface/base_parts/scroll_bar_vertical_line_y20bd.dds"
+								spriteType = Corneredtiled
+							}
+						}
+					}
+
+					container = {
+						name = "Stability"
+
+						button_icon_and_text_with_change = {
+							onclick = "[ToggleGameView('religion')]"
+							position = { 0 6 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetStabilityTooltipPlayer]"
+							using = tooltip_se
+							# DO NOT set an alpha value to this. Even when the value is irelevant.
+							# If you want to deemphasize it, add "using = Disabled_FontColor" to the Text blockoverride instead when relevant.
+
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/stability.dds"
+
+								icon = {
+									name = "plus"
+									size = { 36 36 }
+									using = icon_plus
+									visible = "[GreaterThan_CFixedPoint(InGameTopbar.GetPlayer.GetMonthlyStabilityChange, '(CFixedPoint)0')]"
+								}
+
+								icon = {
+									name = "minus"
+									size = { 36 36 }
+									using = icon_minus
+									visible = "[LessThan_CFixedPoint(InGameTopbar.GetPlayer.GetMonthlyStabilityChange, '(CFixedPoint)0')]"
+								}
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetStability|2]"
+							}
+
+							blockoverride "Change"
+							{
+								text = "[InGameTopbar.GetPlayer.GetMonthlyStabilityChange|2+=]"
+							}
+
+						}
+					}
+
+					container = {
+						name = "pops"
+						datacontext = "[GetScriptedGui('topbar_pops')]"
+						visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+
+						button_icon_and_text = {
+							position = { 0 6 }
+							size = { 100 36 }
+							onclick = "[ToggleGameView('culture')]"
+
+							tooltip = "[Player.BuildTotalPopulationToolTip]"
+
+
+							blockoverride "Icon"
+							{
+								using = icon_population
+							}
+
+							blockoverride "Text"
+							{
+								text = "[Player.GetTotalPopulation]"
+							}
+						}
+					}
+
+					container = {
+						name = "research"
+						datacontext = "[GetScriptedGui('topbar_research')]"
+						visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+
+						button_icon_and_text = {
+							position = { 0 6 }
+							size = { 110 36 }
+							onclick = "[ToggleGameView('technology')]"
+
+							tooltip = "topbar_research_tt"
+
+
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/modifiers/research_user.dds"
+							}
+
+							blockoverride "Text"
+							{
+								text = "[Multiply_CFixedPoint(InGameTopbar.GetPlayer.GetResearch, GuiScope.SetRoot(Player.MakeScope).ScriptValue('inversed_population'))|1]%"
+							}
+						}
+					}
+
+					container = {
+						name = "Aggressive_expansion"
+
+						button_icon_and_text_with_change = {
+							onclick = "[ToggleGameView('diplomacy')]"
+							position = { 0 6 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetCurrentAgressiveExpansionInfo]"
+							using = tooltip_se
+							# DO NOT set an alpha value to this. Even when the value is irelevant.
+							# If you want to deemphasize it, add "using = Disabled_FontColor" to the Text blockoverride instead when relevant.
+
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/aggressive_expansion.dds"
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetCurrentAgressiveExpansion|2]"
+							}
+
+							blockoverride "Change"
+							{
+								text = "[InGameTopbar.GetPlayer.GetAggressiveExpansionChange|2-=]"
+							}
+
+						}
+					}
+
+					container = {
+						name = "War_exhaustion"
+						button_icon_and_text_with_change = {
+							onclick = "[ToggleGameView('religion')]"
+							position = { 0 6 }
+							name = "WE Value"
+							size = { 110 36 }
+							using = tooltip_se
+							tooltip = "[InGameTopbar.GetPlayer.GetWarExhaustionTooltipPlayer]"
+							blockoverride "Text" { text = "[InGameTopbar.GetPlayer.GetWarExhaustion|2]" }
+							blockoverride "Icon" { texture = "gfx/interface/icons/modifiers/war_exhaustion.dds" }
+							parentanchor = vcenter
+
+							blockoverride "Change"
+							{
+								text = "[InGameTopbar.GetPlayer.GetWarExhaustionChange|2-=]"
+							}
+
+						}
+					}
+
+					container = {
+						name = "Tyranny"
+
+						button_icon_and_text_with_change = {
+							onclick = "[ToggleGameView('characters')]"
+							position = { 0 6 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetTyrannyTooltip]"
+							using = tooltip_se
+							# DO NOT set an alpha value to this. Even when the value is irelevant.
+							# If you want to deemphasize it, add "using = Disabled_FontColor" to the Text blockoverride instead when relevant.
+
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/tyranny.dds"
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetTyranny|2]"
+							}
+
+							blockoverride "Change"
+							{
+								text = "[InGameTopbar.GetPlayer.GetTyrannyChange|2-=]"
+							}
+
+						}
+					}
+
+					container = {
+						name = "Senate_Approval"
+						tooltip = "[InGameTopbar.GetPlayer.GetSenateApprovalTooltip]"
+						visible = "[InGameTopbar.GetPlayer.GetGovernment.IsRepublic]"
+						using = tooltip_se
+						button_icon_and_text = {
+							onclick = "[ToggleGameView('government')]"
+							visible = "[GreaterThanOrEqualTo_CFixedPoint( InGameTopbar.GetPlayer.GetSenateApproval, '(CFixedPoint)50' )]"
+							size = { 110 0 }
+							position = { 0 8 }
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/diplomacy/icon_senate_approval.dds"
+								framesize = { 42 42 }
+								frame = 1
+							}
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetSenateApproval|2]"
+							}
+						}
+
+						button_icon_and_text = {
+							onclick = "[ToggleGameView('government')]"
+							visible = "[LessThan_CFixedPoint( InGameTopbar.GetPlayer.GetSenateApproval, '(CFixedPoint)50' )]"
+							size = { 110 0 }
+							position = { 0 8 }
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/diplomacy/icon_senate_approval.dds"
+								framesize = { 42 42 }
+								frame = 2
+							}
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetSenateApproval|2]"
+							}
+						}
+					}
+
+					container = {
+						name = "Legitimacy"
+						visible = "[InGameTopbar.GetPlayer.GetGovernment.IsMonarchy]"
+
+						button_icon_and_text = {
+							onclick = "[ToggleGameView('government')]"
+							position = { 0 8 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetLegitimacyTooltip]"
+							using = tooltip_se
+							# DO NOT set an alpha value to this. Even when the value is irelevant.
+							# If you want to deemphasize it, add "using = Disabled_FontColor" to the Text blockoverride instead when relevant.
+
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/legitimacy.dds"
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetLegitimacy|2]"
+							}
+						}
+					}
+
+					container = {
+						name = "Centralization"
+						visible = "[InGameTopbar.GetPlayer.GetGovernment.IsTribal]"
+
+						button_icon_and_text = {
+							onclick = "[ToggleGameView('government')]"
+							position = { 0 8 }
+							size = { 110 36 }
+							tooltip = "[InGameTopbar.GetPlayer.GetCentralizationTooltip]"
+							using = tooltip_se
+							# DO NOT set an alpha value to this. Even when the value is irelevant.
+							# If you want to deemphasize it, add "using = Disabled_FontColor" to the Text blockoverride instead when relevant.
+
+							blockoverride "Icon"
+							{
+								texture = "gfx/interface/icons/shared_icons/centralization.dds"
+							}
+
+							blockoverride "Text"
+							{
+								text = "[InGameTopbar.GetPlayer.GetCentralization|2]%"
+							}
+						}
+					}
+
+					overlappingitembox = {
+						size = { 180 42 }
+						parentanchor = vcenter
+
+						visible = "[Not(IsDataModelEmpty( InGameTopbar.GetPlayer.MakeScope.GetList('captured_eagles') ))]"
+
+						datamodel = "[InGameTopbar.GetPlayer.MakeScope.GetList('captured_eagles')]"
+
+						item = {
+							button = {
+								texture = "gfx/interface/icons/shared_icons/roman_eagle.dds"
+								size = { 40 40 }
+								datacontext = "[Scope.Province]"
+								parentanchor = top|left
+								tooltip = "eagle_capture_banner_tooltip"
+								using = tooltip_se
+								onclick = "[OnClickOnProvince( Scope.Province )]"
+							}
+						}
+					}
+
+					widget = {
+						name = "Spacing_widget_right"
+						size = { 60 46 }
+					}
+				}
+				using = bigger_topbar
+			}
+		}
+
+		icon = {
+			texture = "gfx/interface/topbar/flag_shadow.dds"
+
+			state = {
+				name = tiny_flag
+				scale = 0.5
+				position = { 0 -2 }
+				trigger_when = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+				alpha = 0.8
+			}
+
+			state = {
+				name = big_flag
+				scale = 1
+				position = { 0 0 }
+				trigger_when = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+				alpha = 1
+			}
+		}
+
+		button = {
+			shortcut = "top_bar_1"
+
+			state = {
+				name = tiny_flag
+				scale = 0.5
+				position = { -7 -60 }
+				trigger_when = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+			}
+
+			state = {
+				name = big_flag
+				scale = 1
+				position = { -14 -115 }
+				trigger_when = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+			}
+
+      name = "Nation Flag"
+      size = { 150 244 }
+      entity_instance = "[InGameTopbar.GetFlagEntity]"
+      #color = "[InGameTopbar.AccessCoatOfArms.GetColor('(int32)1')]"
+      #texture = "[InGameTopbar.AccessCoatOfArms.GetTexture('(int32)155','(int32)355')]"
+      frame = "[InGameTopbar.AccessCoatOfArms.GetFrame('(int32)155','(int32)355')]"
+      framesize = { 155 355 }
+      position = { -14 -115 }
+      onclick = "[ToggleGameView('overview')]"
+      #tooltip = "NATION_OVERVIEW_MENU"
+      tooltip = "[InGameTopbar.GetFlagDesc]"
+
+			clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_tab"
+      oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+      #gfxtype = buttongfx
+
+      banner_widget = {
+        size = { 155 355 }
+        entity_instance = "[InGameTopbar.GetFlagEntity]"
+        color = "[InGameTopbar.AccessCoatOfArms.GetColor('(int32)1')]"
+        texture = "[InGameTopbar.AccessCoatOfArms.GetTexture('(int32)155','(int32)355')]"
+        frame = "[InGameTopbar.AccessCoatOfArms.GetFrame('(int32)155','(int32)355')]"
+        framesize = { 155 355 }
+        realtime = yes
+      }
+	  }
+
+		base_window = {
+			position = { 1 184 }
+			name = "minimap_and_buttons"
+			parentanchor = bottom|right
+			widgetanchor = bottom|right
+			size = { 374 288 }
+			movable = no
+
+			secondary_header = {
+				size = { 100% 0 }
+				position = { 0 1 }
+
+				blockoverride "Title_text" { text = "MAPMODES_HEADER" }
+			}
+			state = {
+				name = hide_minimap_anim
+
+				animation = {
+					position = { 1 184 }
+					bezier = { 0.1 0.25 0.4 1 }
+				}
+
+				duration = 0.2
+				start_sound = {
+					soundeffect = "event:/SFX/UI/Generic/2.0/sfx_ui_window_queued_events_close"
+				}
+			}
+
+			state = {
+				name = show_minimap_anim
+
+				animation = {
+					position = { 1 1 }
+					bezier = { 0.1 0.25 0.4 1 }
+				}
+
+				duration = 0.2
+				start_sound = {
+					soundeffect = "event:/SFX/UI/Generic/2.0/sfx_ui_window_queued_events_open"
+				}
+			}
+
+			button = {
+				size = { 0 0 }
+				datacontext = "[GetScriptedGui('holding_mapmode')]"
+
+				state = {
+					name = "holding_owners"
+					trigger_when = "[IsMapMode('holdings_mm')]"
+					on_start = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).End )]"
+				}
+			}
+
+			container = {
+				name = "minimap_view"
+				position = { 3 0 }
+				parentanchor = bottom|right
+				widgetanchor = bottom|right
+				using = minimap_view
+			}
+			container = {
+				position = { 8 34 }
+				container = {
+					name = "toolbar"
+					position = { 0 0 }
+					#parentanchor = bottom|right
+					#widgetanchor = bottom|right
+					using = toolbar
+				}
+
+				container = {
+					name = "toolbar2"
+					position = { 0 33 }
+					#parentanchor = bottom|right
+					#widgetanchor = bottom|right
+					using = toolbar2
+				}
+			}
+
+			flowcontainer = {
+				position = { -8 4 }
+				parentanchor = right
+				white_button_round = {
+					size = { 26 26 }
+					name = "find_province"
+					blockoverride "Icon" { texture = "gfx/interface/base_parts/find.dds" }
+					blockoverride "On_click"
+					{
+						shortcut = "find_province"
+						onclick = "[OnFindProvince]"
+					}
+					tooltip = "MAPACTION_FIND_PROVINCE"
+				}
+				white_button_round = {
+					name = "go_to_capital"
+					size = { 26 26 }
+					blockoverride "Icon" { texture = "gfx/interface/base_parts/home.dds" }
+					blockoverride "On_click"
+					{
+						onclick = "[GoToCapital]"
+						shortcut = "go_to_capital"
+					}
+					tooltip = "MAPACTION_GO_TO_CAPITAL"
+				}
+				white_button_round = {
+					name = "select map modes"
+					blockoverride "Icon" { texture = "gfx/interface/base_parts/settings.dds" }
+					size = { 26 26 }
+					blockoverride "On_click" { onclick = "[OnSelectMapModes]" }
+					tooltip = "CONFIGURE_MAP_MODES"
+				}
+				flowcontainer = {
+					ignoreinvisible = yes
+					white_button_round = {
+						name = "hideminimap"
+						size = { 26 26 }
+						visible = no
+						blockoverride "Icon" { texture = "gfx/interface/base_parts/down_arrow.dds" }
+						blockoverride "On_click"
+						{
+							onclick = "[PdxGuiTriggerAllAnimations('hide_minimap_anim')]"
+							onclick = "[PdxGuiWidget.AccessParent.AccessParent.AccessParent.FindChild('showminimap').Show]"
+							onclick = "[PdxGuiWidget.AccessParent.AccessParent.Hide]"
+							clicksound = "event:/SFX/UI/Generic/2.0/sfx_ui_button_secondary"
+						}
+					}
+					white_button_round = {
+						name = "showminimap"
+						size = { 26 26 }
+						visible = yes
+						blockoverride "Icon" { texture = "gfx/interface/base_parts/up_arrow.dds" }
+						blockoverride "On_click"
+						{
+							onclick = "[PdxGuiTriggerAllAnimations('show_minimap_anim')]"
+							onclick = "[PdxGuiWidget.AccessParent.AccessParent.AccessParent.FindChild('hideminimap').Show]"
+							onclick = "[PdxGuiWidget.AccessParent.AccessParent.Hide]"
+							clicksound = "event:/SFX/UI/Generic/2.0/sfx_ui_button_secondary"
+						}
+					}
+
+				}
+			}
+		}
+
+		### DATE
+		container = {
+			position = { -370 -2 }
+			parentanchor = top|right
+			visible = "[InGameTopbar.IsTutorialActive]"
+			tooltip = "TUTORIAL_MENU"
+			button = {
+				size = { 220 46 }
+				position = { 0 0 }
+				#frame = "[InGameTopbar.GetTutorialFrame]"
+				onclick = "[InGameTopbar.OpenView('tutorial_objectives')]"
+				clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_tab"
+				oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				forcedown = "[IsGameViewOpen('tutorial_objectives')]"
+				gfxtype = buttongfx
+				using = button_tiled_texture
+				framesize = { 200 200 }
+				frame = 2
+				spriteType = Corneredtiled
+				alwaystransparent = no
+
+				modify_texture = {
+					name = "Alpha"
+					texture = "gfx/interface/base_parts/top_bar_alpha_invertedtbd.dds"
+					blend_mode = alphamultiply
+					spriteType = Corneredtiled
+					spriteborder = { 60 0 }
+				}
+				icon = {
+					using = flat_background_white
+					size = { 32 32 }
+					position = { 52 2 }
+					alwaystransparent = yes
+					parentanchor = left|vcenter
+					modify_texture = {
+						name = "shape_tutorial_icon"
+						texture =  "gfx/interface/icons/icon_alpha/tutorial.dds"
+						blend_mode = alphamultiply
+					}
+				}
+			}
+		}
+
+		window = {
+			name = "date"
+			size = { 500 46 }
+			parentanchor = top|right
+			position = { 0 0 }
+			movable = no
+
+			icon = {
+				name = "TopBarLeft2"
+				position = { 15 -2 }
+				size = { 530 46 }
+				using = flat_background_white
+				spriteType = Corneredtiled
+				alpha = 0.95
+				alwaystransparent = no
+				parentanchor = top|right
+
+				modify_texture = {
+					name = "Alpha"
+					texture = "gfx/interface/base_parts/top_bar_alpha_invertedtbd.dds"
+					blend_mode = alphamultiply
+					spriteType = Corneredtiled
+					spriteborder = { 60 0 }
+				}
+
+				hbox = {
+					margin_left = 44
+					margin_right = 18
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+
+					datacontext = "[GetScriptedGui('bce_date')]"
+
+					button_radial = {
+						size = { 28 28 }
+						blockoverride "On_click" { visible = no }
+						tooltip = "mod_settings"
+
+						button = {
+							onclick = "[GetVariableSystem.Toggle( 'settings')]"
+							tooltip = "mod_settings"
+
+							size = { 26 26 }
+							using = button_tiled_texture
+							spriteType = corneredtiled
+							gfxtype = framedbuttongfx
+							widgetanchor = center
+							parentanchor = center
+							framesize = { 200 200 }
+							upframe = 1
+							overframe = 2
+							downframe = 3
+							disableframe = 4
+
+							modify_texture = {
+								name = "Alpha"
+								texture = "gfx/interface/base_parts/settings.dds"
+								blend_mode = alphamultiply
+							}
+						}
+					}
+
+					container = {
+						name = "score"
+						tooltip = "TOPBAR_SCORE_TOOLTIP"
+						using = tooltip_se
+						icon_and_text = {
+							size = { 86 36 }
+
+							blockoverride "Icon"
+							{
+								#using = score_button
+							}
+
+							blockoverride "Text"
+							{
+								align = center
+								text = "[InGameTopbar.GetPlayer.GetScore|0]"
+								max_width = 38
+								fontsize_min = 14
+							}
+						}
+
+						score_button = {
+							position = { 0 5 }
+							blockoverride "On_click"
+							{
+								onclick = "[InGameTopbar.OpenView('view_score')]"
+							}
+						}
+					}
+
+					ledger_button = {
+						blockoverride "On_click"
+						{
+							onclick = "[InGameTopbar.OpenView('ledger')]"
+						}
+						tooltip = "LEDGER"
+						using = tooltip_se
+					}
+
+					log_button = {
+						blockoverride "On_click"
+						{
+							onclick = "[ToggleMessageLog]"
+						}
+						tooltip = "MESSAGE_LOG_TT"
+						using = tooltip_se
+					}
+
+					widget = {
+						name = "speed_control_and_date"
+						size = { 200 32 }
+
+						visible = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+
+						vbox = {
+							layoutpolicy_horizontal = expanding
+							layoutpolicy_vertical = expanding
+							hbox = {
+								layoutpolicy_horizontal = expanding
+								layoutpolicy_vertical = expanding
+								minimumsize = { 0 26 }
+								spacing = 2
+
+								button_minus = {
+									blockoverride "On_click"
+									{
+										onclick = "[OnDecreaseGameSpeed]"
+										shortcut = "decrease_speed"
+									}
+									tooltip = "DECREASE_GAME_SPEED"
+									using = tooltip_se
+									enabled = "[CanChangeGameSpeed]"
+								}
+
+								### TODO Art needs unique button
+								text_button_square_hollow = {
+									name = "hollow"
+									layoutpolicy_horizontal = expanding
+									blockoverride "MinimumSize"
+									{
+										minimumsize = { 140 28 }
+										maximumsize = { 140 28 }
+									}
+									tooltip = "CURRENT_DATE_TOOLTIP"
+									using = tooltip_se
+									blockoverride "Center_text"
+									{
+										text = "CURRENT_DATE"
+										using = Teal_FontColor
+									}
+
+									blockoverride "On_click"
+									{
+										onclick = "[OnPause]"
+									}
+
+									visible = "[Not(IsGamePaused)]"
+									icon_time_indicator = {
+										position = { -1 5 }
+										frame = "[GetCurrentGameSpeed]"
+										parentanchor = hcenter|bottom
+										size = { 100% 5 }
+									}
+								}
+
+								### TODO Art needs unique button
+
+								text_button_square = {
+									name = "filled"
+									layoutpolicy_horizontal = expanding
+									blockoverride "MinimumSize"
+									{
+										minimumsize = { 140 28 }
+										maximumsize = { 140 28 }
+									}
+									tooltip = "CURRENT_DATE_TOOLTIP"
+									using = tooltip_se
+									blockoverride "Center_text"
+									{
+										text = "CURRENT_DATE"
+									}
+
+									blockoverride "On_click"
+									{
+										onclick = "[OnPause]"
+									}
+
+									visible = "[IsGamePaused]"
+
+									icon_time_indicator = {
+										position = { -1 5 }
+										frame = "[GetCurrentGameSpeed]"
+										parentanchor = hcenter|bottom
+										size = { 100% 5 }
+									}
+								}
+
+								button_plus = {
+
+									blockoverride "On_click"
+									{
+										onclick = "[OnIncreaseGameSpeed]"
+										shortcut = "increase_speed"
+									}
+									tooltip = "INCREASE_GAME_SPEED"
+									enabled = "[CanChangeGameSpeed]"
+									using = tooltip_se
+								}
+							}
+						}
+					}
+
+					widget = {
+						size = { 220 32 }
+
+						visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+
+						vbox = {
+							layoutpolicy_horizontal = expanding
+							layoutpolicy_vertical = expanding
+							hbox = {
+								layoutpolicy_horizontal = expanding
+								layoutpolicy_vertical = expanding
+								minimumsize = { 0 26 }
+								spacing = 2
+
+								button_minus = {
+									blockoverride "On_click"
+									{
+										onclick = "[OnDecreaseGameSpeed]"
+										shortcut = "decrease_speed"
+									}
+									tooltip = "DECREASE_GAME_SPEED"
+									using = tooltip_se
+									enabled = "[CanChangeGameSpeed]"
+								}
+
+								### TODO Art needs unique button
+								text_button_square_hollow = {
+									name = "hollow"
+									layoutpolicy_horizontal = expanding
+									blockoverride "MinimumSize"
+									{
+										minimumsize = { 160 28 }
+										maximumsize = { 160 28 }
+									}
+									tooltip = "CURRENT_DATE_TOOLTIP"
+									using = tooltip_se
+									blockoverride "Center_text"
+									{
+										text = "[GetChristianDateString]"
+										using = Teal_FontColor
+									}
+
+									blockoverride "On_click"
+									{
+										onclick = "[OnPause]"
+									}
+
+									visible = "[Not(IsGamePaused)]"
+									icon_time_indicator = {
+										position = { -1 5 }
+										frame = "[GetCurrentGameSpeed]"
+										parentanchor = hcenter|bottom
+										size = { 100% 5 }
+									}
+								}
+
+								### TODO Art needs unique button
+
+								text_button_square = {
+									name = "filled"
+									layoutpolicy_horizontal = expanding
+									blockoverride "MinimumSize"
+									{
+										minimumsize = { 160 28 }
+										maximumsize = { 160 28 }
+									}
+									tooltip = "CURRENT_DATE_TOOLTIP"
+									using = tooltip_se
+									blockoverride "Center_text"
+									{
+										text = "[GetChristianDateString]"
+									}
+
+									blockoverride "On_click"
+									{
+										onclick = "[OnPause]"
+									}
+
+									visible = "[IsGamePaused]"
+
+									icon_time_indicator = {
+										position = { -1 5 }
+										frame = "[GetCurrentGameSpeed]"
+										parentanchor = hcenter|bottom
+										size = { 100% 5 }
+									}
+								}
+
+								button_plus = {
+
+									blockoverride "On_click"
+									{
+										onclick = "[OnIncreaseGameSpeed]"
+										shortcut = "increase_speed"
+									}
+									tooltip = "INCREASE_GAME_SPEED"
+									enabled = "[CanChangeGameSpeed]"
+									using = tooltip_se
+								}
+							}
+						}
+					}
+
+					ingame_menu_button = {
+						name = "ingame_menu_button"
+
+						blockoverride "On_click"
+						{
+							onclick = "[OnPauseMenu]"
+							shortcut = "close_window"
+						}
+						blockoverride "Icon"
+						{
+
+						}
+
+						tooltip = "SHOW_MENU"
+						using = tooltip_se
+					}
+
+				}
+
+			}
+		}
+
+		base_window = { #settings
+			movable = no
+			parentanchor = right
+			position = { -305 45 }
+			minimumsize = { 240 200 }
+			@setwidth = 270
+			@setheight = 40
+
+			visible = "[GetVariableSystem.Exists('settings')]"
+
+			###
+
+			flowcontainer = {
+				margin = { 10 10 }
+				direction = vertical
+				resizeparent = yes
+				ignoreinvisible = yes
+
+				flowcontainer = {#music player
+					direction = vertical
+					ignoreinvisible = yes
+
+					widget = {
+						size = { @setwidth 30 }
+
+						tag = {
+							text = "music_player"
+						}
+						button = {
+							size = { 85 24 }
+							parentanchor = right
+							onclick = "[GetVariableSystem.Toggle('track_names')]"
+							position = { 0 0 }
+							visible = "[GetVariableSystem.Exists('track_list')]"
+
+							tag = {
+								text = "names"
+								position = { 0 0 }
+							}
+
+							icon_button_square = {
+								visible = "[Not(GetVariableSystem.Exists('track_names'))]"
+								size = { 24 24 }
+								parentanchor = right
+								position = { -2 3 }
+								blockoverride "Icon"
+								{
+									size = { 22 22 }
+									using = button_tiled_texture
+									framesize = { 200 200 }
+									frame = 2
+									modify_texture = {
+										texture = "gfx/interface/base_parts/expand_collapse_button.dds"
+										framesize = { 26 26 }
+										frame = 1
+										blend_mode = alphamultiply
+									}
+								}
+								blockoverride "On_click"
+								{
+									onclick = "[GetVariableSystem.Toggle('track_names')]"
+								}
+							}
+
+							icon_button_square = {
+								visible = "[GetVariableSystem.Exists('track_names')]"
+								size = { 24 24 }
+								parentanchor = right
+								position = { -2 3 }
+								blockoverride "Icon"
+								{
+									size = { 22 22 }
+									using = button_tiled_texture
+									framesize = { 200 200 }
+									frame = 2
+									modify_texture = {
+										texture = "gfx/interface/base_parts/expand_collapse_button.dds"
+										framesize = { 26 26 }
+										frame = 2
+										blend_mode = alphamultiply
+									}
+								}
+								blockoverride "On_click"
+								{
+									onclick = "[GetVariableSystem.Toggle('track_names')]"
+								}
+							}
+						}
+					}
+
+					widget = {
+						size = { @setwidth @setheight }
+
+						list_button = {
+							size = { 100% 40 }
+							enabled = no
+						}
+
+						flowcontainer = {
+							position = { 5 0 }
+							parentanchor = vcenter
+							spacing = 10
+							ignoreinvisible = yes
+
+							button_radial = {
+								size = { 28 28 }
+								blockoverride "On_click" { visible = no }
+
+								button_icon = {
+									onclick = "[ExecuteConsoleCommand('Music.StopTrack')]"
+									blockoverride "position" {
+										position = { 1 1 }
+										size = { 32 32 }
+									}
+									blockoverride "icon" {
+										texture = "gfx/icons/skip_song.dds"
+									}
+								}
+							}
+
+							tag = {
+								text = "skip"
+							}
+						}
+
+						button = {
+							allow_outside = yes
+							size = { 70 30 }
+							parentanchor = right|vcenter
+							position = { -15 0 }
+							onclick = "[GetVariableSystem.Toggle('track_list')]"
+
+							tag = {
+								text = "tracks"
+								position = { 0 0 }
+								parentanchor = vcenter
+							}
+
+							button_icon = {
+								position = { 0 0 }
+								parentanchor = right|vcenter
+								onclick = "[GetVariableSystem.Toggle('track_list')]"
+								blockoverride "position" {
+									size = { 28 28 }
+								}
+								blockoverride "icon" {
+									texture = "gfx/interface/base_parts/menu.dds"
+								}
+							}
+						}
+					}
+
+					flowcontainer = {
+						direction = vertical
+						visible = "[GetVariableSystem.Exists('track_list')]"
+						ignoreinvisible = yes
+
+						scrollarea = {
+							visible = "[GetVariableSystem.Exists('track_names')]"
+							#using = VerticalScrollAreaCutOff
+							scrollbar_vertical = {
+								using = VerticalScrollBar
+							}
+							scrollbarpolicy_horizontal = always_off
+
+							size = { 240 520 }
+
+							scrollwidget = {
+
+								flowcontainer = {
+									direction = vertical
+									ignoreinvisible = yes
+
+									flowcontainer = {
+										direction = vertical
+										ignoreinvisible = yes
+
+										tag = {
+											text = "base_game"
+										}
+
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track0')]"
+											blockoverride "text" { text = "1. Hegemony" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track2')]"
+											blockoverride "text" { text = "2. Elegy" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track3')]"
+											blockoverride "text" { text = "3. Red Sun" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track4')]"
+											blockoverride "text" { text = "4. Northland" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track5')]"
+											blockoverride "text" { text = "5. Family" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track6')]"
+											blockoverride "text" { text = "6. Hero" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track7')]"
+											blockoverride "text" { text = "7. Silk Road" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track8')]"
+											blockoverride "text" { text = "8. Actium" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track9')]"
+											blockoverride "text" { text = "9. The Siege" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track10')]"
+											blockoverride "text" { text = "10. Sound the Cornu" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track11')]"
+											blockoverride "text" { text = "11. Caesarion" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track12')]"
+											blockoverride "text" { text = "12. Civil War" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track13')]"
+											blockoverride "text" { text = "13. Nightwatch" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track14')]"
+											blockoverride "text" { text = "14. Karthago" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track15')]"
+											blockoverride "text" { text = "15. Tyrrenum" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack track1')]"
+											blockoverride "text" { text = "16. Our State" }
+										}
+									}
+
+									flowcontainer = {
+										tag = {
+											text = "Hellenistic World:"
+										}
+										direction = vertical
+										visible = "[HasDlc('Hellenistic World Flavor Pack')]"
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack ﻿dde_track1')]"
+											blockoverride "text" { text = "1. Cleopatra" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack dde_track2')]"
+											blockoverride "text" { text = "2. Oceanus" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack dde_track3')]"
+											blockoverride "text" { text = "3. Olivari" }
+										}
+									}
+
+									flowcontainer = {
+										direction = vertical
+										visible = "[HasDlc('Epirus Flavor Pack')]"
+										tag = {
+											text = "Epirus:"
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack ﻿po_track1')]"
+											blockoverride "text" { text = "1. Domine" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack ﻿po_track2')]"
+											blockoverride "text" { text = "2. We the People" }
+										}
+									}
+
+									flowcontainer = {
+										direction = vertical
+										visible = "[HasDlc('The Punic Wars')]"
+										tag = {
+											text = "The Punic Wars"
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack pw_track1')]"
+											blockoverride "text" { text = "1. The Mediterranean" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack pw_track2')]"
+											blockoverride "text" { text = "2. The Punic Wars" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack pw_track3')]"
+											blockoverride "text" { text = "3. Tyros" }
+										}
+									}
+
+									flowcontainer = {
+										direction = vertical
+										visible = "[HasDlc('Magna Graecia')]"
+										tag = {
+											text = "Magna Graecia:"
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack mg_track1')]"
+											blockoverride "text" { text = "1. Affinity" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack mg_track2')]"
+											blockoverride "text" { text = "2. Memories" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack mg_track3')]"
+											blockoverride "text" { text = "3. The Conqueror" }
+										}
+									}
+
+									flowcontainer = {
+										visible = "[HasDlc('Heirs of Alexander')]"
+										direction = vertical
+										tag = {
+											text = "Heirs of Alexander:"
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack hoa_track1')]"
+											blockoverride "text" { text = "1. Moment of the Battle" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack hoa_track2')]"
+											blockoverride "text" { text = "2. The Dawn of Destiny" }
+										}
+										full_track_button = {
+											onclick = "[ExecuteConsoleCommand('Music.PlayTrack hoa_track3')]"
+											blockoverride "text" { text = "3. Unsung Heroes" }
+										}
+									}
+								}
+							}
+						}
+
+						flowcontainer = {
+							direction = vertical
+							ignoreinvisible = yes
+							visible = "[Not(GetVariableSystem.Exists('track_names'))]"
+
+							tag = {
+								text = "base_game"
+							}
+
+							flowcontainer = {
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track0')]"
+									blockoverride "text" { text = "1" }
+									tooltip = "Hegemony"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track2')]"
+									blockoverride "text" { text = "2" }
+									tooltip = "Elegy"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track3')]"
+									blockoverride "text" { text = "3" }
+									tooltip = "Red Sun"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track4')]"
+									blockoverride "text" { text = "4" }
+									tooltip = "Northland"
+								}
+							}
+
+							flowcontainer = {
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track5')]"
+									blockoverride "text" { text = "5" }
+									tooltip = "Family"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track6')]"
+									blockoverride "text" { text = "6" }
+									tooltip = "Hero"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track7')]"
+									blockoverride "text" { text = "7" }
+									tooltip = "Silk Road"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track8')]"
+									blockoverride "text" { text = "8" }
+									tooltip = "Actium"
+								}
+							}
+
+							flowcontainer = {
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track9')]"
+									blockoverride "text" { text = "9" }
+									tooltip = "The Siege"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track10')]"
+									blockoverride "text" { text = "10" }
+									tooltip = "Sound the Cornu"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track11')]"
+									blockoverride "text" { text = "11" }
+									tooltip = "Caesarion"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track12')]"
+									blockoverride "text" { text = "12" }
+									tooltip = "Civil War"
+								}
+							}
+
+							flowcontainer = {
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track13')]"
+									blockoverride "text" { text = "13" }
+									tooltip = "Nightwatch"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track14')]"
+									blockoverride "text" { text = "14" }
+									tooltip = "Karthago"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track15')]"
+									blockoverride "text" { text = "15" }
+									tooltip = "Tyrrenum"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack track1')]"
+									blockoverride "text" { text = "16" }
+									tooltip = "Our State"
+								}
+							}
+
+							tag = {
+								text = "Hellenistic World:"
+								visible = "[HasDlc('Hellenistic World Flavor Pack')]"
+							}
+
+							flowcontainer = {
+								visible = "[HasDlc('Hellenistic World Flavor Pack')]"
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack ﻿dde_track1')]"
+									blockoverride "text" { text = "1" }
+									tooltip = "Cleopatra"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack dde_track2')]"
+									blockoverride "text" { text = "2" }
+									tooltip = "Oceanus"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack dde_track3')]"
+									blockoverride "text" { text = "3" }
+									tooltip = "Olivari"
+								}
+							}
+
+							tag = {
+								text = "Epirus:"
+								visible = "[HasDlc('Epirus Flavor Pack')]"
+							}
+
+							flowcontainer = {
+								visible = "[HasDlc('Epirus Flavor Pack')]"
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack ﻿po_track1')]"
+									blockoverride "text" { text = "1" }
+									tooltip = "Domine"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack ﻿po_track2')]"
+									blockoverride "text" { text = "2" }
+									tooltip = "We the People"
+								}
+							}
+
+							tag = {
+								text = "The Punic Wars"
+								visible = "[HasDlc('The Punic Wars')]"
+							}
+
+							flowcontainer = {
+								visible = "[HasDlc('The Punic Wars')]"
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack pw_track1')]"
+									blockoverride "text" { text = "1" }
+									tooltip = "The Mediterranian"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack pw_track2')]"
+									blockoverride "text" { text = "2" }
+									tooltip = "The Punic Wars"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack pw_track3')]"
+									blockoverride "text" { text = "3" }
+									tooltip = "Tyros"
+								}
+							}
+
+							tag = {
+								text = "Magna Graecia:"
+								visible = "[HasDlc('Magna Graecia')]"
+							}
+
+							flowcontainer = {
+								visible = "[HasDlc('Magna Graecia')]"
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack mg_track1')]"
+									blockoverride "text" { text = "1" }
+									tooltip = "Affinity"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack mg_track2')]"
+									blockoverride "text" { text = "2" }
+									tooltip = "Memories"
+								}
+								track_button = {
+									onclick = "[ExecuteConsoleCommand('Music.PlayTrack mg_track3')]"
+									blockoverride "text" { text = "3" }
+									tooltip = "The Conqueror"
+								}
+							}
+
+							tag = {
+								text = "Heirs of Alexander:"
+								visible = "[HasDlc('Heirs of Alexander')]"
+							}
+
+							flowcontainer = {
+							visible = "[HasDlc('Heirs of Alexander')]"
+							track_button = {
+								onclick = "[ExecuteConsoleCommand('Music.PlayTrack hoa_track1')]"
+								blockoverride "text" { text = "1" }
+								tooltip = "Moment of the Battle"
+							}
+							track_button = {
+								onclick = "[ExecuteConsoleCommand('Music.PlayTrack hoa_track2')]"
+								blockoverride "text" { text = "2" }
+								tooltip = "The Dawn of Destiny"
+							}
+							track_button = {
+								onclick = "[ExecuteConsoleCommand('Music.PlayTrack hoa_track3')]"
+								blockoverride "text" { text = "3" }
+								tooltip = "Unsung Heroes"
+							}
+						}
+						}
+					}
+
+					widget = {
+						size = { 0 3 }
+					}
+				}
+
+				###
+
+				list_button = {
+					size = { @setwidth @setheight }
+					tooltip = "timelapse_tt"
+					visible = "[Not(IsGamePaused)]"
+					flowcontainer = {
+						#position = { 10 0 }
+						parentanchor = vcenter
+						spacing = 3
+
+						button_icon = {
+							parentanchor = vcenter
+							blockoverride "position" {
+								size = { 30 30 }
+							}
+							blockoverride "icon" {
+								texture = "gfx/icons/rewind.dds"
+							}
+						}
+
+						tag = {
+							text = "timelapse"
+						}
+					}
+
+					onclick = "[OnToggleReplay]"
+					onclick = "[OnPause]"
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					tooltip = "timelapse_tt"
+					visible = "[IsGamePaused]"
+					flowcontainer = {
+						#position = { 10 0 }
+						parentanchor = vcenter
+						spacing = 3
+
+						button_icon = {
+							parentanchor = vcenter
+							blockoverride "position" {
+								size = { 30 30 }
+							}
+							blockoverride "icon" {
+								texture = "gfx/icons/rewind.dds"
+							}
+						}
+
+						tag = {
+							text = "timelapse"
+						}
+					}
+
+					onclick = "[OnToggleReplay]"
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					datacontext = "[GetScriptedGui('movable_windows')]"
+					onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+					check_filter = {
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[FixedPointToInt( Player.MakeScope.Var('movable_windows').GetValue )]"
+						}
+						blockoverride "TagText" {
+							text = "movable_windows"
+						}
+					}
+					tooltip = "movable_windows_tt"
+				}
+
+				#topbar
+
+				widget = {
+					size = { 0 5 }
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					datacontext = "[GetScriptedGui('tiny_flag')]"
+					onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+					check_filter = {
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[FixedPointToInt( Player.MakeScope.Var('tiny_flag').GetValue )]"
+						}
+						blockoverride "TagText" {
+							text = "tiny_flag"
+						}
+					}
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					datacontext = "[GetScriptedGui('topbar_maintenance')]"
+					onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+					check_filter = {
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[FixedPointToInt( Player.MakeScope.Var('topbar_maintenance').GetValue )]"
+						}
+						blockoverride "TagText" {
+							text = "topbar_maintenance"
+							maximumsize = { @setwidth -1 }
+							margin_right = 20
+						}
+					}
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					datacontext = "[GetScriptedGui('topbar_pops')]"
+					onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+					check_filter = {
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[FixedPointToInt( Player.MakeScope.Var('topbar_pops').GetValue )]"
+						}
+						blockoverride "TagText" {
+							text = "topbar_pops"
+							maximumsize = { @setwidth -1 }
+							margin_right = 20
+						}
+					}
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					datacontext = "[GetScriptedGui('topbar_research')]"
+					onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+					check_filter = {
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[FixedPointToInt( Player.MakeScope.Var('topbar_research').GetValue )]"
+						}
+						blockoverride "TagText" {
+							text = "topbar_research"
+							maximumsize = { @setwidth -1 }
+							margin_right = 20
+						}
+					}
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					datacontext = "[GetScriptedGui('bce_date')]"
+					onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+					check_filter = {
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[FixedPointToInt( Player.MakeScope.Var('bce_date').GetValue )]"
+						}
+						blockoverride "TagText" {
+							text = "[GetChristianDateString]"
+						}
+					}
+				}
+
+				#sidebar
+
+				widget = {
+					size = { 0 5 }
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					datacontext = "[GetScriptedGui('nation_button')]"
+					onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+					check_filter = {
+						tooltip = "hide_overview_tt"
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[FixedPointToInt( Player.MakeScope.Var('nation_button').GetValue )]"
+						}
+						blockoverride "TagText" {
+							text = "hide_overview"
+							maximumsize = { @setwidth -1 }
+							margin_right = 20
+						}
+					}
+				}
+
+				list_button = {
+					size = { @setwidth @setheight }
+					datacontext = "[GetScriptedGui('diplo_button')]"
+					onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+					check_filter = {
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[FixedPointToInt( Player.MakeScope.Var('diplo_button').GetValue )]"
+						}
+						blockoverride "TagText" {
+							text = "hide_diplomacy"
+							maximumsize = { @setwidth -1 }
+							margin_right = 20
+						}
+					}
+				}
+
+				# list_button = {
+				# 	size = { @setwidth @setheight }
+				# 	visible = "[GetVariableSystem.Exists('browser_button')]"
+				# 	onclick = "[GetVariableSystem.Toggle('browser_button')]"
+				# 	onclick = "[GetVariableSystem.Clear('browser')]"
+				# 	onclick = "[PdxGuiTriggerAllAnimations('close_browser')]"
+				# 	check_filter = {
+				# 		parentanchor = vcenter
+				# 		position = { 2 0 }
+				# 		blockoverride "On_click" {
+				# 			alwaystransparent = yes
+				# 		}
+				# 		blockoverride "Frame" {
+				# 			frame = "[Select_int32( GetVariableSystem.Exists('browser_button'), '(int32)2', '(int32)1')]"
+				# 		}
+				# 		blockoverride "TagText" {
+				# 			text = "browser"
+				# 		}
+				# 	}
+				# }
+				#
+				# list_button = {
+				# 	visible = "[Not(GetVariableSystem.Exists('browser_button'))]"
+				# 	size = { @setwidth @setheight }
+				# 	onclick = "[GetVariableSystem.Toggle('browser_button')]"
+				# 	onclick = "[GetVariableSystem.Toggle('browser')]"
+				# 	check_filter = {
+				# 		parentanchor = vcenter
+				# 		position = { 2 0 }
+				# 		blockoverride "On_click" {
+				# 			alwaystransparent = yes
+				# 		}
+				# 		blockoverride "Frame" {
+				# 			frame = "[Select_int32( GetVariableSystem.Exists('browser_button'), '(int32)2', '(int32)1')]"
+				# 		}
+				# 		blockoverride "TagText" {
+				# 			text = "browser"
+				# 		}
+				# 	}
+				# }
+
+				widget = {
+					size = { 0 25 }
+				}
+			}
+
+			secondary_header_button = {
+				parentanchor = bottom
+				size = { 100% 32 }
+				onclick = "[GetVariableSystem.Toggle('settings')]"
+				shortcut = "close_window"
+				tooltip = "CLOSE"
+
+				white_button_round = {
+					parentanchor = right
+					alwaystransparent = yes
+					position = { -10 3 }
+					size = { 26 26 }
+					blockoverride "Icon" { texture = "gfx/interface/base_parts/up_arrow.dds" }
+					blockoverride "On_click"
+					{
+						onclick = "[GetVariableSystem.Toggle('settings')]"
+						shortcut = "close_window"
+					}
+				}
+			}
+
+		}
+
+		###
+		textbox = { #TODO Rework
+			position = { 0 400 }
+			using = FontHeading1
+			parentanchor = top|hcenter
+			autoresize = yes
+			text = "AUTOSAVE_IN_PROGRESS"
+			align = center|nobaseline
+			visible = "[IsAutoSaving]"
+		}
+
+		textbox = { #TODO Rework
+			position = { 0 190 }
+			using = FontHeading1
+			parentanchor = top|hcenter
+			autoresize = yes
+			text = "SAVE_IN_PROGRESS"
+			align = center|nobaseline
+			visible = "[IsSaving]"
+		}
+
+		base_window_black = {
+			name = "event_window"
+			size = { 278 35 }
+			position = { 1 -105 }
+			parentanchor = right|bottom
+			movable = no
+			allow_outside = yes
+
+			state = {
+				name = minor_events
+				trigger_when = "[GreaterThan_int32( GetDataModelSize( InGameTopbar.GetMinorEventItems ), '(int32)0')]"
+				size = { 278 166 }
+				bezier = { 0.1 0.25 0.4 1 }
+				duration = 0.2
+
+				on_start = "[PdxGuiTriggerAllAnimations('show_minor_events')]"
+			}
+
+			state = {
+				name = minor_events_hide
+				trigger_when = "[EqualTo_int32( GetDataModelSize( InGameTopbar.GetMinorEventItems ), '(int32)0')]"
+
+				size = { 278 35 }
+				bezier = { 0.1 0.25 0.4 1 }
+				duration = 0.2
+				on_start = "[PdxGuiTriggerAllAnimations('hide_minor_events')]"
+			}
+
+			state = {
+				name = hide_minimap_anim
+				position = { 1 -105 }
+				bezier = { 0.1 0.25 0.4 1 }
+				duration = 0.2
+			}
+			state = {
+				name = show_minimap_anim
+				position = { 1 -288 }
+				bezier = { 0.1 0.25 0.4 1 }
+				duration = 0.2
+			}
+
+
+			secondary_header = {
+				size = { 100% 32 }
+				position = { 0 3 }
+				blockoverride "Title_text" { text = "event_queue_title" }
+			}
+
+			vbox = {
+				vbox = {
+					layoutpolicy_vertical = expanding
+					margin_top = 38
+					fixedgridbox = {
+						size = { 260 200 }
+						addcolumn = 260
+						addrow = 30
+						maxhorizontalslots = 1
+						maxverticalslots = 4
+						datamodel = "[InGameTopbar.GetMinorEventItems]"
+
+						item = {
+							outliner_highlight_button = {
+								size = { 100% 24 }
+								datacontext = "[MinorEventItem]"
+								blockoverride "Text" { text = "[MinorEventItem.GetTitle]" }
+								blockoverride "On_click"
+								{
+									onclick = "[MinorEventItem.OnClick]"
+									onrightclick = "[MinorEventItem.OnRightClick]"
+								}
+								blockoverride "UpAlpha" { alpha = 0.4 }
+								textbox = {
+									parentanchor = right
+									using = BaseFontS
+									autoresize = yes
+									position = { -4 -1 }
+									text = "[MinorEventItem.GetDaysRemaining]"
+								}
+								tooltip = "interface_option_default_minor_event_window_why_is_this_key_so_long"
+							}
+						}
+					}
+					vbox = {
+						layoutpolicy_vertical = expanding
+					}
+				}
+			}
+		}
+
+		### LAGGING PLAYER NOTIFICATION
+		widget = {
+			#using = ScrollMessageBackground
+			using = NoninteractableBGWhite
+			using = clickthrough_blocker
+			size = { 274 70 }
+			position = { -324 32 }
+			layer = top
+			parentanchor = top|right
+			visible = "[GetPlayerIsLagging]"
+
+			textbox = {
+				size = { 274 70 }
+				using = BaseFontM
+				using = Black_FontColor
+				#autoresize = yes
+				multiline = yes
+				resizeparent = yes
+				elide = right
+				text = "[GetLaggingPlayerString]"
+				align = center|nobaseline
+				parentanchor = center
+			}
+		}
+	}
+}

@@ -1,0 +1,199 @@
+﻿namespace = btest
+
+btest.1 = {
+	type = country_event
+	hidden = yes
+
+	#desc = "[Player.MakeScope.Var('free_pops').GetValue]"
+
+	immediate = {
+		set_variable = {
+			name = free_pops
+			value = 0
+		}
+		every_integrated_culture = {
+			root = {
+				change_variable = {
+					name = free_pops
+					add = prev.country_culture_pop_count
+				}
+			}
+			culture = {
+				save_scope_as = this_culture
+				root = {
+					every_owned_province = {
+						limit = { num_of_slaves > 0 }
+
+						every_pops_in_province = {
+							limit = {
+								pop_type = slaves
+								pop_culture = scope:this_culture
+							}
+							root = {
+								change_variable = {
+									name = free_pops
+									add = -1
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+btest.2 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		capital_scope = {
+			while = {
+				count = 200
+				define_pop = {
+					type = freemen
+					religion = root.religion
+					culture = hebrew
+				}
+			}
+		}
+	}
+}
+
+btest.3 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		clear_variable_list = tourist_traps_temp
+		clear_variable_list = tourist_traps
+		every_ownable_province = {
+			limit = {
+				has_owner = yes
+				#num_of_port_building > 0
+			}
+			root = {
+				add_to_variable_list = {
+					name = tourist_traps_temp
+					target = prev
+				}
+			}
+		}
+		ordered_in_list = {
+			variable = tourist_traps_temp
+			order_by = total_population
+			min = 0
+			root = {
+				add_to_variable_list = {
+					name = tourist_traps
+					target = prev
+				}
+			}
+		}
+	}
+}
+
+btest.4 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		clear_variable_list = tourist_traps_temp
+		clear_variable_list = tourist_traps
+		clear_variable_list = wonders
+		every_ownable_province = {
+			limit = {
+				has_owner = yes
+				has_great_work = yes
+			}
+			root = {
+				add_to_variable_list = {
+					name = wonders
+					target = prev
+				}
+			}
+		}
+	}
+}
+
+
+btest.5 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		clear_variable_list = treasure_owners_temp
+		clear_variable_list = treasure_owners
+		clear_variable_list = all_treasure_sites
+		clear_variable_list = country_treasures
+		every_country = {
+			limit = {
+				OR = {
+					treasure_count > 0
+					any_owned_holy_site = {
+						treasure_count > 0
+					}
+				}
+			}
+
+			root = {
+				add_to_variable_list = {
+					name = treasure_owners_temp
+					target = prev
+				}
+			}
+
+			every_owned_holy_site = {
+				limit = {
+					treasure_count > 0
+				}
+				prev = {
+					add_to_variable_list = {
+						name = all_treasure_sites
+						target = prev
+					}
+				}
+			}
+			every_country_treasure = {
+				prev = {
+					add_to_variable_list = {
+						name = country_treasures
+						target = prev
+					}
+				}
+			}
+		}
+
+		ordered_in_list = {
+			variable = treasure_owners_temp
+			order_by = total_treasure_count
+			min = 0
+
+			root = {
+				add_to_variable_list = {
+					name = treasure_owners
+					target = prev
+				}
+			}
+		}
+	}
+}
+
+
+btest.10 = {
+	hidden = yes
+	type = country_event
+
+	immediate = {
+		capital_scope = {
+			root = {
+				add_to_variable_list = {
+					name = fav_territories
+					target = prev
+				}
+			}
+		}
+	}
+}

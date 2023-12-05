@@ -1,0 +1,124 @@
+﻿sell_all_to_slavery = {
+  scope = country
+
+  confirm_title = "sell_all_to_slavery_confirm_t"
+	confirm_text = "sell_all_to_slavery_desc"
+
+  is_shown = {
+    any_character = {
+      is_alive = yes
+      is_adult = yes
+      prisoner = yes
+      NOT = { employer = { tag = REB } }
+      NOT = { employer = { tag = BAR } }
+    }
+  }
+
+	ai_is_valid = {
+		always = no
+	}
+
+  is_valid = {
+		tyranny < 99
+  }
+
+  effect = {
+    save_scope_as = actor
+    every_character = {
+      limit = {
+        is_alive = yes
+  			is_adult = yes
+  			prisoner = yes
+  			NOT = { employer = { tag = REB } }
+  			NOT = { employer = { tag = BAR } }
+      }
+      save_scope_as = target
+
+      scope:actor = {
+  			add_tyranny = 0.5
+  			add_treasury = {
+  				value = scope:target.martial
+  				add = scope:target.finesse
+  				add = scope:target.zeal
+  				add = scope:target.charisma
+  				divide = 2
+  				min = 1
+  			}
+  			if = {
+  				limit = {
+  					scope:target = {
+  						is_minor_character = no
+  						is_head_of_family = no
+  					}
+  				}
+  				scope:target.family = {
+  					add_prestige = -50
+
+
+  					if = {
+  						limit = { sell_into_slavery_count_svalue > 0 }
+  						custom_tooltip = "sold_every_family_member_tt"
+  						hidden_effect = {
+  							every_family_member = {
+  								limit = { employer = scope:actor }
+  								add_loyalty = loyalty_sold_family_member
+  							}
+  						}
+  					}
+  				}
+  			}
+
+  			else_if = {
+  				limit = {
+  					scope:target = {
+  						is_minor_character = no
+  						is_head_of_family = yes
+  					}
+  				}
+  				scope:target.family = {
+  					add_prestige = -100
+  					if = {
+  						limit = { sell_into_slavery_count_svalue > 0 }
+  						custom_tooltip = sold_every_family_head_tt
+  						hidden_effect = {
+  							every_family_member = {
+  								limit = { employer = scope:actor }
+  								add_loyalty = loyalty_sold_family_head
+  							}
+  						}
+  					}
+  				}
+  			}
+  		}
+
+  		hidden_effect = {
+  			scope:target = {
+  				set_as_minor_character = THIS
+  				remove_all_positions = yes
+  				move_country = c:REB
+  				c:REB = {
+  					imprison = {
+  						target = scope:target
+  					}
+  				}
+  			}
+  			random_country = {
+  				limit = {
+  					NOT = {
+  						this = scope:actor
+  					}
+  				}
+  				weight = {
+  					modifier = {
+  						factor = 100
+  						in_diplomatic_range = scope:actor
+  					}
+  				}
+  				trigger_event = {
+  					id = influence.6
+  				}
+  			}
+  		}
+    }
+  }
+}
