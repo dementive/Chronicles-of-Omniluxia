@@ -1,0 +1,92 @@
+﻿grant_holding = { 
+
+	on_other_nation = no
+	on_own_nation = yes
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_economy"
+	
+	
+	
+	
+	potential_trigger = {
+
+		hidden:scope:target = {
+			is_alive = yes
+			employer = scope:actor
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			NOT = { employer = { tag = MER } }
+			is_mercenary = no
+			is_adult = yes
+			is_head_of_family = yes
+		}
+	}
+	
+	
+	allowed_trigger = {
+		scope:actor = {
+			possible_holdings > 1
+			treasury >= character_holding_price_svalue_ci
+		}
+	}
+	
+	
+	#for any province in the scope:actor country
+	
+	province_actor_trigger = {
+		OR = {
+			NOT = {
+				exists = holding_owner
+			}
+			AND = {
+				exists = holding_owner
+				holding_owner = {
+					is_alive = no
+				}
+			}
+		}
+		NOT = {
+			this = scope:actor.capital_scope
+		}
+	}
+	
+	effect = {
+		scope:actor = {
+			add_treasury = {
+				value = 0
+				subtract = character_holding_price_svalue_ci
+			}
+			if = {
+				limit = {
+					has_variable = sen_obj_gra_hol_count
+					scope:target = { is_head_of_family = yes }
+				}
+				change_variable = {
+					name = sen_obj_gra_hol_count
+					add = 1
+				}
+			}
+		}
+		scope:target = {
+			if = {
+				limit = {
+					is_ruler = no
+				}
+				add_loyalty = granted_holding_l
+			}
+			else = {
+				add_corruption = 5
+			}
+		}
+		custom_tooltip = "grant_holding_effect_tooltip"
+		if = {	
+			limit = {
+				exists = scope:recipient
+			}
+			scope:target = {
+				add_holding = scope:recipient
+			}
+		}
+	}
+	
+}	

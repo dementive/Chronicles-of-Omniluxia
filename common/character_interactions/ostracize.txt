@@ -1,1 +1,107 @@
-﻿ 
+﻿ostracize_char = {
+	
+	needs_senate_approval = yes
+	on_other_nation = no
+	on_own_nation = yes
+	close_ui = yes
+	
+	sound = "event:/SFX/UI/Character/Unique/sfx_ui_character_banish"
+	
+	message = no
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			is_mercenary = no
+			prisoner_valid_for_country_events_trigger = yes
+			NOT = {
+				has_character_modifier = disloyal_successor_cmod
+			}
+		}
+		has_dlc = "Magna Graecia"
+	}
+	
+	allowed_trigger = {
+		scope:target = {
+			is_ruler = no
+			is_co_ruler = no
+		}
+		scope:actor = {
+			tyranny <= 99
+			trigger_if = {
+				limit = {
+					has_variable = ostracism_recently_held
+				}
+				custom_tooltip = {
+					text = "OSTRACISM_RECENTLY_HELD"
+				
+					NOT = { has_variable = ostracism_recently_held }
+				}
+			}
+		}
+	}
+	
+	effect = {
+		scope:actor = {
+			hidden_effect = {
+				add_stability = -5
+				add_tyranny = {
+					value = scope:target.power_base
+					divide = 2
+					min = 1
+				}
+			}
+			custom_tooltip = ostracize_tt
+			set_variable = {
+				name = ostracism_recently_held
+				value = 1
+				months = 12
+			}
+		}
+		custom_tooltip = "due_to_half_power_base"
+		scope:target = {
+			custom_tooltip = "ostracize_effect_tt"
+			hidden_effect = {
+				random_country = {
+					limit = {
+						in_diplomatic_range = scope:actor
+					}
+					save_scope_as = random_target
+				}
+				banish = scope:random_target
+				scope:target = {
+					set_home_country = scope:random_target
+					if = {
+						limit = {
+							is_minor_character = no
+						}
+						set_as_minor_character = THIS
+					}
+				} 
+			}
+		}
+		scope:actor = {
+			trigger_event = {
+				id = character_events.50
+			}
+		}
+		hidden_effect = {
+			scope:target = {
+				random_list = {
+					80 = {}
+					20 = {
+						set_variable = {
+							name = ostracized_from
+							value = scope:actor
+						}
+						trigger_event = {
+							id = character_events.51
+							days = { 360 730 }
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1235,3 +1235,190 @@ seize_property_svalue = {
 		}
 	}
 }
+
+ip_republic_46_tooltip_svalue = {
+	value = 0
+	every_country_state = {
+		limit = {
+			any_state_province = {
+				count >= 7
+				NOT = {
+					dominant_province_culture = root.culture
+				}
+			}
+		}
+		add = 1
+	}
+}
+
+ip_republic_47_partial_army_svalue = {
+	value = 0
+	add = root.var:total_army_size_ip_republic_47
+	multiply = 2
+	subtract = 10
+	divide = 5
+}
+
+ip_republic_47_total_army_svalue = {
+	value = 0
+	add = root.var:total_army_size_ip_republic_47
+}
+
+get_oligarch_plot_success_chance = {
+	value = 60
+	if = {
+		limit = { exists = scope:ip_rep_66_protagonist_temp }
+		subtract = {
+			value = scope:ip_rep_66_protagonist_temp.power_base
+			divide = 3
+			max = 20
+		}
+	}
+	if = {
+		limit = { exists = scope:ip_rep_66_protagonist_temp }
+		subtract = {
+			value = scope:ip_rep_66_protagonist_temp.wealth
+			divide = 20
+			max = 10
+		}
+	}
+	if = {
+		limit = { has_variable = ip_rep_66_plot_support }
+		subtract = var:ip_rep_66_plot_support
+	}
+	if = {
+		limit = { has_variable = ip_rep_66_counter_support }
+		add = var:ip_rep_66_counter_support
+	}
+	if = {
+		limit = { has_variable = ip_rep_66_foreign_support_flag }
+		subtract = 10
+	}
+	if = {
+		limit = { has_variable = ip_rep_66_evidence_uncovered_flag }
+		add = 20
+	}
+	if = {
+		limit = {
+			exists = scope:ip_rep_66_protagonist_temp
+			root.current_ruler.popularity < scope:ip_rep_66_protagonist_temp.popularity
+		}
+		subtract = 10
+	}
+	else_if = {
+		limit = {
+			exists = scope:ip_rep_66_protagonist_temp
+			root.current_ruler.popularity > scope:ip_rep_66_protagonist_temp.popularity
+		}
+		add = 10
+	}
+	if = {
+		limit = { get_oligarch_plotter_strength > get_oligarch_counter_strength }
+		subtract = 10
+	}
+	else_if = {
+		limit = { get_oligarch_plotter_strength < get_oligarch_counter_strength }
+		add = 10
+	}
+	if = {
+		limit = {
+			any_character = {
+				count = 1
+				has_variable = ip_rep_66_counter_flag
+			}
+		}
+		add = 5
+	}
+	if = {
+		limit = {
+			any_character = {
+				count = 2
+				has_variable = ip_rep_66_counter_flag
+			}
+		}
+		add = 10
+	}
+	if = {
+		limit = {
+			any_character = {
+				count = 1
+				has_variable = ip_rep_66_supporter_flag
+			}
+		}
+		subtract = 5
+	}
+	if = {
+		limit = {
+			any_character = {
+				count = 2
+				has_variable = ip_rep_66_supporter_flag
+			}
+		}
+		subtract = 10
+	}
+	min = 0
+	max = 100
+}
+
+get_oligarch_plotter_strength = {
+	value = 0
+	if = {
+		limit = { exists = scope:ip_rep_66_protagonist_temp }
+		add = scope:ip_rep_66_protagonist_temp.power_base
+		add = scope:ip_rep_66_protagonist_temp.wealth
+	}
+	if = {
+		limit = {
+			exists = scope:ip_rep_66_supporter_1_temp
+			scope:ip_rep_66_supporter_1_temp = {
+				is_alive = yes
+				prisoner = no
+				employer = scope:ip_rep_66_protagonist_temp.employer
+			}
+		}
+		add = scope:ip_rep_66_supporter_1_temp.power_base
+		add = scope:ip_rep_66_supporter_1_temp.wealth
+	}
+	if = {
+		limit = {
+			exists = scope:ip_rep_66_supporter_2_temp
+			scope:ip_rep_66_supporter_2_temp = {
+				is_alive = yes
+				prisoner = no
+				employer = scope:ip_rep_66_protagonist_temp.employer
+			}
+		}
+		add = scope:ip_rep_66_supporter_2_temp.power_base
+		add = scope:ip_rep_66_supporter_2_temp.wealth
+	}
+}
+
+get_oligarch_counter_strength = {
+	value = 0
+	add = root.current_ruler.power_base
+	add = root.current_ruler.wealth
+	if = {
+		limit = {
+			exists = scope:ip_rep_66_counter_1_temp
+			scope:ip_rep_66_counter_1_temp = {
+				is_alive = yes
+				prisoner = no
+				employer = scope:ip_rep_66_protagonist_temp.employer
+			}
+		}
+		add = scope:ip_rep_66_counter_1_temp.power_base
+		add = scope:ip_rep_66_counter_1_temp.wealth
+	}
+	if = {
+		limit = {
+			exists = scope:ip_rep_66_counter_2_temp
+			scope:ip_rep_66_counter_2_temp = {
+				is_alive = yes
+				prisoner = no
+				employer = scope:ip_rep_66_protagonist_temp.employer
+			}
+		}
+		add = scope:ip_rep_66_counter_2_temp.power_base
+		add = scope:ip_rep_66_counter_2_temp.wealth
+	}
+}
