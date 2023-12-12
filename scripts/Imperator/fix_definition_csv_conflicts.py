@@ -28,4 +28,4 @@ def fix_conflicts(csvfile=""):
 	li = df.values.tolist()
 
 if __name__ == '__main__':
-	fix_conflicts(csvfile="definition.csv")
+	fix_conflicts(csvfile="../../map_data/definition.csv")
