@@ -1,6 +1,87 @@
 ﻿## cs_ denotes country scope, default is character scope
 ## cs_ denotes country scope, default is character scope
 
+calculate_succession_effect = {
+
+	### Clear old modifiers before events triggered
+	
+	every_character = {
+		limit = {
+			has_character_modifier = primary_heir_succession_value 
+		}
+		remove_character_modifier = primary_heir_succession_value 
+	}
+	
+	every_character = {
+		limit = {
+			has_character_modifier = pretender_succession_value_1 
+		}
+		remove_character_modifier = pretender_succession_value_1 
+	}
+	
+	every_character = {
+		limit = {
+			has_character_modifier = pretender_succession_value_2 
+		}
+		remove_character_modifier = pretender_succession_value_2 
+	}
+	
+	every_character = {
+		limit = {
+			has_character_modifier = pretender_succession_value_3
+		}
+		remove_character_modifier = pretender_succession_value_3 
+	}
+	
+	every_character = {
+		limit = {
+			has_character_modifier = contender_succession_value 
+		}
+		remove_character_modifier = contender_succession_value 
+	}
+
+	if = {
+		limit = {
+			has_law = agnatic_succession_law
+		}
+		trigger_event = {
+			id = agnatic_succession_calculation.1
+		}
+	}
+	if = {
+		limit = {
+			has_law = cognatic_succession_law
+		}
+		trigger_event = {
+			id = calculate_succession_events.2
+		}
+	}	
+	if = {
+		limit = {
+			has_law = agnatic_seniority_succession_law
+		}
+		trigger_event = {
+			id = calculate_succession_events.3
+		}
+	}
+	if = {
+		limit = {
+			has_law = elective_succession_law
+		}
+		trigger_event = {
+			id = calculate_succession_events.4
+		}
+	}
+	if = {
+		limit = {
+			has_law = egyption_succession_law
+		}
+		trigger_event = {
+			id = calculate_succession_events.5
+		}
+	}
+}
+
 remove_all_positions = {
 	if = {
 		limit = {	
@@ -291,10 +372,10 @@ capital_formable_large_effect = { #province scope
 		create_state_pop = freemen
 		create_state_pop = freemen
 		create_state_pop = freemen
-		create_state_pop = slaves
-		create_state_pop = slaves
-		create_state_pop = slaves
-		create_state_pop = slaves
+		create_state_pop = serfs
+		create_state_pop = serfs
+		create_state_pop = serfs
+		create_state_pop = serfs
 	}
 }
 
@@ -315,10 +396,10 @@ capital_formable_huge_effect = { #province scope
 		create_state_pop = freemen
 		create_state_pop = freemen
 		create_state_pop = freemen
-		create_state_pop = slaves
-		create_state_pop = slaves
-		create_state_pop = slaves
-		create_state_pop = slaves
+		create_state_pop = serfs
+		create_state_pop = serfs
+		create_state_pop = serfs
+		create_state_pop = serfs
 	}
 }
 
@@ -1086,105 +1167,6 @@ befriend_event_counter_variable_effect = {
 	}
 }
 
-pass_down_traits_effect = {
-	scope:newborn = {
-		if = {
-			limit = {
-				exists = father
-				OR = {
-					father = {
-						has_trait = alcimachid
-						has_trait = antigonids
-						has_trait = antipatrid
-						has_trait = lagids
-						has_trait = seleucids
-						has_trait = argeads
-					}
-				}
-			}
-			if = {
-				limit = {
-					father = {
-						has_trait = alcimachid
-					}
-					NOT = {
-						has_trait = alcimachid
-					}
-				}
-				add_trait = alcimachid
-			}
-			else_if = {
-				limit = {
-					father = {
-						has_trait = antigonids
-					}
-					NOT = {
-						has_trait = antigonids
-					}
-				}
-				add_trait = antigonids
-			}
-			else_if = {
-				limit = {
-					father = {
-						has_trait = antipatrid
-					}
-					NOT = {
-						has_trait = antipatrid
-					}
-				}
-				add_trait = antipatrid
-			}
-			else_if = {
-				limit = {
-					father = {
-						has_trait = lagids
-					}
-					NOT = {
-						has_trait = lagids
-					}
-				}
-				add_trait = lagids
-			}
-			else_if = {
-				limit = {
-					father = {
-						has_trait = seleucids
-					}
-					NOT = {
-						has_trait = seleucids
-					}
-				}
-				add_trait = seleucids
-			}
-			if = {
-				limit = {
-					father = {
-						has_trait = argeads
-					}
-					NOT = {
-						has_trait = argeads
-					}
-				}
-				add_trait = argeads
-			}
-		}
-		if = {
-			limit = {
-				exists = mother
-				mother = {
-					has_trait = argeads
-				}
-				NOT = {
-					has_trait = argeads
-				}
-			}
-			add_trait = argeads
-			
-		}
-	}
-}
-
 positive_religious_caste_effect = {
 	if = {
 		limit = {
@@ -1859,84 +1841,6 @@ appropriate_death_effect_assassination = {
 		death = {
 			death_reason = death_assassinated
 		}
-	}
-}
-
-bastard_major_bloodline_effect = {
-	if = {
-		limit = {
-			scope:bastard_ruler = {
-				has_trait = alcimachid
-			}
-		}
-		add_trait = alcimachid
-	}
-	else_if = {
-		limit = {
-			scope:bastard_ruler = {
-				has_trait = antigonids
-			}
-		}
-		add_trait = antigonids
-	}
-	else_if = {
-		limit = {
-			scope:bastard_ruler = {
-				has_trait = antipatrid
-			}
-		}
-		add_trait = antipatrid
-	}
-	else_if = {
-		limit = {
-			scope:bastard_ruler = {
-				has_trait = argeads
-			}
-		}
-		add_trait = argeads
-	}
-	else_if = {
-		limit = {
-			scope:bastard_ruler = {
-				has_trait = lagids
-			}
-		}
-		add_trait = lagids
-	}
-	else_if = {
-		limit = {
-			scope:bastard_ruler = {
-				has_trait = seleucids
-			}
-		}
-		add_trait = seleucids
-	}
-}
-
-remove_bastard_major_bloodline_effect = {
-	if = {
-		limit = { has_trait = alcimachid }
-		add_trait = alcimachid
-	}
-	else_if = {
-		limit = { has_trait = antigonids }
-		add_trait = antigonids
-	}
-	else_if = {
-		limit = { has_trait = antipatrid }
-		add_trait = antipatrid
-	}
-	else_if = {
-		limit = { has_trait = argeads }
-		add_trait = argeads
-	}
-	else_if = {
-		limit = { has_trait = lagids }
-		add_trait = lagids
-	}
-	else_if = {
-		limit = { has_trait = seleucids }
-		add_trait = seleucids
 	}
 }
 
@@ -5033,8 +4937,6 @@ replace_food_after_city_upgrade_finish_effect = {
 		earthware = { set_trade_goods = earthware remove_variable = earthware }
 		dye = { set_trade_goods = dye remove_variable = dye }
 		glass = { set_trade_goods = glass remove_variable = glass }
-		cheese = { set_trade_goods = cheese remove_variable = cheese }
-		meat = { set_trade_goods = meat remove_variable = meat }
 		liquor = { set_trade_goods = liquor remove_variable = liquor }
 		soulgems = { set_trade_goods = soulgems remove_variable = soulgems }
 		elixir = { set_trade_goods = elixir remove_variable = elixir }

@@ -1,0 +1,90 @@
+﻿## All Bloodline passdown effects are in this file and this file only.
+## Each new bloodline has to be added to the bloodline_on_born_effect and bloodline_setup_effect scripted effects
+
+bloodline_on_born_effect = {
+    pass_down_bloodline_character_effect = { BLOODLINE = "zani"}
+
+}
+
+bloodline_setup_effect = {
+    ##OG Bloodlines
+    pass_down_bloodline_effect = { BLOODLINE = "zani"}
+}
+
+##Bloodline legitimacy scheme effect.
+add_bloodline_effect = {
+    add_trait = $BLOODLINE$
+    if = {
+        limit = {
+            num_of_children > 0
+        }
+        every_child = {
+            limit = { is_alive = yes }
+            add_trait = $BLOODLINE$
+            if = {
+                limit = { num_of_children > 0 }
+                every_child = {
+                    limit = { is_alive = yes }
+                    add_trait = $BLOODLINE$
+                }
+            }
+        }
+    }
+}
+
+pass_down_bloodline_effect = {
+    every_character = {
+        if = {
+            limit = {
+                exists = father
+                father = {
+                    has_trait = $BLOODLINE$
+                }                
+                NOT = {
+                    has_trait = $BLOODLINE$
+                }
+            }
+            force_add_trait = $BLOODLINE$
+        }
+        if = {
+            limit = {
+                exists = mother
+                mother = {
+                    has_trait = $BLOODLINE$
+                }
+                NOT = {
+                    has_trait = $BLOODLINE$
+                }
+            }
+            force_add_trait = $BLOODLINE$
+        }
+    }
+}
+
+# Same as above but for an individual character
+pass_down_bloodline_character_effect = {
+    if = {
+        limit = {
+            exists = father
+            father = {
+                has_trait = $BLOODLINE$
+            }                
+            NOT = {
+                has_trait = $BLOODLINE$
+            }
+        }
+        force_add_trait = $BLOODLINE$
+    }
+    if = {
+        limit = {
+            exists = mother
+            mother = {
+                has_trait = $BLOODLINE$
+            }
+            NOT = {
+                has_trait = $BLOODLINE$
+            }
+        }
+        force_add_trait = $BLOODLINE$
+    }
+}

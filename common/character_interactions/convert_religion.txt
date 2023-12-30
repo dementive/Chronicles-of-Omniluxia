@@ -1,0 +1,83 @@
+﻿ca_convert_religion = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	message = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_scholar"
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			employer = scope:actor
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			NOT = { employer = { tag = MER } }
+			NOT = { employer = { tag = PIR } }
+			is_alive = yes
+			is_mercenary = no
+			NOT = {
+				has_religion = employer.religion
+			}
+			age >= 5
+			NOT = {
+				has_character_modifier = disloyal_successor_cmod
+			}
+		}
+	}
+	
+	allowed_trigger = {
+		hidden:scope:actor = {
+			can_pay_price = price_convert_religion
+		}
+		scope:target = {
+			exists = employer
+			loyalty >= 60
+			NOT = {
+				has_religion = employer.religion
+			}
+			NOT = {
+				is_rival = employer.current_ruler
+			}
+			NOR = {
+				has_trait = devout
+				has_trait = pious
+				has_trait = zealous
+			}
+		}
+	}
+	
+	effect = {
+		scope:actor = {
+			pay_price = price_convert_religion
+		}
+		scope:target = {
+			set_character_religion = employer.religion
+			if = {
+				limit = {
+					is_ruler = no
+				}
+				if = {
+					limit = {
+						is_adult = yes
+					}
+					add_loyalty = force_converted_religion
+				}
+				else = {
+					add_loyalty = force_converted_religion
+				}
+			}
+			set_variable = {
+				name = has_been_force_converted
+			}
+			hidden_effect = {
+				if = {
+					limit = {
+						has_variable = has_been_force_converted
+					}
+					var:has_been_force_converted = {} #This is to supress the error for not using the variable.
+				}
+			}
+		}
+	}
+	
+}	
