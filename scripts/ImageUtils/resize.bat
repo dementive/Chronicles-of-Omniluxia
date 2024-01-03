@@ -1,2 +1,2 @@
 @echo off
-python image_manager.py input output -resize 50 50
+python image_manager.py input output -resize 35 35

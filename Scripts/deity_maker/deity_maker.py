@@ -257,7 +257,7 @@ def get_deity_output(religion):
 	global deity_and_religion_dict
 	deity_output = str()
 	deity_and_religion_dict.update({religion: list()})
-	for k in range(5):
+	for k in range(3):
 		for j in deity_categories:
 			category = j
 			deity = random.choice(deity_names)
