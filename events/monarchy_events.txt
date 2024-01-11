@@ -2569,3 +2569,143 @@ monarchy_events.45 = {
 		add_stability_effect = yes
 	}
 }
+
+# legion law
+monarchy_events.100 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		has_land = yes
+		is_monarchy = yes
+		NOT = { has_law = standing_army_law }
+		NOT = { has_law = work_for_the_best }
+		rank >= regional_power
+	}
+
+	immediate = {
+		pay_price = enact_law
+		if = {
+			change_law = work_for_the_best
+		}
+	}
+}
+
+# legion law
+monarchy_events.101 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		has_land = yes
+		is_monarchy = yes
+		NOT = { has_law = standing_army_law }
+		invention = discipline_inv_5
+	}
+
+	immediate = {
+		pay_price = enact_law
+		if = {
+			change_law = standing_army_law
+		}
+	}
+}
+
+#Supported successors
+monarchy_events.102 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {	
+		is_monarchy = yes
+		has_civil_war = no
+		NOT = {
+			has_variable = someone_was_supported
+		}
+		any_neighbour_country = {
+			rank >= regional_power
+			war = no
+			has_civil_war = no
+			is_antagonist = yes
+			is_ai = yes
+			NOT = {
+				has_variable = supporting_someone
+			}
+		}
+		any_character = {
+			is_adult = yes
+			is_ruler = no
+			is_pretender = yes
+			is_primary_heir = no
+			loyalty <= 50
+		}
+		NOT = {
+			any_character = {
+				has_variable = successor_support_ci
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = {
+			name = someone_was_supported
+			days = 7300
+		}
+		random_neighbour_country = {
+			limit = {
+				rank >= regional_power
+				war = no
+				has_civil_war = no
+				is_antagonist = yes
+				is_ai = yes
+				NOT = {
+					has_variable = supporting_someone
+				}
+			}
+			set_variable = {
+				name = supporting_someone
+				days = 3650
+			}
+			save_scope_as = supporting_country
+		}
+		random_character = {
+			limit = {
+				is_adult = yes
+				is_ruler = no
+				is_pretender = yes
+				is_primary_heir = no
+				loyalty <= 50
+			}
+			save_scope_as = supported_pretender
+			add_loyalty = loyalty_pretender_support_ci 
+			set_variable = {
+				name = successor_support_ci
+				value = scope:supporting_country
+				days = 1850
+			}
+		}
+		trigger_event = {
+			id = monarchy_events.103
+		}
+	}
+}
+
+#Foreign pretender support!
+monarchy_events.103 = {
+	type = country_event
+	title = "monarchy_events.103.t"
+	desc = "monarchy_events.103.desc"
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:supporting_country.current_ruler
+	right_portrait = scope:supported_pretender
+	
+	option = {
+		name = "monarchy_events.103.a"
+		add_legitimacy = -5
+	}
+	
+}
