@@ -1,6 +1,6 @@
-from FantasyNameGenerator.Stores import Town
+from FantasyNameGenerator.DnD import Drow
 
 province_id_list = []
 
-for i in province_id_list:
-   print(f"PROV{i}: \"{Town()}\"")
+for i in range(5):
+   print(Drow())
