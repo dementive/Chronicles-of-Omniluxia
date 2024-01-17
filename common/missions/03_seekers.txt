@@ -49,20 +49,7 @@
             p:3448 = {add_claim=root}
             p:3473 = {add_claim=root}
             p:3443 = {add_claim=root}
-            declare_war_with_wargoal = {
-                war_goal = conquer_wargoal
-                province = 3473
-                target = p:3473.owner
-            }
-            declare_war_with_wargoal = {
-                war_goal = conquer_wargoal
-                province = 3406
-                target = p:3406.owner
-            }
             trigger_event = me_seekers.1
-            show_as_tooltip = {
-
-            }
         }
     }
     01_seekers_task_2 = {
@@ -77,9 +64,9 @@
 		}
 
         allow = {
-            stability >= 55
+            stability >= 50
             political_influence >= 20
-            manpower >= 2
+            manpower >= 1
             capital_scope = {
                 is_importing_trade_good = stone
             }
@@ -87,7 +74,7 @@
 
         on_completion = {
             add_political_influence = -20
-            add_manpower = -2
+            add_manpower = -1
             add_tyranny = 5
             trigger_event = me_seekers.2
             capital_scope = {
@@ -154,12 +141,13 @@
         on_completion = {
             add_1_free_province_investments = yes
             current_ruler = {
-                good_zeal_effect = yes
+                add_zeal = 2
+                add_popularity = 15
+                family = {
+                    add_prestige = 100
+                }
             }
             trigger_event = me_seekers.4
-            show_as_tooltip = {
-
-            }
         }
     }
     01_seekers_task_5 = {
@@ -362,7 +350,8 @@
             change_country_name = "SEEKER_KINGDOM_NAME"
 			hidden_effect = {
 				change_country_adjective = "SEEKER_KINGDOM_ADJECTIVE"
-                change_country_flag = "SK1"
+                change_country_flag = SEK
+                change_country_color = seeker_color
 			}
             trigger_event = me_seekers.10
             show_as_tooltip = {
@@ -410,34 +399,32 @@
 		}
 
         bypass = {
-            c:SK6 = {
-                has_land = no
-            }
-            c:SK7 = {
-                has_land = no
+            NOT = {
+                any_country = {
+                    NOT = { this = root }
+                    religion = seekers_beliefs
+                    primary_culture = zani_seeker
+                }
             }
         }
 
         allow = {
             stability >= 50
-            invention = happiness_for_wrong_group_modifier_inv_1
             capital_scope = {
-                has_holy_site = yes
+                is_holy_site = yes
             }
         }
         requires = {01_seekers_task_14}
         on_completion = {
             trigger_event = me_seekers.12
             show_as_tooltip = {
-                root = {
-                    make_subject = {
-                        target = SK6
-                        type = feudatory
+                every_country = {
+                    limit = {
+                        religion = seekers_beliefs
+                        primary_culture = zani_seeker
                     }
-                }
-                root = {
                     make_subject = {
-                        target = SK7
+                        target = this
                         type = feudatory
                     }
                 }
@@ -463,38 +450,22 @@
             }
             p:3305 = {
                 num_of_fortress_building >= 1
-            }
-            hidden:p:3305.state = {
-                calc_true_if = {
-                    amount >= 1
-                    state_improvement_military_trigger = yes
-                    state_improvement_civic_trigger = yes
-                    state_improvement_oratory_trigger = yes
-                    state_improvement_religious_trigger = yes
-                }
+                has_no_ongoing_construction = yes
             }
             p:3614 = {
                 num_of_fortress_building >= 1
-            }
-            hidden:p:3614.state = {
-                calc_true_if = {
-                    amount >= 1
-                    state_improvement_military_trigger = yes
-                    state_improvement_civic_trigger = yes
-                    state_improvement_oratory_trigger = yes
-                    state_improvement_religious_trigger = yes
-                }
+                has_no_ongoing_construction = yes
             }
             p:3773 = {
                 num_of_fortress_building >= 1
+                has_no_ongoing_construction = yes
             }
-            hidden:p:3773.state = {
-                calc_true_if = {
-                    amount >= 1
-                    state_improvement_military_trigger = yes
-                    state_improvement_civic_trigger = yes
-                    state_improvement_oratory_trigger = yes
-                    state_improvement_religious_trigger = yes
+            custom_tooltip = {
+                text = seekers_need_7_cities_tt
+                any_province = {
+                    count >= 7
+                    is_in_region = celtica_shout_region
+                    has_city_status = yes
                 }
             }
         }
@@ -504,10 +475,8 @@
                 name = the_three_doors_seeker_modifier
                 duration = -1
             }
+            add_4_free_province_investments = yes
             trigger_event = me_seekers.13
-            show_as_tooltip = {
-
-            }
         }
     }
     01_seekers_task_14 = {
