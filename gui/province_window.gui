@@ -13,6 +13,25 @@
 
 types betterUITabs
 {
+	type pops_container = flowcontainer {
+		scrollarea = {
+			size = { 320 154 }
+			scrollbarpolicy_horizontal = as_needed
+			scrollbaralign_horizontal = bottom
+			scrollbarpolicy_vertical = always_off
+			scrollbar_horizontal = {
+				using = HorizontalScrollBar
+				blockoverride "speed" {
+					wheelstep = 100
+				}
+			}
+			scrollwidget = {
+				flowcontainer = {
+					block "content" {}
+				}
+			}
+		}
+	}
 	type tab_button_my = widget {
 		block "layout" {
 			layoutpolicy_horizontal = expanding
@@ -5308,21 +5327,6 @@ window = {
 									text = "[ProvinceWindow.GetProvince.GetUnrest|1-]"
 								}
 							}
-
-							button = {
-								size = { 35 35 }
-								texture = "gfx/interface/icons/shared_icons/population.dds"
-								tooltip = "Show Other Pops"
-								onclick = "[GetVariableSystem.Toggle('showing_more_pops')]"
-							}
-
-							#text_button_square_highlighted = {
-							#	size = { 110 0 }
-							#	blockoverride "On_click" {
-							#		onclick = "[GetVariableSystem.Toggle('showing_more_pops')]"
-							#	}
-							#	blockoverride "Center_text" { text = "More Pops" max_width = 162 }
-							#}
 						}
 					}
 
@@ -5342,382 +5346,298 @@ window = {
 								size = { 100% 6 }
 							}
 
-							# widget = {
-							# 	size = { 100% 100% }
-							# 	using = NoninteractableBG
-							# 	alpha = 0.3
-							# 	blockoverride "Margins" {
-							# 		margin_left = 2
-							# 		margin_right = 25
-							# 		margin_top = 7
-							# 	}
-							# }
+							pops_container = {
+								blockoverride "content" {
+									pop_widget_my = {
+										blockoverride "alpha"
+										{
+											alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('mages'))]"
+										}
+										tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('mages')]"
+										tooltip_widgetanchor = vcenter|left
+										blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/nobles_bg.dds" }
+										blockoverride "HappinessBarValue"
+										{
+											visible = yes
+											value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('mages') )]"
+										}
+										blockoverride "Icon"
+										{
+											enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('mages'), '(int32)0' )]"
+											texture = "gfx/interface/icons/pop_types/mages.dds"
+											tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('mages')]"
+										}
+										blockoverride "NumPops"
+										{
+											text = "[ProvinceWindow.GetProvince.GetPopulation('mages')]"
+										}
+										blockoverride "ratio"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('mages')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('mages'), ProvinceWindow.GetProvince.GetDesiredPopRatio('mages'))]"
+										}
+										blockoverride "ratio_big"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('mages')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('mages'), ProvinceWindow.GetProvince.GetDesiredPopRatio('mages'))]"
+										}
+										blockoverride "MarkerVisible"
+										{
+											visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('mages'), '(int32)0' )]"
+										}
+										blockoverride "Frame"
+										{
+											frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'mages' )]"
+										}
+									}
+									pop_widget_my = {
+										blockoverride "alpha"
+										{
+											alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('nobles'))]"
+										}
+										tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('nobles')]"
+										tooltip_widgetanchor = vcenter|left
+										blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/nobles_bg.dds" }
+										blockoverride "HappinessBarValue"
+										{
+											visible = yes
+											value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('nobles') )]"
+										}
+										blockoverride "Icon"
+										{
+											enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('nobles'), '(int32)0' )]"
+											texture = "gfx/interface/icons/pop_types/nobles.dds"
+											tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('nobles')]"
+										}
+										blockoverride "NumPops"
+										{
+											text = "[ProvinceWindow.GetProvince.GetPopulation('nobles')]"
+										}
+										blockoverride "ratio"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('nobles')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('nobles'), ProvinceWindow.GetProvince.GetDesiredPopRatio('nobles'))]"
+										}
+										blockoverride "ratio_big"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('nobles')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('nobles'), ProvinceWindow.GetProvince.GetDesiredPopRatio('nobles'))]"
+										}
+										blockoverride "MarkerVisible"
+										{
+											visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('nobles'), '(int32)0' )]"
+										}
+										blockoverride "Frame"
+										{
+											frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'nobles' )]"
+										}
+									}
+									pop_widget_my = {
+										alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('citizen'))]"
+										tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('citizen')]"
+										tooltip_widgetanchor = vcenter|left
+										blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/citizen_bg.dds" }
+										blockoverride "HappinessBarValue"
+										{
+											visible = yes
+											value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('citizen') )]"
+										}
+										blockoverride "Icon"
+										{
+											enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('citizen'), '(int32)0' )]"
+											texture = "gfx/interface/icons/pop_types/citizen.dds"
+											tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('citizen')]"
+										}
+										blockoverride "NumPops"
+										{
+											text = "[ProvinceWindow.GetProvince.GetPopulation('citizen')]"
+										}
+										blockoverride "ratio"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('citizen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('citizen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('citizen'))]"
+										}
+										blockoverride "ratio_big"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('citizen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('citizen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('citizen'))]"
+										}
+										blockoverride "MarkerVisible"
+										{
+											visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('citizen'), '(int32)0' )]"
+										}
+										blockoverride "Frame"
+										{
+											frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'citizen' )]"
+										}
+									}
+									pop_widget_my = {
+										alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('freemen'))]"
+										tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('freemen')]"
+										tooltip_widgetanchor = vcenter|left
+										blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/freemen_bg.dds" }
+										blockoverride "HappinessBarValue"
+										{
+											visible = yes
+											value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('freemen') )]"
+										}
+										blockoverride "Icon"
+										{
+											enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('freemen'), '(int32)0' )]"
+											texture = "gfx/interface/icons/pop_types/freemen.dds"
+											tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('freemen')]"
+										}
+										blockoverride "NumPops"
+										{
+											text = "[ProvinceWindow.GetProvince.GetPopulation('freemen')]"
+										}
+										blockoverride "ratio"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('freemen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('freemen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('freemen'))]"
+										}
+										blockoverride "ratio_big"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('freemen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('freemen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('freemen'))]"
+										}
+										blockoverride "MarkerVisible"
+										{
+											visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('freemen'), '(int32)0' )]"
+										}
+										blockoverride "Frame"
+										{
+											frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'freemen' )]"
+										}
+									}
+									pop_widget_my = {
+										alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('tribesmen'))]"
+										tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('tribesmen')]"
+										tooltip_widgetanchor = vcenter|left
+										blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/tribesmen_bg.dds" }
+										blockoverride "HappinessBarValue"
+										{
+											visible = yes
+											value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('tribesmen') )]"
+										}
 
-							flowcontainer = {
-								position = { 0 0 }
-								visible = "[GetVariableSystem.Exists('showing_more_pops')]"
+										blockoverride "Icon"
+										{
+											enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('tribesmen'), '(int32)0' )]"
+											texture = "gfx/interface/icons/pop_types/tribesmen.dds"
+											tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('tribesmen')]"
+										}
+										blockoverride "NumPops"
+										{
+											text = "[ProvinceWindow.GetProvince.GetPopulation('tribesmen')]"
+										}
+										blockoverride "ratio"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('tribesmen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('tribesmen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('tribesmen'))]"
+										}
+										blockoverride "ratio_big"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('tribesmen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('tribesmen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('tribesmen'))]"
+										}
+										blockoverride "MarkerVisible"
+										{
+											visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('tribesmen'), '(int32)0' )]"
+										}
+										blockoverride "Frame"
+										{
+											frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'tribesmen' )]"
+										}
+									}
+									pop_widget_my = {
+										alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('serfs'))]"
+										tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('serfs')]"
+										tooltip_widgetanchor = vcenter|left
+										blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/tribesmen_bg.dds" }
+										blockoverride "HappinessBarValue"
+										{
+											visible = yes
+											value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('serfs') )]"
+										}
 
-								pop_widget_my = {
-									alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('tribesmen'))]"
-									tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('tribesmen')]"
-									tooltip_widgetanchor = vcenter|left
-									blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/tribesmen_bg.dds" }
-									blockoverride "HappinessBarValue"
-									{
-										visible = yes
-										value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('tribesmen') )]"
+										blockoverride "Icon"
+										{
+											enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('serfs'), '(int32)0' )]"
+											texture = "gfx/interface/icons/pop_types/serfs.dds"
+											tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('serfs')]"
+										}
+										blockoverride "NumPops"
+										{
+											text = "[ProvinceWindow.GetProvince.GetPopulation('serfs')]"
+										}
+										blockoverride "ratio"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('serfs')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('serfs'), ProvinceWindow.GetProvince.GetDesiredPopRatio('serfs'))]"
+										}
+										blockoverride "ratio_big"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('serfs')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('serfs'), ProvinceWindow.GetProvince.GetDesiredPopRatio('serfs'))]"
+										}
+										blockoverride "MarkerVisible"
+										{
+											visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('serfs'), '(int32)0' )]"
+										}
+										blockoverride "Frame"
+										{
+											frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'serfs' )]"
+										}
 									}
-
-									blockoverride "Icon"
-									{
-										enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('tribesmen'), '(int32)0' )]"
-										texture = "gfx/interface/icons/pop_types/tribesmen.dds"
-										tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('tribesmen')]"
-									}
-									blockoverride "NumPops"
-									{
-										text = "[ProvinceWindow.GetProvince.GetPopulation('tribesmen')]"
-									}
-									blockoverride "ratio"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('tribesmen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('tribesmen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('tribesmen'))]"
-									}
-									blockoverride "ratio_big"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('tribesmen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('tribesmen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('tribesmen'))]"
-									}
-									blockoverride "MarkerVisible"
-									{
-										visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('tribesmen'), '(int32)0' )]"
-									}
-									blockoverride "Frame"
-									{
-										frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'tribesmen' )]"
-									}
-								}
-								pop_widget_my = {
-									alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('serfs'))]"
-									tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('serfs')]"
-									tooltip_widgetanchor = vcenter|left
-									blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/tribesmen_bg.dds" }
-									blockoverride "HappinessBarValue"
-									{
-										visible = yes
-										value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('serfs') )]"
-									}
-
-									blockoverride "Icon"
-									{
-										enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('serfs'), '(int32)0' )]"
-										texture = "gfx/interface/icons/pop_types/serfs.dds"
-										tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('serfs')]"
-									}
-									blockoverride "NumPops"
-									{
-										text = "[ProvinceWindow.GetProvince.GetPopulation('serfs')]"
-									}
-									blockoverride "ratio"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('serfs')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('serfs'), ProvinceWindow.GetProvince.GetDesiredPopRatio('serfs'))]"
-									}
-									blockoverride "ratio_big"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('serfs')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('serfs'), ProvinceWindow.GetProvince.GetDesiredPopRatio('serfs'))]"
-									}
-									blockoverride "MarkerVisible"
-									{
-										visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('serfs'), '(int32)0' )]"
-									}
-									blockoverride "Frame"
-									{
-										frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'serfs' )]"
-									}
-								}
-								pop_widget_my = {
-									alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('slaves'))]"
-									tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('slaves')]"
-									tooltip_widgetanchor = vcenter|left
-									blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/slaves_bg.dds" }
-									blockoverride "HappinessBarValue"
-									{
-										visible = yes
-										value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('slaves') )]"
-									}
-									blockoverride "Icon"
-									{
-										enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('slaves'), '(int32)0' )]"
-										texture = "gfx/interface/icons/pop_types/slaves.dds"
-										tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('slaves')]"
-									}
-									blockoverride "NumPops"
-									{
-										text = "[ProvinceWindow.GetProvince.GetPopulation('slaves')]"
-									}
-									blockoverride "ratio"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('slaves')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('slaves'), ProvinceWindow.GetProvince.GetDesiredPopRatio('slaves'))]"
-									}
-									blockoverride "ratio_big"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('slaves')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('slaves'), ProvinceWindow.GetProvince.GetDesiredPopRatio('slaves'))]"
-									}
-									blockoverride "MarkerVisible"
-									{
-										visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('slaves'), '(int32)0' )]"
-									}
-									blockoverride "Frame"
-									{
-										frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'slaves' )]"
-									}
-								}
-							}
-							flowcontainer = {
-								position = { 0 0 }
-								visible = "[Not(GetVariableSystem.Exists('showing_more_pops'))]"
-
-								pop_widget_my = {
-									blockoverride "alpha"
-									{
-										alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('mages'))]"
-									}
-									tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('mages')]"
-									tooltip_widgetanchor = vcenter|left
-									blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/nobles_bg.dds" }
-									blockoverride "HappinessBarValue"
-									{
-										visible = yes
-										value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('mages') )]"
-									}
-									blockoverride "Icon"
-									{
-										enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('mages'), '(int32)0' )]"
-										texture = "gfx/interface/icons/pop_types/mages.dds"
-										tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('mages')]"
-									}
-									blockoverride "NumPops"
-									{
-										text = "[ProvinceWindow.GetProvince.GetPopulation('mages')]"
-									}
-									blockoverride "ratio"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('mages')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('mages'), ProvinceWindow.GetProvince.GetDesiredPopRatio('mages'))]"
-									}
-									blockoverride "ratio_big"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('mages')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('mages'), ProvinceWindow.GetProvince.GetDesiredPopRatio('mages'))]"
-									}
-									blockoverride "MarkerVisible"
-									{
-										visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('mages'), '(int32)0' )]"
-									}
-									blockoverride "Frame"
-									{
-										frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'mages' )]"
-									}
-								}
-								pop_widget_my = {
-									blockoverride "alpha"
-									{
-										alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('aristocracy'))]"
-									}
-									tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('aristocracy')]"
-									tooltip_widgetanchor = vcenter|left
-									blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/nobles_bg.dds" }
-									blockoverride "HappinessBarValue"
-									{
-										visible = yes
-										value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('aristocracy') )]"
-									}
-									blockoverride "Icon"
-									{
-										enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('aristocracy'), '(int32)0' )]"
-										texture = "gfx/interface/icons/pop_types/aristocracy.dds"
-										tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('aristocracy')]"
-									}
-									blockoverride "NumPops"
-									{
-										text = "[ProvinceWindow.GetProvince.GetPopulation('aristocracy')]"
-									}
-									blockoverride "ratio"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('aristocracy')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('aristocracy'), ProvinceWindow.GetProvince.GetDesiredPopRatio('aristocracy'))]"
-									}
-									blockoverride "ratio_big"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('aristocracy')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('aristocracy'), ProvinceWindow.GetProvince.GetDesiredPopRatio('aristocracy'))]"
-									}
-									blockoverride "MarkerVisible"
-									{
-										visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('aristocracy'), '(int32)0' )]"
-									}
-									blockoverride "Frame"
-									{
-										frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'aristocracy' )]"
-									}
-								}
-								pop_widget_my = {
-									blockoverride "alpha"
-									{
-										alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('nobles'))]"
-									}
-									tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('nobles')]"
-									tooltip_widgetanchor = vcenter|left
-									blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/nobles_bg.dds" }
-									blockoverride "HappinessBarValue"
-									{
-										visible = yes
-										value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('nobles') )]"
-									}
-									blockoverride "Icon"
-									{
-										enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('nobles'), '(int32)0' )]"
-										texture = "gfx/interface/icons/pop_types/nobles.dds"
-										tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('nobles')]"
-									}
-									blockoverride "NumPops"
-									{
-										text = "[ProvinceWindow.GetProvince.GetPopulation('nobles')]"
-									}
-									blockoverride "ratio"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('nobles')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('nobles'), ProvinceWindow.GetProvince.GetDesiredPopRatio('nobles'))]"
-									}
-									blockoverride "ratio_big"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('nobles')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('nobles'), ProvinceWindow.GetProvince.GetDesiredPopRatio('nobles'))]"
-									}
-									blockoverride "MarkerVisible"
-									{
-										visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('nobles'), '(int32)0' )]"
-									}
-									blockoverride "Frame"
-									{
-										frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'nobles' )]"
-									}
-								}
-								pop_widget_my = {
-									alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('citizen'))]"
-									tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('citizen')]"
-									tooltip_widgetanchor = vcenter|left
-									blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/citizen_bg.dds" }
-									blockoverride "HappinessBarValue"
-									{
-										visible = yes
-										value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('citizen') )]"
-									}
-									blockoverride "Icon"
-									{
-										enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('citizen'), '(int32)0' )]"
-										texture = "gfx/interface/icons/pop_types/citizen.dds"
-										tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('citizen')]"
-									}
-									blockoverride "NumPops"
-									{
-										text = "[ProvinceWindow.GetProvince.GetPopulation('citizen')]"
-									}
-									blockoverride "ratio"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('citizen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('citizen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('citizen'))]"
-									}
-									blockoverride "ratio_big"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('citizen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('citizen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('citizen'))]"
-									}
-									blockoverride "MarkerVisible"
-									{
-										visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('citizen'), '(int32)0' )]"
-									}
-									blockoverride "Frame"
-									{
-										frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'citizen' )]"
-									}
-								}
-								pop_widget_my = {
-									alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('freemen'))]"
-									tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('freemen')]"
-									tooltip_widgetanchor = vcenter|left
-									blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/freemen_bg.dds" }
-									blockoverride "HappinessBarValue"
-									{
-										visible = yes
-										value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('freemen') )]"
-									}
-									blockoverride "Icon"
-									{
-										enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('freemen'), '(int32)0' )]"
-										texture = "gfx/interface/icons/pop_types/freemen.dds"
-										tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('freemen')]"
-									}
-									blockoverride "NumPops"
-									{
-										text = "[ProvinceWindow.GetProvince.GetPopulation('freemen')]"
-									}
-									blockoverride "ratio"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('freemen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('freemen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('freemen'))]"
-									}
-									blockoverride "ratio_big"
-									{
-										text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('freemen')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
-										visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('freemen'), ProvinceWindow.GetProvince.GetDesiredPopRatio('freemen'))]"
-									}
-									blockoverride "MarkerVisible"
-									{
-										visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('freemen'), '(int32)0' )]"
-									}
-									blockoverride "Frame"
-									{
-										frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'freemen' )]"
+									pop_widget_my = {
+										alpha = "[TransparentIfZero_int32(ProvinceWindow.GetProvince.GetPopulation('slaves'))]"
+										tooltip = "[ProvinceWindow.GetProvince.GetPopHappyInformation('slaves')]"
+										tooltip_widgetanchor = vcenter|left
+										blockoverride "BackgroundTexture" { texture = "gfx/interface/icons/pop_types/slaves_bg.dds" }
+										blockoverride "HappinessBarValue"
+										{
+											visible = yes
+											value = "[FixedPointToFloat( ProvinceWindow.GetProvince.GetPopTypeHappiness('slaves') )]"
+										}
+										blockoverride "Icon"
+										{
+											enabled = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('slaves'), '(int32)0' )]"
+											texture = "gfx/interface/icons/pop_types/slaves.dds"
+											tooltip = "[ProvinceWindow.GetProvince.GetPopulationTooltip('slaves')]"
+										}
+										blockoverride "NumPops"
+										{
+											text = "[ProvinceWindow.GetProvince.GetPopulation('slaves')]"
+										}
+										blockoverride "ratio"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('slaves')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[LessThanOrEqualTo_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('slaves'), ProvinceWindow.GetProvince.GetDesiredPopRatio('slaves'))]"
+										}
+										blockoverride "ratio_big"
+										{
+											text = "/[Multiply_float(FixedPointToFloat(ProvinceWindow.GetProvince.GetDesiredPopRatio('slaves')), IntToFloat(ProvinceWindow.GetProvince.GetPopulation('total')))|0]"
+											visible = "[GreaterThan_CFixedPoint(ProvinceWindow.GetProvince.GetCurrentPopRatio('slaves'), ProvinceWindow.GetProvince.GetDesiredPopRatio('slaves'))]"
+										}
+										blockoverride "MarkerVisible"
+										{
+											visible = "[GreaterThan_int32( ProvinceWindow.GetProvince.GetPopulation('slaves'), '(int32)0' )]"
+										}
+										blockoverride "Frame"
+										{
+											frame = "[ProvinceWindow.GetProvince.GetPopHappyFrame( 'slaves' )]"
+										}
 									}
 								}
 							}
 						}
 
 						widget = {
-							size = { 0 7 }
+							size = { 0 35 }
 						}
 
-						flowcontainer = { #this should be an hbox
-							spacing = 11
-							margin_left = -3 #pop_widgets mess some things up
-							ignoreinvisible = yes
 
-							text_button_square_highlighted = {
-								size = { 160 0 }
-								blockoverride "On_click" { onclick = "[ProvinceWindow.OpenMovePopsWindow]" }
-								blockoverride "Center_text" { text = "MOVE_SLAVES" maximumsize = { 115 -1 } elide = right }
-								visible = "[ProvinceWindow.IsPlayerProvince]"
-							}
-							text_button_square_highlighted = {
-								size = { 160 0 }
-								blockoverride "On_click" { onclick = "[ProvinceWindow.ShowPopDetails('slaves')]" }
-								blockoverride "Center_text" { text = "POP_SCREEN" maximumsize = { 115 -1 } elide = right }
-								tooltip = "OPEN_POPS_VIEW_TT"
-								visible = "[ProvinceWindow.IsPlayerProvince]"
-							}
-							text_button_square_highlighted = {
-								size = { 330 0 }
-								blockoverride "On_click" { onclick = "[ProvinceWindow.ShowPopDetails('slaves')]" }
-								blockoverride "Center_text" { text = "POP_SCREEN" }
-								tooltip = "OPEN_POPS_VIEW_TT"
-								visible = "[Not(ProvinceWindow.IsPlayerProvince)]"
-							}
-						}
 					}
 
 
@@ -5832,8 +5752,34 @@ window = {
 
 					widget = {
 						size = { 320 100 }
+						allow_outside = yes
+						flowcontainer = { #this should be an hbox
+							position = { 0 -88 }
+							spacing = 11
+							margin_left = -3 #pop_widgets mess some things up
+							ignoreinvisible = yes
 
-
+							text_button_square_highlighted = {
+								size = { 160 0 }
+								blockoverride "On_click" { onclick = "[ProvinceWindow.OpenMovePopsWindow]" }
+								blockoverride "Center_text" { text = "MOVE_SLAVES" maximumsize = { 115 -1 } elide = right }
+								visible = "[ProvinceWindow.IsPlayerProvince]"
+							}
+							text_button_square_highlighted = {
+								size = { 160 0 }
+								blockoverride "On_click" { onclick = "[ProvinceWindow.ShowPopDetails('slaves')]" }
+								blockoverride "Center_text" { text = "POP_SCREEN" maximumsize = { 115 -1 } elide = right }
+								tooltip = "OPEN_POPS_VIEW_TT"
+								visible = "[ProvinceWindow.IsPlayerProvince]"
+							}
+							text_button_square_highlighted = {
+								size = { 330 0 }
+								blockoverride "On_click" { onclick = "[ProvinceWindow.ShowPopDetails('slaves')]" }
+								blockoverride "Center_text" { text = "POP_SCREEN" }
+								tooltip = "OPEN_POPS_VIEW_TT"
+								visible = "[Not(ProvinceWindow.IsPlayerProvince)]"
+							}
+						}
 						flowcontainer = {
 							margin_left = 5
 							spacing = 13
