@@ -181,9 +181,6 @@ PixelShader =
 			// MOD(wok-chasm)
 			float RelativeChasmDepth;
 			GH_PrepareChasmEffect( Input.WorldSpacePos, /*TerrainVariantIndex,*/ Normal, DetailDiffuse, DetailNormal, DetailMaterial, RelativeChasmDepth );
-
-			uint ChasmType = GH_GetChasmType(Input.WorldSpacePos.xz);
-			GH_TryDiscardChasmPixel(RelativeChasmDepth, ChasmType);
 			// END MOD
 
 			// MOD(wok-chasm)
@@ -220,7 +217,7 @@ PixelShader =
 			float3 FinalColor = CalculateSunLighting( MaterialProps, LightingProps, EnvironmentMap );
 
 			// MOD(wok-chasm)
-			GH_AdjustChasmFinalColor( FinalColor, RelativeChasmDepth, Input.WorldSpacePos, ChasmType );
+			GH_AdjustChasmFinalColor( FinalColor, RelativeChasmDepth, Input.WorldSpacePos );
 			// END MOD
 
 			#ifdef TERRAIN_COLOR_OVERLAY

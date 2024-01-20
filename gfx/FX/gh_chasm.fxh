@@ -3,43 +3,6 @@ Includes = {
 	"gh_utils.fxh"
 }
 
-TextureSampler GH_RiftLayer0
-{
-	Index = 13
-	MagFilter = "Linear"
-	MinFilter = "Linear"
-	MipFilter = "Linear"
-	SampleModeU = "Clamp"
-	SampleModeV = "Clamp"
-	Type = "Cube"
-	File = "gfx/map/environment/gh_rift_layer_0.dds"
-	srgb = yes
-}
-
-#TextureSampler GH_RiftLayer1
-#{
-#	Index = 41
-#	MagFilter = "Linear"
-#	MinFilter = "Linear"
-#	MipFilter = "Linear"
-#	SampleModeU = "Clamp"
-#	SampleModeV = "Clamp"
-#	Type = "Cube"
-#	File = "gfx/map/environment/gh_rift_layer_1.dds"
-#	srgb = yes
-#}
-
-TextureSampler GH_ChasmTypesMap
-{
-	Index = 14
-	MagFilter = "Point"
-	MinFilter = "Point"
-	MipFilter = "Point"
-	SampleModeU = "Clamp"
-	SampleModeV = "Clamp"
-	File = "gfx/map/terrain/GH_chasm_types.png"
-}
-
 TextureSampler GH_ChasmsMap
 {
 	Index = 15
@@ -438,22 +401,7 @@ PixelShader
 			#endif // GH_CHASM_ENABLED
 		}
 
-		uint GH_GetChasmType(float2 WorldSpacePosXZ)
-		{
-			float3 EncodedChasmType = PdxTex2DLod0(GH_ChasmTypesMap, GH_WorldSpacePosXZToMapUV(WorldSpacePosXZ)).rgb;
-
-			return uint(GH_DecodeIntFromRgb(EncodedChasmType));
-		}
-
-		void GH_TryDiscardChasmPixel(float RelativeChasmDepth, uint ChasmType)
-		{
-			// Discard pixels at the bottom of the chasm, so we can "see through" the bottom.
-			// (Note that unlike setting alpha to 0 this also prevents a depth buffer write.)
-			if (ChasmType == GH_CHASM_TYPE_TRANSPARENT && RelativeChasmDepth > GH_CHASM_DISCARD_RELATIVE_DEPTH)
-				discard;
-		}
-
-		void GH_AdjustChasmFinalColor(inout float3 FinalColor, in float RelativeChasmDepth, in float3 WorldSpacePos, in uint ChasmType)
+		void GH_AdjustChasmFinalColor(inout float3 FinalColor, in float RelativeChasmDepth, in float3 WorldSpacePos)
 		{
 			#ifdef GH_CHASM_ENABLED
 				if (RelativeChasmDepth < 0.005)
@@ -464,18 +412,6 @@ PixelShader
 
 				// Fade color to CHASM_BOTTOM_COLOR as "depth" increases
 				FinalColor = lerp(CHASM_BOTTOM_COLOR, FinalColor, FinalColorLerpValue);
-
-				if (ChasmType == GH_CHASM_TYPE_STARRY)
-				{
-					float3 FromCameraDir0 = normalize(WorldSpacePos + float3(0.0f, 0.0f, 0.0f) - CameraPosition);
-					float4 RiftLayer0     = PdxTexCube(GH_RiftLayer0, FromCameraDir0);
-					// float3 FromCameraDir1 = normalize(WorldSpacePos + float3(0.0f, 1000.0f, 0.0f) - CameraPosition);
-					// float4 RiftLayer1     = PdxTexCube(GH_RiftLayer1, FromCameraDir1);
-
-					float3 RiftColor = RiftLayer0.rgb /*+ RiftLayer1.rgb*RiftLayer1.a*/;
-
-					FinalColor = lerp(FinalColor, RiftColor, smoothstep(0.8f, 1.0f, RelativeChasmDepth));
-				}
 
 				#ifdef GH_CHASM_SYMMETRY_GUIDES_ENABLED
 					GH_DrawChasmSymmetryGuides(WorldSpacePosXZ, FinalColor);
