@@ -1,2 +1,2 @@
 @echo off
-python image_manager.py input output -downscale 4
+python image_manager.py input output -downscale 2
