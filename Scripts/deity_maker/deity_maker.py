@@ -65,7 +65,6 @@ apotheosis_effect_economy = [
 	"economy_apotheosis_capital_citizens_effect = yes",
 	"economy_income_effect = yes",
 	"economy_apotheosis_capital_noble_effect = yes",
-	"convert_to_nobles_deity_effect = yes",
 ]
 
 apotheosis_effect_culture = [
@@ -261,7 +260,8 @@ def get_deity_output(religion):
 		for j in deity_categories:
 			category = j
 			deity = random.choice(deity_names)
-			deity_and_religion_dict[religion].append(deity.lower())
+			deity_info = (deity.lower(), category)
+			deity_and_religion_dict[religion].append(deity_info)
 			deity_names.remove(deity)
 			passive = get_passive(category)
 			omen = get_omen(category)
@@ -275,7 +275,7 @@ def write_setup_output(religion, current_free_key):
 		file.write(f"deity_manager = {{\n\tdeities_database = {{ ### KEYS {current_free_key} - {current_free_key + 99}")
 	with open(f"output/setup/00_{religion}.txt", "a") as file:
 		for j in deity_and_religion_dict[religion]:
-			file.write(f"\n\t\t{current_free_key} = {{\n\t\t\tkey = omen_{j}\n\t\t\tdeity = deity_{j}\n\t\t}}")
+			file.write(f"\n\t\t{current_free_key} = {{\n\t\t\tkey = omen_{j[0]}\n\t\t\tdeity = deity_{j[0]}\n\t\t}}")
 			current_free_key += 1
 		file.write("\n\t}\n}")
 
@@ -284,9 +284,9 @@ def write_localzation_output(religion):
 		file.write(f"l_english:\n ## {religion} ##\n")
 	with open(f"output/localization/deities_{religion}_l_english.yml", "a") as file:
 		for j in deity_and_religion_dict[religion]:
-			file.write(f'deity_{j}:0 "$omen_{j}$"\n')
-			file.write(f'omen_{j}:0 "{j.title()}"\n')
-			file.write(f'omen_{j}_desc:0 ""\n\n')
+			file.write(f'deity_{j[0]}:0 "$omen_{j[0]}$"\n')
+			file.write(f'omen_{j[0]}:0 "{j[0].title()}"\n')
+			file.write(f'omen_{j[0]}_desc:0 "{j[0].title()} is a diety of {j[1].title()}"\n\n')
 		add_utf8_bom(file.name)
 
 if __name__ == '__main__':
@@ -298,6 +298,7 @@ if __name__ == '__main__':
 			add_utf8_bom(file.name)
 
 	current_free_key = 300 # each religion gets 100 free keys, currently 3 are done.
+
 
 	for i in deity_and_religion_dict:
 		write_setup_output(i, current_free_key)
