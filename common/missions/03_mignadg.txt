@@ -1,0 +1,247 @@
+﻿03_mignadg = {
+    header = "mission_image_general"
+    icon = "lotr_generic_ship_mission_icon"
+
+    repeatable = no
+    chance = 1000
+
+    potential = {
+    	tag = UP4
+        NOT = { has_variable = mission_cooldown_var }
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {}
+
+    03_mignadg_task_1 = {
+        icon = "task_diplomatic"
+        duration = 30
+
+        bypass = {
+     		owns_or_subject_owns = 5700
+     		owns_or_subject_owns = 5698
+     		owns_or_subject_owns = 5690
+
+        }
+
+        allow = {
+        	political_influence >= 15
+        	treasury >= 35
+        	has_law = barter_economy_law
+			hidden:c:UP3 = {
+					opinion = {
+						target = root
+						value >= 150
+					}
+				}
+			hidden:c:UP5 = {
+				opinion = {
+					target = root
+					value >= 150
+				}
+			}
+			hidden:c:UP6 = {
+				opinion = {
+					target = root
+					value <= 150
+				}
+			}
+        }
+
+        on_completion = {
+        	custom_tooltip = mignadg_feudatory_mission_tt
+            trigger_event = me_mignadg.1
+            add_treasury = -35
+            show_as_tooltip = {
+            	current_ruler = {
+            	force_add_trait = ambitious
+            	}
+            }
+        }
+    }
+
+    03_mignadg_task_2 = {
+        icon = "task_expansion"
+
+        highlight = {
+			scope:province = {
+				owner = root
+				is_capital = yes
+			}
+		}
+
+        allow = {
+        	capital_scope = {
+        		num_of_port_building >= 2
+        		is_importing_trade_good = wood
+        		is_importing_trade_good = stone
+        	}
+        }
+        on_completion = {
+            trigger_event = me_mignadg.2
+            add_manpower = 2
+            capital_scope = {
+            	add_permanent_province_modifier = {
+            		name = mignadg_port_capital_mod
+            		duration = -1
+            	}
+            }
+        }
+    }
+
+    03_mignadg_task_3 = {
+        icon = "task_political"
+        duration = 90
+
+        allow = {
+        	political_influence >= 30
+        	num_of_ships >= 15
+        	invention = pirate_spawn_chance_inv_1 
+        }
+
+        requires = {03_mignadg_task_1}
+        on_completion = {
+        	add_political_influence = -30
+        	area:austropetolian_archipelago_2 = {
+                add_provincial_claim_effect = yes
+            }
+            area:austropetolian_archipelago_3 = {
+                add_provincial_claim_effect = yes
+            }
+            area:austropetolian_archipelago_4 = {
+                add_provincial_claim_effect = yes
+            }
+            trigger_event = me_mignadg.3
+            show_as_tooltip = {
+
+            }
+        }
+    }
+
+    03_mignadg_task_4 = {
+        icon = "task_political"
+        requires = {03_mignadg_task_3}
+        allow = {}
+        on_completion = {
+            trigger_event = me_mignadg.4
+            show_as_tooltip = {
+
+            }
+        }
+    }
+
+    03_mignadg_task_5 = {
+        icon = "task_political"
+        requires = {03_mignadg_task_4}
+        allow = {}
+        on_completion = {
+            trigger_event = me_mignadg.5
+            show_as_tooltip = {
+
+            }
+        }
+    }
+
+    03_mignadg_task_6 = {
+        icon = "task_economical"
+        requires = {03_mignadg_task_2}
+
+        highlight = {
+			scope:province = {
+				OR = {
+				province_id = 5692
+				province_id = 5694
+				}
+			}
+		}
+
+        allow = {
+        	p:5692 = {
+        		has_building = latifundia_building
+        		total_population >=13
+        	}
+        	capital_scope = {
+        		num_of_port_building >= 3
+        		has_building = military_building
+        	}
+        }
+        on_completion = {
+            trigger_event = me_mignadg.6
+            p:5692 = {
+            	remove_province_modifier = pirate_haven_modifier
+            }
+            capital_scope = {
+            	add_permanent_province_modifier = {
+            		name = pirate_haven_modifier
+            		duration = -1
+            	}
+            	add_permanent_province_modifier = {
+            		name = the_buccaneer_district_snake_mod
+            		duration = -1
+            	}
+            }
+            show_as_tooltip = {
+
+            }
+        }
+    }
+
+    03_mignadg_task_7 = {
+        icon = "task_political"
+        requires = {03_mignadg_task_6}
+
+        allow = {}
+        on_completion = {
+            trigger_event = me_mignadg.7
+            show_as_tooltip = {
+
+            }
+        }
+    }
+
+    03_mignadg_task_8 = {
+        icon = "task_political"
+        requires = {03_mignadg_task_7}
+        allow = {}
+        on_completion = {
+            trigger_event = me_mignadg.8
+            show_as_tooltip = {
+
+            }
+        }
+    }
+
+    03_mignadg_task_9 = {
+        icon = "task_political"
+        requires = {03_mignadg_task_5 03_mignadg_task_8}
+        allow = {}
+        on_completion = {
+            trigger_event = me_mignadg.9
+            show_as_tooltip = {
+
+            }
+        }
+    }
+
+    03_mignadg_task_10 = {
+        icon = "task_political"
+        requires = {03_mignadg_task_9}
+        allow = {}
+        on_completion = {
+            trigger_event = me_mignadg.10
+            show_as_tooltip = {
+
+            }
+        }
+    }
+}
