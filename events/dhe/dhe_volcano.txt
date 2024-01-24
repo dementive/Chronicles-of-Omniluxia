@@ -3,15 +3,271 @@
 # Volcano Eruption - Original
 dhe_volcano.1 = {
 	type = country_event
-	hidden = yes
+	title = "dhe_volcano.1.t"
+	desc = "dhe_volcano.1.desc"
+	picture = volcanic_disaster
+
+	left_portrait = current_ruler
+	
+	goto_location = scope:volcano_city
+
+	trigger = {
+		country_borders_volcano_province_not_erupted_trigger = yes
+		NOR = {
+			has_variable = dhe_volcano_1_cooldown
+			has_variable = orc_volcano_cooldown 
+			has_variable = snake_volcano_cooldown
+		} 
+	}
 
 	immediate = {
+		set_variable = {
+			name = dhe_volcano_1_cooldown
+			days = 32000
+		}
+		random_list = {
+			10 = { # Orc
+				trigger = {
+					any_owned_province = {
+						city_borders_orc_volcano_trigger = yes
+					}
+				}
+				set_variable = {
+					name = orc_volcano_eruption
+				}
+				random_owned_province = {
+					limit = {
+						city_borders_orc_volcano_trigger = yes
+					}
+					save_scope_as = volcano_city
+				}
+				every_owned_province = {
+					limit = {
+						city_borders_orc_volcano_trigger = yes
+					}
+					province_volcano_affect_scopes_effect = yes
+				}
+			}
+			10 = { # Snake
+				trigger = {
+					any_owned_province = {
+						city_borders_snake_volcano_trigger = yes
+					}
+				}
+				set_variable = {
+					name = snake_volcano_eruption
+				}
+				random_owned_province = {
+					limit = {
+						city_borders_snake_volcano_trigger = yes
+					}
+					save_scope_as = volcano_city
+				}
+				every_owned_province = {
+					limit = {
+						city_borders_snake_volcano_trigger = yes
+					}
+					province_volcano_affect_scopes_effect = yes
+				}
+			}
+		}
+		switch = {
+			trigger = has_variable
+			orc_volcano_eruption = {
+				every_owned_province = { # Destroy relevant provinces
+					limit = {
+						city_borders_orc_volcano_trigger = yes
+					}
+					set_variable = {
+						name = recent_volcano_eruption
+						days = 18250
+					}
+				}
+				every_country = { # Find other nations who hold relevant territory
+					limit = {
+						NOT = { this = root }
+						any_owned_province = {
+							city_borders_orc_volcano_trigger = yes
+						}
+					}
+					set_variable = {
+						name = orc_volcano_eruption_other
+					}
+					trigger_event = {
+						id = dhe_volcano.2
+					}
+				}
+			}
+			snake_volcano_eruption = { 
+				every_owned_province = { # Destroy relevant provinces
+					limit = {
+						city_borders_snake_volcano_trigger = yes
+					}
+					set_variable = {
+						name = recent_volcano_eruption
+						days = 18250
+					}
+				}
+				every_country = { # Find other nations who hold relevant territory
+					limit = {
+						NOT = { this = root }
+						any_owned_province = {
+							city_borders_snake_volcano_trigger = yes
+						}
+					}
+					set_variable = {
+						name = snake_volcano_eruption_other
+					}
+					trigger_event = {
+						id = dhe_volcano.2
+					}
+				}
+			}
+		}
+	}
+	option = {
+		name = "dhe_volcano.1.a"
+		scope:volcano_city = { # Destroy volcano-foci
+			custom_tooltip = "volcano_foci_province.tt"
+			if = {
+				limit = {
+					is_capital = yes
+				}
+				hidden_effect = {
+					province_pop_disaster_major = yes
+				}
+			}
+			else = {
+				hidden_effect = {
+					province_pop_disaster_historical = yes
+				}
+			}
+			if = {
+				limit = {
+					NOR = { 
+						has_province_modifier = province_diminishment_destroyed_volcano 
+					}
+				}
+				hidden_effect = {
+					if = {
+						limit = {
+							has_province_modifier = province_diminishment_ravaged_volcano
+						}
+						remove_province_modifier = province_diminishment_ravaged_volcano
+					}
+				}
+				add_permanent_province_modifier = {
+					name = province_diminishment_destroyed_volcano
+				}
+			}
+		}
+		switch = {
+			trigger = has_variable
+			orc_volcano_eruption = {
+				hidden_effect = {
+					p:5789 = {
+						add_vfx = {
+							name = "volcano_eruption"
+							duration = 0
+						}
+					}
+				}
+				every_owned_province = { # Ravage relevant provinces
+					limit = {
+						city_borders_orc_volcano_trigger = yes
+						NOT = { this = scope:volcano_city }
+					}
+					province_volcano_affected_effect = yes
+				}
+				remove_variable = orc_volcano_eruption
+			}
+			snake_volcano_eruption = {
+				hidden_effect = {
+					p:5790 = {
+						add_vfx = {
+							name = "volcano_eruption"
+							duration = 0
+						}
+					}
+				}
+				every_owned_province = { # Ravage relevant provinces
+					limit = {
+						city_borders_snake_volcano_trigger = yes
+						NOT = { this = scope:volcano_city }
+					}
+					province_volcano_affected_effect = yes
+				}
+				remove_variable = snake_volcano_eruption
+			}
+		}
 	}
 }
 dhe_volcano.2 = {
 	type = country_event
-	hidden = yes
+	title = "dhe_volcano.2.t"
+	desc = "dhe_volcano.2.desc"
+	picture = volcanic_disaster
+
+	left_portrait = current_ruler
+	
+	goto_location = scope:volcano_city
+
+	trigger = {
+		country_borders_volcano_province_trigger = yes
+	}
 
 	immediate = {
+		switch = {
+			trigger = has_variable
+			orc_volcano_eruption_other = {
+				every_owned_province = {
+					limit = {
+						city_borders_orc_volcano_trigger = yes
+					}
+					province_volcano_affect_scopes_effect = yes
+					set_variable = {
+						name = recent_volcano_eruption
+						days = 18250
+					}
+				}
+			}
+			snake_volcano_eruption_other = {
+				every_owned_province = {
+					limit = {
+						city_borders_snake_volcano_trigger = yes
+					}
+					province_volcano_affect_scopes_effect = yes
+					set_variable = {
+						name = recent_volcano_eruption
+						days = 18250
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "dhe_volcano.2.a"
+		switch = {
+			trigger = has_variable
+			orc_volcano_eruption_other = {
+				every_owned_province = { # Destroy relevant provinces
+					limit = {
+						city_borders_orc_volcano_trigger = yes
+					}
+					province_volcano_affected_effect = yes
+				}
+				remove_variable = orc_volcano_eruption_other
+			}
+			snake_volcano_eruption_other = {
+				every_owned_province = { # Destroy relevant provinces
+					limit = {
+						city_borders_snake_volcano_trigger = yes
+					}
+					province_volcano_affected_effect = yes
+				}
+				remove_variable = snake_volcano_eruption_other
+			}
+		}
 	}
 }
