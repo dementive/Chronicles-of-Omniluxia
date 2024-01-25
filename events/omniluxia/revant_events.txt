@@ -1,0 +1,453 @@
+﻿namespace = revant
+
+revant.1 = {
+    type = country_event
+    hidden = yes
+
+    trigger = {
+    	NOT = { has_global_variable = revant_invasion }
+    }
+
+    immediate = {
+    	set_global_variable = revant_invasion
+    	every_province = {
+    		limit = {
+    			is_in_region = dissolved_island_region
+    		}
+    		add_vfx = {
+    			name = "revant_darkness"
+    			duration = 400
+    		}
+    	}
+		p:1531 = {
+			add_building_level = port_building
+		}
+    	p:1514 = {
+    		while = {
+    			limit = {
+    				total_population < population_cap
+    			}
+    			random_list = {
+    				20 = {
+    					define_pop = {
+    						type = freemen
+    						culture = disolved_remains
+    						religion = light_religion	
+    					}
+    				}
+    				30 = {
+    					define_pop = {
+    						type = serfs
+    						culture = disolved_remains
+    						religion = light_religion	
+    					}
+    				}
+    				5 = {
+    					define_pop = {
+    						type = slaves
+    						culture = disolved_remains
+    						religion = light_religion	
+    					}
+    				}
+    				10 = {
+    					define_pop = {
+    						type = citizen
+    						culture = disolved_remains
+    						religion = light_religion	
+    					}
+    				}
+    				1 = {
+    					define_pop = {
+    						type = nobles
+    						culture = disolved_remains
+    						religion = light_religion	
+    					}
+    				}
+    			}
+    		}
+    		set_city_status = city
+    		create_country = {
+    			name = {
+    				name = "REV"
+    				adjective = "REVADJ"
+    			}
+				create_character = {
+					female = no
+					culture = dissolved_revant_1 # special culture so he can get the special ethnicity
+					religion = light_religion
+					no_stats = yes
+					add_martial = 15
+					add_zeal = 10
+					add_finesse = 10
+					add_charisma = 10
+					no_traits = yes
+					add_trait = conqueror
+					add_trait = vengeful
+					add_trait = ambitious
+					add_trait = aggressive
+					add_character_modifier = {
+						name = revant_modifier
+						duration = -1
+					}
+					set_firstname = "The"
+					family_name = "Revant"
+					set_variable = is_the_revant
+					set_variable = immortal_flag
+					save_scope_as = revant_scope
+				}
+				set_as_ruler = scope:revant_scope
+				add_country_modifier = {
+					name = revant_country_modifier
+					duration = -1
+				}
+				change_country_color = blood_red
+				change_government = imperial_cult
+				change_country_tag = REV
+				change_country_flag = REV_FLAG
+				set_country_religion = light_religion
+				set_country_heritage = revant_heritage
+				add_treasury = 3000
+				add_stability = 50
+    			if = {
+    				limit = {
+    					NOT = {
+    						primary_culture = disolved_remains
+    					}
+    				}
+    				set_primary_culture_cleanup_effect = {
+    					NEW_PRIMARY_CULTURE = disolved_remains
+    					MAKE_OLD_CULTURE_INTEGRATED = yes
+    				}
+    			}
+    			save_scope_as = revant_tag
+    		}
+    	}
+		region:dissolved_island_region = {
+			every_region_province = {
+				limit = {
+					trigger_if = {
+						limit = {
+							has_owner = yes
+						}
+						NOT = { owner = scope:revant_tag }
+					}
+				}
+				set_owned_by = scope:revant_tag
+			}
+		}
+		scope:revant_tag = {
+			add_innovation = 15
+			add_military_experience = 240
+			every_character = {
+				# This is weird but sometimes the game auto generates some other characters with dissolved_revant_1 but only the revant should have that culture so he has the special model
+				limit = {
+					this.culture = culture:dissolved_revant_1
+					NOT = { this = scope:revant_scope }
+				}
+				family = { save_scope_as = dead_guy_family }
+				death = {
+					death_reason = death_crucified
+				}
+				prev = {
+					create_character = {
+						religion = light_religion
+						culture = disolved_remains
+						family = scope:dead_guy_family
+					}
+				}
+			}
+			random_owned_province = {
+				limit = {
+					is_port = yes
+				}
+				owner = {
+					create_unit = {
+						navy = yes
+						location = prev.prev
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = liburnian
+						add_subunit = trireme
+						add_subunit = trireme
+						add_subunit = trireme
+						add_subunit = trireme
+						add_subunit = trireme
+					}
+				}
+			}
+    		random_list = {
+    			# Revant attack location
+    			10 = {
+    				set_variable = {
+    					name = first_attack
+    					value = p:1919
+    				}
+    			}
+    			10 = {
+    				set_variable = {
+    					name = first_attack
+    					value = p:2348
+    				}
+    			}
+    			10 = {
+    				set_variable = {
+    					name = first_attack
+    					value = p:1689
+    				}
+    			}
+    			10 = {
+    				set_variable = {
+    					name = first_attack
+    					value = p:1331
+    				}
+    			}
+    			10 = {
+    				set_variable = {
+    					name = first_attack
+    					value = p:2345
+    				}
+    			}
+    			3 = {
+    				set_variable = {
+    					name = first_attack
+    					value = p:765
+    				}
+    			}
+    			1 = {
+    				set_variable = {
+    					name = first_attack
+    					value = p:5616
+    				}
+    			}
+    		}
+    		var:first_attack.region = {
+    			every_region_province = {
+    				limit = { has_owner = yes }
+    				add_claim = scope:revant_tag
+    			}
+    			every_neighbor_region = {
+    				every_region_province = {
+    					limit = { has_owner = yes }
+    					add_claim = scope:revant_tag
+    				}
+    			}
+    		}
+    		create_family = scope:revant_scope
+    		while = {
+    			count = 8
+    			create_character = {
+    				religion = light_religion
+    				culture = disolved_remains
+    				family = scope:revant_scope.family
+    			}
+    		}
+			trigger_event = {
+				id = revant.2
+				days = { 365 400 } # give them time to build up and take bonuses before war
+			}
+		}
+		every_country = {
+			limit = {
+				is_ai = no
+			}
+			trigger_event = revant.3
+		}
+    }
+}
+
+revant.2 = {
+    type = country_event
+    hidden = yes
+
+    trigger = {
+    	has_variable = first_attack
+    }
+
+    immediate = {
+		create_unit = {
+			location = var:first_attack
+			while = {
+				count = 15
+				add_subunit = light_infantry
+			}
+			while = {
+				count = 5
+				add_subunit = heavy_infantry
+			}
+			while = {
+				count = 5
+				add_subunit = heavy_cavalry
+			}
+		}
+		create_unit = {
+			location = var:first_attack
+			while = {
+				count = 15
+				add_subunit = light_infantry
+			}
+			while = {
+				count = 5
+				add_subunit = heavy_infantry
+			}
+			while = {
+				count = 5
+				add_subunit = heavy_cavalry
+			}
+		}
+    	var:first_attack = {
+    		set_owned_by = root
+    		random_neighbor_province = {
+    			limit = {
+    				has_owner = yes
+    				NOT = { owner = root }
+    			}
+    			root = {
+    				declare_war_with_wargoal = {
+    					war_goal = imperial_conquest_wargoal
+    					target = prev.owner
+    				}
+    				create_unit = {
+    					location = prev
+    					set_as_commander = root.current_ruler
+    					while = {
+    						count = 15
+    						add_subunit = light_infantry
+    					}
+    					while = {
+    						count = 5
+    						add_subunit = heavy_infantry
+    					}
+    					while = {
+    						count = 5
+    						add_subunit = heavy_cavalry
+    					}
+    				}
+    			}
+    			set_owned_by = root
+    		}
+    	}
+    	trigger_event = {
+    		id = revant.4
+    		days = 365
+    	}
+    	trigger_event = {
+    		id = revant.5
+    		days = 500
+    	}
+    	trigger_event = {
+    		id = revant.4
+    		days = 730
+    	}
+    	trigger_event = {
+    		id = revant.4
+    		days = 1095
+    	}
+    	trigger_event = {
+    		id = revant.5
+    		days = 1095
+    	}
+    }
+}
+
+revant.3 = {
+    type = country_event
+    title = revant.3.t
+    desc = revant.3.desc
+    picture = revant_arrived
+    left_portrait = scope:revant_scope
+    right_portrait = current_ruler
+
+    option = {      
+        name = revant.3.a
+        add_stability = -10
+    }
+}
+
+revant.4 = {
+    type = country_event
+    hidden = yes
+    trigger = {
+    	war = no
+    	is_ai = yes
+    	any_owned_province = {
+    		NOT = { is_in_region = dissolved_island_region }
+    	}
+    }
+    immediate = {
+		random_owned_province = {
+			limit = {
+				any_neighbor_province = {
+					has_owner = yes
+					NOT = { owner = root }
+				}
+			}
+			random_neighbor_province = {
+				limit = {
+					has_owner = yes
+					NOT = { owner = root }
+				}
+				root = {
+					declare_war_with_wargoal = {
+						war_goal = imperial_conquest_wargoal
+						target = prev.owner
+					}
+				}
+			}
+		}
+    }
+}
+
+revant.5 = {
+    type = country_event
+    hidden = yes
+    trigger = {
+    	is_ai = yes
+    }
+    immediate = {
+    	random_owned_province = {
+    		limit = {
+    			NOT = { is_in_region = dissolved_island_region }
+    		}
+    		root = {
+    			add_treasury = 1000
+    			create_unit = {
+    				location = prev
+    				while = {
+    					count = 15
+    					add_subunit = light_infantry
+    				}
+    				while = {
+    					count = 5
+    					add_subunit = heavy_infantry
+    				}
+    				while = {
+    					count = 5
+    					add_subunit = heavy_cavalry
+    				}
+    			}
+    		}
+    	}
+    }
+}

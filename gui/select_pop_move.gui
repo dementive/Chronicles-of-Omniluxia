@@ -1,0 +1,131 @@
+types PopMoveTypes
+{
+	type pop_move_container = container {
+		container = {
+			list_entry = {
+				size = { 100% 45 }
+			}
+			container = {
+				textbox = {
+					position = { 78 0 }
+					autoresize = yes
+					using = BaseFontS
+					using = Black_FontColor
+					text = "[SelectMoveGlue.GetPop.GetReligion.GetName]"
+					tooltip = "[SelectMoveGlue.GetPop.GetReligion.GetTooltip]"
+				}
+				textbox = {
+					position = { 78 19 }
+					autoresize = yes
+					using = BaseFontS
+					using = Black_FontColor
+					text = "[SelectMoveGlue.GetPop.GetCulture.GetName]"
+				}
+				icon_and_text = {
+					position = { 2 4 }
+					size = { 69 0 }
+					blockoverride "Icon" { texture = "[GetPopIcon(SelectMoveGlue.GetPop.GetType)]" }
+					blockoverride "Text" { text = "[SelectMoveGlue.GetCount]" }
+					tooltip = "[SelectMoveGlue.GetPop.GetType.GetName|T]"
+					
+				}
+				
+				icon_and_text = {
+					position = { 162 2 }
+					parentanchor = vcenter
+					size = { 86 36 }
+					blockoverride "Icon"
+					{
+						texture = "[GetTradeGoodsIcon(SelectMoveGlue.GetPop.GetProvince.GetTradeGoods)]"
+					}
+					blockoverride "Text"
+					{
+						text = "[SelectMoveGlue.GetPop.GetProvince.GetPopulation('total')]/[SelectMoveGlue.GetPop.GetProvince.GetPopulationCapacityValue]"
+					}
+					tooltip = "[SelectMoveGlue.GetPop.GetProvince.GetTradeGoods.GetTooltip]"
+				}
+
+				
+			}
+			
+			
+			
+			
+			text_button_square = {
+				tooltip = "[SelectMoveGlue.GetTooltip]"
+				position = { 254 7 }
+				size = { 200 0 }
+				blockoverride "Center_text" { 
+					text = "SelectMoveGlue_text" 
+					elide = right
+					max_width = 192
+				}
+				blockoverride "On_click"
+				{
+					enabled = "[SelectMoveGlue.CanMove]"
+					onclick = "[SelectMoveGlue.OnClick]"
+				}
+				blockoverride "ClickSound"
+				{
+					clicksound = "event:/SFX/UI/Province/sfx_ui_province_pop_move"
+					oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+				}
+				onmousehierarchyenter = "[SetHighlightProvince( SelectMoveGlue.GetPop.GetProvince.GetId )]"
+				onmousehierarchyleave = "[ClearHighlightColors]"
+			}
+		}	
+	}
+}
+
+base_sub_window = {
+	name = "select_move_window"
+	size = { 488 578 }
+	position = { 826 -3 }
+	parentanchor = bottom
+	movable = yes
+	
+	blockoverride "Title_text"
+	{
+		text = "MOVEPOP_TITLE"
+	}
+	
+	blockoverride "White_buttons"
+	{
+		spacing = 4
+		button_close = {
+			onclick = "[SelectMoveWindow.OnClose]"
+			tooltip = "CLOSE"
+		}
+	}
+	
+	scrollarea = {
+		position = { 14 38 }
+		size = { 466 528 }
+		scrollbarpolicy_horizontal = always_off
+		using = VerticalScrollAreaCutOff
+		
+		scrollbar_vertical = {
+			using = VerticalScrollBar
+		}
+		
+		scrollwidget = {
+			dynamicgridbox = {
+				size = { 460 528 }
+				datamodel = "[SelectMoveWindow.GetTargets]"
+				
+				item = {
+					container = {
+						ignoreinvisible = yes
+						pop_move_container = {
+							visible = "[And(GetScriptedGui('serf_movement_disabled').IsShown( GuiScope.SetRoot( Player.MakeScope ).End ), Not(EqualTo_string( SelectMoveGlue.GetPop.GetType.GetNameWithNoTooltip, 'Serf' )))]"
+						}
+						pop_move_container = {
+							visible = "[Not(GetScriptedGui('serf_movement_disabled').IsShown( GuiScope.SetRoot( Player.MakeScope ).End ))]"
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
