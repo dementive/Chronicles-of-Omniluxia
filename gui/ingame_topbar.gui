@@ -704,6 +704,10 @@ template toolbar2
 vbox = {
 	name = "ingame_topbar"
 	layer = middle
+	state = {
+		name = "_show"
+		on_start = "[GetVariableSystem.Toggle('ruler_on_hud')]"
+	}
 	window = {
 		visible = "[Not(IsReplayShown)]"
 		layer = top
@@ -712,7 +716,6 @@ vbox = {
 		#layoutstretchfactor_vertical = 20
 		alwaystransparent = yes
 		allow_outside = yes
-
 		window = {
 			name = "pause visuals"
 			size = { 100% 100% }
@@ -782,6 +785,30 @@ vbox = {
 
 				widget = {
 					size = { 54 30 }
+				}
+			}
+		}
+
+		container = {
+			layer = pause_vignette
+			visible = "[GetVariableSystem.Exists('ruler_on_hud')]"
+			parentanchor = bottom|left
+			position = { 50 0 }
+			container = {
+				visible = "[And(And(And(And(And(And(And(Not(IsGameViewOpen('overview')), Not(IsGameViewOpen('government'))), And(Not(IsGameViewOpen('economy')), Not(IsGameViewOpen('religion')))), And(Not(IsGameViewOpen('culture')), Not(IsGameViewOpen('trade')))), And(Not(IsGameViewOpen('military')), Not(IsGameViewOpen('mercenary')))), And(Not(IsGameViewOpen('diplomacy')), Not(IsGameViewOpen('technology')))), And(Not(IsGameViewOpen('characters')), Not(IsGameViewOpen('mission')))), And(Not(GetVariableSystem.Exists('province_view_open')), And(Not(IsGameViewOpen('character')), Not(IsGameViewOpen('ledger')))))]"
+				portrait_button = {
+					size = { 150 225 }
+					using = pt_button
+					using = tooltip_es_portrait
+					pop_out = yes
+					datacontext = "[Player.GetRuler]"
+					visible = "[Player.Exists]"
+					portrait_texture = "[Character.GetPortrait('default', 'looking_at_camera')]"
+					blockoverride "Background" { background_texture = "gfx/interface/base_parts/empty.dds" }
+					blockoverride "BackgroundTint" { texture = "gfx/interface/base_parts/empty.dds" }
+					tooltipwidget = {
+						container = {}
+					}
 				}
 			}
 		}
@@ -1858,32 +1885,31 @@ vbox = {
 
 		button = {
 			shortcut = "top_bar_1"
-
-      name = "Nation Flag"
-      size = { 150 244 }
-      entity_instance = "[InGameTopbar.GetFlagEntity]"
-      #color = "[InGameTopbar.AccessCoatOfArms.GetColor('(int32)1')]"
-      #texture = "[InGameTopbar.AccessCoatOfArms.GetTexture('(int32)155','(int32)355')]"
-      frame = "[InGameTopbar.AccessCoatOfArms.GetFrame('(int32)155','(int32)355')]"
-      framesize = { 155 355 }
-      position = { -14 -115 }
-      onclick = "[ToggleGameView('overview')]"
-      #tooltip = "NATION_OVERVIEW_MENU"
-      tooltip = "[InGameTopbar.GetFlagDesc]"
+			name = "Nation Flag"
+			size = { 150 244 }
+			entity_instance = "[InGameTopbar.GetFlagEntity]"
+			#color = "[InGameTopbar.AccessCoatOfArms.GetColor('(int32)1')]"
+			#texture = "[InGameTopbar.AccessCoatOfArms.GetTexture('(int32)155','(int32)355')]"
+			frame = "[InGameTopbar.AccessCoatOfArms.GetFrame('(int32)155','(int32)355')]"
+			framesize = { 155 355 }
+			position = { -14 -115 }
+			onclick = "[ToggleGameView('overview')]"
+			#tooltip = "NATION_OVERVIEW_MENU"
+			tooltip = "[InGameTopbar.GetFlagDesc]"
 
 			clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_tab"
-      oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
-      #gfxtype = buttongfx
+			oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+			#gfxtype = buttongfx
 
-      banner_widget = {
-        size = { 155 355 }
-        entity_instance = "[InGameTopbar.GetFlagEntity]"
-        color = "[InGameTopbar.AccessCoatOfArms.GetColor('(int32)1')]"
-        texture = "[InGameTopbar.AccessCoatOfArms.GetTexture('(int32)155','(int32)355')]"
-        frame = "[InGameTopbar.AccessCoatOfArms.GetFrame('(int32)155','(int32)355')]"
-        framesize = { 155 355 }
-        realtime = yes
-      }
+			banner_widget = {
+				size = { 155 355 }
+				entity_instance = "[InGameTopbar.GetFlagEntity]"
+				color = "[InGameTopbar.AccessCoatOfArms.GetColor('(int32)1')]"
+				texture = "[InGameTopbar.AccessCoatOfArms.GetTexture('(int32)155','(int32)355')]"
+				frame = "[InGameTopbar.AccessCoatOfArms.GetFrame('(int32)155','(int32)355')]"
+				framesize = { 155 355 }
+				realtime = yes
+			}
 	  }
 
 		base_window = {
@@ -2939,6 +2965,24 @@ vbox = {
 					tooltip = "movable_windows_tt"
 				}
 
+				list_button = {
+					size = { @setwidth @setheight }
+					onclick = "[GetVariableSystem.Toggle('ruler_on_hud')]"
+					check_filter = {
+						parentanchor = vcenter
+						position = { 2 0 }
+						blockoverride "On_click" {
+							alwaystransparent = yes
+						}
+						blockoverride "Frame" {
+							frame = "[BoolTo1And2(GetVariableSystem.Exists('ruler_on_hud'))]"
+						}
+						blockoverride "TagText" {
+							text = "HUD Ruler"
+						}
+					}
+					tooltip = "Show/Hide the current ruler from the HUD."
+				}
 				widget = {
 					size = { 0 25 }
 				}
