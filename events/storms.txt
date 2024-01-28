@@ -8,11 +8,9 @@ storm.1 = { #Sea Storms
 	type = country_event
 	hidden = yes
 
-	trigger = {
-	}
 	immediate = {
-		random = {
-			chance = 45
+		while = {
+			count = 3
 			random_sea_and_river_zone = {
 				limit = {
 					terrain = ocean
@@ -48,11 +46,22 @@ storm.2 = { #Deserts
 	type = country_event
 	hidden = yes
 	immediate = {
-		random = {
-			chance = 40
-			random_province = {
+		random_province = {
+			limit = {
+				terrain = desert
+			}
+			add_vfx = {
+				name = "desert_sandstorm"
+				duration = 60
+			}
+			add_province_modifier = {
+				name = "desert_storm"
+				duration = 60
+			}
+			every_neighbor_province = {
 				limit = {
 					terrain = desert
+					NOT = { has_province_modifier = desert_storm }
 				}
 				add_vfx = {
 					name = "desert_sandstorm"
@@ -61,24 +70,6 @@ storm.2 = { #Deserts
 				add_province_modifier = {
 					name = "desert_storm"
 					duration = 60
-				}
-				every_neighbor_province = {
-					limit = {
-						OR = {
-							terrain = desert
-							terrain = desert_hills
-							terrain = desert_valley
-						}
-						NOT = { has_province_modifier = desert_storm }
-					}
-					add_vfx = {
-						name = "desert_sandstorm"
-						duration = 60
-					}
-					add_province_modifier = {
-						name = "desert_storm"
-						duration = 60
-					}
 				}
 			}
 		}
@@ -124,5 +115,13 @@ storm.3 = { #Snowstorms
 				}
 			}
 		}
+	}
+}
+
+storm.25 = { #Maintenance
+	type = country_event
+	hidden = yes
+	immediate = {
+		remove_global_variable = stormbringer
 	}
 }
