@@ -4,12 +4,7 @@ revant.1 = {
     type = country_event
     hidden = yes
 
-    trigger = {
-    	NOT = { has_global_variable = revant_invasion }
-    }
-
     immediate = {
-    	set_global_variable = revant_invasion
     	every_province = {
     		limit = {
     			is_in_region = dissolved_island_region
@@ -81,6 +76,7 @@ revant.1 = {
 					add_finesse = 10
 					add_charisma = 10
 					no_traits = yes
+					add_trait = wraith_trait
 					add_trait = conqueror
 					add_trait = vengeful
 					add_trait = ambitious
@@ -137,6 +133,7 @@ revant.1 = {
 		}
 		scope:revant_tag = {
 			add_innovation = 15
+			add_political_influence = 200
 			add_military_experience = 240
 			every_character = {
 				# This is weird but sometimes the game auto generates some other characters with dissolved_revant_1 but only the revant should have that culture so he has the special model
@@ -149,10 +146,23 @@ revant.1 = {
 					death_reason = death_crucified
 				}
 				prev = {
-					create_character = {
-						religion = light_religion
-						culture = disolved_remains
-						family = scope:dead_guy_family
+					random_list = {
+						1 = {
+							create_character = {
+								female = yes
+								religion = light_religion
+								culture = disolved_remains
+								family = scope:dead_guy_family
+							}
+						}
+						2 = {
+							create_character = {
+								female = no
+								religion = light_religion
+								culture = disolved_remains
+								family = scope:dead_guy_family
+							}
+						}
 					}
 				}
 			}
@@ -391,8 +401,13 @@ revant.4 = {
     trigger = {
     	war = no
     	is_ai = yes
-    	any_owned_province = {
-    		NOT = { is_in_region = dissolved_island_region }
+    	trigger_if = {
+    		limit = {
+    			tag = REV
+    		}
+    		any_owned_province = {
+    			NOT = { this.region = root.capital_scope.region }
+    		}
     	}
     }
     immediate = {
@@ -428,7 +443,16 @@ revant.5 = {
     immediate = {
     	random_owned_province = {
     		limit = {
-    			NOT = { is_in_region = dissolved_island_region }
+    			root = {
+    				trigger_if = {
+    					limit = {
+    						tag = REV
+    					}
+    					any_owned_province = {
+    						NOT = { prev.region = root.capital_scope.region }
+    					}
+    				}
+    			}
     		}
     		root = {
     			add_treasury = 1000
