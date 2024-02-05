@@ -262,7 +262,7 @@ def write_localzation_output(religion):
 		for j in deity_and_religion_dict[religion]:
 			file.write(f'deity_{j[0]}:0 "$omen_{j[0]}$"\n')
 			file.write(f'omen_{j[0]}:0 "{j[0].title()}"\n')
-			file.write(f'omen_{j[0]}_desc:0 "{j[0].title()} is a diety of {j[1].title()}"\n\n')
+			file.write(f'omen_{j[0]}_desc:0 "{j[0].title()} is a deity of {j[1].title()}"\n\n')
 		add_utf8_bom(file.name)
 
 if __name__ == '__main__':
