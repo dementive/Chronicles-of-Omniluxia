@@ -140,7 +140,7 @@ culture_deity_passive = [
 	"happiness_for_same_religion_modifier = deity_happiness_for_same_religion_modifier",
 	"stability_cost_modifier = deity_stability_cost_modifier",
 	"stability_monthly_change = deity_stability_monthly_change",
-	"stability_monthly_decay = deity_stability_monthly_decay",
+	#"stability_monthly_decay = deity_stability_monthly_decay",
 ]
 
 culture_deity_omen = [
