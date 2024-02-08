@@ -140,7 +140,7 @@ culture_deity_passive = [
 	"happiness_for_same_religion_modifier = deity_happiness_for_same_religion_modifier",
 	"stability_cost_modifier = deity_stability_cost_modifier",
 	"stability_monthly_change = deity_stability_monthly_change",
-	"stability_monthly_decay = deity_stability_monthly_decay",
+	#"stability_monthly_decay = deity_stability_monthly_decay",
 ]
 
 culture_deity_omen = [
@@ -262,7 +262,7 @@ def write_localzation_output(religion):
 		for j in deity_and_religion_dict[religion]:
 			file.write(f'deity_{j[0]}:0 "$omen_{j[0]}$"\n')
 			file.write(f'omen_{j[0]}:0 "{j[0].title()}"\n')
-			file.write(f'omen_{j[0]}_desc:0 "{j[0].title()} is a diety of {j[1].title()}"\n\n')
+			file.write(f'omen_{j[0]}_desc:0 "{j[0].title()} is a deity of {j[1].title()}"\n\n')
 		add_utf8_bom(file.name)
 
 if __name__ == '__main__':
