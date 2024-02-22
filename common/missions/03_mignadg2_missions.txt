@@ -1,0 +1,361 @@
+﻿03_mignadg2 = {
+    header = "lotr_umbar_mission_header"
+    icon = "lotr_umbar_mission_icon"
+
+    repeatable = no
+    chance = 1000
+
+    potential = {
+        NOT = { has_variable = mission_cooldown_var }
+        has_completed_mission = 03_mignadg
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {}
+
+    03_mignadg2_task_1 = { #An Austropetolian War Capital
+        icon = "task_conquest"
+        duration = 60
+
+        highlight = {
+			scope:province = {
+				OR = {
+				province_id = 5666
+				province_id = 5660
+				}
+			}
+		}
+
+        allow = {
+            political_influence >= 25
+            owns_or_subject_owns = 5666
+            owns_or_subject_owns = 5660
+            military_experience >= 20
+        }
+        on_completion = {
+            add_political_influence = -25
+            add_military_experience = -20
+            trigger_event = 03_mignadg2.1
+            custom_tooltip = 03_mignadg2_1_2_tooltip
+            show_as_tooltip = {
+                p:5666 = {
+                    add_permanent_province_modifier = {
+                        name = austropetolian_war_capital_ular_pria_mod
+                        duration = -1
+                    }
+                }
+                p:5660 = {
+                    add_permanent_province_modifier = {
+                        name = austropetolian_war_capital_ular_pria_mod
+                        duration = -1
+                    }
+                }
+            }
+        }
+    }
+    03_mignadg2_task_2 = { # Snakefolk Stockpiles
+        icon = "task_economical"
+        requires = {03_mignadg2_task_1}
+        allow = {
+            has_this_omen = deity:omen_banas
+            trigger_if = {
+                limit = {
+                    p:5660 = {
+                        has_province_modifier = austropetolian_war_capital_ular_pria_mod 
+                    } 
+                }
+                num_of_ships >= 50
+                AND = {
+                    custom_tooltip = {
+                        text = mignadg_needs_high_wages_across_the_board_tt
+                        has_high_economic_policy = expense_navy 
+                        has_high_economic_policy = expense_army
+                        has_high_economic_policy = expense_fort
+                    }
+                }
+                p:5660 = {
+                    num_of_port_building >= 2
+                    num_of_barracks_building >= 2
+                    state = {
+                        trade_good_surplus = {
+                            target = iron
+                            value >= 2
+                        }
+                    }
+                } 
+            }
+            trigger_else = {
+                num_of_ships >= 35
+                NOT = {has_low_economic_policy = expense_navy has_low_economic_policy = expense_army}
+                p:5666 = {
+                    num_of_port_building >= 2
+                    num_of_barracks_building >= 2
+                    state = {
+                        trade_good_surplus = {
+                            target = iron
+                            value >= 2
+                        }
+                    }  
+                }
+                AND = {
+                    custom_tooltip = {
+                        text = mignadg_needs_high_wages_across_the_board_tt
+                        has_high_economic_policy = expense_navy 
+                        has_high_economic_policy = expense_army
+                        has_high_economic_policy = expense_fort
+                    }
+                } 
+            }
+        }
+        on_completion = {
+            add_country_modifier = {
+                name = prepare_to_invade_eptelon_mod
+                duration = 3650
+            }
+            trigger_event = 03_mignadg2.2
+        }
+    }
+    03_mignadg2_task_3 = { #Claiming The Southern Coasts
+        icon = "task_diplomatic"
+        duration = 90
+        requires = {03_mignadg2_task_1}
+        allow = {
+            political_influence >= 30 
+        }
+        on_completion = {
+            add_political_influence = -30
+            area:eptelon_shout_area_1 = {
+                add_provincial_claim_effect = yes
+            }
+            area:eptelon_shout_area_4 = {
+                add_provincial_claim_effect = yes
+            }
+            area:eptelon_shout_area_5 = {
+                add_provincial_claim_effect = yes
+            }
+            area:eptelon_shout_area_6 = {
+                add_provincial_claim_effect = yes
+            }
+            area:eptelon_shout_area_10 = {
+                add_provincial_claim_effect = yes
+            }
+            area:austropetolian_archipelago_4 = {
+                add_provincial_claim_effect = yes
+            }
+            trigger_event = 03_mignadg2.3
+        }
+    }
+    03_mignadg2_task_4 = { # First Foothold Eptelon
+        icon = "task_expansion"
+        requires = {03_mignadg2_task_2 03_mignadg2_task_3}
+
+        highlight = {
+			scope:province = {
+				NOT = {
+					owned_or_subject_owned = root
+				}
+				OR = {
+					is_in_area = eptelon_shout_area_1
+                    is_in_area = eptelon_shout_area_4
+					is_in_area = eptelon_shout_area_5
+					is_in_area = eptelon_shout_area_6
+					is_in_area = eptelon_shout_area_10
+				}
+            }
+        }
+
+        allow = {
+            any_owned_province = {
+                count >= 10
+                OR = {
+                    is_in_area = eptelon_shout_area_1
+                    is_in_area = eptelon_shout_area_4
+                    is_in_area = eptelon_shout_area_5
+                    is_in_area = eptelon_shout_area_6
+                    is_in_area = eptelon_shout_area_10
+                }
+            }
+        }
+        on_completion = {
+            add_military_experience = 20
+            current_ruler = {
+                force_add_trait = aggressive
+            }
+            mission_claim_region_effect = { REGION = eptelon_shout_region }
+            trigger_event = 03_mignadg2.4
+        }
+    }
+
+    03_mignadg2_task_5 = { # The North Will Fall
+        icon = "task_battle"
+        requires = {03_mignadg2_task_4}
+
+        highlight = {
+			scope:province = {
+                OR = {
+                    is_in_area = eptelon_shout_area_2
+                    is_in_area = eptelon_shout_area_3
+                    is_in_area = eptelon_shout_area_7
+                    is_in_area = eptelon_shout_area_8
+                    is_in_area = eptelon_shout_area_9
+                }
+            }
+	    }
+
+        allow = {
+            owns_percent_of_area = {
+                PROVINCE = "p:978" 
+                PERCENT = "0.75"
+            }
+            owns_percent_of_area = {
+                PROVINCE = "p:979" 
+                PERCENT = "0.75"
+            }
+            owns_percent_of_area = {
+                PROVINCE = "p:873" 
+                PERCENT = "0.75"
+            }
+            owns_percent_of_area = {
+                PROVINCE = "p:763" 
+                PERCENT = "0.75"
+            }
+            owns_percent_of_area = {
+                PROVINCE = "p:841" 
+                PERCENT = "0.75"
+            }
+        }
+
+        on_completion = {
+            trigger_event = 03_mignadg2.5
+            mission_claim_region_effect = { REGION = eptelon_north_region }
+        }
+    }
+
+    03_mignadg2_task_6 = { #The Suru Are Slaves!
+        icon = "task_political"
+        requires = {03_mignadg2_task_4}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 450
+                    province_id = 748
+                    province_id = 978
+                    province_id = 1149
+                }
+            }
+        }
+    
+        allow = {
+            hidden:p:450 = {
+                deity:omen_nezotl = { has_holy_site = no }
+            }
+            hidden:p:748 = {
+                deity:omen_zasta = { has_holy_site = no }
+            }
+            hidden:p:978 = {
+                deity:omen_gutia = { has_holy_site = no }
+            }
+            hidden:p:1149 = {
+                deity:omen_byxton = { has_holy_site = no }
+            }
+        }
+        on_completion = {
+            capital_scope = {
+                create_pop = slaves
+                create_pop = slaves
+                create_pop = slaves
+                create_pop = slaves
+            }
+            current_ruler = {
+                good_zeal_effect = yes
+                add_popularity = 15
+                family = {
+                    add_prestige = 100
+                }
+            }
+            random_country_culture = {
+            limit = {
+                OR = {
+                    is_culture = eptelonian_1
+                    is_culture = eptelonian_2
+                    is_culture = eptelonian_3
+                    is_culture = eptelonian_4
+                    is_culture = eptelonian_5
+                    is_culture = eptelonian_6
+                    is_culture = eptelonian_7
+                }
+                NOT = {
+                    has_pop_type_right = slaves
+                }
+            }
+            set_country_culture_right = slaves
+        }
+            trigger_event = 03_mignadg2.6
+        }
+    }
+    03_mignadg2_task_7 = {
+        icon = "task_political"
+        final = yes
+        requires = {03_mignadg2_task_5 03_mignadg2_task_6}
+
+        highlight = {
+			scope:province = {
+                OR = {
+                    is_in_area = eptelon_north_area_1
+                    is_in_area = eptelon_north_area_2
+                    is_in_area = eptelon_north_area_3
+                    is_in_area = eptelon_north_area_4
+                }
+            }
+	    }
+
+        allow = {
+            custom_tooltip = {
+                text = raze_northern_eptelon_tt
+                    region:eptelon_north_region = {
+                        any_region_province = {
+                            count >= 3
+                            OR = {
+                                has_province_modifier = province_razed_ua
+                                has_province_modifier = province_pillaged
+                            }
+                        }
+                    }
+                }
+            owns_percent_of_area = {
+                PROVINCE = "p:685" 
+                PERCENT = "0.75"
+            }
+            owns_percent_of_area = {
+                PROVINCE = "p:716" 
+                PERCENT = "0.75"
+            }
+            owns_percent_of_area = {
+                PROVINCE = "p:666" 
+                PERCENT = "0.75"
+            }
+            owns_percent_of_area = {
+                PROVINCE = "p:542" 
+                PERCENT = "0.75"
+            }
+        }
+        on_completion = {
+            add_treasury = 500
+            capital_scope = {
+                set_city_status = city_metropolis
+            }
+            trigger_event = 03_mignadg2.7
+        }
+    }
+}
