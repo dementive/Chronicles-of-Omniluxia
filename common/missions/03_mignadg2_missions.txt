@@ -157,7 +157,7 @@
     }
     03_mignadg2_task_4 = { # First Foothold Eptelon
         icon = "task_expansion"
-        requires = {03_mignadg2_task_2 03_mignadg2_task_3}
+        requires = {03_mignadg2_task_3}
 
         highlight = {
 			scope:province = {
@@ -236,13 +236,15 @@
         }
 
         on_completion = {
+            add_aggressive_expansion = -10
+            add_2_free_province_investments = yes
             trigger_event = 03_mignadg2.5
             mission_claim_region_effect = { REGION = eptelon_north_region }
         }
     }
 
     03_mignadg2_task_6 = { #The Suru Are Slaves!
-        icon = "task_political"
+        icon = "task_calm"
         requires = {03_mignadg2_task_4}
 
         highlight = {
@@ -275,7 +277,6 @@
                 create_pop = slaves
                 create_pop = slaves
                 create_pop = slaves
-                create_pop = slaves
             }
             current_ruler = {
                 good_zeal_effect = yes
@@ -304,8 +305,8 @@
             trigger_event = 03_mignadg2.6
         }
     }
-    03_mignadg2_task_7 = {
-        icon = "task_political"
+    03_mignadg2_task_7 = { # Triumph of the Ular-Pria
+        icon = "task_atlas"
         final = yes
         requires = {03_mignadg2_task_5 03_mignadg2_task_6}
 
@@ -332,7 +333,7 @@
                             }
                         }
                     }
-                }
+            }
             owns_percent_of_area = {
                 PROVINCE = "p:685" 
                 PERCENT = "0.75"
@@ -351,11 +352,121 @@
             }
         }
         on_completion = {
-            add_treasury = 500
+            add_treasury = 250
             capital_scope = {
                 set_city_status = city_metropolis
             }
+            current_ruler = {
+                force_add_trait = victorious
+            }
             trigger_event = 03_mignadg2.7
+        }
+    }
+
+03_mignadg2_task_8 = { # Austropetolian Auxiliaries
+        icon = "task_conquest"
+        duration = 90
+        requires = {03_mignadg2_task_2}
+
+        highlight = {
+            scope:province = {
+                province_id = 5660
+            }
+        }
+
+        allow = {
+            political_influence >= 20
+            invention = global_start_experience_inv_2
+            custom_tooltip = {
+                text = marshal_needs_75_loyalty_tt
+                any_character = {
+                    has_office = office_marshal
+                    loyalty >= 75
+                } 
+            }
+        }
+        
+        on_completion = {
+            add_political_influence = -20
+            create_unit = {
+                navy = no
+                name = "Austropetolian Auxiliaries"
+                location = p:5660
+                hidden_effect = {
+                add_subunit = light_cavalry
+                add_subunit = light_cavalry
+                add_subunit = light_cavalry
+                add_subunit = light_cavalry                                          
+                add_food = 100
+                add_morale = 2
+                }
+            }
+            trigger_event = 03_mignadg2.8
+        }
+    }
+
+03_mignadg2_task_9 = { # The Joy Of Destruction
+        icon = "task_diplomatic"
+        duration = 90
+        requires = {03_mignadg2_task_4}
+
+        highlight = {
+			scope:province = {
+                is_in_region = eptelon_shout_region
+            }
+	    }
+
+        allow = {
+            custom_tooltip = {
+                text = raze_southern_eptelon_tt
+                    region:eptelon_shout_region = {
+                        any_region_province = {
+                            count >= 3
+                            OR = {
+                                has_province_modifier = province_razed_ua
+                                has_province_modifier = province_pillaged
+                            }
+                        }
+                    }
+            }
+        }
+
+        on_completion = {
+            add_treasury = 75
+            capital_scope = {
+                create_pop = mages
+                create_pop = slaves
+                create_pop = slaves
+            }
+            create_country_treasure = {
+                key = "treasure_snakefolk_slave_enslavement_staff"
+                icon = "cr_treasure_serpent_column_01"
+                modifier = {
+                    local_pop_conversion_speed_modifier = 0.1
+                    local_pop_assimilation_speed_modifier = 0.1
+                }
+            }
+            trigger_event = 03_mignadg2.9
+        }
+    }
+
+03_mignadg2_task_10 = { # The Slums Of Sum Khaya
+        icon = "task_religion"
+        duration = 90
+        requires = {03_mignadg2_task_5}
+        allow = {
+            war = no
+            owns_or_subject_owns = 653
+            hidden:p:653.state.governor_or_ruler = {
+                is_friend = root.current_ruler
+            }
+            current_ruler = {
+                martial >= 7
+            }
+            military_tech >= 4
+        }
+        on_completion = {
+            trigger_event = 03_mignadg2.10
         }
     }
 }
