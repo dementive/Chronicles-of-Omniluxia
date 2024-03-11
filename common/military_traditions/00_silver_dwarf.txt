@@ -1,0 +1,278 @@
+﻿silver_dwarf_philosophy = {
+	color = hsv { 0.27 0.6 0.4 }
+	image = mauryan_noble_path_2
+
+	allow = {
+		OR = {
+			country_culture_group = silver_dwarves
+		}
+	}
+
+#DEVELOPMENT TREE
+	dev_sdwarf_path_1 = {
+		icon = etaredican_bhaxnmrectem_path_5
+		modifier = {
+			build_cost = -0.05
+			build_time = -0.1
+		}
+		on_activate = {
+			add_4_free_province_investments = yes
+		}
+	}
+	dev_sdwarf_path_2 = {
+		icon = nebo_dwarf_path_6
+		requires = { dev_sdwarf_path_1 }
+		modifier = {
+		    global_defensive = 0.05
+			fortress_building_cost = -0.05
+		}
+		on_activate = {
+			add_innovation = 3
+		}
+	}
+	dev_sdwarf_path_3 = {
+		icon = nebo_dwarf_path_4
+		requires = { dev_sdwarf_path_1 }
+		modifier = {
+            global_defensive = 0.05
+			global_monthly_food_modifier = 0.05
+			global_supply_limit_modifier = 0.1
+		}
+	}
+	dev_sdwarf_path_4 = {
+		icon = nebo_dwarf_path_5
+		requires = { dev_sdwarf_path_2 dev_sdwarf_path_3 }
+		modifier = {
+			price_found_city_cost_modifier = -0.1
+			happiness_for_same_culture_modifier = 0.05
+		}
+		on_activate = {
+			ordered_owned_province = {
+				order_by = {
+					value = 0
+					add = population_cap
+					subtract = total_population
+				}
+				max = 6
+				check_range_bounds = no
+				create_2_freemen_effect = yes
+			}
+		}
+	} 
+	dev_sdwarf_path_5 = {
+		icon = larsa_dwarf_path_3
+		requires = { dev_sdwarf_path_4 }
+		modifier = {
+			build_roads_cost_modifier = -0.1
+		}
+		enable_ability = road_building
+		#AI doesn't know about value of specific unit abilities so boost roads.
+		#Use "aiview" console command and hover over tradition to see calculated value. Up to TRADITION_LOOKAHEAD traditions are analyzed by AI.
+		ai_will_do = {
+			modifier = {
+				trigger = {
+					always = yes
+				}
+				add = {
+					value = 0.5 #Multiplied on plan value when selecting tradition. (Added to base which is 1.)
+				}
+			}
+		}
+	}
+	dev_sdwarf_path_6 = {
+		icon = nebo_dwarf_path_2
+		requires = { dev_sdwarf_path_5 }
+		modifier = {
+			build_cost = -0.05
+			price_found_city_cost_modifier = -0.1
+			global_building_slot = 1
+		}
+		on_activate = {
+			ordered_owned_province = {
+				order_by = {
+					value = 0
+					add = population_cap
+					subtract = total_population
+				}
+				max = 6
+				check_range_bounds = no
+				create_2_freemen_effect = yes
+			}
+		}
+}
+
+
+#WAR TREE
+	war_sdwarf_path_1 = {
+		icon = nebo_dwarf_path_3
+		modifier = {
+			heavy_infantry_morale = 0.1
+			heavy_infantry_defensive = 0.1
+		}
+	}
+	war_sdwarf_path_2 = {
+		icon = yamhad_dwarf_path_5
+		requires = { war_sdwarf_path_1 }
+		modifier = {
+			heavy_infantry_defensive = 0.1
+			heavy_infantry_cost = -0.1
+		}
+		on_activate = {
+			add_innovation = 2
+		}
+	}
+	war_sdwarf_path_3 = {
+		icon = larsa_dwarf_path_6
+		requires = { war_sdwarf_path_1 }
+		modifier = {
+			land_morale_modifier = 0.1
+			global_manpower_modifier = 0.1
+		}
+		on_activate = {
+			custom_tooltip = "create_high_martial_rising_star"
+			hidden_effect = {
+				create_character = {
+					add_martial = 8
+					add_trait = victorious
+				}
+			}
+		}
+	}
+	war_sdwarf_path_4 = {
+		icon = larsa_dwarf_path_1
+		requires = { war_sdwarf_path_1 }
+		modifier = {
+			heavy_infantry_mountain_combat_bonus = 0.1
+			heavy_infantry_hills_combat_bonus = 0.1
+		}
+	}
+	war_sdwarf_path_5 = {
+		icon = larsa_dwarf_path_end_bonus
+		requires = { war_sdwarf_path_2 war_sdwarf_path_3 war_sdwarf_path_4 }
+		modifier = {
+			discipline = 0.05
+			heavy_infantry_offensive = 0.1
+		}
+		on_activate = {
+			custom_tooltip = "create_high_martial_rising_star"
+			hidden_effect = {
+				create_character = {
+					add_martial = 8
+					add_trait = victorious
+				}
+			}
+		}
+	}
+	war_sdwarf_path_6 = {
+		icon = yamhad_dwarf_path_1
+		requires = { war_sdwarf_path_5 }
+		modifier = {
+			heavy_infantry_discipline = 0.1
+		}
+		enable_tactic = triplex_acies
+		on_activate = {
+			add_innovation = 3
+		}
+	}
+	war_sdwarf_path_7 = {
+		icon = larsa_dwarf_path_2
+		requires = { war_sdwarf_path_5 war_sdwarf_path_6 }
+		modifier = {
+			heavy_cavalry_defensive = 0.10
+			heavy_cavalry_offensive = 0.10
+			heavy_cavalry_discipline = 0.1
+		}
+	}
+
+	war_sdwarf_path_8 = {
+		icon = larsa_dwarf_path_2
+		requires = { war_sdwarf_path_6 }
+		modifier = {
+			global_manpower_modifier = 0.05
+			happiness_for_wrong_culture_modifier = 0.05
+			global_pop_assimilation_speed_modifier = -0.05
+		}
+	}
+
+#MIXED TREE
+	mixed_sdwarf_path_1 = {
+		icon = orcish_warrior_defensive_path_5
+		modifier = {
+			happiness_for_same_culture_modifier = 0.05
+			global_population_growth = 0.03
+		}
+		on_activate = {
+			ordered_owned_province = {
+				order_by = {
+					value = 0
+					add = population_cap
+					subtract = total_population
+				}
+				max = 6
+				check_range_bounds = no
+				create_2_freemen_effect = yes
+			}
+		}
+	}
+	mixed_sdwarf_path_2 = {
+		icon = golden_dwarf_philosophy_start_bonus
+		requires = { mixed_sdwarf_path_1 }
+		modifier = {
+			global_capital_trade_routes = 2
+			global_commerce_modifier = 0.05
+		}
+	}
+	mixed_sdwarf_path_3 = {
+		icon = yamhad_dwarf_path_3
+		requires = { mixed_sdwarf_path_1 }
+		modifier = {
+			happiness_for_wrong_culture_modifier = 0.05
+			convert_pop_cost_modifier = -0.10
+		}
+		on_activate = {
+			add_innovation = 2
+		}
+	}
+	mixed_sdwarf_path_4 = {
+		icon = zehain_path_5
+		requires = { mixed_sdwarf_path_2 mixed_sdwarf_path_3 }
+		modifier = {
+			global_mages_city_desired_pop_ratio = 0.05
+        	global_serfs_city_desired_pop_ratio = -0.1
+        	global_manpower_modifier = 0.05
+		}
+		on_activate = {
+        	ordered_owned_province = {
+       			order_by = {
+        			value = 0
+        			add = population_cap
+        			subtract = total_population
+        		}
+        		max = 2
+        		check_range_bounds = no
+        		create_state_pop = mages
+        		create_state_pop = mages
+      	  }
+	}
+	}
+	mixed_sdwarf_path_5 = {
+		icon = levantine_egyptian_path_4
+		requires = { mixed_sdwarf_path_4 }
+		modifier = {
+			global_commerce_modifier = 0.05
+			research_points_modifier = 0.10
+			global_pop_assimilation_speed_modifier = -0.1
+		}
+		on_activate = {
+			add_innovation = 4
+		}
+	}
+	mixed_sdwarf_path_6 = {
+		icon = larsa_dwarf_path_5
+		requires = { mixed_sdwarf_path_4 }
+		modifier = {
+			happiness_for_same_religion_modifier = 0.05
+			omen_power = 0.1
+		}
+	}
+}
