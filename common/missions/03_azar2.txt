@@ -81,7 +81,19 @@
 
     03_azar2_task_3 = {
         icon = "task_religion"
-        requires = {03_azar2_task_2}
+        requires = {03_azar2_task_6}
+
+        highlight = {
+			scope:province = {
+                OR = {
+                    province_id = 4531
+                    province_id = 4358
+                    province_id = 4411
+                    province_id = 4649
+                    province_id = 4785
+                }
+            }
+	    }
 
         allow = {
             custom_tooltip = {
@@ -99,14 +111,22 @@
             owns_or_subject_owns = 4531
             owns_or_subject_owns = 4411
             owns_or_subject_owns = 4785
-            hidden:p:4531 = {
-                deity:omen_iesis = { has_holy_site = no }
+            owns_or_subject_owns = 4358
+            p:4531 = {
+                hidden:deity:omen_iesis = { has_holy_site = no }
             }
-            hidden:p:4411 = {
-                deity:omen_brumtia = { has_holy_site = no }
+            p:4411 = {
+                hidden:deity:omen_brumtia = { has_holy_site = no }
             }
-            hidden:p:4785 = {
-                deity:omen_uphin = { has_holy_site = no }
+            p:4649 = {
+                hidden:deity:omen_baion = { has_holy_site = no }
+            }
+            p:4785 = {
+                hidden:deity:omen_uphin = { has_holy_site = no }
+            }
+            p:4385 = {
+                has_city_status = yes
+                has_building = temple_building
             }
             custom_tooltip = {
                 text = azar_need_twentyfive_provinces_to_convert_tt
@@ -123,6 +143,10 @@
         }
         on_completion = {
             trigger_event = me_azar.18
+            add_country_modifier = {
+                name = drove_out_the_zainudian_religion_azar_mod
+                duration = 7300
+            }
             current_ruler = {
                 custom_tooltip = we_will_get_good_zeal_effect
                 hidden_effect = {
@@ -137,30 +161,92 @@
     }
 
     03_azar2_task_4 = {
-        icon = "task_diplomatic"
+        icon = "task_battle"
+        requires = {03_azar2_task_8}
 
         allow = {
+            military_tech >= 4
+            invention = discipline_inv_2
+            trigger_if = {
+                limit = {
+                    capital_scope.governorship = { has_legion_trigger = yes }
+                    any_unit = { legion = ROOT.capital_scope.governorship.legion }
+                }
+                custom_tooltip = {
+                    text = 03_azar2_task_4_tt
+                    any_legion = {
+                        any_legion_unit = {
+                            unit_size >= 6
+                            any_sub_unit = {
+                                count >= 6
+                                sub_unit_type = camels
+                            }
+                        }
+                    }
+                }
+            }
+            trigger_else = {
+                custom_tooltip = {
+                    text = 03_azar2_task_4_tt
+                    always = no
+                }
+            } 
         }
 
         on_completion = {
             trigger_event = me_azar.19
+            add_country_modifier = {
+                name = azar_camel_warriors_modifier
+                duration = -1
+            }
         }
     }
 
     03_azar2_task_5 = {
-        icon = "task_diplomatic"
+        icon = "task_expansion"
+        duration = 30
+        requires = {03_azar2_task_2}
 
         allow = {
+            political_influence >= 15 
         }
         on_completion = {
+            add_political_influence = -15
+            custom_tooltip = azar_conquer_golden_foothills_claims_tt
+			hidden_effect = {
+				region:golden_foothills_eteradica = {
+					every_region_province = {
+						add_claim = root
+					}
+				}
+			}
             trigger_event = me_azar.20
         }
     }
 
     03_azar2_task_6 = {
-        icon = "task_diplomatic"
+        icon = "task_economical"
+        requires = {03_azar2_task_5}
+
+        highlight = {
+			scope:province = {
+                OR = {
+                    province_id = 4662
+                    province_id = 4619
+                    province_id = 4666
+                }
+            }
+	    }
 
         allow = {
+            war = no
+            owns_or_subject_owns = 4662
+            owns_or_subject_owns = 4619
+            owns_or_subject_owns = 4666
+            owns_percent_of_area = {
+                PROVINCE = "p:4619" 
+                PERCENT = "0.75"
+            }
         }
         on_completion = {
             trigger_event = me_azar.21
@@ -168,21 +254,80 @@
     }
 
     03_azar2_task_7 = {
-        icon = "task_diplomatic"
+        icon = "task_conquest"
+        requires = {03_azar2_task_4}
 
         allow = {
+            trigger_if = {
+                limit = {
+                    capital_scope.governorship = { has_legion_trigger = yes }
+                    any_unit = { legion = ROOT.capital_scope.governorship.legion }
+                }
+                custom_tooltip = {
+                    text = 03_azar2_task_7_tt
+                    any_legion = {
+                        distinction_count >= 2
+                    }
+                    any_legion = {
+                        any_legion_unit = {
+                            unit_size >= 10
+                            any_sub_unit = {
+                                count >= 10
+                                sub_unit_type = camels
+                            }
+                        }
+                    }
+                }
+            }
+            trigger_else = {
+                custom_tooltip = {
+                    text = 03_azar2_task_7_tt
+                    always = no
+                }
+            }
         }
         on_completion = {
             trigger_event = me_azar.22
+            custom_tooltip = create_high_martial_rising_star
+            add_country_modifier = {
+                name = azar_camel_warriors_gods_modifier
+                duration = -1
+            }
         }
     }
 
     03_azar2_task_8 = {
         icon = "task_diplomatic"
+        requires = {03_azar2_task_2}
+
+        highlight = {
+			scope:province = {
+                OR = {
+                    province_id = 4601
+                    province_id = 4730
+                    province_id = 4655
+                }
+            }
+	    }
 
         allow = {
+            war = no
+            owns_or_subject_owns = 4601
+            owns_or_subject_owns = 4730
+            owns_or_subject_owns = 4655
+            hidden:p:4601 = {
+                has_building = latifundia_building
+            }
+            hidden:p:4730 = {
+                has_building = latifundia_building
+            }
+            hidden:p:4655 = {
+                has_building = latifundia_building
+            }
         }
         on_completion = {
+            add_2_free_province_investments = yes
+            add_military_experience = 10
             trigger_event = me_azar.23
         }
     }
