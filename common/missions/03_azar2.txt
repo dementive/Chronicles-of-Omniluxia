@@ -339,22 +339,124 @@
     }
 
     03_azar2_task_9 = {
-        icon = "task_diplomatic"
+        icon = "task_apollo"
+        requires = {03_azar2_task_2}
+        highlight = {
+			scope:province = {
+                OR = {
+                    province_id = 4542
+                    province_id = 4565
+                    province_id = 4558
+                    province_id = 4581
+                    province_id = 4681
+                    province_id = 4556
+                    province_id = 4565
+                    province_id = 4861
+                    province_id = 4745
+                    province_id = 4784
+                }
+            }
+	    }
 
         allow = {
+            p:4542 = {has_road_towards = 4565}
+            p:4558 = {has_road_towards = 4581}
+            p:4581 = {has_road_towards = 4556}
+            p:4565 = {has_road_towards = 4681}
+            p:4581 = {has_road_towards = 4681}
+            p:4681 = {has_road_towards = 4745}
+            p:4745 = {has_road_towards = 4784}
+            
         }
         on_completion = {
             trigger_event = me_azar.24
+            add_country_modifier = {
+                name = golden_road_boom_times_mod
+                duration = 3650
+            }
         }
     }
 
     03_azar2_task_10 = {
-        icon = "task_diplomatic"
-        final = yes
+        icon = "task_calm"
+        requires = {03_azar2_task_9}
+
+        highlight = {
+			scope:province = {
+                province_id = 4810
+            }
+	    }
+
         allow = {
+            owns_or_subject_owns = 4810
+            p:4810 = {
+                has_city_status = yes
+                has_no_ongoing_construction = yes
+                num_of_port_building >= 2
+                num_of_military_building >= 1  
+            }
+        }
+
+        on_completion = {
+            p:4810 = {
+                add_permanent_province_modifier = {
+                    name = dwarven_military_harbor_pagxe_mod
+                    duration = -1
+                }
+            }
+            trigger_event = me_azar.25
+        }
+    }
+
+    03_azar2_task_11 = {
+        icon = "task_expansion"
+        requires = {03_azar2_task_10}
+
+        allow = {
+            num_of_ships >= 30 
+        }
+
+        on_completion = {
+            add_manpower = 6
+            trigger_event = me_azar.26
+        }
+    }
+
+    03_azar2_task_12 = {
+        icon = "task_athena"
+        requires = {03_azar2_task_11}
+        final = yes
+
+        highlight = {
+			scope:province = {
+                province_id = 4810
+            }
+	    }
+
+        
+        allow = {
+            num_of_ships >= 50
+            invention = pirate_spawn_chance_inv_1
+            owns_or_subject_owns = 4810
+            p:4810 = {
+                has_city_status = yes
+                has_no_ongoing_construction = yes
+                num_of_port_building >= 3
+                num_of_academy_building >= 3 
+                num_of_military_building >= 1  
+            }
         }
         on_completion = {
-            trigger_event = me_azar.25
+            p:4810 = {
+                add_permanent_province_modifier = {
+                    name = dwarven_military_harbor_pagxe_mod2
+                    duration = -1
+                }
+            }
+            current_ruler = {
+                force_add_trait = oarmaster
+            }
+            trigger_event = me_azar.27
         }
     }
 
