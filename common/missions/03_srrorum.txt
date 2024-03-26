@@ -1,0 +1,984 @@
+﻿03_srrorum = {
+    header = "lotr_umbar_mission_header"
+    icon = "lotr_generic_ship_mission_icon"
+
+    repeatable = no
+    chance = 1000
+
+    potential = {
+    	tag = SLV
+        NOT = { has_variable = mission_cooldown_var }
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+        hidden_effect = {
+            reverse_add_opinion = { target = SLV modifier = opinion_declared_war  }
+        }
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {
+        capital_scope = {
+            capital_formable_huge_effect = yes
+        }
+    }
+
+
+######CONQUEST
+
+    03_srrorum_task_1 = {
+        icon = "task_diplomatic"
+        duration = 60
+
+        allow = {
+            war = no
+            political_influence >= 20
+        }
+
+        on_completion = {
+            add_political_influence = -20
+            area:morrigan_farlands_2 = {
+                add_provincial_claim_effect = yes
+            }
+        }
+    }
+
+    03_srrorum_task_2 = {
+        icon = "task_expansion"
+        requires = {03_srrorum_task_1}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 4085
+                }
+            }
+        }
+
+        allow = {
+            owns = 4085
+        }
+
+        on_completion = {
+            add_political_influence = 30
+            add_military_experience = 10
+        }
+    }
+
+    03_srrorum_task_3 = {
+        icon = "task_expansion"
+        requires = {03_srrorum_task_2}
+        duration = 360
+
+        highlight = {
+            scope:province = {
+                OR = {`
+                    province_id = 4085
+                }
+            }
+        }
+
+        allow = {
+            treasury >= 100
+            has_law = magic_only_for_entrusted
+        }
+
+        on_completion = {
+            add_treasury = -100
+            add_country_modifier = {
+                name = warded_armies_mod
+                duration = -1
+            }
+            area:morrigan_farlands_1 = {
+                add_provincial_claim_effect = yes
+            }
+            area:morrigan_farlands_3 = {
+                add_provincial_claim_effect = yes
+            }
+            area:morrigan_farlands_4 = {
+                add_provincial_claim_effect = yes
+            }
+        }
+    }
+    
+
+    03_srrorum_task_4 = {
+        icon = "task_political"
+        requires = {03_srrorum_task_3}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = morrigan_farlands_1
+                    is_in_area = morrigan_farlands_2
+                    is_in_area = morrigan_farlands_3
+                    is_in_area = morrigan_farlands_4
+                }
+            }
+        }
+
+        allow = {
+            owns_area = morrigan_farlands_1
+            owns_area = morrigan_farlands_2
+            owns_area = morrigan_farlands_3
+            owns_area = morrigan_farlands_4
+        }
+
+        on_completion = {
+            add_stability = 10
+            add_treasury = 200
+            area:vetalia_east_4 = {
+                add_provincial_claim_effect = yes
+            }
+        }
+    }
+
+    03_srrorum_task_5 = {
+        icon = "task_conquest"
+        requires = {03_srrorum_task_4}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = vetalia_east_4
+                }
+            }
+        }
+
+        allow = {
+            owns_area = vetalia_east_4
+        }
+
+        on_completion = {
+            ##THE FORTRESS OF SAMPON EVENT
+        }
+    }
+
+    03_srrorum_task_6 = {
+        icon = "task_political"
+        requires = {03_srrorum_task_2}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 4191
+                    province_id = 4233
+                    province_id = 4271
+                }
+            }
+        }
+
+        allow = {
+        political_influence >= 30
+            p:4233 = {
+                owner = ROOT
+                is_state_capital = yes
+                has_building = court_building
+                has_building = town_hall_building
+            }
+            p:4191 = {
+                owner = ROOT
+                has_building = court_building
+                has_building = town_hall_building
+            }
+            p:4271 = {
+                owner = ROOT
+                has_building = court_building
+                has_building = town_hall_building
+            }
+        }
+        on_completion = {
+            add_political_influence = -30
+            add_aggressive_expansion = -10
+            p:4233 = {
+                add_permanent_province_modifier = {
+                    name = center_of_administration_mod
+                    duration = -1
+                }
+                define_pop = {
+                    type = nobles
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = citizen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = citizen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = citizen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = citizen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+            }
+            trigger_event = me_srrorum.2
+        }
+    }
+
+    03_srrorum_task_7 = {
+        icon = "task_economical"
+        requires = {03_srrorum_task_6}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                province_id = 4224
+                province_id = 4107
+                province_id = 4154
+                province_id = 4174
+                province_id = 4118
+                }
+            }
+        }
+
+        allow = {
+            p:4224 = {
+                owner = ROOT
+                city_status = city
+                has_building = town_hall_building
+            }
+            p:4107 = {
+                owner = ROOT
+                city_status = city
+                has_building = town_hall_building
+            }
+            p:4154 = {
+                owner = ROOT
+                city_status = city
+                has_building = town_hall_building
+            }
+            p:4174 = {
+                owner = ROOT
+                city_status = city
+                has_building = town_hall_building
+            }
+            p:4118 = {
+                owner = ROOT
+                city_status = city
+                has_building = town_hall_building
+            }
+        }
+        on_completion = {
+            #COLONIES EVENT
+            add_aggressive_expansion = -10
+        }
+    }
+
+    03_srrorum_task_8 = {
+        icon = "task_calm"
+        requires = {03_srrorum_task_7}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                province_id = 4302
+                province_id = 4348
+                province_id = 4498
+                }
+            }
+        }
+
+        allow = {
+            p:4302 = {
+                owner = ROOT
+                city_status = city
+                has_building = port_building
+            }
+            p:4348 = {
+                owner = ROOT
+                city_status = city
+                has_building = port_building
+            }
+            p:4498 = {
+                owner = ROOT
+                city_status = city
+                has_building = port_building
+            }
+        }
+        on_completion = {
+            add_treasury = 100
+            add_3_free_province_investments = yes
+            p:4302 = {
+                add_permanent_province_modifier = {
+                name = trade_port_mod
+                duration = -1
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+            }
+            p:4348 = {
+                add_permanent_province_modifier = {
+                name = trade_port_mod
+                duration = -1
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+            }
+            p:4498 = {
+                add_permanent_province_modifier = {
+                name = trade_port_mod
+                duration = -1
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_1
+                    religion = the_old_father_silver
+                }
+            }
+        }
+    }
+
+    03_srrorum_task_9 = {
+        icon = "task_expansion"
+        requires = {03_srrorum_task_5 03_srrorum_task_8}
+        
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = dragon_mountains_foothills_2
+                    is_in_area = dragon_mountains_foothills_4
+                    is_in_area = dragon_shores_1
+                }
+            }
+        }
+
+         allow = {
+            owns_area = dragon_mountains_foothills_2
+            owns_area = dragon_mountains_foothills_4
+            owns_area = dragon_shores_1
+        }
+
+        on_completion = {
+            add_military_experience = 20
+            add_aggressive_expansion = -10
+            add_country_modifier = {
+                name = steppes_tamed_mod
+                duration = 3650
+            }
+        }
+    }
+
+    03_srrorum_task_10 = {
+        icon = "task_political"
+        requires = {03_srrorum_task_9}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = dragon_pass_center_3
+                    is_in_area = dragon_pass_shout
+                }
+            }
+        }
+
+        allow = {
+            owns_area = dragon_pass_center_3
+            owns_area = dragon_pass_shout
+        }
+        on_completion = {
+            add_military_experience = 10
+            add_aggressive_expansion = -10
+            add_country_modifier = {
+                name = invader_morale_mod
+                duration = 3650
+            }
+        }
+    }
+
+    03_srrorum_task_11 = {
+        icon = "task_atlas"
+        requires = {03_srrorum_task_10}
+        duration = 60
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = dragon_pass_center_1
+                    is_in_area = dragon_pass_center_2
+                }
+            }
+        }
+
+        allow = {
+            owns_area = dragon_pass_center_1
+            owns_area = dragon_pass_center_2
+        }
+        on_completion = {
+            add_political_influence = 30
+            add_military_experience = 10
+            add_aggressive_expansion = -10
+            ###CAPTURE OF DRIOTRA EVENT
+        }
+    }
+
+    03_srrorum_task_12 = {
+        icon = "task_economical"
+        requires = {03_srrorum_task_11}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = dragon_pass_north
+                    is_in_area = inner_dragon_pass
+                }
+            }
+        }
+
+        allow = {
+            owns_area = dragon_pass_north
+            owns_area = inner_dragon_pass
+        }
+        on_completion = {
+            add_military_experience = 10
+            add_aggressive_expansion = -10
+            ###DOLIN RECONQUEST EVENT
+        }
+    }
+
+    03_srrorum_task_13 = {
+        icon = "task_economical"
+        requires = {03_srrorum_task_12}
+        duration = 360
+
+        highlight = {
+                OR = {
+                    is_in_region = dragon_pass
+                }
+        }
+
+        allow = {
+            political_influence >= 100
+            owns_region = dragon_pass
+        }
+        on_completion = {
+            ###RESETTLEMENT EVENT
+        }
+    }
+
+    03_srrorum_task_14 = {
+        icon = "task_apollo"
+        requires = {03_srrorum_task_12}
+
+        highlight = {
+			scope:province = {
+				province_id = 3883
+			}
+		}
+
+        allow = {
+            owns = 3883
+        }
+        on_completion = {
+            add_treasury = -200
+            add_stability = 10
+            add_ruler_popularity = 20
+            capital_scope = {
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+            }
+            }
+        }
+
+    03_srrorum_task_15 = {
+        icon = "task_diplomatic"
+        requires = {03_srrorum_task_12}
+
+        highlight = {
+            scope:province = {
+                province_id = 4020
+                province_id = 4146
+                province_id = 3991
+            }
+        }
+
+        allow = {
+            treasury >= 100
+            invention = religious_tech_investment_inv_1
+            p:4020 = {
+                owner = ROOT
+                city_status = city
+                has_building = academy_building
+                has_building = library_building
+            }
+            p:4146 = {
+                owner = ROOT
+                city_status = city
+                has_building = academy_building
+                has_building = library_building
+            }
+            p:3991 = {
+                owner = ROOT
+                city_status = city
+                has_building = academy_building
+                has_building = library_building
+            }
+        }
+        on_completion = {
+            add_military_experience = -10
+            add_political_influence = -100
+            add_country_modifier = {
+                name = sennkallen_mod
+                duration = -1
+            }
+            }
+        }
+
+        03_srrorum_task_16 = {
+        icon = "task_diplomatic"
+        requires = {03_srrorum_task_13 03_srrorum_task_14 03_srrorum_task_15}
+        final = yes
+
+        bypass = {
+            tag = SRK
+        }
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = green_valey_region
+                    is_in_region = the_farlands
+                    is_in_region = dragon_pass
+                    is_in_area = dragon_mountains_foothills_2
+                    is_in_area = dragon_mountains_foothills_4
+                    is_in_area = dragon_shores_1
+                    is_in_area = vetalia_east_4
+                }
+            }
+        }
+
+        allow = {
+            popularity >= 90
+            political_influence = 100
+        }
+        on_completion = {
+            republic_to_monarchy_law_variable_effect = yes # decide which legion law should be transferred
+            change_government = imperium
+            republic_to_monarchy_law_change_effect = yes # change legion law based on variable if present
+            switch_government_type_event_clearup_effect = yes
+            change_country_name = "Srrøkheim"
+            hidden_effect = {
+                change_country_adjective = "Silver Dwarven"
+                change_country_tag = SRK
+            }
+            add_5_free_province_investments = yes
+            capital_scope = {
+                capital_formable_large_effect = yes
+                formable_capital_modifier_large_effect = yes
+            }
+            add_country_modifier = {
+                name = formable_country_huge_modifier
+                duration = 7600
+            }
+            mission_claim_region_effect = { REGION = dragon_lands_east }
+            mission_claim_region_effect = { REGION = dragon_lands_west }
+            mission_claim_region_effect = { REGION = vetalia_east_region }
+            }
+        }
+
+
+####DEVLOPMENT
+
+    03_srrorum_task_17 = {
+        icon = "task_diplomatic"
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 4048
+                    province_id = 4085
+                }
+            }
+        }
+
+        allow = {
+            treasury >= 100
+            p:4048 = {
+                owner = ROOT
+                has_building = fortress_building
+            }
+            p:4085 = {
+                owner = ROOT
+                has_building = fortress_building
+            }
+        }
+        on_completion = {
+            add_treasury = -100
+            p:4048 = {
+                add_permanent_province_modifier = {
+                name = fortified_gates_mod
+                duration = -1
+                }
+            }
+            p:4085 = {
+                add_permanent_province_modifier = {
+                name = fortified_gates_mod
+                duration = -1
+                }
+            }
+        }
+    }
+
+    03_srrorum_task_18 = {
+        icon = "task_diplomatic"
+        requires = {03_srrorum_task_17}
+        duration = 60
+
+        allow = {
+            has_law = local_investment_policy
+            political_influence >= 20
+            treasury >= 100
+        }
+        on_completion = {
+            add_treasury = -100
+            p:4048 = {
+                add_road_towards = p:3978
+            }
+            p:3978 = {
+                add_road_towards = p:4019
+            }
+            p:4019 = {
+                add_road_towards = p:3997
+            }
+            p:3997 = {
+                add_road_towards = p:3988
+            }
+            p:3988 = {
+                add_road_towards = p:3947
+            }
+            p:3947 = {
+                add_road_towards = p:3920
+            }
+            p:3920 = {
+                add_road_towards = p:3896
+            }
+            p:3896 = {
+                add_road_towards = p:3883
+            }
+            p:3883 = {
+                add_road_towards = p:3888
+            }
+            p:3888 = {
+                add_road_towards = p:3904
+            }
+        }
+    }
+
+    03_srrorum_task_19 = {
+        icon = "task_diplomatic"
+        requires = {03_srrorum_task_18}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 4048
+                    province_id = 3978
+                    province_id = 3988
+                    province_id = 3947
+                    province_id = 3883
+                    province_id = 3904
+                }
+            }
+        }
+
+        allow = {
+            invention = omen_power_inv_4
+            p:4048 = {
+                owner = ROOT
+                has_building = temple_building
+            }
+            p:3978 = {
+                owner = ROOT
+                has_building = temple_building
+            }
+            p:3988 = {
+                owner = ROOT
+                has_building = temple_building
+            }
+            p:3947 = {
+                owner = ROOT
+                has_building = temple_building
+            }
+            p:3883 = {
+                owner = ROOT
+                has_building = temple_building
+            }
+            p:3904 = {
+                owner = ROOT
+                has_building = temple_building
+            }
+        }
+        on_completion = {
+            add_stability = 15
+            add_country_modifier = {
+                name = faith_reinforced_mod
+                duration = -1
+            }
+        }
+    }
+
+   03_srrorum_task_20 = {
+        icon = "task_diplomatic"
+        requires = {03_srrorum_task_19}
+        duration = 120
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 3904
+                }
+            }
+        }
+
+        allow = {
+            treasury >= 200
+            p:3904 = {
+                owner = ROOT
+                has_building = temple_building
+                has_building = academy_building
+                building_slots <= 0
+                total_population >= 40
+            }
+        }
+        on_completion = {
+            add_treasury = -200
+                p:3904 = {
+                create_state_pop = noble
+                create_state_pop = citizen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                add_permanent_province_modifier = {
+                    name = sorrborr_mod
+                    duration = -1
+                }
+                set_city_status = city_metropolis
+                change_province_name = Srrøvikkborr
+            }
+        }
+    }
+
+03_srrorum_task_21 = {
+        icon = "task_diplomatic"
+        requires = {03_srrorum_task_20}
+        duration = 120
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 3988
+                }
+            }
+        }
+        allow = {
+            treasury >= 200
+            p:3988 = {
+                owner = ROOT
+                has_building = academy_building
+                has_building = library_building
+                building_slots <= 0
+                population >= 40
+            }
+        }
+        on_completion = {
+            add_treasury = -200
+                p:3988 = {
+                create_state_pop = noble
+                create_state_pop = citizen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                add_permanent_province_modifier = {
+                    name = sorrborr_mod
+                    duration = -1
+                }
+                set_city_status = city_metropolis
+                change_province_name = Veddborr
+            }
+        }
+    }
+
+    03_srrorum_task_22 = {
+        icon = "task_diplomatic"
+        requires = {03_srrorum_task_21}
+        duration = 365
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 3988
+                }
+            }
+        }
+        allow = {
+            treasury >= 300
+            political_influence >= 50
+        }
+
+        on_start = {
+                add_treasury = -300
+                add_political_influence = -50
+            }
+        on_completion = {
+            ####STONE MAGIC EVENT
+            }
+        }
+
+    03_srrorum_task_23 = {
+        icon = "task_diplomatic"
+        requires = {03_srrorum_task_21}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = green_valey_region
+                }
+            }
+        }
+
+        allow = {
+            invention = build_time_inv
+            invention = civic_tech_investment_inv_1
+            treasury = 100
+            p:3848 = {
+                owner = ROOT
+                has_city_status = no
+                has_building = basic_settlement_infratructure_building
+                total_population >= 12
+            }
+            p:3921 = {
+                owner = ROOT
+                has_city_status = no
+                has_building = basic_settlement_infratructure_building
+                total_population >= 12
+            }
+            p:3792 = {
+                owner = ROOT
+                has_city_status = no
+                has_building = basic_settlement_infratructure_building
+                total_population >= 12
+            }
+            p:4019 = {
+                owner = ROOT
+                has_city_status = no
+                has_building = basic_settlement_infratructure_building
+                total_population >= 12
+            }
+        }
+        on_completion = {
+            add_treasury = -100
+            ####REDISCOVERY OF MOUNTAIN FARMS EVENT
+            }
+        }
+
+}

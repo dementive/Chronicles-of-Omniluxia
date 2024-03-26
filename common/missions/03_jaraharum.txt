@@ -1,0 +1,1139 @@
+03_jaraharum = {
+    header = "lotr_umbar_mission_header"
+    icon = "lotr_generic_ship_mission_icon"
+
+    repeatable = no
+    chance = 1000
+
+    potential = {
+    	tag = SV0
+        NOT = { has_variable = mission_cooldown_var }
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+        hidden_effect = {
+            reverse_add_opinion = { target = SV0 modifier = opinion_declared_war  }
+        }
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {
+        capital_scope = {
+            capital_formable_huge_effect = yes
+        }
+    }
+
+
+######EMPIRE
+
+    03_jaraharum_task_1 = {
+        icon = "task_diplomatic"
+        duration = 60
+
+        allow = {
+            war = no
+            political_influence >= 50
+            job_holder:office_marshal = {
+                loyalty >= 60
+            }
+            job_holder:office_master_of_the_guard = {
+                loyalty >= 60
+            }
+        }
+
+        on_completion = {
+            add_political_influence = -50
+            add_country_modifier = {
+                name = great_purge_mod
+                duration = 1825
+            }
+            ###ALL NOBLE FAMILY HEADS EXECUTED
+            ###-1 NOBLE POP
+            government = despotic_monarchy
+            add_stability = 5
+        }
+    }
+
+    03_jaraharum_task_2 = {
+        icon = "task_expansion"
+        requires = {03_jaraharum_task_1}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    owner = GBA
+                    owner = GB9
+                    owner = GB8
+                }
+            }
+        }
+
+        allow = {
+            war = no
+            political_influence >= 20
+            military_experience >= 5
+        }
+
+        on_completion = {
+            add_political_influence = -20
+            add_military_experience = -5
+            add_country_modifier = {
+                name = mobilized_army_mod
+                duration = 1825
+            }
+            ###JARAHARUM AND KANAI LOSE DEFENSIVE LEAGUE
+            ####EVENT GREAT MEETING
+            remove_country_modifier = treaty_friends_mod
+            c:GBA = {
+                remove_country_modifier = treaty_friends_mod
+            }
+            c:GB9 = {
+                remove_country_modifier = treaty_friends_mod
+            }
+            c:GB8 = {
+                remove_country_modifier = treaty_friends_mod
+            }
+            area:inner_dragon_pass = {
+                add_provincial_claim_effect = yes
+            }
+        }
+    }
+
+    03_jaraharum_task_3 = {
+        icon = "task_political"
+        requires = {03_jaraharum_task_2}
+        duration = 30
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = inner_dragon_pass
+                }
+            }
+        }
+
+         allow = {
+            war = no
+            owns_area = inner_dragon_pass
+            political_influence >= 20
+            military_experience >= 5
+            integrate_country_culture = goblin_3
+        }
+
+        on_completion = {
+            add_political_influence = -20
+            add_military_experience = -5
+            p:5562 = {
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                define_pop = {
+                    type = freemen
+                    culture = goblin_3
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = goblin_3
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = goblin_3
+                    religion = the_old_father_silver
+                }
+            }
+            add_country_modifier = {
+                name = grand_army_mod
+                duration = -1
+            }
+            ####GAIN GOBLIN TRADITIONS
+            ####EVENT
+        }
+    }
+
+    03_jaraharum_task_4 = {
+        icon = "task_conquest"
+        requires = {03_jaraharum_task_3}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 5561
+                }
+            }
+        }
+
+        allow = {
+        has_law = magic_only_for_entrusted
+            p:5561 = {
+                owner = ROOT
+                has_city_status = yes
+                has_building = academy_building
+                total_population >= 10
+            }
+            treasury >= 100
+        }
+
+        on_completion = {
+            add_treasury = -100
+            p:5561 = {
+                change_province_name = Jorrmundabi
+                create_state_pop = mages
+                create_state_pop = mages
+                create_state_pop = mages
+                add_permanent_province_modifier = {
+                    name = jorrmundabi_academy_mod
+                    duration = -1
+                }
+            }
+            add_innovation = 5
+
+            area:dragon_pass_center_2 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_pass_center_1 = {
+                add_provincial_claim_effect = yes
+            }
+    }
+}
+
+    03_jaraharum_task_5 = {
+        icon = "task_political"
+        requires = {03_jaraharum_task_3}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 4721
+                    province_id = 4187
+                }
+            }
+        }
+
+        allow = {
+            owns = 4721
+            owns = 4187
+        }
+        on_completion = {
+            p:5561 = {
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_3
+                    religion = the_old_pantheon
+                }
+            }
+            add_country_modifier = {
+                name = hobgoblin_research_mod
+                duration = -1
+            }
+        add_innovation = 5
+        }
+    }
+
+    03_jaraharum_task_6 = {
+        icon = "task_economical"
+        requires = {03_jaraharum_task_4 03_jaraharum_task_5}
+        duration = 365
+
+        highlight = {
+            scope:province = {
+                OR = {
+                province_id = 5561
+                }
+            }
+        }
+
+        allow = {
+            political_influence >= 100
+            p:5561 = {
+                owner = ROOT
+                has_city_status = yes
+                total_population >= 15
+            }
+            char:87 = {
+            is_married = yes
+            }
+        }
+        on_completion = {
+            add_political_influence = -100
+            area:dragon_pass_north = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_pass_shout = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_pass_center_3 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_mountains_foothills_1 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_mountains_foothills_2 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_mountains_foothills_3 = {
+                add_provincial_claim_effect = yes
+            }
+            ###AAIIA MANA STYLE EVENT
+            add_innovation = 5
+        }
+    }
+
+    03_jaraharum_task_7 = {
+        icon = "task_calm"
+        requires = {03_jaraharum_task_6}
+        final = yes
+
+        highlight = {
+            scope:province = {
+                OR = {
+                is_in_area = inner_dragon_pass
+                is_in_area = dragon_pass_center_1
+                is_in_area = dragon_pass_center_2
+                is_in_area = dragon_pass_center_3
+                is_in_area = dragon_pass_north
+                is_in_area = dragon_pass_shout
+                is_in_area = dragon_mountains_foothills_1
+                is_in_area = dragon_mountains_foothills_2
+                is_in_area = dragon_mountains_foothills_3
+                }
+            }
+        }
+
+        bypass = {
+            tag = EKD
+        }
+
+        allow = {
+            owns_area = inner_dragon_pass
+            owns_area = dragon_pass_center_1
+            owns_area = dragon_pass_center_2
+            owns_area = dragon_pass_center_3
+            owns_area = dragon_pass_north
+            owns_area = dragon_pass_shout
+            owns_area = dragon_mountains_foothills_1
+            owns_area = dragon_mountains_foothills_2
+            owns_area = dragon_mountains_foothills_3
+            political_influence >= 20
+            }
+        on_completion = {
+            change_country_name = "Ekkdejakheim"
+            change_government = imperium
+            add_country_modifier = {
+            name = immortal_invasions_mod
+            duration = 7300
+            }
+            add_stability = 10
+            hidden_effect = {
+                change_country_adjective = "Immortal"
+                change_country_color = "death_grey"
+                change_country_tag = EKD
+                change_country_flag = "SV0"
+            }
+            add_5_free_province_investments = yes
+            capital_scope = {
+                capital_formable_medium_effect = yes
+                formable_capital_modifier_normal_effect = yes
+                create_state_pop = mages
+                create_state_pop = mages
+                create_state_pop = nobles
+                create_state_pop = nobles
+                create_state_pop = citizen
+                create_state_pop = citizen
+                create_state_pop = freemen
+                create_state_pop = freemen
+            }
+            area:dragon_mountains_foothills_4 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_mountains_foothills_5 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_shores_1 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_shores_2 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_shores_3 = {
+                add_provincial_claim_effect = yes
+            }
+            area:dragon_shores_4 = {
+                add_provincial_claim_effect = yes
+            }
+            current_ruler = {
+                    force_add_trait = founder
+                    add_nickname = "tö Boddamögg"
+            }
+            add_stability = 10
+        }
+    }
+
+
+####CONFEDERACY
+    03_jaraharum_task_8 = {
+        icon = "task_expansion"
+        duration = 60
+        
+        highlight = {
+            scope:province = {
+                OR = {
+                    owner = c:GBA 
+                    owner = c:GB9            
+                    owner = c:GB8
+                }
+            }
+        }
+
+         allow = {
+            war = no
+            political_influence >= 25
+            hidden:c:GBA = {
+                opinion = {
+                    target = root
+                    value >= 100
+                }
+            }
+            hidden:c:GB9 = {
+                opinion = {
+                    target = root
+                    value >= 100
+                }
+            }
+            hidden:c:GB8 = {
+                opinion = {
+                    target = root
+                    value >= 100
+                }
+            }
+        }
+
+        on_completion = {
+            add_political_influence = -25
+            add_country_modifier = {
+                name = nobles_prepared_mod
+                duration = 1825
+            }
+        }
+    }
+
+    03_jaraharum_task_9 = {
+        icon = "task_political"
+        requires = {03_jaraharum_task_8}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    owner = c:GBA 
+                    owner = c:GB9            
+                    owner = c:GB8
+                }
+            }
+        }
+
+        allow = {
+            political_influence = -50
+            hidden:c:GBA = {
+                opinion = {
+                    target = root
+                    value >= 100
+                }
+            }
+            hidden:c:GB9 = {
+                opinion = {
+                    target = root
+                    value >= 100
+                }
+            }
+            hidden:c:GB8 = {
+                opinion = {
+                    target = root
+                    value >= 100
+                }
+            }
+        }
+        on_completion = {
+            add_political_influence = -50
+            ###CONSTITUTION EVENT
+        }
+    }
+
+    03_jaraharum_task_10 = {
+        icon = "task_atlas"
+        requires = {03_jaraharum_task_9}
+        duration = 60
+
+        highlight = {
+            scope:province = {
+                OR = {
+                province_id = 5559
+                province_id = 5557
+                province_id = 5554
+                }
+            }
+        }
+
+        allow = {
+            p:5559 = {
+                owner = ROOT
+                has_city_status = yes
+                has_building = academy_building
+                has_building = court_building
+                has_building = forum_building
+            }
+            p:5557 = {
+                owner = ROOT
+                has_city_status = yes
+                has_building = academy_building
+                has_building = court_building
+                has_building = forum_building
+            }
+            p:5554 = {
+                owner = ROOT
+                has_city_status = yes
+                has_building = academy_building
+                has_building = court_building
+                has_building = forum_building
+            }
+            political_influence >= 20
+        }
+        on_completion = {
+            add_political_influence = -20
+            p:5559 = {
+                add_permanent_province_modifier = {
+                    name = sister_city_mod
+                    duration = -1
+                }
+            }
+            p:5557 = {
+                add_permanent_province_modifier = {
+                    name = sister_city_mod
+                    duration = -1
+                }
+            }
+            p:5554 = {
+                add_permanent_province_modifier = {
+                    name = sister_city_mod
+                    duration = -1
+                }
+            }
+        }
+    }
+
+    03_jaraharum_task_11 = {
+        icon = "task_economical"
+        requires = {03_jaraharum_task_10}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    owner = c:HOB
+                }
+            }
+        }
+
+        allow = {
+            political_influence = -50
+            hidden:c:HOB = {
+                opinion = {
+                    target = root
+                    value >= 100
+                }
+            }
+        }
+        on_completion = {
+            alliance = { first = SV0 second = HOB }
+            p:5562 = {
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = freemen
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+            }
+        }
+    }
+
+    03_jaraharum_task_12 = {
+        icon = "task_economical"
+        requires = {03_jaraharum_task_11}
+
+        highlight = {
+                OR = {
+                    province_id = 5561
+                    owner = c:HOB
+                }
+        }
+
+        allow = {
+            p:5561 = {
+                owner = ROOT
+                has_city_status = yes
+                has_building = academy_building
+                total_population >= 10
+            }
+            hidden:c:HOB = {
+                opinion = {
+                    target = root
+                    value >= 100
+                }
+            }
+        }
+
+        on_completion = {
+            add_treasury = -100
+            p:5561 = {
+                change_province_name = Jorrmundabi
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                define_pop = {
+                    type = mages
+                    culture = hobgoblin_1
+                    religion = the_old_pantheon
+                }
+                add_permanent_province_modifier = {
+                    name = jorrmundabi_academy_mod
+                    duration = -1
+                }
+            }
+            add_innovation = 5
+
+            area:dragon_mountains_foothills_1 = {
+                add_provincial_claim_effect = yes
+            }
+        }
+    }
+
+    03_jaraharum_task_13 = {
+        icon = "task_apollo"
+        requires = {03_jaraharum_task_12}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                is_in_area = dragon_mountains_foothills_2
+                }
+            }
+        }
+
+        allow = {
+            owns_area = dragon_mountains_foothills_2
+        }
+        on_completion = {
+            p:5561 = {
+                define_pop = {
+                    type = mages
+                    culture = dragkhanic_1
+                    religion = helluvian
+                }
+                define_pop = {
+                    type = mages
+                    culture = dragkhanic_1
+                    religion = helluvian
+                }
+                define_pop = {
+                    type = mages
+                    culture = dragkhanic_1
+                    religion = helluvian
+                }
+                define_pop = {
+                    type = mages
+                    culture = dragkhanic_1
+                    religion = helluvian
+                }
+                define_pop = {
+                    type = mages
+                    culture = dragkhanic_1
+                    religion = helluvian
+                }
+                define_pop = {
+                    type = mages
+                    culture = dragkhanic_1
+                    religion = helluvian
+                }
+            }
+            add_country_modifier = {
+                name = dragkhanic_research_mod
+                duration = -1
+            }
+            add_innovation = 5
+            }
+        }
+
+    03_jaraharum_task_14 = {
+        icon = "task_diplomatic"
+        requires = {03_jaraharum_task_13}
+
+        allow = {
+            p:5559 = {
+                owner = ROOT
+                has_city_status = yes
+                population >= 15
+            }
+            p:5557 = {
+                owner = ROOT
+                has_city_status = yes
+                population >= 15
+            }
+            p:5554 = {
+                owner = ROOT
+                has_city_status = yes
+                population >= 15
+            }
+        }
+        on_completion = {
+            add_military_experience = -10
+            add_political_influence = -100
+            ####GOBLINIC INTEGRATION EVENT
+            ####GIVE GOBLINS NOBLE RIGHTS
+            }
+        }
+
+        03_jaraharum_task_15 = {
+        icon = "task_diplomatic"
+        requires = {03_jaraharum_task_14}
+        final = yes
+
+        allow = {
+            job_holder:office_marshal = {
+                loyalty >= 60
+                culture = goblin_3
+            }
+            political_influence >= 100
+        }
+        on_completion = {
+            add_political_influence = -100
+            #####GOBLINIC SRROHEBRIC GOD EVENT
+            add_country_modifier = {
+                name = syncretism_mod
+                duration = -1
+            }
+        }
+    }
+
+#########DEVELOPMENT
+    03_jaraharum_task_16 = {
+        icon = "task_diplomatic"
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 5560
+                    province_id = 5559
+                    province_id = 5558
+                    province_id = 5557
+                    province_id = 5556
+                    province_id = 5555
+                    province_id = 5554
+                    province_id = 5552
+                }
+            }
+        }
+
+        allow = {
+            p:5560 = {
+                owner = ROOT
+                OR = {
+                    has_building = slave_mine_building
+                    has_building = foundry_building
+                }
+            }
+            p:5559 = {
+                owner = ROOT
+                OR = {
+                    has_building = slave_mine_building
+                    has_building = foundry_building
+                }
+            }
+            p:5558 = {
+                owner = ROOT
+                OR = {
+                    has_building = slave_mine_building
+                    has_building = foundry_building
+                }
+            }
+            p:5557 = {
+                owner = ROOT
+                OR = {
+                    has_building = slave_mine_building
+                    has_building = foundry_building
+                }
+            }
+            p:5556 = {
+                owner = ROOT
+                OR = {
+                    has_building = slave_mine_building
+                    has_building = foundry_building
+                }
+            }
+            p:5555 = {
+                owner = ROOT
+                OR = {
+                    has_building = slave_mine_building
+                    has_building = foundry_building
+                }
+            }
+            p:5554 = {
+                owner = ROOT
+                OR = {
+                    has_building = slave_mine_building
+                    has_building = foundry_building
+                }
+            }
+            p:5552 = {
+                owner = ROOT
+                OR = {
+                    has_building = slave_mine_building
+                    has_building = foundry_building
+                }
+            }
+        }
+        on_completion = {
+            add_5_free_province_investments = yes
+            ##### EXPANDED MINES
+            }
+        }
+
+    03_jaraharum_task_17 = {
+        icon = "task_diplomatic"
+        requires = {03_jaraharum_task_16}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 5551
+                    province_id = 4460
+                }
+            }
+        }
+
+        allow = {
+            treasury >= 100
+            p:5551 = {
+                owner = ROOT
+                has_building = fortress_building
+            }
+            p:4460 = {
+                owner = ROOT
+                has_building = fortress_building
+            }
+        }
+        on_completion = {
+            add_treasury = -100
+            add_3_free_province_investments = yes
+            p:5551 = {
+                add_permanent_province_modifier = {
+                name = mountain_gate_mod
+                duration = -1
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+            }
+            p:4460 = {
+                change_province_name = "Tipuka Ema'a"
+                add_permanent_province_modifier = {
+                name = mountain_gate_mod
+                duration = -1
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+            }
+        }
+    }
+
+    03_jaraharum_task_18 = {
+        icon = "task_diplomatic"
+        requires = {03_jaraharum_task_17}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = inner_dragon_pass
+                }
+            }
+        }
+        allow = {
+            capital_scope.state = {
+                OR = {
+                    is_importing_trade_good = cattle
+                    is_importing_trade_good = meat
+                    is_importing_trade_good = vegetables
+                    is_importing_trade_good = grain
+                    is_importing_trade_good = fish
+                    is_importing_trade_good = cheese
+                }
+            }
+            capital_scope.state = {
+                OR = {
+                    is_importing_trade_good = cattle
+                    is_importing_trade_good = meat
+                    is_importing_trade_good = vegetables
+                    is_importing_trade_good = grain
+                    is_importing_trade_good = fish
+                    is_importing_trade_good = cheese
+                }
+            }
+        }
+        on_completion = {
+            add_3_free_province_investments = yes
+            p:5562 = {
+                add_permanent_province_modifier = {
+                name = imported_food_mod
+                duration = -1
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+                define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+            }
+        }
+    }
+
+   03_jaraharum_task_19 = {
+        icon = "task_diplomatic"
+        requires = {03_jaraharum_task_18}
+        final = yes
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 5562
+                }
+            }
+        }
+
+        allow = {
+            treasury >= 200
+            p:5562 = {
+                owner = ROOT
+                has_building = fortress_building
+                has_building = academy_building
+                has_building = court_building
+                has_building = forum_building
+                population >= 50
+            }
+        }
+        on_completion = {
+            add_treasury = -200
+            p:5562 = {
+                add_permanent_province_modifier = {
+                name = sorrborr_mod
+                duration = -1
+            }
+            define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+            define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+            define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+            define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+            define_pop = {
+                    type = freemen
+                    culture = silver_dwarven_2
+                    religion = the_old_father_silver
+                }
+            }
+        }
+    }
+
+}
