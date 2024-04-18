@@ -414,7 +414,6 @@
     03_azar2_task_12 = {
         icon = "task_athena"
         requires = {03_azar2_task_11}
-        final = yes
 
         highlight = {
 			scope:province = {
@@ -477,6 +476,182 @@
                 }
             }
             trigger_event = me_azar.28
+        }
+    }
+    03_azar2_task_14 = {
+        icon = "task_expansion"
+        requires = {03_azar2_task_13}
+
+        highlight = {
+			scope:province = {
+                is_in_region = shoutern_eteradica
+            }
+	    }
+
+        allow = {
+            war = no
+            owns_or_subject_owns = 4588
+            owns_percent_of_region = {
+                PROVINCE = "p:4617" 
+                PERCENT = "0.75"
+            }
+        }
+
+        on_completion = {
+            current_ruler = {
+                add_popularity = 15
+            }
+            create_country_treasure = {
+                key = "jarenam_drakhanic_regalia_treasure"
+                icon = "treasure_it_golden_cape_of_deceangli"
+                modifier = {
+                    local_manpower_modifier = 0.05
+                    local_base_trade_routes = 2
+                    local_country_civilization_value = 5
+                }
+            }
+            if = {
+                limit ={
+                    c:SOV = {
+                        has_land = yes
+                    }
+                }
+                hidden_effect:region:shoutern_eteradica = {
+                    every_region_province = { add_claim = c:SOV }
+                }
+            }
+            trigger_event = me_azar.29
+        }
+    }
+
+    03_azar2_task_15 = {
+        icon = "task_calm"
+        requires = {03_azar2_task_14}
+
+        highlight = {
+			scope:province = {
+                province_id = 4588
+            }
+	    }
+
+        allow = {
+            war = no
+            treasury >= 100 
+            
+        }
+
+        on_completion = {
+            trigger_event = me_azar.30
+        }
+    }
+
+    03_azar2_task_16 = {
+        icon = "task_expansion"
+        requires = {03_azar2_task_13}
+
+        highlight = {
+			scope:province = {
+                is_in_region = central_eteradica
+            }
+	    }
+
+        allow = {
+            custom_tooltip = {
+                text = azar_mission_tree_task_16_tt
+                any_owned_province = {
+                    count >= 5
+                    is_in_region = central_eteradica
+                    has_city_status = yes
+                }
+            }
+        }
+
+        on_completion = {
+            add_treasury = 300
+            custom_tooltip = azar_conquer_northern_bhax_claims_tt
+			hidden_effect = {
+				region:northern_eteradica = {
+					every_region_province = {
+						add_claim = root
+					}
+				}
+			}
+            trigger_event = me_azar.31
+        }
+    }
+
+    03_azar2_task_17 = {
+        icon = "task_expansion"
+        requires = {03_azar2_task_16}
+
+        allow = {
+            owns_percent_of_region = {
+                PROVINCE = "p:3408" 
+                PERCENT = "0.75"
+            }
+        }
+
+        on_completion = {
+            current_ruler = {
+                add_charisma = 1
+                force_add_trait = silver_tongued
+            }
+            trigger_event = me_azar.32
+        }
+    }
+
+    03_azar2_task_18 = {
+        icon = "task_heracles"
+        requires = {03_azar2_task_17}
+        final = yes
+
+        allow = {
+            custom_tooltip = {
+                text = you_need_to_form_golden_empire
+                tag = GOL
+            }
+        }
+
+        on_completion = {
+            add_country_modifier = {
+                name = golden_empire_of_dwarves_modifier
+                duration = 36500
+            }
+            trigger_event = me_azar.33
+        }
+    }
+
+    03_azar2_task_19 = {
+        icon = "task_expansion"
+        requires = {03_azar2_task_3 03_azar2_task_15}
+        duration = 30
+
+        highlight = {
+			scope:province = {
+				owner = root
+				is_capital = yes
+			}
+		}
+
+        allow = {
+            has_law = magic_only_for_entrusted
+            political_influence >= 20
+            treasury >= 25
+            capital_scope = {
+                num_of_academy_building >= 3
+                num_of_library_building >= 3
+                has_no_ongoing_construction = yes
+            } 
+        }
+
+        on_completion = {
+            add_political_influence = -20
+            add_treasury = -20
+            trigger_event = {
+                id = me_seekers.16
+                days = { 1 2 }
+            }
+            trigger_event = me_azar.32
         }
     }
 }
