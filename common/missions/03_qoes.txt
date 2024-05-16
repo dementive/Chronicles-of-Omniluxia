@@ -21,10 +21,15 @@
             days = 7300
         }
     }
-    on_completion = {}
+    on_completion = {
+        capital_scope = {
+            capital_formable_medium_effect = yes
+        }
+    }
 
     03_qoes_task_1 = {
         icon = "task_battle"
+        requires = {03_qoes_task_8}
         duration = 30
         highlight = {
             scope:province = {
@@ -48,6 +53,7 @@
 
     03_qoes_task_2 = {
         icon = "task_conquest"
+        requires = {03_qoes_task_8}
         duration = 30
         highlight = {
             scope:province = {
@@ -71,7 +77,7 @@
     }
     03_qoes_task_3 = {
         icon = "task_expansion"
-        requires = {03_qoes_task_1 03_qoes_task_2}
+        requires = {03_qoes_task_1 03_qoes_task_2 03_qoes_task_6}
         highlight = {
             scope:province = {
             	OR = {
@@ -107,10 +113,29 @@
         }
     }
     03_qoes_task_4 = {
-        icon = "task_political"
-        requires = {03_qoes_task_3}
-        allow = {}
+        icon = "task_apollo"
+        requires = {03_qoes_task_7}
+        duration = 180
+        highlight = {
+            scope:province = {
+                 this = p:3816
+            }
+        }
+        allow = {
+            treasury >= 500
+            capital_scope = {
+                civilization_value >= 40
+            }
+        }
         on_completion = {
+            create_country_treasure = {
+                key = "treasure_qoes_armor_of_edis"
+                icon = "chineseshield1"
+                modifier = {
+                    local_defensive = 0.1
+                    garrison_size = 0.1
+                }
+            }
             trigger_event = me_qoes.4
             show_as_tooltip = {
 
@@ -127,7 +152,6 @@
         allow = {
             capital_scope = {
                 num_of_workshop_building = 3
-                num_of_commerce_building >= 1
                 has_no_ongoing_construction = yes  
             }
             invention = build_time_inv
@@ -147,7 +171,7 @@
     }
     03_qoes_task_6 = {
         icon = "task_happiness"
-        requires = {03_qoes_task_5}
+        requires = {03_qoes_task_8}
         highlight = {
             scope:province = {
                  this = p:3816
@@ -156,6 +180,7 @@
         allow = {
             capital_scope = {
                 has_building = forum_building
+                has_building = commerce_building
                 is_importing_trade_good = marble
                 is_importing_trade_good = precious_metals
                 has_no_ongoing_construction = yes 
@@ -171,6 +196,7 @@
                     name = grand_forum_of_badfurqorin
                     duration = -1
                 }
+                add_building_level = temple_building
             }
             trigger_event = me_qoes.6
             show_as_tooltip = {
@@ -179,9 +205,17 @@
         }
     }
     03_qoes_task_7 = {
-        icon = "task_political"
-        allow = {}
+        icon = "task_economical"
+        requires = {03_qoes_task_5}
+        allow = {
+            custom_tooltip = {
+                text = qoes_cinnabar_svalue_tt
+                qoes_cinnabar_svalue >= 7
+            }
+        }
         on_completion = {
+            add_innovation = 2
+            add_2_free_province_investments = yes
             trigger_event = me_qoes.7
             show_as_tooltip = {
 
@@ -191,12 +225,68 @@
     03_qoes_task_8 = {
         icon = "task_political"
         final = yes
-        allow = {}
+        allow = {
+            has_law = recruit_from_nobles
+            manpower >= 4
+        }
         on_completion = {
+            current_ruler = {
+                add_martial = 1
+            }
+            add_research = {
+            technology = military_tech
+            value = 15
+            }
             trigger_event = me_qoes.8
             show_as_tooltip = {
 
             }
         }
     }
+    03_qoes_task_9 = {
+        icon = "task_atlas"
+        requires = {03_qoes_task_3 03_qoes_task_4}
+        allow = {
+            custom_tooltip = {
+                text = you_need_to_form_copper_kingdom
+                tag = CKD
+            }
+        }
+        on_completion = {
+            current_ruler = {
+                force_add_trait = conqueror
+            }
+            p:3816 = {
+                set_city_status = city_metropolis
+            }
+            trigger_event = me_qoes.9
+            show_as_tooltip = {
+
+            }
+        }
+    }
+    03_qoes_task_10 = {
+        icon = "task_calm"
+        allow = {
+             custom_tooltip = {
+                    text = we_need_to_own_the_skyreach_altar_tt
+                    ROOT = {
+                        any_country_treasure = {
+                            this = treasure:treasure_skyreach_altar
+                        }
+                    }
+                }
+        }
+        on_completion = {
+            add_country_modifier = {
+                name = skyreach_altar_in_copper_kingdom_mod
+                duration = -1
+            }
+            trigger_event = me_qoes.10
+            show_as_tooltip = {
+
+            }
+        }
+    }
+
 }
