@@ -45,9 +45,6 @@
                 add_provincial_claim_effect = yes
 			}
             trigger_event = me_qoes.1
-            show_as_tooltip = {
-
-            }
         }
     }
 
@@ -70,9 +67,6 @@
                 add_provincial_claim_effect = yes
 			}
             trigger_event = me_qoes.2
-            show_as_tooltip = {
-
-            }
         }
     }
     03_qoes_task_3 = {
@@ -107,9 +101,6 @@
                     every_region_province = { add_claim = root }
                 }
             trigger_event = me_qoes.3
-            show_as_tooltip = {
-
-            }
         }
     }
     03_qoes_task_4 = {
@@ -128,6 +119,7 @@
             }
         }
         on_completion = {
+            add_treasury = -500
             create_country_treasure = {
                 key = "treasure_qoes_armor_of_edis"
                 icon = "chineseshield1"
@@ -137,9 +129,6 @@
                 }
             }
             trigger_event = me_qoes.4
-            show_as_tooltip = {
-
-            }
         }
     }
     03_qoes_task_5 = {
@@ -164,9 +153,6 @@
                 }
             }
             trigger_event = me_qoes.5
-            show_as_tooltip = {
-
-            }
         }
     }
     03_qoes_task_6 = {
@@ -199,9 +185,6 @@
                 add_building_level = temple_building
             }
             trigger_event = me_qoes.6
-            show_as_tooltip = {
-
-            }
         }
     }
     03_qoes_task_7 = {
@@ -217,19 +200,29 @@
             add_innovation = 2
             add_2_free_province_investments = yes
             trigger_event = me_qoes.7
-            show_as_tooltip = {
-
-            }
+            p:3816 = {add_road_towards = 3960}
+            p:3816 = {add_road_towards = 3961}
         }
     }
     03_qoes_task_8 = {
         icon = "task_political"
-        final = yes
+        highlight = {
+            scope:province = {
+                 this = p:3816
+            }
+        }
         allow = {
             has_law = recruit_from_nobles
             manpower >= 4
+            capital_scope = {
+                num_of_military_building >= 1
+            }
         }
         on_completion = {
+            add_country_modifier = {
+                name = copper_dwarven_mercenary_initiative
+                duration = 3650
+            }
             current_ruler = {
                 add_martial = 1
             }
@@ -238,14 +231,12 @@
             value = 15
             }
             trigger_event = me_qoes.8
-            show_as_tooltip = {
-
-            }
         }
     }
     03_qoes_task_9 = {
         icon = "task_atlas"
         requires = {03_qoes_task_3 03_qoes_task_4}
+        final = yes
         allow = {
             custom_tooltip = {
                 text = you_need_to_form_copper_kingdom
@@ -253,9 +244,6 @@
             }
         }
         on_completion = {
-            current_ruler = {
-                force_add_trait = conqueror
-            }
             p:3816 = {
                 set_city_status = city_metropolis
             }
@@ -267,15 +255,35 @@
     }
     03_qoes_task_10 = {
         icon = "task_calm"
+        bypass = {
+            limit = {
+                NOT = 
+                    exists = treasure:treasure_skyreach_altar
+                }
+        }
         allow = {
-             custom_tooltip = {
-                    text = we_need_to_own_the_skyreach_altar_tt
-                    ROOT = {
-                        any_country_treasure = {
-                            this = treasure:treasure_skyreach_altar
+             trigger_if = {
+                limit = { exists = treasure:treasure_skyreach_altar }
+                hidden:treasure:treasure_skyreach_altar = {
+                    custom_tooltip = {
+                        text = we_need_to_own_the_skyreach_altar_tt
+                        ROOT = {
+                            any_holy_site = {
+                                province_deity = deity:omen_edis
+                                any_province_treasure = {
+                                    this = treasure:treasure_skyreach_altar
+                                }
+                            }
                         }
                     }
                 }
+            }
+            trigger_else = {
+                custom_tooltip = {
+                    text = we_need_to_own_the_skyreach_altar_tt
+                    always = no
+                }
+            }
         }
         on_completion = {
             add_country_modifier = {
@@ -283,9 +291,6 @@
                 duration = -1
             }
             trigger_event = me_qoes.10
-            show_as_tooltip = {
-
-            }
         }
     }
 
