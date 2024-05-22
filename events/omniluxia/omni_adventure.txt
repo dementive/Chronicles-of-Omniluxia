@@ -1,0 +1,211 @@
+namespace =  adventure
+
+adventure.1 = { # Pick your party of adventurers
+    type = character_event
+    title = adventure.1.t
+    desc = adventure.1.desc
+    picture = aqueducts
+
+    left_portrait = scope:adventurer_1
+    left_portrait = scope:adventurer_2
+    left_portrait = scope:adventurer_3
+
+    right_portrait = scope:adventurer_4
+    right_portrait = scope:adventurer_5
+    right_portrait = scope:adventurer_6
+
+    option = {
+        name = adventure.1.a
+        trigger = {
+        	exists = scope:adventurer_1
+        }
+        save_adventurer_var = { SCOPE = "adventurer_1" }
+        clear_saved_scope = adventurer_1
+    }
+    option = {
+        name = adventure.1.b
+        trigger = {
+        	exists = scope:adventurer_2
+        }
+        save_adventurer_var = { SCOPE = "adventurer_2" }
+        clear_saved_scope = adventurer_2
+    }
+    option = {
+        name = adventure.1.c
+        trigger = {
+        	exists = scope:adventurer_3
+        }
+        save_adventurer_var = { SCOPE = "adventurer_3" }
+        clear_saved_scope = adventurer_3
+    }
+    option = {
+        name = adventure.1.d
+        trigger = {
+        	exists = scope:adventurer_4
+        }
+        save_adventurer_var = { SCOPE = "adventurer_4" }
+        clear_saved_scope = adventurer_4
+    }
+    option = {
+        name = adventure.1.e
+        trigger = {
+        	exists = scope:adventurer_5
+        }
+        save_adventurer_var = { SCOPE = "adventurer_5" }
+        clear_saved_scope = adventurer_5
+    }
+    option = {
+        name = adventure.1.f
+        trigger = {
+        	exists = scope:adventurer_6
+        }
+        save_adventurer_var = { SCOPE = "adventurer_6" }
+        clear_saved_scope = adventurer_6
+    }
+    after = {
+    	if = {
+    		NOT = {
+    			has_variable = adventurer_1
+    			has_variable = adventurer_2
+    			has_variable = adventurer_3
+    		}
+    		trigger_event = adventure.1
+    	}
+    	else = {
+    		trigger_event = adventure.2
+    	}
+    }
+}
+
+adventure.2 = { # Pick the province to adventure to with your party
+    type = character_event
+    title = adventure.2.t
+    desc = adventure.2.desc
+    picture = aqueducts
+
+    left_portrait = current_ruler
+    left_portrait = var:adventurer_1
+
+    right_portrait = var:adventurer_2
+    right_portrait = var:adventurer_3
+
+    trigger = {
+    	exists = var:adventurer_1
+    	exists = var:adventurer_2
+    	exists = var:adventurer_3
+    }
+
+    immediate = {
+    	save_adventure_province = { SCOPE = "adventure_province_1" LIMIT = "" }
+    	save_adventure_province = { SCOPE = "adventure_province_2" LIMIT = "NOT = { THIS = scope:adventure_province_1 }" }
+    	save_adventure_province = { SCOPE = "adventure_province_3" LIMIT = "NOR = { THIS = scope:adventure_province_1 THIS = scope:adventure_province_2 }" }
+    	save_adventure_province = { SCOPE = "adventure_province_4" LIMIT = "NOR = { THIS = scope:adventure_province_1 THIS = scope:adventure_province_2 THIS = scope:adventure_province_3 }" }
+    	save_adventure_province = { SCOPE = "adventure_province_5" LIMIT = "NOR = { THIS = scope:adventure_province_1 THIS = scope:adventure_province_2 THIS = scope:adventure_province_3 THIS = scope:adventure_province_4 }" }
+    	save_adventure_province = { SCOPE = "adventure_province_6" LIMIT = "NOR = { THIS = scope:adventure_province_1 THIS = scope:adventure_province_2 THIS = scope:adventure_province_3 THIS = scope:adventure_province_4 THIS = scope:adventure_province_5 }" }
+    }
+
+    option = {
+    	trigger = {
+    		exists = scope:adventure_province_1
+    	}
+        name = adventure.2.a
+        custom_tooltip = "adventure_province_1_tt"
+        set_variable = {
+        	name = adventure_province
+        	value = scope:adventure_province_1
+        }
+    }
+    option = {
+    	trigger = {
+    		exists = scope:adventure_province_2
+    	}
+        name = adventure.2.b
+        custom_tooltip = "adventure_province_2_tt"
+        set_variable = {
+        	name = adventure_province
+        	value = scope:adventure_province_2
+        }
+    }
+    option = {
+    	trigger = {
+    		exists = scope:adventure_province_3
+    	}
+        name = adventure.2.c
+        custom_tooltip = "adventure_province_3_tt"
+        set_variable = {
+        	name = adventure_province
+        	value = scope:adventure_province_3
+        }
+    }
+    option = {
+    	trigger = {
+    		exists = scope:adventure_province_4
+    	}
+        name = adventure.2.d
+        custom_tooltip = "adventure_province_4_tt"
+        set_variable = {
+        	name = adventure_province
+        	value = scope:adventure_province_4
+        }
+    }
+    option = {
+    	trigger = {
+    		exists = scope:adventure_province_5
+    	}
+        name = adventure.2.e
+        custom_tooltip = "adventure_province_5_tt"
+        set_variable = {
+        	name = adventure_province
+        	value = scope:adventure_province_5
+        }
+    }
+    option = {
+    	trigger = {
+    		exists = scope:adventure_province_6
+    	}
+        name = adventure.2.f
+        custom_tooltip = "adventure_province_6_tt"
+        set_variable = {
+        	name = adventure_province
+        	value = scope:adventure_province_6
+        }
+    }
+    after = {
+    	trigger_event = {
+    		id = adventure.3
+    		days = { 10 40 }
+    	}
+    }
+}
+
+adventure.3 = { # Preparations for the adventure have finished, the party sets out for [adventure_province]
+	# TODO - make this more interesting, the party should be able to pick how they prepare for the adventure and what they will take with them.
+    type = character_event
+    title = adventure.3.t
+    desc = adventure.3.desc
+    picture = aqueducts
+    
+    goto_location = var:adventure_province
+    left_portrait = current_ruler
+    left_portrait = var:adventurer_1
+
+    right_portrait = var:adventurer_2
+    right_portrait = var:adventurer_3
+
+    trigger = {
+    	has_variable = adventure_province
+    }
+
+    option = {      
+        name = adventure.3.a
+    }
+    option = {      
+        name = adventure.3.b
+    }
+
+    after = {
+    	# TODO: 
+    	# Trigger adventure complication events, can be good things the party found or trials and tribulations they come across on their journey to [adventure_province]. This will be a recursive event chain.
+    	# Also trigger the 'arrival' event after an appopriate amount of days for how far the province is (use distance_from to figure out the proper duration of the adventure)
+    }
+}
