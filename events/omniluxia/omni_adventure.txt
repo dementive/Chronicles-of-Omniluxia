@@ -204,8 +204,229 @@ adventure.3 = { # Preparations for the adventure have finished, the party sets o
     }
 
     after = {
-    	# TODO: 
-    	# Trigger adventure complication events, can be good things the party found or trials and tribulations they come across on their journey to [adventure_province]. This will be a recursive event chain.
-    	# Also trigger the 'arrival' event after an appopriate amount of days for how far the province is (use distance_from to figure out the proper duration of the adventure)
+        trigger_event = {
+            id = adventure.4
+            days = { 30 90 }
+        }
+        # TODO - Trigger the 'arrival' event after an appropriate amount of days for how far the province is (use distance_from to figure out the proper duration of the adventure)
+        if = {
+            limit = {
+
+            }
+            trigger_event = {
+                id = adventure.5
+                days = { 365 700 }
+            }
+        }
+    }
+}
+
+adventure.4 = {
+    # Adventure traveling complications maintenance event
+    # Adventure complication events, can be good things the party found or trials and tribulations they come across on their journey to [adventure_province].
+    type = character_event
+    hidden = yes
+
+    trigger = {
+        NOT = {
+            has_variable = arrived_at_adventure_target
+        }
+    }
+
+    immediate = {
+        random_list = {
+            # TODO - Add a lot more complication events here...
+            1 = { trigger_event = adventure.4000 }
+            1 = {}
+        }
+    }
+    after = {
+        # Trigger the next complication event if the target hasn't been reached
+        trigger_event = {
+            id = adventure.4
+            days = { 45 180 }
+        }
+    }
+}
+
+adventure.4000 = { # Adventure traveling complication event 1
+    type = character_event
+    title = adventure.4000.t
+    desc = adventure.4000.desc
+    picture = aqueducts
+    
+    goto_location = var:adventure_province
+    left_portrait = current_ruler
+    left_portrait = var:adventurer_1
+
+    right_portrait = var:adventurer_2
+    right_portrait = var:adventurer_3
+
+    trigger = {
+        has_variable = adventure_province
+    }
+
+    option = {      
+        name = adventure.4000.a
+    }
+    option = {      
+        name = adventure.4000.b
+    }
+}
+
+adventure.5 = { # The party has arrived at adventure_province and is ready to fully explore it
+    type = character_event
+    title = adventure.5.t
+    desc = adventure.5.desc
+    picture = aqueducts
+    
+    goto_location = var:adventure_province
+    left_portrait = current_ruler
+    left_portrait = var:adventurer_1
+
+    right_portrait = var:adventurer_2
+    right_portrait = var:adventurer_3
+
+    trigger = {
+        has_variable = adventure_province
+    }
+
+    immediate = {
+        set_variable = arrived_at_adventure_target
+        # TODO - This event should be completely different depending on what adventure type variable the character has
+        # Different possible adventure type variables:
+        # caverns_adventure
+        # mountain_adventure
+        # eldritch_forest_adventure
+        # metropolis_adventure
+        # magical_adventure
+        # beachside_adventure
+        # elixir_adventure
+        # soulgems_adventure
+        # holy_site_adventure
+        # generic_adventure
+    }
+
+    option = {      
+        name = adventure.5.a
+    }
+
+    option = {      
+        name = adventure.5.b
+    }
+
+    after = {
+        # Trigger the next complication event if the target hasn't been reached
+        trigger_event = {
+            id = adventure.6
+            days = { 15 50 }
+        }
+        trigger_event = {
+            id = adventure.7
+            days = { 180 400 }
+        }
+    }
+}
+
+adventure.6 = {
+    # Adventure target complications maintenence event
+    # Adventure target complication events, can be good things the party found or trials and tribulations they come across on their journey to [adventure_province].
+    type = character_event
+    hidden = yes
+
+    trigger = {
+        NOT = {
+            has_variable = finished_exploring_target
+        }
+    }
+
+    immediate = {
+        random_list = {
+            # TODO - Add a lot more complication events here...
+            1 = { trigger_event = adventure.6000 }
+            1 = {}
+        }
+    }
+    after = {
+        # Trigger the next complication event if the target hasn't been reached
+        trigger_event = {
+            id = adventure.6
+            days = { 45 180 }
+        }
+    }
+}
+
+adventure.6000 = { # Adventure destination complication event 1
+    type = character_event
+    title = adventure.6000.t
+    desc = adventure.6000.desc
+    picture = aqueducts
+    
+    goto_location = var:adventure_province
+    left_portrait = current_ruler
+    left_portrait = var:adventurer_1
+
+    right_portrait = var:adventurer_2
+    right_portrait = var:adventurer_3
+
+    trigger = {
+        has_variable = adventure_province
+    }
+
+    option = {      
+        name = adventure.6000.a
+    }
+    option = {      
+        name = adventure.6000.b
+    }
+}
+
+adventure.7 = { # The party has finished, give adventuring rewards.
+    type = character_event
+    title = adventure.7.t
+    desc = adventure.7.desc
+    picture = aqueducts
+    
+    goto_location = var:adventure_province
+    left_portrait = current_ruler
+    left_portrait = var:adventurer_1
+
+    right_portrait = var:adventurer_2
+    right_portrait = var:adventurer_3
+
+    trigger = {
+        has_variable = adventure_province
+    }
+
+    immediate = {
+        set_variable = finished_exploring_target
+        # TODO - This event should be completely different depending on what adventure type variable the character has
+        # Different possible adventure type variables:
+        # caverns_adventure
+        # mountain_adventure
+        # eldritch_forest_adventure
+        # metropolis_adventure
+        # magical_adventure
+        # beachside_adventure
+        # elixir_adventure
+        # soulgems_adventure
+        # holy_site_adventure
+        # generic_adventure
+    }
+
+    option = {      
+        name = adventure.7.a
+        add_treasury = 999
+        # TODO - give options of different rewards that make sense for each adventure type here
+    }
+
+    option = {      
+        name = adventure.7.b
+        current_ruler = { add_gold = 999 }
+    }
+
+    after = {
+        # TODO - clear all adventure variables here
+        # TODO - Should there also be complication events while the party travels back home?
     }
 }
