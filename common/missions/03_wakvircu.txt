@@ -1,0 +1,309 @@
+﻿03_wakvircu = {
+    header = "lotr_generic_mission_ships_headers"
+    icon = "general_3"
+
+    repeatable = no
+    chance = 1000
+
+    potential = {
+        NOT = { has_variable = mission_cooldown_var }
+        tag = GCS
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {}
+
+    03_wakvircu_task_1 = {
+        icon = "task_diplomatic"
+
+        bypass = {
+     		owns_or_subject_owns = 1849
+        }
+
+        highlight = {
+			scope:province = {
+				province_id = 1849
+			}
+		}
+
+        allow = {
+        	stability >= 55
+        	hidden:c:DR7 = {
+				opinion = {
+					target = root
+					value >= 100
+				}
+			}
+			custom_tooltip = {
+			text = send_a_gift_to_cuwa_tt
+			hidden:p:1849.owner = {
+				has_opinion = {
+	                modifier = opinion_gift
+	                target = ROOT
+	            }
+			}
+	 	}
+        }
+
+        on_completion = {
+        	current_ruler = {
+				add_friend = C:DR7.current_ruler
+			}	
+        	p:1849 = {
+				set_owned_by = root
+			}
+            trigger_event = me_wakvircu.1
+        }
+    }
+
+    03_wakvircu_task_2 = {
+        icon = "task_atlas"
+        requires = {03_wakvircu_task_1}
+
+        highlight = {
+			scope:province = {
+				province_id = 1849
+			}
+		}
+
+        allow = {
+        	political_influence >= 25
+        	has_senate_approval >= 0.60
+        }
+
+        on_completion = {
+        	add_political_influence = -25
+        	set_capital = 1849
+        	current_ruler = {
+						add_popularity = 10
+					}
+            trigger_event = me_wakvircu.2
+        }
+    }
+
+    03_wakvircu_task_3 = {
+        icon = "task_political"
+        requires = {03_wakvircu_task_1}
+
+        allow = {
+        	num_of_ships >= 15
+        	custom_tooltip = {
+                text = we_need_astral_navigation_tech
+                invention = pirate_spawn_chance_inv_1
+            }
+            custom_tooltip = {
+            	text = we_need_norrfallian_seafarers_path_1_tt
+            	has_military_bonus = norrfallian_seafarers_path_1
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_wakvircu.3
+            add_country_modifier = {
+                name = stellaric_armada_mod
+                duration = -1
+            }
+        }
+    }
+
+    03_wakvircu_task_4 = {
+        icon = "task_expansion"
+        requires = {03_wakvircu_task_2 03_wakvircu_task_3}
+
+        highlight = {
+            scope:province = {
+                province_id = 1849
+            }
+        }
+
+        allow = {
+            p:1849 = {
+                num_of_port_building >= 3
+            }
+            p:1849.state = {
+                calc_true_if = {
+                    amount >= 1
+                    state_improvement_oratory_trigger = yes
+                }
+            }
+        }
+
+        on_completion = {
+            p:1849 = {
+                add_road_towards = 1830
+            }
+            p:1849 = {
+                add_permanent_province_modifier = {
+                    name = stellaric_harbor_of_cuwa
+                    duration = -1
+                }
+            }
+            p:1830 = {
+            if = {
+                limit = {
+                    is_holy_site = yes
+                }
+                remove_province_deity = yes
+            }
+            p:1849 = {
+                set_province_deity = deity:omen_ying_pin
+            }
+        }
+            trigger_event = me_wakvircu.4
+        }
+    }
+
+    03_wakvircu_task_5 = {
+        icon = "task_economical"
+        requires = {03_wakvircu_task_4}
+
+        highlight = {
+            scope:province = {
+                province_id = 1849
+            }
+        }
+
+        allow = {
+            custom_tooltip = {
+                text = we_need_transaction_taxation_policy_tt
+                has_high_economic_policy = income_commerce
+            }
+            custom_tooltip = {
+                text = we_have_river_barges_tech_tt
+                invention = capital_trade_inv_1
+            }
+            capital_scope.state = {
+                trade_good_surplus = {
+                    target = dye
+                    value >= 3
+                }
+                trade_good_surplus = {
+                    target = glass
+                    value >= 3
+                }
+            } 
+        }
+
+        on_completion = {
+            trigger_event = me_wakvircu.5
+            add_research = {
+                technology = civic_tech
+                value = 50
+            }
+            add_2_free_province_investments = yes
+        }
+    }
+
+    03_wakvircu_task_6 = {
+        icon = "task_battle"
+        requires = {03_wakvircu_task_8}
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 1779
+                    province_id = 1740
+                }
+            }
+        }
+
+        allow = {
+            custom_tooltip = {
+                text = we_need_improved_fortification_tt
+                has_high_economic_policy = expense_fort
+            }
+            p:1740 = {
+                num_of_fortress_building >= 1
+            }
+            p:1779 = {
+                num_of_fortress_building >= 1
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_wakvircu.6
+            add_country_modifier = {
+                name = stellaric_fortifications_mod
+                duratoin = -1
+            }
+            p:1740 = {
+                add_permanent_province_modifier = {
+                    name = walls_of_tayngvw_mod
+                    duration = -1
+                }
+            }
+            p:1779 = {
+                add_permanent_province_modifier = {
+                    name = walls_of_tayngvw_mod
+                    duration = -1
+                }
+            }
+        }
+    }
+
+    03_wakvircu_task_7 = {
+        icon = "task_conquest"
+        requires = {03_wakvircu_task_6}
+
+        allow = {
+            manpower >= 6
+            invention = experience_decay_inv_1
+            has_law = republican_recruitment_1
+            custom_tooltip = {
+                text = renjun_omen_active_tt
+                has_this_omen = deity:omen_renjun
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_wakvircu.7
+            add_country_modifier = {
+                name = levies_of_wakrvircu_mod
+                duration = 7300
+            }
+        }
+    }
+    03_wakvircu_task_8 = {
+        icon = "task_calm"
+        duration = 90
+        final = yes
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_area = bloody_peninsula_1
+                    is_in_area = bloody_peninsula_2
+                    is_in_area = errnorfallie_2
+                }
+            }
+        }
+
+        allow = {
+            political_influence >= 30
+        }
+
+        on_completion = {
+            add_political_influence = -30
+            area:bloody_peninsula_1 = {
+                add_provincial_claim_effect = yes
+            }
+            area:bloody_peninsula_2 = {
+                add_provincial_claim_effect = yes
+            }
+            area:errnorfallie_2 = {
+                add_provincial_claim_effect = yes
+            }
+            trigger_event = me_wakvircu.8
+        }
+    }
+}
