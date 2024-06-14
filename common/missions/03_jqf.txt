@@ -1,0 +1,188 @@
+﻿03_jqf = {
+    header = "lotr_tribal_reform_mission_headers"
+    icon = "seleukid_2"
+
+    repeatable = no
+    chance = 1000
+
+    potential = {
+        NOT = { has_variable = mission_cooldown_var }
+        tag = JQF
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {
+        current_ruler = {
+            average_martial_effect = yes
+        }
+    }
+
+    03_jqf_task_1 = {
+        icon = "task_political"
+        duration = 30
+        bypass = {
+            current_ruler = {
+                is_married = yes
+            }
+        }
+
+        allow = {}
+        on_completion = {
+            reverse_add_opinion = { target = SOV modifier = opinion_hostile_neighbor }
+            trigger_event = me_jqf.1
+        }
+    }
+
+    03_jqf_task_2 = {
+        icon = "task_athena"
+        requires = {03_jqf_task_1}
+        duration = 30
+        allow = {
+            political_influence >= 40
+        }
+
+        on_completion = {
+            add_political_influence = -40
+            create_unit = {
+                set_as_commander = root.current_ruler
+                navy = no
+                name = "Soventeir Nobles"
+                location = capital_scope
+                hidden_effect = {
+                add_subunit = light_infantry
+                add_subunit = light_infantry
+                add_subunit = light_infantry
+                add_subunit = light_infantry
+                add_subunit = heavy_infantry
+                add_subunit = heavy_infantry
+                add_subunit = heavy_infantry
+                add_subunit = heavy_infantry                                          
+                add_food = 100
+                add_morale = 2
+                }
+            }
+            current_ruler = {
+                add_martial = 1
+            }
+            trigger_event = me_jqf.2
+        }
+    }
+
+    03_jqf_task_3 = {
+        icon = "task_expansion"
+        requires = {03_jqf_task_5}
+        highlight = {
+            scope:province = {
+                province_id = 4864
+            }
+        }
+        allow = {
+            owns = 4864
+            num_of_cities >= 20
+            stability >= 50
+            war = no
+            num_of_ships >= 30
+        }
+        on_completion = {
+            trigger_event = me_jqf.3
+            declare_war_with_wargoal = {
+                war_goal = imperial_conquest_wargoal
+                province = 4588 
+                target = p:4588.owner
+            }
+        }
+    }
+
+    03_jqf_task_4 = {
+        icon = "task_conquest"
+        requires = {03_jqf_task_1}
+        allow = {
+        	custom_tooltip = {
+				text = we_need_to_hire_mercenary_tt
+				any_unit = {
+					exists = commander
+					commander = {
+						is_mercenary = yes
+					}
+				}
+			}
+        }
+        on_completion = {
+            trigger_event = me_jqf.4
+        }
+    }
+
+    03_jqf_task_5 = {
+        icon = "task_battle"
+        requires = {03_jqf_task_2 03_jqf_task_4}
+
+        allow = {
+            custom_tooltip = {
+                text = we_must_send_insult_to_soventeir_jarenam_tt
+                root = {
+                    has_opinion = {
+                    modifier = opinion_insult
+                    target = c:SOV
+                    }
+                }
+            }
+        }
+
+        on_completion = {
+        	declare_war_with_wargoal = {
+                war_goal = imperial_conquest_wargoal
+                province = 4864 
+                target = p:4864.owner
+            }
+            trigger_event = me_jqf.5
+        }
+    }
+
+03_jqf_task_6 = {
+        icon = "task_atlas"
+        requires = {03_jqf_task_3}
+        final = yes
+
+        highlight = {
+			scope:province = {
+				OR = {
+				province_id = 4588
+				province_id = 4864
+				}
+			}
+		}
+
+        allow = {
+            war = no
+            owns = 4588
+            owns = 4864
+            num_of_cities >= 50
+        }
+
+        on_completion = {
+            add_country_modifier = {
+                name = supreme_jarenam_emperor_mod
+                duration = -1
+            }
+            change_country_flag = "SOV3_FLAG" 
+            change_government = imperium
+            change_country_name = "JARENAM_QHAGAN_EMPIRE_NAME"
+			add_5_free_province_investments = yes
+			add_country_modifier = {
+				name = formable_country_huge_modifier
+				duration = 7600
+			}
+            trigger_event = me_jqf.6
+        }
+    }
+}
