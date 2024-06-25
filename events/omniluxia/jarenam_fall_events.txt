@@ -22,17 +22,10 @@ jarenamfall.1 = { ##JARENAM-ESQUALIAN INVASION
                 duration = 1825
             }
         }
-        every_country = {
-            	limit = {
-            		NOT = {
-            			OR = {
-            				tag = JRE
-            				country_culture_group = esquelian
-            			}
-            		}
-            	}
-                trigger_event = jarenamfall.3
-            }
+        trigger_event = {
+            id = jarenamfall.8
+            days = { 60 90 }
+        }
     }
     option = {
         name = "jarenamfall_1.b"
@@ -50,8 +43,13 @@ jarenamfall.1 = { ##JARENAM-ESQUALIAN INVASION
 	            }
 	        }
 	    }
-        #ESQUALIAN RESPONSES
-        hidden_effect = { 
+	    c:PHK = {
+		    trigger_event = {
+	            id = jarenamfall.4
+	            days = { 15 30 }
+	        }
+        }
+        hidden_effect = { #GLOBAL ANNOUNCEMENT
             every_country = {
             	limit = {
             		NOT = {
@@ -63,6 +61,7 @@ jarenamfall.1 = { ##JARENAM-ESQUALIAN INVASION
             	}
                 trigger_event = jarenamfall.3
             }
+            #ESQUALIAN RESPONSES
             every_country = {
                 limit = {
                 	country_culture_group = esquelian
@@ -70,12 +69,9 @@ jarenamfall.1 = { ##JARENAM-ESQUALIAN INVASION
                 trigger_event = jarenamfall.2
             }
         }
-        trigger_event = {
-                id = jarenamfall.12
-                days = 1080
-        }
     }
 }
+
 jarenamfall.2 = { ##ESQUELIANS DECIDE HOW TO REACT
     type = country_event
 
@@ -85,12 +81,6 @@ jarenamfall.2 = { ##ESQUELIANS DECIDE HOW TO REACT
     left_portrait = current_ruler
     left_portrait = c:EK1.current_ruler
     right_portrait = c:JRE.current_ruler
-
-    immediate = {
-    	set_global_variable = {
-    		name = jarenam_fall_started
-    	}
-    }
 
     option = {
     	ai_chance = { factor = 1 }
@@ -111,6 +101,7 @@ jarenamfall.2 = { ##ESQUELIANS DECIDE HOW TO REACT
         add_tyranny = 5
     }
 }
+
 jarenamfall.3 = { ##WORLD DECLARATION JARENAM-ESQUALIAN INVASION
     type = country_event
 
@@ -125,6 +116,7 @@ jarenamfall.3 = { ##WORLD DECLARATION JARENAM-ESQUALIAN INVASION
         custom_tooltip = jarenamfall_3_tooltip
     }
 }
+
 jarenamfall.4 = { ##PHANICIAN OPPORTUNISTS
     type = country_event
 
@@ -136,20 +128,10 @@ jarenamfall.4 = { ##PHANICIAN OPPORTUNISTS
 
     fire_only_once = yes
 
-    trigger = {
-        NOT = { has_global_variable = jarenam_fall_ended }
-    	has_global_variable = jarenam_fall_started
-    	tag = PHK
-    	c:JRE ={
-    		stability <= 30
-    		war = yes
-    	}
-    }
-
     option = {
         name = "jarenamfall_4.a"
         custom_tooltip = jarenamfall_4_tooltip.a
-        hidden_effect = { 
+        hidden_effect = {
 	        c:PHK = {
 	            declare_war_with_wargoal = {
 	                war_goal = conquer_wargoal
@@ -157,12 +139,15 @@ jarenamfall.4 = { ##PHANICIAN OPPORTUNISTS
 	                target = c:JRE
 	            }
 	        }
-            every_country = {
-            	limit = {
-            	    NOT = { tag = PHK }
-            	}
+            c:JRE = {
                 trigger_event = jarenamfall.5
             }
+            c:EGY = {
+			    trigger_event = {
+		            id = jarenamfall.6
+		            days = { 15 30 }
+		        }
+        	}
         }
     }
     option = {
@@ -170,8 +155,15 @@ jarenamfall.4 = { ##PHANICIAN OPPORTUNISTS
         custom_tooltip = jarenamfall_4_tooltip.b
         add_stability = 10
         add_tyranny = 5
+        c:EGY = {
+			trigger_event = {
+		        id = jarenamfall.6
+		        days = { 15 30 }
+		    }
+        }
     }
 }
+
 jarenamfall.5 = { ##PHANICIAN OPPORTUNISTS ATTACK
     type = country_event
 
@@ -186,6 +178,7 @@ jarenamfall.5 = { ##PHANICIAN OPPORTUNISTS ATTACK
         custom_tooltip = jarenamfall_5_tooltip
     }
 }
+
 jarenamfall.6 = { ##BAETEP OPPORTUNISTS
     type = country_event
 
@@ -196,14 +189,6 @@ jarenamfall.6 = { ##BAETEP OPPORTUNISTS
     right_portrait = c:JRE.current_ruler
 
     fire_only_once = yes
-
-    trigger = {
-    	tag = EGY
-    	c:JRE ={
-    		stability <= 20
-    		war = yes
-    	}
-    }
 
     option = {
         name = "jarenamfall_6.a"
@@ -216,12 +201,22 @@ jarenamfall.6 = { ##BAETEP OPPORTUNISTS
 	                target = c:JRE
 	            }
 	        }
-            every_country = {
-                limit = {
-                    NOT = { tag = PHK }
-                }
+            c:JRE = {
             	trigger_event = jarenamfall.7
         	}
+	        if = {
+		        limit = {
+		        	NOT = {
+		        		has_global_variable = jarenam_fall_end
+		        	}
+		        }
+		        c:JRE = {
+					trigger_event = {
+				        id = jarenamfall.8
+				        days = { 10 12 }
+				    }
+			    }
+			}
         }
     }
     option = {
@@ -229,8 +224,22 @@ jarenamfall.6 = { ##BAETEP OPPORTUNISTS
         custom_tooltip = jarenamfall_6_tooltip.b
         add_stability = 10
         add_tyranny = 5
+        if = {
+	        limit = {
+	        	NOT = {
+	        		has_global_variable = jarenam_fall_end
+	        	}
+	        }
+	        c:JRE = {
+				trigger_event = {
+			        id = jarenamfall.8
+			        days = { 60 180 }
+			    }
+		    }
+		}
     }
 }
+
 jarenamfall.7 = { ##BAETEP OPPORTUNISTS ATTACK
     type = country_event
 
@@ -245,6 +254,7 @@ jarenamfall.7 = { ##BAETEP OPPORTUNISTS ATTACK
         custom_tooltip = jarenamfall_7_tooltip
     }
 }
+
 jarenamfall.8 = { ##BHAXIAN ZAIN & HELL REVOLT
     type = country_event
 
@@ -254,12 +264,6 @@ jarenamfall.8 = { ##BHAXIAN ZAIN & HELL REVOLT
     left_portrait = current_ruler
 
     fire_only_once = yes
-
-    trigger = {
-    	tag = JRE
-    	stability <= 20
-    	war = yes
-    }
 
     goto_location = p:3764
     goto_location = p:4696
@@ -307,7 +311,7 @@ jarenamfall.8 = { ##BHAXIAN ZAIN & HELL REVOLT
 				every_region_province = {
 					limit = {
 						NOT = { owner = scope:helluvian_bhaxia }
-						owner = c:PHK
+						owner = c:JRE
 					}
 					set_owned_by = scope:helluvian_bhaxia
 				}
@@ -370,17 +374,37 @@ jarenamfall.8 = { ##BHAXIAN ZAIN & HELL REVOLT
 				set_home_country = scope:zainuddian_bhaxia
 				remove_character_modifier = foreign_citizen
 			}
-			p:4696.region = {
-				every_region_province = {
-					limit = {
-						NOT = { owner = scope:zainuddian_bhaxia }
-						owner = c:ET3
-						owner = c:ET7
-					}
-					set_owned_by = scope:zainuddian_bhaxia
+			p:4696 = {
+				limit = {
+					NOT = { owner =scope:zainuddian_bhaxia }
 				}
+				set_owned_by = scope:zainuddian_bhaxia
 			}
-			scope:helluvian_bhaxia = {
+			p:4630 = {
+				limit = {
+					NOT = { owner =scope:zainuddian_bhaxia }
+				}
+				set_owned_by = scope:zainuddian_bhaxia
+			}
+			p:4540 = {
+				limit = {
+					NOT = { owner =scope:zainuddian_bhaxia }
+				}
+				set_owned_by = scope:zainuddian_bhaxia
+			}
+			p:4708 = {
+				limit = {
+					NOT = { owner =scope:zainuddian_bhaxia }
+				}
+				set_owned_by = scope:zainuddian_bhaxia
+			}
+			p:4617 = {
+				limit = {
+					NOT = { owner =scope:zainuddian_bhaxia }
+				}
+				set_owned_by = scope:zainuddian_bhaxia
+			}
+			scope:zainuddian_bhaxia = {
 				add_treasury = 1000
 				add_manpower = 20
 				set_as_ruler = scope:bhaxian_zainuddian_king
@@ -421,8 +445,22 @@ jarenamfall.8 = { ##BHAXIAN ZAIN & HELL REVOLT
 				target = JRE
 			}
 		}
+		if = {
+	        limit = {
+	        	NOT = {
+	        		has_global_variable = jarenam_fall_end
+	        	}
+	        }
+	        c:JRE = {
+				trigger_event = {
+			        id = jarenamfall.9
+			        days = { 60 180 }
+			    }
+		    }
+		}
     }
 }
+
 jarenamfall.9 = { ##ETERADICAN REVOLT
     type = country_event
 
@@ -432,12 +470,6 @@ jarenamfall.9 = { ##ETERADICAN REVOLT
     left_portrait = current_ruler
 
     fire_only_once = yes
-
-    trigger = {
-    	tag = JRE
-    	stability <= 20
-    	war = yes
-    }
 
     goto_location = p:4479
 
@@ -520,8 +552,22 @@ jarenamfall.9 = { ##ETERADICAN REVOLT
 				target = JRE
 			}
 		}
+		if = {
+	        limit = {
+	        	NOT = {
+	        		has_global_variable = jarenam_fall_end
+	        	}
+	        }
+	        c:JRE = {
+				trigger_event = {
+			        id = jarenamfall.10
+			        days = { 90 180 }
+			    }
+		    }
+		}
     }
 }
+
 jarenamfall.10 = { ##YEDIDYAHAN REVOLT
     type = country_event
 
@@ -531,12 +577,6 @@ jarenamfall.10 = { ##YEDIDYAHAN REVOLT
     left_portrait = current_ruler
 
     fire_only_once = yes
-
-    trigger = {
-    	tag = JRE
-    	stability <= 5
-    	war = yes
-    }
 
     goto_location = p:4256
 
@@ -613,6 +653,19 @@ jarenamfall.10 = { ##YEDIDYAHAN REVOLT
 				target = JRE
 			}
 		}
+		if = {
+	        limit = {
+	        	NOT = {
+	        		has_global_variable = jarenam_fall_end
+	        	}
+	        }
+	        c:JRE = {
+				trigger_event = {
+			        id = jarenamfall.12
+			        days = { 120 180 }
+			    }
+		    }
+		}
     }
 }
 
@@ -626,10 +679,10 @@ jarenamfall.11 = { ##CONQUERED ESQUALIA (GOOD ENDING)
 
     fire_only_once = yes
 
-    trigger = {
-    	tag = JRE
-    	owns_region = central_eteradica
-    	war = no
+    immediate = {
+    	set_global_variable = {
+    		name = jarenam_fall_end
+    	}
     }
 
     option = {
@@ -642,10 +695,11 @@ jarenamfall.11 = { ##CONQUERED ESQUALIA (GOOD ENDING)
             name = reinvigorated_jarenam_mod
             duration = 1825
         }
+        
     }
 }
 
-jarenamfall.12 = { ##JARENAM TIME LIMIT
+jarenamfall.12 = { ##JARENAM CIVIL WAR
     type = country_event
 
     title = jarenamfall_12_title
@@ -655,12 +709,52 @@ jarenamfall.12 = { ##JARENAM TIME LIMIT
 
     fire_only_once = yes
 
+    immediate = {
+        char:117 = {
+            save_scope_as = rebel_scum
+        }
+    }
+
     option = {
         name = "jarenamfall_12.a"
         custom_tooltip = jarenamfall_12_tooltip
-        show_as_tooltip = {
-            add_legitimacy = -20
-            add_stability = -10
+        add_legitimacy = -20
+        add_stability = -10
+		start_civil_war = scope:rebel_scum
+        hidden_effect = { 
+            scope:rebel_scum.employer = {
+                change_country_name = "Salahad Ulus"
+                change_country_adjective = "Jarenamite"
+                change_country_color = forrj_red
+                change_country_flag = "SOV2_FLAG"
+                change_government = great_ulus
+                save_scope_as = jarenam_revolt_country
+            }
+        }
+		every_country = {
+            limit = {
+            	NOT = {
+            		tag = JRE
+            	}
+            }
+            trigger_event = jarenamfall.13
         }
     }
 }
+
+jarenamfall.13 = { ##JARENAM CIVIL WAR ANNOUNCEMENT
+    type = country_event
+
+    title = jarenamfall_13_title
+    desc = jarenamfall_13_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    fire_only_once = yes
+
+    option = {
+        name = "jarenamfall_13.a"
+        custom_tooltip = jarenamfall_13_tooltip
+    }
+}
+
