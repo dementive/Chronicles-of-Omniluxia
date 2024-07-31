@@ -1739,3 +1739,159 @@ cultural_integration.11 = { # Colonia Founded
 	}
 
 }
+
+cultural_integration.12 = { # Expulsion
+	type = province_event
+	title = "cultural_integration.12.t"
+	desc = "cultural_integration.12.desc"
+	picture = city_province
+	left_portrait = owner.current_ruler
+	goto_location = root
+
+	trigger = {
+		owner = {
+			any_owned_province = {
+				dominant_province_culture = owner.culture
+				any_pops_in_province = {
+					NOT = { pop_type = citizen }
+					NOT = { pop_type = nobles }
+				}
+			}
+		}
+	}
+
+	immediate = {
+		owner = {
+			ordered_owned_province = {
+				limit = {
+					dominant_province_culture = owner.culture
+					any_pops_in_province = {
+						NOT = { pop_type = citizen }
+						NOT = { pop_type = nobles }
+						pop_culture = root.owner.culture
+					}
+				}
+				order_by = total_population
+				max = 3
+				check_range_bounds = no
+				random_pops_in_province = {
+					limit = {
+						NOT = { pop_type = citizen }
+						NOT = { pop_type = nobles }
+						pop_culture = root.owner.culture
+					}
+					add_to_list = pops_for_colony
+				}
+			}
+			ordered_owned_province = {
+				limit = {
+					dominant_province_culture = owner.culture
+					any_pops_in_province = {
+						OR = {
+							pop_type = citizen
+							pop_type = nobles
+						}
+						pop_culture = root.owner.culture
+					}
+				}
+				order_by = total_population
+				check_range_bounds = no
+				max = 2
+				random_pops_in_province = {
+					limit = {
+						OR = {
+							pop_type = citizen
+							pop_type = nobles
+						}
+						pop_culture = root.owner.culture
+					}
+					add_to_list = pops_for_colony
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "cultural_integration.12.a"
+		add_tyranny = 5
+		add_treasury = {
+			value = root.has_monthly_income
+			multiply = 5
+		}
+		every_in_list = {
+			list = pops_for_colony
+			move_pop = ROOT
+			remove_from_list = pops_for_colony
+		}
+		scope:expel_hometown = {
+			ordered_pops_in_province = {
+				limit = {
+					culture = scope:target_culture.culture
+				}
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 2
+                }
+                min = {
+                    value = 0
+                }
+                move_pop = scope:expel_target
+            }
+            ordered_pops_in_province = {
+				limit = {
+					culture = scope:target_culture.culture
+				}
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                min = {
+                    value = 0
+                }
+                move_pop = scope:expel_target
+            }
+		}
+	}
+
+	option = {
+		name = "cultural_integration.12.b"
+		every_in_list = {
+			list = pops_for_colony
+			move_pop = ROOT
+			remove_from_list = pops_for_colony
+		}
+		scope:expel_hometown = {
+			ordered_pops_in_province = {
+				limit = {
+					culture = scope:target_culture.culture
+				}
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 2
+                }
+                min = {
+                    value = 0
+                }
+                move_pop = scope:expel_target
+            }
+            ordered_pops_in_province = {
+				limit = {
+					culture = scope:target_culture.culture
+				}
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                min = {
+                    value = 0
+                }
+                move_pop = scope:expel_target
+            }
+		}
+	}
+
+}
