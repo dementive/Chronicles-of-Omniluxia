@@ -1,0 +1,162 @@
+﻿03_dune1 = {
+    header = "lotr_tribal_reform_mission_headers"
+    icon = "seleukid_2"
+
+    ai_chance = { factor = 10 }
+
+    repeatable = no
+    chance = 1000
+
+    potential = {
+        NOT = { has_variable = mission_cooldown_var }
+        tag = DUN
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {
+        current_ruler = {
+            average_martial_effect = yes
+        }
+    }
+
+    # Prepare the Army
+    03_dune1_task_1 = {
+        icon = "task_political"
+        duration = 60
+
+        ai_chance = { factor = 10 }
+
+        allow = {
+            war = no
+            military_experience >= 5
+        }
+
+        on_completion = {
+            add_military_experience = -5
+            trigger_event = { id = dune.1 }
+        }
+    }
+
+    # Fortify the Border
+    03_dune1_task_2 = {
+        icon = "task_expansion"
+        requires = { 03_dune1_task_1 }
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 3529
+                }
+            }
+        }
+
+        ai_chance = { factor = 10 }
+
+        allow = {
+            war = no
+            p:3529 = {
+                has_building = fortress_building
+            }
+        }
+
+        on_completion = {
+            add_stability = 5
+            add_military_experience = 10
+        }
+    }
+
+    # Attack Baetep
+    03_dune1_task_3 = {
+        icon = "task_expansion"
+        requires = { 03_dune1_task_1 03_dune1_task_2 }
+        duration = 360
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = lower_baetep_west
+                }
+            }
+        }
+
+        ai_chance = { factor = 10 }
+
+        allow = {
+            war = no
+            political_influence = 50
+        }
+
+        on_completion = {
+            add_political_influence = -50
+            trigger_event = { id = dune.2 }
+        }
+    }
+
+    # Form Baetep
+    03_dune1_task_4 = {
+        icon = "task_expansion"
+        requires = { 03_dune1_task_3 }
+        final = yes
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = lower_baetep_west
+                    is_in_region = lower_baetep_east
+                    is_in_region = upper_baetep_west
+                    is_in_region = upper_baetep_east
+                }
+            }
+        }
+
+        allow = {
+            war = no
+            stability >= 50
+            owns_or_subject_owns_region = lower_beatep_east
+            owns_or_subject_owns_region = upper_beatep_east
+            owns_or_subject_owns_region = lower_beatep_west
+            owns_or_subject_owns_region = upper_beatep_west
+        }
+
+        on_completion = {
+            custom_tooltip = "tier_3_formable_tooltip"
+            if = {
+                limit = {
+                    NOR = { 
+                        government = imperium 
+                        government = imperial_cult
+                    }
+                }
+                republic_to_monarchy_law_variable_effect = yes # decide which legion law should be transferred
+                change_government = imperium
+                republic_to_monarchy_law_change_effect = yes # change legion law based on variable if present
+                switch_government_type_event_clearup_effect = yes
+            }
+            change_country_name = "BAE"
+            hidden_effect = {
+                change_country_adjective = "BAEADJ"
+                change_country_tag = BAE
+            }
+            add_5_free_province_investments = yes
+            capital_scope = {
+                capital_formable_large_effect = yes
+                formable_capital_modifier_large_effect = yes
+            }
+            add_country_modifier = {
+                name = formable_country_huge_modifier
+                duration = 7600
+            }
+        }
+    }
+
+}
