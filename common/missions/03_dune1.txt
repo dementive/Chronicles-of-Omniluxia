@@ -66,7 +66,7 @@
 
         allow = {
             war = no
-            p:3529 = {
+            hidden:p:3529 = {
                 has_building = fortress_building
             }
         }
@@ -74,6 +74,7 @@
         on_completion = {
             add_stability = 5
             add_military_experience = 10
+            trigger_event = me_dune.10
         }
     }
 
@@ -96,7 +97,7 @@
         allow = {
             war = no
             political_influence >= 50
-            c:AGE = {
+            hidden:c:AGE = {
                 opinion = {
                     target = root
                     value >= 100
@@ -135,10 +136,33 @@
             owns_or_subject_owns_region = upper_beatep_east
             owns_or_subject_owns_region = lower_beatep_west
             owns_or_subject_owns_region = upper_beatep_west
+            trigger_if = {
+                limit = { exists = treasure:treasure_pomegranate_throne }
+                hidden:treasure:treasure_pomegranate_throne = {
+                    custom_tooltip = {
+                        text = we_need_to_own_the_pomegranate_throne_tt
+                        ROOT = {
+                            any_holy_site = {
+                                province_deity = deity:omen_khewer
+                                any_province_treasure = {
+                                    this = treasure:treasure_pomegranate_throne
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            trigger_else = {
+                custom_tooltip = {
+                    text = we_need_to_own_the_pomegranate_throne_tt
+                    always = no
+                }
+            }
         }
 
         on_completion = {
             custom_tooltip = "tier_3_formable_tooltip"
+            trigger_event = me_dune.12
             if = {
                 limit = {
                     NOR = { 
@@ -151,7 +175,10 @@
                 republic_to_monarchy_law_change_effect = yes # change legion law based on variable if present
                 switch_government_type_event_clearup_effect = yes
             }
+            set_capital = 2805
             change_country_name = "Djedhid Baetep"
+            change_country_flag = "DJEDHID_BAETEP_FLAG"
+            change_country_color = "djedhid_baetep_blue"
             hidden_effect = {
                 change_country_adjective = "BAEADJ"
                 change_country_tag = BAE
@@ -165,6 +192,75 @@
                 name = formable_country_huge_modifier
                 duration = 7600
             }
+            show_as_tooltip = {
+                current_ruler = {
+                force_add_trait = Pharon
+                }
+            }
+        }
+    }
+
+    03_dune1_task_5 = {
+        icon = "task_conquest"
+        duration = 30
+        requires = { 03_dune1_task_2 }
+        ai_chance = { factor = 10 }
+
+        bypass = {
+            c:BEL = {
+                OR = {
+                    has_land = no
+                    is_ai = no
+                }
+            }
+        }
+
+        highlight = {
+            scope:province = {
+                owner = c:BEL
+            }
+        }
+
+        allow = {
+            war = no
+            political_influence >= 25
+            treasury >= 50
+            hidden:root.current_ruler = {
+                is_friend = p:4066.state.governor_or_ruler
+            }
+        }
+
+        on_completion = {
+            custom_tooltip = approach_belbani_dune_tt
+            add_political_influence = -25
+            trigger_event = me_dune.11
+            trigger_event = me_dune.999
+        }
+    }
+
+    03_dune1_task_6 = {
+        icon = "task_religion"
+        requires = { 03_dune1_task_1 }
+        ai_chance = { factor = 10 }
+
+        allow = {
+            war = yes
+            invention = global_unrest_inv_1
+            capital_scope = {
+                is_importing_trade_good = iron
+            }
+        }
+
+        on_completion = {
+            current_ruler = {
+                good_zeal_effect = yes
+                add_popularity = 5
+            }
+            add_country_modifier = {
+                name = dune_slavers_mod
+                duration = 7300
+            }
+            trigger_event = me_dune.13
         }
     }
 }
