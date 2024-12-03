@@ -1,0 +1,139 @@
+﻿03_illusionist = {
+    header = "lotr_tribal_reform_mission_headers"
+    icon = "egypt_2"
+
+    repeatable = no
+    chance = 1000
+
+    potential = {
+        NOT = { has_variable = mission_cooldown_var }
+        current_ruler = {
+            has_trait = illusionist_trait
+        }
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {
+        current_ruler = {
+            average_finesse_effect = yes
+        }
+    }
+
+    03_illusionist_task_1 = {
+        icon = "task_political"
+        duration = 365
+
+        allow = {
+            war = no
+            political_influence >= 50
+        }
+        on_completion = {
+            add_political_influence = -50
+            capital_scope = {
+                create_state_pop = mages
+                create_state_pop = mages
+                create_state_pop = mages
+            }
+            trigger_event = me_illusionist.1
+        }
+    }
+
+    03_illusionist_task_2 = {
+        icon = "task_athena"
+        requires = {03_illusionist_task_1}
+        duration = 180
+
+        allow = {
+            war = no
+            treasury >= 250
+        }
+
+        on_completion = {
+            add_treasury = -250
+            trigger_event = me_illusionist.2
+        }
+    }
+
+    03_illusionist_task_3 = {
+        icon = "task_expansion"
+        requires = {03_illusionist_task_5}
+        duration = 365
+        final = yes
+
+
+        allow = {
+            war = no
+        }
+
+        on_completion = {
+            show_as_tooltip = {
+                current_ruler = {
+                    force_add_trait = archmage_trait
+                }
+            }
+            trigger_event = me_illusionist.3
+        }
+    }
+
+    03_illusionist_task_4 = {
+        icon = "task_conquest"
+        requires = {03_illusionist_task_1}
+        duration = 180
+
+        highlight = {
+            scope:province = {
+                has_owner = yes
+                owner = ROOT
+                is_capital = yes
+            }
+        }
+
+        allow = {
+        }
+
+        on_completion = {
+            capital_scope = {
+                add_province_modifier = {
+                    name = seat_of_aldic_council_mod
+                    duration = 730
+                }
+            }
+            trigger_event = me_illusionist.4
+        }
+    }
+
+    03_illusionist_task_5 = {
+        icon = "task_battle"
+        requires = {03_illusionist_task_2 03_illusionist_task_4}
+
+        highlight = {
+            scope:province = {
+                has_owner = yes
+                owner = ROOT
+                is_capital = yes
+            }
+        }
+
+        allow = {
+            war = no
+            capital_scope = {
+                is_importing_trade_good = soulgems
+                is_importing_trade_good = elixir
+                }
+            }
+
+        on_completion = {
+            trigger_event = me_illusionist.5
+        }
+    }
+}
