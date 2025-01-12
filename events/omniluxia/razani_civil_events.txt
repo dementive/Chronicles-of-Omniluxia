@@ -1,0 +1,1132 @@
+﻿namespace = razani_civil_war
+
+razani_civil_war.99 = {
+    type = country_event
+    hidden = yes
+
+    trigger = {
+        tag = EGA
+    }     
+
+    fire_only_once = yes
+
+    immediate = {
+        trigger_event = {
+                id = razani_civil_war.1
+                days = { 5 20 }
+        }
+    }
+}
+
+razani_civil_war.1 = { # Razani Gets Sick and Names Heir
+    type = country_event
+
+    title = razani_civil_war_1_title
+    desc = razani_civil_war_1_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:136
+    right_portrait = char:137
+    right_portrait = char:138
+
+    trigger = {
+        tag = EGA
+    }  
+    
+    fire_only_once = yes
+
+    option = {
+        name = "razani_civil_war_1.a"
+        custom_tooltip = razani_civil_war_1_tooltip.a
+        add_stability = -2
+        current_ruler = {
+        	add_trait = cancer
+        }
+        trigger_event = {
+            id = razani_civil_war.2
+            days = { 1 20 }
+        }
+    }
+}
+
+razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
+    type = country_event
+
+    title = razani_civil_war_2_title
+    desc = razani_civil_war_2_desc
+    picture = city_country
+    left_portrait = char:12
+    left_portrait = char:136
+    right_portrait = char:137
+    right_portrait = char:138
+
+    immediate = {
+    	 char:138 = {
+            save_scope_as = rebel_scum
+        }
+
+        hidden_effect = {
+			p:2682 = {
+				create_country = {
+	                set_country_religion = the_first_emperor
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = eagelian
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = eagelian
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Dedunum Empire"
+	                change_country_color = "forrj_red"
+	                change_government = imperium
+	                change_country_adjective = "Zanic"
+	                change_country_flag = "EGA"
+	                save_scope_as = razani_revolt
+				}
+			}
+			scope:rebel_scum = {
+				remove_all_positions = yes
+				move_country = scope:razani_revolt
+				set_home_country = scope:razani_revolt
+				remove_character_modifier = foreign_citizen
+			}
+			p:2682.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:razani_revolt }
+						owner = c:EGA
+					}
+					set_owned_by = scope:razani_revolt
+				}
+			}
+			scope:razani_revolt = {
+				add_treasury = 300
+				add_manpower = 25
+				set_as_ruler = scope:rebel_scum
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:2682 = { # capital fort
+				state = { set_state_capital = p:3764 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+		}
+		scope:razani_revolt = {
+			create_unit = {
+                navy = no
+                name = "Legio II Baetepa"
+                location = capital_scope
+                hidden_effect = {
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry 
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry 
+                    add_subunit = heavy_cavalry 
+                    add_subunit = heavy_cavalry
+                    add_subunit = light_cavalry 
+                    add_subunit = light_cavalry 
+                    add_subunit = light_cavalry 
+                    add_subunit = light_cavalry 
+                    add_subunit = camels 
+                    add_subunit = camels  
+                    add_subunit = camels 
+                    add_subunit = camels  
+                    add_subunit = supply_train 
+                    add_subunit = supply_train 
+                    add_subunit = supply_train                                        
+                    add_food = 150
+                    add_morale = 5
+                }
+            }
+		}
+
+		scope:razani_revolt = {
+			declare_war_with_wargoal = {
+				war_goal = conquer_wargoal
+				province = 2478
+				target = EGA
+			}
+		}
+
+		EGA = { add_manpower = -15 }
+
+        current_ruler = {
+        	death = {
+        		death_reason = death_padme
+        	}
+        }
+    }
+
+    option = { # Defend your Throne
+        name = "razani_civil_war_2.a"
+        custom_tooltip = razani_civil_war_2_tooltip.a
+
+        add_stability = -3
+        hidden_effect = { 
+        	scope:razani_revolt = {
+				add_treasury = 800
+			}
+
+            every_country = {
+            	limit = {
+            		NOT = {
+            			OR = {
+            				tag = EGA
+            				scope:razani_revolt
+            				ai = yes
+            			}
+            		}
+            	}
+                trigger_event = razani_civil_war.3
+            }
+        }
+    }
+    option = { # Switch to Rebels
+        name = "razani_civil_war_2.b"
+        custom_tooltip = razani_civil_war_2_tooltip.b
+
+        add_stability = -3
+        set_player_country = scope:razani_revolt
+        every_country = {
+            	limit = {
+            		NOT = {
+            			OR = {
+            				tag = EGA
+            				scope:razani_revolt
+            				ai = yes
+            			}
+            		}
+            	}
+                trigger_event = razani_civil_war.3
+            }
+    }
+}
+
+razani_civil_war.3 = { # WORLD Razani Civil War Begins
+    type = country_event
+
+    title = razani_civil_war_3_title
+    desc = razani_civil_war_3_desc
+    picture = city_country
+    left_portrait = char:137
+    right_portrait = char:138
+
+    option = {
+        name = "razani_civil_war_3.a"
+        custom_tooltip = razani_civil_war_3_tooltip.a
+        c:WGA = {
+        	id = razani_civil_war.4
+            days = { 1 20 }
+        }
+    }
+}
+
+razani_civil_war.4 = { # WGA Intervene in Civil War
+    type = country_event
+
+    title = razani_civil_war_4_title
+    desc = razani_civil_war_4_desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = char:137
+    right_portrait = char:138
+
+    fire_only_once = yes
+
+    option = { # Support Pretender
+        name = "razani_civil_war_4.a"
+        custom_tooltip = razani_civil_war_4_tooltip.a
+        add_stability = -2
+        add_treasury = -150
+        add_manpower = -10
+        c:EGA = {
+			trigger_event = razani_civil_war.5
+        }
+    }
+    option = { # Support Razani
+        name = "razani_civil_war_4.b"
+        custom_tooltip = razani_civil_war_4_tooltip.b
+        add_stability = -2
+        add_treasury = -50
+        add_manpower = -5
+        c:EGA = {
+			trigger_event = razani_civil_war.6
+        }
+    }
+    option = { # Support Neither
+        name = "razani_civil_war_4.c"
+        add_stability = 3
+        c:YGA = {
+			trigger_event = {
+		        id = razani_civil_war.7
+		        days = { 15 30 }
+		    }
+        }
+    }
+}
+
+razani_civil_war.5 = { # EGA Nazani Back a Pretender
+    type = country_event
+
+    title = razani_civil_war_5_title
+    desc = razani_civil_war_5_desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = scope:nazani_pretender
+    right_portrait = c:WGA.current_ruler
+
+    immediate = {
+    	hidden_effect = {
+    		random_family = {
+	            limit = {
+	                this = root.char:18.family
+	            }
+	            save_scope_as = nazani_family
+	        }
+		    create_character = {
+		        first_name = "O-Unse"
+		       	age = 34
+		        culture = weagelian
+		        religion = the_first_emperor
+		        female = no
+		        good_popularity_trait_effect = yes
+		        save_scope_as = nazani_rebel
+		    }
+		    scope:nazani_rebel = {
+                save_scope_as = target
+                set_family = scope:nazani_family
+                add_character_modifier = {
+                    name = adopted_into_great_family
+                    duration = -1
+                }
+                if = { #Bastards are easier to make family members.
+                    limit = { is_child_of = ROOT }
+                    custom_tooltip = bastard_adoption_event_tooltip
+                }
+                else_if = { #Siblings are easier to make full family members.
+                    limit = { is_sibling_of = ROOT }
+                    custom_tooltip = sibling_adoption_event_tooltip
+                }
+                else_if = { #Extra Marital Relations are harder to make full family members.
+                    limit = {
+                        any_child = {
+                            ROOT = { is_parent_of = PREV }
+                        }
+                    }
+                    custom_tooltip = lover_adoption_event_tooltip
+                }
+                else_if = { #Friends are easier to make full family members.
+                    limit = { is_friend = ROOT }
+                    custom_tooltip = friend_adoption_event_tooltip
+                }
+                else = {
+                    custom_tooltip = adoption_explanation_event_tooltip
+                }
+
+                scope:nazani_family = { add_prestige = adoption_cost_event_pay_svalue }
+                save_scope_as = picked_adoption_candidate
+            }
+			p:2348 = {
+				create_country = {
+	                set_country_religion = the_first_emperor
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = weagelian
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = weagelian
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Nazani Client State"
+	                change_country_color = "nazani_client_color"
+	                change_government = imperium
+	                change_country_adjective = "Nazani"
+	                change_country_flag = "WGA"
+	                save_scope_as = nazani_revolter
+				}
+			}
+			scope:nazani_rebel = {
+				remove_all_positions = yes
+				move_country = scope:nazani_revolter
+				set_home_country = scope:nazani_revolter
+				remove_character_modifier = foreign_citizen
+			}
+			scope:nazani_revolter = {
+				add_treasury = 1000
+				add_manpower = 20
+				set_as_ruler = scope:nazani_rebel
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:2348 = { # capital fort
+				state = { set_state_capital = p:2348 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+			p:2339 = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:nazani_revolter }
+						owner = c:EGA
+					}
+					set_owned_by = scope:nazani_revolter
+				}
+			}
+			p:2306 = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:nazani_revolter }
+						owner = c:EGA
+					}
+					set_owned_by = scope:nazani_revolter
+				}
+			}
+
+			dependency = { first = WGA second = scope:nazani_revolter subject_type = feudatory }	
+		}
+    }
+
+    option = {
+        name = "razani_civil_war_5.a"
+        custom_tooltip = razani_civil_war_5_tooltip
+        add_stability = -3
+        c:YGA = {
+			trigger_event = {
+		        id = razani_civil_war.7
+		        days = { 15 30 }
+		    }
+        }
+    }
+}
+
+razani_civil_war.6 = { # EGA Nazani Send Help 
+    type = country_event
+
+    title = razani_civil_war_6_title
+    desc = razani_civil_war_6_desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = c:WGA.current_ruler
+
+    fire_only_once = yes
+
+    option = {
+        name = "razani_civil_war_6.a"
+        custom_tooltip = razani_civil_war_6_tooltip.a
+        add_stability = 2
+        add_treasury = 100
+        add_manpower = 5
+        c:YGA = {
+			trigger_event = {
+		        id = razani_civil_war.7
+		        days = { 15 30 }
+		    }
+        }
+    }
+}
+
+razani_civil_war.7 = { # YGA Helluvian King Demands Throne
+    type = country_event
+
+    title = razani_civil_war_4_title
+    desc = razani_civil_war_4_desc
+    picture = city_country
+    left_portrait = char:94
+    right_portrait = char:139
+
+immediate = {
+    	 char:138 = {
+            save_scope_as = rebel_scum
+        }
+
+        hidden_effect = {
+			p:2682 = {
+				create_country = {
+	                set_country_religion = the_first_emperor
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = eagelian
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = eagelian
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Dedunum Empire"
+	                change_country_color = "forrj_red"
+	                change_government = imperium
+	                change_country_adjective = "Zanic"
+	                change_country_flag = "EGA"
+	                save_scope_as = razani_revolt
+				}
+			}
+			scope:rebel_scum = {
+				remove_all_positions = yes
+				move_country = scope:razani_revolt
+				set_home_country = scope:razani_revolt
+				remove_character_modifier = foreign_citizen
+			}
+			p:2682.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:razani_revolt }
+						owner = c:EGA
+					}
+					set_owned_by = scope:razani_revolt
+				}
+			}
+			scope:razani_revolt = {
+				add_treasury = 300
+				add_manpower = 25
+				set_as_ruler = scope:rebel_scum
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:2682 = { # capital fort
+				state = { set_state_capital = p:3764 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+		}
+		scope:razani_revolt = {
+			create_unit = {
+                navy = no
+                name = "Legio II Baetepa"
+                location = capital_scope
+                hidden_effect = {
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry 
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry 
+                    add_subunit = heavy_cavalry 
+                    add_subunit = heavy_cavalry
+                    add_subunit = light_cavalry 
+                    add_subunit = light_cavalry 
+                    add_subunit = light_cavalry 
+                    add_subunit = light_cavalry 
+                    add_subunit = camels 
+                    add_subunit = camels  
+                    add_subunit = camels 
+                    add_subunit = camels  
+                    add_subunit = supply_train 
+                    add_subunit = supply_train 
+                    add_subunit = supply_train                                        
+                    add_food = 150
+                    add_morale = 4
+                }
+            }
+		}
+
+		scope:razani_revolt = {
+			declare_war_with_wargoal = {
+				war_goal = conquer_wargoal
+				province = 2478
+				target = EGA
+			}
+		}
+
+		EGA = { add_manpower = -15 }
+
+        current_ruler = {
+        	death = {
+        		death_reason = death_padme
+        	}
+        }
+    }
+
+    option = { # Defend your Throne
+        name = "razani_civil_war_2.a"
+        custom_tooltip = razani_civil_war_2_tooltip.a
+
+        add_stability = -3
+        hidden_effect = { 
+        	scope:razani_revolt = {
+				add_treasury = 800
+			}
+
+            every_country = {
+            	limit = { 
+	        		ai = no
+	        		NOT = { culture = eagelian }
+	        	}
+            	trigger_event = razani_civil_war.3
+            }
+        }
+    }
+    option = { # Switch to Rebels
+        name = "razani_civil_war_2.b"
+        custom_tooltip = razani_civil_war_2_tooltip.b
+
+        add_stability = -3
+        set_player_country = scope:razani_revolt
+        every_country = {
+        	limit = { 
+        		ai = no
+        		NOT = { tag = EGA }
+        	}
+        	trigger_event = razani_civil_war.3
+        }
+    }
+}
+
+razani_civil_war.8 = { # EGA Ytalian Revolt
+    type = country_event
+
+    title = razani_civil_war_8_title
+    desc = razani_civil_war_8_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    fire_only_once = yes
+
+    goto_location = p:3764
+    goto_location = p:4696
+
+    immediate = {
+		hidden_effect = {
+		    create_character = {
+		        first_name = "Supo"
+		       	age = 25
+		        culture = exan
+		        religion = helluvian
+		        female = no
+		        good_popularity_trait_effect = yes
+		        save_scope_as = bhaxian_helluvian_king
+		    }
+			p:3764 = {
+				create_country = {
+	                set_country_religion = helluvian
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = exan
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = exan
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Holy Bhaxian Kingdom"
+	                change_country_color = "holy_bhaxian"
+	                change_government = theocratic_monarchy
+	                change_country_adjective = "Helluvian"
+	                change_country_flag = IP3_FLAG
+	                save_scope_as = helluvian_bhaxia
+				}
+			}
+			scope:bhaxian_helluvian_king = {
+				remove_all_positions = yes
+				move_country = scope:helluvian_bhaxia
+				set_home_country = scope:helluvian_bhaxia
+				remove_character_modifier = foreign_citizen
+			}
+			p:3764.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:helluvian_bhaxia }
+						owner = c:JRE
+					}
+					set_owned_by = scope:helluvian_bhaxia
+				}
+			}
+			p:3670.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:helluvian_bhaxia }
+						owner = c:JRE
+					}
+					set_owned_by = scope:helluvian_bhaxia
+				}
+			}
+			scope:helluvian_bhaxia = {
+				add_treasury = 1000
+				add_manpower = 20
+				set_as_ruler = scope:bhaxian_helluvian_king
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:3764 = { # capital fort
+				state = { set_state_capital = p:3764 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+		    create_character = {
+		        first_name = "Ok-Unse"
+		       	age = 21
+		        culture = oxan
+		        religion = zainuddian
+		        female = no
+		        good_popularity_trait_effect = yes
+		        save_scope_as = bhaxian_zainuddian_king
+			}
+			p:4696 = {
+				create_country = {
+		            set_country_religion = zainuddian
+		            if = {
+						limit = {
+							NOT = {
+								primary_culture = oxan
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = oxan
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+		            change_country_name = "Bhaxian Kephalit"
+		            change_country_color = "bhaxian_jihad"
+		            change_government = kephalite
+		            change_country_adjective = "Zainudian"
+		            change_country_flag = ZT3_FLAG
+		            save_scope_as = zainuddian_bhaxia
+				}
+			}
+			scope:bhaxian_zainuddian_king = {
+				remove_all_positions = yes
+				move_country = scope:zainuddian_bhaxia
+				set_home_country = scope:zainuddian_bhaxia
+				remove_character_modifier = foreign_citizen
+			}
+			if = {
+				limit = {
+					NOT = { owner =scope:zainuddian_bhaxia }
+				}
+				p:4696 = {
+					set_owned_by = scope:zainuddian_bhaxia
+				}
+				p:4630 = {
+					set_owned_by = scope:zainuddian_bhaxia
+				}
+				p:4540 = {
+					set_owned_by = scope:zainuddian_bhaxia
+				}
+				p:4708 = {
+					set_owned_by = scope:zainuddian_bhaxia
+				}
+				p:4617 = {
+					set_owned_by = scope:zainuddian_bhaxia
+				}
+			}
+			scope:zainuddian_bhaxia = {
+				add_treasury = 1000
+				add_manpower = 20
+				set_as_ruler = scope:bhaxian_zainuddian_king
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:4696 = { # capital fort
+				state = { set_state_capital = p:4696 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+		}
+    }
+
+    option = {
+        name = "razani_civil_war_8.a"
+        custom_tooltip = razani_civil_war_8_tooltip
+        scope:zainuddian_bhaxia = {
+			declare_war_with_wargoal = {
+				war_goal = conquer_wargoal
+				province = 4572
+				target = JRE
+			}
+		}
+		scope:helluvian_bhaxia = {
+			declare_war_with_wargoal = {
+				war_goal = conquer_wargoal
+				province = 3851
+				target = JRE
+			}
+		}
+		if = {
+	        limit = {
+	        	NOT = {
+	        		has_global_variable = jarenam_fall_end
+	        	}
+	        }
+	        c:JRE = {
+				trigger_event = {
+			        id = razani_civil_war.9
+			        days = { 90 180 }
+			    }
+		    }
+		}
+    }
+}
+
+razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
+    type = country_event
+
+    title = razani_civil_war_9_title
+    desc = razani_civil_war_9_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    fire_only_once = yes
+
+    goto_location = p:4479
+
+    immediate = {
+		hidden_effect = {
+		    create_character = {
+		        first_name = "Bosilkas"
+		       	age = 25
+		        culture = kenbanntian
+		        religion = zainuddian
+		        female = no
+		        good_popularity_trait_effect = yes
+		        save_scope_as = eteradican_rebel
+		    }
+			p:4479 = {
+				create_country = {
+	                set_country_religion = zainuddian
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = kenbanntian
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = kenbanntian
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Getsgarexia"
+	                change_country_color = "eteradican_green"
+	                change_government = tribal_kingdom
+	                change_country_adjective = "Eteradican"
+	                change_country_flag = EQ3_FLAG
+	                save_scope_as = revolt_eteradica
+				}
+			}
+			scope:eteradican_rebel = {
+				remove_all_positions = yes
+				move_country = scope:revolt_eteradica
+				set_home_country = scope:revolt_eteradica
+				remove_character_modifier = foreign_citizen
+			}
+			p:4445 = {
+				set_owned_by = scope:revolt_eteradica
+			}
+			p:4573 = {
+				set_owned_by = scope:revolt_eteradica
+			}
+			scope:revolt_eteradica = {
+				add_treasury = 1000
+				add_manpower = 20
+				set_as_ruler = scope:eteradican_rebel
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:4479 = { # capital fort
+				state = { set_state_capital = p:4479 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+		}
+    }
+
+    option = {
+        name = "razani_civil_war_9.a"
+        custom_tooltip = razani_civil_war_9_tooltip
+        scope:revolt_eteradica = {
+			declare_war_with_wargoal = {
+				war_goal = conquer_wargoal
+				province = 3851
+				target = JRE
+			}
+		}
+		if = {
+	        limit = {
+	        	NOT = {
+	        		has_global_variable = jarenam_fall_end
+	        	}
+	        }
+	        c:JRE = {
+				trigger_event = {
+			        id = razani_civil_war.10
+			        days = { 90 180 }
+			    }
+		    }
+		}
+    }
+}
+
+razani_civil_war.10 = { ##YEDIDYAHAN REVOLT
+    type = country_event
+
+    title = razani_civil_war_10_title
+    desc = razani_civil_war_10_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    fire_only_once = yes
+
+    goto_location = p:4256
+
+    immediate = {
+		hidden_effect = {
+		    create_character = {
+		        first_name = "Sfisrael"
+		       	age = 35
+		        culture = yoxan
+		        religion = yedidyhan
+		        female = no
+		        good_popularity_trait_effect = yes
+		        save_scope_as = yedidyhan_rebel
+		        add_trait = vampire_trait
+		    }
+			p:4256 = {
+				create_country = {
+	                set_country_religion = yedidyhan
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = yoxan
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = yoxan
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Coven of Yedidyha"
+	                change_country_color = "yedidyah_blue"
+	                change_government = theocratic_monarchy
+	                change_country_adjective = "Yedidyhan"
+	                change_country_flag = DKK_FLAG
+	                save_scope_as = revolt_yedidyhan
+				}
+			}
+			scope:yedidyhan_rebel = {
+				remove_all_positions = yes
+				move_country = scope:revolt_yedidyhan
+				set_home_country = scope:revolt_yedidyhan
+				remove_character_modifier = foreign_citizen
+			}
+			scope:revolt_yedidyhan = {
+				add_treasury = 1000
+				add_manpower = 20
+				set_as_ruler = scope:yedidyhan_rebel
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:4256 = { # capital fort
+				state = { set_state_capital = p:4256 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+		}
+    }
+
+    option = {
+        name = "razani_civil_war_10.a"
+        custom_tooltip = razani_civil_war_10_tooltip
+        scope:revolt_yedidyhan = {
+			declare_war_with_wargoal = {
+				war_goal = conquer_wargoal
+				province = 4142
+				target = JRE
+			}
+		}
+		if = {
+	        limit = {
+	        	NOT = {
+	        		has_global_variable = jarenam_fall_end
+	        	}
+	        }
+	        c:JRE = {
+				trigger_event = {
+			        id = razani_civil_war.12
+			        days = { 180 220 }
+			    }
+		    }
+		}
+    }
+}
+
+razani_civil_war.11 = { ##CONQUERED ESQUALIA (GOOD ENDING)
+    type = country_event
+
+    title = razani_civil_war_11_title
+    desc = razani_civil_war_11_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    fire_only_once = yes
+
+    immediate = {
+    	set_global_variable = {
+    		name = jarenam_fall_end
+    	}
+    }
+
+    option = {
+        name = "razani_civil_war_4.a"
+        add_legitimacy = 50
+        add_stability = 40
+        add_political_influence = -20
+        add_country_modifier = {
+            name = reinvigorated_jarenam_mod
+            duration = 1825
+        }
+        current_ruler = { add_trait = founder }
+		custom_tooltip = razani_civil_war_3_tooltip.a
+    }
+}
+
+razani_civil_war.12 = { ##JARENAM CIVIL WAR
+    type = country_event
+
+    title = razani_civil_war_12_title
+    desc = razani_civil_war_12_desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = char:117
+
+    fire_only_once = yes
+
+    immediate = {
+        char:117 = {
+            save_scope_as = rebel_scum
+        }
+    }
+
+    option = {
+        name = "razani_civil_war_12.a"
+        custom_tooltip = razani_civil_war_12_tooltip
+        add_legitimacy = -20
+        add_stability = -10
+		start_civil_war = scope:rebel_scum
+        hidden_effect = { 
+            scope:rebel_scum.employer = {
+                change_country_name = "Great Salahad Ulus"
+                change_country_adjective = "Jarenamite"
+                change_country_color = forrj_red
+                change_country_flag = "SOV2_FLAG"
+                change_government = great_ulus
+                save_scope_as = jarenam_revolt_country
+            }
+        }
+		every_country = {
+            limit = {
+            	NOT = {
+            		tag = JRE
+            	}
+            }
+            trigger_event = razani_civil_war.13
+        }
+        c:JRE = {
+			trigger_event = {
+			    id = razani_civil_war.14
+			    days = { 180 220 }
+			}
+		}
+    }
+}
+
