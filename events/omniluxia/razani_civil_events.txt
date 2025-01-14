@@ -150,49 +150,28 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
                 name = "Gonessionem Desin 'Baetep'"
                 location = capital_scope
                 hidden_effect = {
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = heavy_infantry
-                    add_subunit = light_infantry
-                    add_subunit = light_infantry 
-                    add_subunit = light_infantry
-                    add_subunit = light_infantry 
-                    add_subunit = light_infantry
-                    add_subunit = light_infantry
-                    add_subunit = light_infantry 
+                	while = {
+                       	count = 16
+                        add_subunit = heavy_infantry
+                    }
+                    while = {
+                       	count = 8
+                        add_subunit = light_infantry
+                    }
+                    while = {
+                       	count = 6
+                        add_subunit = light_cavalry
+                    } 
+                    while = {
+                       	count = 6
+                        add_subunit = camels
+                    } 
+                    while = {
+                       	count = 6
+                        add_subunit = supply_train
+                    }  
                     add_subunit = heavy_cavalry 
                     add_subunit = heavy_cavalry
-                    add_subunit = light_cavalry 
-                    add_subunit = light_cavalry 
-                    add_subunit = light_cavalry 
-                    add_subunit = light_cavalry
-                    add_subunit = light_cavalry 
-                    add_subunit = light_cavalry 
-                    add_subunit = camels 
-                    add_subunit = camels 
-                    add_subunit = camels 
-                    add_subunit = camels  
-                    add_subunit = camels 
-                    add_subunit = camels  
-                    add_subunit = supply_train 
-                    add_subunit = supply_train 
-                    add_subunit = supply_train
-                    add_subunit = supply_train
-                    add_subunit = supply_train
-                    add_subunit = supply_train                                        
                     add_food = 300
                     add_morale = 5
                 }
@@ -229,7 +208,6 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
             		NOT = {
             			OR = {
             				tag = EGA
-            				scope:razani_revolt_country
             				ai = yes
             			}
             		}
@@ -256,7 +234,6 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
 	        		NOT = {
 	        			OR = {
 	        				tag = EGA
-	        				scope:razani_revolt_country
 	        				ai = yes
 	        			}
 	        		}
@@ -400,17 +377,6 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 			p:2348 = {
 				create_country = {
 	                set_country_religion = the_first_emperor
-	                if = {
-						limit = {
-							NOT = {
-								primary_culture = weagelian
-							}
-						}
-						set_primary_culture_cleanup_effect = {
-							NEW_PRIMARY_CULTURE = weagelian
-							MAKE_OLD_CULTURE_INTEGRATED = yes
-						}
-					}
 	                change_country_name = "Nazani Client State"
 	                change_country_color = "nazani_client_color"
 	                change_government = imperium
@@ -437,6 +403,12 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 						}
 					}
 					change_law = republican_recruitment_2 # capital
+				}
+			}
+			scope:nazani_revolter = {
+				set_primary_culture_cleanup_effect = {
+					NEW_PRIMARY_CULTURE = weagelian
+					MAKE_OLD_CULTURE_INTEGRATED = yes
 				}
 			}
 			p:2348 = { # capital fort
@@ -531,7 +503,7 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
         }
 
         start_civil_war = scope:yga_rebel_scum
-        hidden_effect = { 
+        hidden_effect = {
             scope:yga_rebel_scum.employer = {
                 change_country_name = "HOLY Ytalia"
                 change_country_adjective = "Ytalian"
@@ -548,42 +520,42 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
 				}
 				set_owned_by = scope:ytalia_revolt_country
 			}
-	        p:3337 = { # capital fort
+			p:3337 = {
 				state = { set_state_capital = p:3337 }
 				if = {
 					limit = { can_build_building = fortress_building }
 					add_building_level = fortress_building
 				}
 			}
-		}
-		
 
-
-        
-		scope:ytalian_revolt_country = {
-			set_capital = 3337
-			create_unit = {
-                navy = no
-                name = "Helluvian Levies"
-                location = capital_scope
-                hidden_effect = {
-                    add_subunit = light_infantry
-                    add_subunit = light_infantry 
-                    add_subunit = light_infantry
-                    add_subunit = light_infantry 
-                    add_subunit = light_infantry
-                    add_subunit = light_cavalry 
-                    add_subunit = supply_train                                        
-                    add_food = 300
-                    add_morale = 5
-                }
-            }
+			scope:ytalia_revolt_country = {
+				set_capital = 3337
+				add_truce = {
+	                target = scope:razani_revolt_country
+	                duration = 5000 # 5 years
+	            }
+	            create_unit = {
+	                navy = no
+	                name = "Helluvian Levies"
+	                location = capital_scope
+	                while = {
+                       	count = 10
+                        add_subunit = light_infantry
+                    }
+                    add_subunit = light_cavalry
+                    add_subunit = supply_train    
+	                    add_food = 300
+	                    add_morale = 5
+	                }
+	            }
+			}
 		}
     }
 
     option = { # Defend your Throne
         name = "razani_civil_war_2.a"
         custom_tooltip = razani_civil_war_2_tooltip.a
+        ai_chance = { factor = 10 }
 
         add_stability = -3
         add_manpower = -5
@@ -592,10 +564,7 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
 				add_treasury = 300
 			}
 
-            c:EGA = {
-	        	id = razani_civil_war.8
-	            days = { 1 20 }
-	        }
+            c:EGA = { trigger_event = razani_civil_war.8 }
         }
     }
     option = { # Switch to Rebels
@@ -605,10 +574,7 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
         add_stability = -5
         add_manpower = -50
         hidden_effect = {
-	        c:EGA = {
-	        	id = razani_civil_war.8
-	            days = { 1 20 }
-	        }
+	        c:EGA = { trigger_event = razani_civil_war.8 }
 	        if = {
 		        limit = { is_ai = no }
 	        	set_player_country = scope:ytalia_revolt_country
@@ -630,12 +596,23 @@ razani_civil_war.8 = { # EGA Ytalian Revolt
     option = {
         name = "razani_civil_war_8.a"
         custom_tooltip = razani_civil_war_8_tooltip
-        
+        scope:ytalia_revolt_country = {
+	        declare_war_with_wargoal = {
+				war_goal = independence_wargoal
+				province = 3337
+				target = EGA
+			}
+		}
+		c:EGA = { trigger_event = razani_civil_war.9 }
     }
     option = {
         name = "razani_civil_war_8.a"
         custom_tooltip = razani_civil_war_8_tooltip
-        
+        add_truce = {
+            target = scope:ytalia_revolt_country
+            duration = 5000 # 5 years
+        }
+        c:EGA = { trigger_event = razani_civil_war.9 }
     }
 }
 
@@ -718,11 +695,11 @@ razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
     option = {
         name = "razani_civil_war_9.a"
         custom_tooltip = razani_civil_war_9_tooltip
-        c:EGA = {
-			declare_war_with_wargoal = {
-				war_goal = conquer_wargoal
+		scope:gevanni_revolt = {
+	        declare_war_with_wargoal = {
+				war_goal = independence_wargoal
 				province = 2470
-				target = scope:gevanni_revolt
+				target = EGA
 			}
 		}
         c:EGA = {
@@ -746,72 +723,6 @@ razani_civil_war.10 = { # AI DUNY DECISION
     left_portrait = current_ruler
 
     fire_only_once = yes
-
-    goto_location = p:4256
-
-    immediate = {
-		hidden_effect = {
-		    create_character = {
-		        first_name = "Sfisrael"
-		       	age = 35
-		        culture = yoxan
-		        religion = yedidyhan
-		        female = no
-		        good_popularity_trait_effect = yes
-		        save_scope_as = yedidyhan_rebel
-		        add_trait = vampire_trait
-		    }
-			p:4256 = {
-				create_country = {
-	                set_country_religion = yedidyhan
-	                if = {
-						limit = {
-							NOT = {
-								primary_culture = yoxan
-							}
-						}
-						set_primary_culture_cleanup_effect = {
-							NEW_PRIMARY_CULTURE = yoxan
-							MAKE_OLD_CULTURE_INTEGRATED = yes
-						}
-					}
-	                change_country_name = "Coven of Yedidyha"
-	                change_country_color = "yedidyah_blue"
-	                change_government = theocratic_monarchy
-	                change_country_adjective = "Yedidyhan"
-	                change_country_flag = DKK_FLAG
-	                save_scope_as = revolt_yedidyhan
-				}
-			}
-			scope:yedidyhan_rebel = {
-				remove_all_positions = yes
-				move_country = scope:revolt_yedidyhan
-				set_home_country = scope:revolt_yedidyhan
-				remove_character_modifier = foreign_citizen
-			}
-			scope:revolt_yedidyhan = {
-				add_treasury = 1000
-				add_manpower = 20
-				set_as_ruler = scope:yedidyhan_rebel
-				if = {
-					limit = {
-						NOR = {
-							has_law = republican_recruitment_2 # legions capital
-							has_law = republican_recruitment_4 # legions enabled
-						}
-					}
-					change_law = republican_recruitment_2 # capital
-				}
-			}
-			p:4256 = { # capital fort
-				state = { set_state_capital = p:4256 }
-				if = {
-					limit = { can_build_building = fortress_building }
-					add_building_level = fortress_building
-				}
-			}
-		}
-    }
 
     option = {
         name = "razani_civil_war_10.a"
@@ -850,44 +761,46 @@ razani_civil_war.11 = { # Duny Migrate Decision
     fire_only_once = yes
 
     immediate = {
-    	p:3163 = {
-    		limit = {
-				limit = {
-					exists = owner
+    	hidden_effect = {
+	    	p:3163 = {
+	    		limit = {
+					limit = {
+						exists = owner
+					}
+					owner = scope:victim_1
 				}
-				owner = scope:victim_1
 			}
-		}
-		p:3146 = {
-    		limit = {
-				tlimit = {
-					exists = owner
+			p:3146 = {
+	    		limit = {
+					tlimit = {
+						exists = owner
+					}
+					owner = scope:victim_2
 				}
-				owner = scope:victim_2
 			}
-		}
-		p:3043 = {
-    		limit = {
-				limit = {
-					exists = owner
+			p:3043 = {
+	    		limit = {
+					limit = {
+						exists = owner
+					}
+					owner = scope:victim_3
 				}
-				owner = scope:victim_3
 			}
-		}
-		p:3037 = {
-    		limit = {
-				limit = {
-					exists = owner
+			p:3037 = {
+	    		limit = {
+					limit = {
+						exists = owner
+					}
+					owner = scope:victim_4
 				}
-				owner = scope:victim_4
 			}
-		}
-		p:3040 = {
-    		limit = {
-				limit = {
-					exists = owner
+			p:3040 = {
+	    		limit = {
+					limit = {
+						exists = owner
+					}
+					owner = scope:victim_5
 				}
-				owner = scope:victim_5
 			}
 		}
     }
@@ -896,255 +809,149 @@ razani_civil_war.11 = { # Duny Migrate Decision
         name = "razani_civil_war_11.a"
 
         # Raze Cities
-        p:3163 = {
-    		add_city_smoke_effect = yes
-            add_city_fire_effect = yes
+	        p:3163 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
 
-            set_city_status = city				
-			add_building_level = fortress_building
-			change_province_name = Dunqarya
-            
-            ordered_pops_in_province = {
-                order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 2
-                }
-                min = {
-                    value = 0
-                }
-                kill_pop = yes
-            }
-	        set_owned_by = DNY
-	        save_scope_as = scope:duny_city1
-		}
-		p:3146 = {
-    		add_city_smoke_effect = yes
-            add_city_fire_effect = yes
+	            set_city_status = city				
+				add_building_level = fortress_building
+				change_province_name = Dunqarya
+	            
+	            ordered_pops_in_province = {
+	                order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+		        save_scope_as = scope:duny_city1
+			}
+			p:3146 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
 
-            set_city_status = city
-            change_province_name = Kurykanqa
-            
-            ordered_pops_in_province = {
-	            order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 2
-                }
-                min = {
-                    value = 0
-                }
-                kill_pop = yes
-            }
-	        set_owned_by = DNY
-	        save_scope_as = scope:duny_city2
-		}
-		p:3043 = {
-    		add_city_smoke_effect = yes
-            add_city_fire_effect = yes
+	            set_city_status = city
+	            change_province_name = Kurykanqa
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+		        save_scope_as = scope:duny_city2
+			}
+			p:3043 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
 
-            change_province_name = Ummaryakun
-            
-            ordered_pops_in_province = {
-	            order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 2
-                }
-                min = {
-                    value = 0
-                }
-                kill_pop = yes
-            }
-	        set_owned_by = DNY
-	        save_scope_as = scope:duny_city3
-		}
-		p:3037 = {
-    		add_city_smoke_effect = yes
-            add_city_fire_effect = yes
+	            change_province_name = Ummaryakun
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+		        save_scope_as = scope:duny_city3
+			}
+			p:3037 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
 
-            change_province_name = Onayasah
-            
-            ordered_pops_in_province = {
-	            order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 2
-                }
-                min = {
-                    value = 0
-                }
-                kill_pop = yes
-            }
-	        set_owned_by = DNY
-	        save_scope_as = scope:duny_city4
-		}
-		p:3040 = {
-    		add_city_smoke_effect = yes
-            add_city_fire_effect = yes
+	            change_province_name = Onayasah
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+		        save_scope_as = scope:duny_city4
+			}
+			p:3040 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
 
-            change_province_name = Daçarkin
-            
-            ordered_pops_in_province = {
-	            order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 2
-                }
-                min = {
-                    value = 0
-                }
-                kill_pop = yes
-            }
-	        set_owned_by = DNY
-	        save_scope_as = scope:duny_city5
-		}
+	            change_province_name = Daçarkin
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+		        save_scope_as = scope:duny_city5
+			}
+
+		# Abandon Old Lands
+
+        while = {
+			count = { 20 25 }
+        	every_owned_province = {
+        		limit = { 
+        			total_population >= 1
+        			OR = {
+        				is_in_region = western_shout_skyreach_foothils
+        				is_in_region = bronze_foothils
+        			}
+        		}
+        		random_pops_in_province = {
+        			limit = {
+					pop_culture_group = selaskusian
+					}
+					move_pop = scope:duny_city1
+				}
+			}
+        }
 
         # Settle Cities
 
-        while = {
-			count = { 20 25 }
-			scope:duny_city1 = {
-				if = {
-					limit = { total_population >= 25 }
-		        	random_owned_province = {
-		        		random_pops_in_province = {
-		        		limit = {
-							pop_culture_group = selaskusian
-							}
-							move_pop = scope:duny_city1
-						}
-					}
-				}
-	        }
-        }
-        while = {
-			count = { 20 25 }
-			scope:duny_city2 = {
-				if = {
-					limit = { total_population >= 25 }
-		        	random_owned_province = {
-		        		random_pops_in_province = {
-		        		limit = {
-							pop_culture_group = selaskusian
-							}
-							move_pop = scope:duny_city2
-						}
-					}
-				}
-	        }
-        }
-        while = {
-			count = { 20 25 }
-			scope:duny_city3 = {
-				if = {
-					limit = { total_population >= 25 }
-		        	random_owned_province = {
-		        		random_pops_in_province = {
-		        		limit = {
-							pop_culture_group = selaskusian
-							}
-							move_pop = scope:duny_city3
-						}
-					}
-				}
-	        }
-        }
-        while = {
-			count = { 20 25 }
-			scope:duny_city4 = {
-				if = {
-					limit = { total_population >= 25 }
-		        	random_owned_province = {
-		        		random_pops_in_province = {
-		        		limit = {
-							pop_culture_group = selaskusian
-							}
-							move_pop = scope:duny_city4
-						}
-					}
-				}
-	        }
-        }
-        while = {
-			count = { 20 25 }
-			scope:duny_city5 = {
-				if = {
-					limit = { total_population >= 25 }
-		        	random_owned_province = {
-		        		random_pops_in_province = {
-		        		limit = {
-							pop_culture_group = selaskusian
-							}
-							move_pop = scope:duny_city5
-						}
-					}
-				}
-	        }
-        }
-
-        # Abandon Old Lands
-
-        while = {
-			count = { 20 25 }
-	        	random_owned_province = {
-	        		limit = { 
-	        			total_population >= 1
-	        			city_status = settlement
-	        			OR = {
-	        				is_in_region = western_shout_skyreach_foothils
-	        				is_in_region = bronze_foothils
-	        			}
-	        		}
-	        		random_pops_in_province = {
-	        		limit = {
-						pop_culture_group = selaskusian
-						}
-						kill_pop = yes
-					}
-				}
-	        }
-        }
-        while = {
-			count = { 20 25 }
-	        	random_owned_province = {
-	        		limit = { 
-	        			total_population >= 1
-	        			city_status = settlement
-	        			OR = {
-	        				is_in_region = western_shout_skyreach_foothils
-	        				is_in_region = bronze_foothils
-	        			}
-	        		}
-	        		random_pops_in_province = {
-	        		limit = {
-						pop_culture_group = selaskusian
-						}
-						kill_pop = yes
-					}
-				}
-	        }
-        }
-        while = {
-			count = { 20 25 }
-	        	random_owned_province = {
-	        		limit = { 
-	        			total_population >= 1
-	        			city_status = settlement
-	        			OR = {
-	        				is_in_region = western_shout_skyreach_foothils
-	        				is_in_region = bronze_foothils
-	        			}
-	        		}
-	        		random_pops_in_province = {
-	        		limit = {
-						pop_culture_group = selaskusian
-						}
-						kill_pop = yes
-					}
-				}
-	        }
-        }
+        #while = {
+		#	count = { 20 25 }
+		#	scope:duny_city1 = {
+		#		if = {
+		#			limit = { total_population >= 25 }
+		#        	random_owned_province = {
+		#        		random_pops_in_province = {
+		#        		limit = {
+		#					pop_culture_group = selaskusian
+		#					}
+		#					move_pop = scope:duny_city1
+		#				}
+		#			}
+		#		}
+	    #    }
+        #}
 
         # Owners Get Angry
 
@@ -1157,6 +964,7 @@ razani_civil_war.11 = { # Duny Migrate Decision
 			set_capital = 3163
 		}
     }
+
     option = { # Stay and Raid
         name = "razani_civil_war_11.b"
         add_treasury = 200
