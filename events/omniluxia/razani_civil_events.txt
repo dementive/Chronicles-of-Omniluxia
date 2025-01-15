@@ -15,6 +15,10 @@ razani_civil_war.99 = {
                 id = razani_civil_war.1
                 days = { 5 20 }
         }
+        trigger_event = {
+                id = razani_civil_war.10
+                days = { 30 50 }
+        }
     }
 }
 
@@ -711,6 +715,7 @@ razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
 }
 
 
+
 # DUNY MIGRATIONS
 
 razani_civil_war.10 = { # AI DUNY DECISION
@@ -736,6 +741,9 @@ razani_civil_war.11 = { # Duny Migrate Decision
     desc = razani_civil_war_11_desc
     picture = city_country
     left_portrait = current_ruler
+    left_portrait = c:EGA.current_ruler
+    right_portrait = c:YGA.current_ruler
+    right_portrait = c:IP6.current_ruler
 
     fire_only_once = yes
 
@@ -1333,67 +1341,33 @@ razani_civil_war.11 = { # Duny Migrate Decision
 			}
 		}
 
-		# Invasions
-		random_neighbour_country = {
-			save_scope_as = duny_invasion_defender_1           	
-        }
-        declare_war_with_wargoal = {
-            war_goal = horde_conquest
-           	target = scope:duny_invasion_defender_1
-        }
-        random_neighbour_country = {
-        	limit = { NOT = { this = scope:duny_invasion_defender_1 } }
-			save_scope_as = duny_invasion_defender_2            	
-        }
-        declare_war_with_wargoal = {
-            war_goal = horde_conquest
-           	target = scope:duny_invasion_defender_2
-        }
-        random_neighbour_country = {
-        	limit = {
-        		NOR = { 
-        			this = scope:duny_invasion_defender_1 
-        			this = scope:duny_invasion_defender_2
-        		}
-        	}
-			save_scope_as = duny_invasion_defender_3           	
-        }
-        declare_war_with_wargoal = {
-            war_goal = horde_conquest
-           	target = scope:duny_invasion_defender_3
-        }
-        random_neighbour_country = {
-        	limit = {
-        		NOR = { 
-        			this = scope:duny_invasion_defender_1 
-        			this = scope:duny_invasion_defender_2
-        			this = scope:duny_invasion_defender_3
-        		}
-        	}
-			save_scope_as = duny_invasion_defender_4           	
-        }
-        declare_war_with_wargoal = {
-            war_goal = horde_conquest
-           	target = scope:duny_invasion_defender_4
-        }
-        random_neighbour_country = {
-        	limit = {
-        		NOR = { 
-        			this = scope:duny_invasion_defender_1 
-        			this = scope:duny_invasion_defender_2
-        			this = scope:duny_invasion_defender_3
-        			this = scope:duny_invasion_defender_4
-        		}
-        	}
-			save_scope_as = duny_invasion_defender_5           	
-        }
-        declare_war_with_wargoal = {
-            war_goal = horde_conquest
-           	target = scope:duny_invasion_defender_5
-        }
-
-
 		# Host
+		create_unit = {
+            navy = no
+            name = "Great Duny Host"
+            location = capital_scope
+            hidden_effect = {
+                while = {
+                   	count = 41
+                    add_subunit = light_infantry
+                }
+                while = {
+                   	count = 12
+                    add_subunit = light_cavalry
+                } 
+                while = {
+                   	count = 18
+                    add_subunit = horse_archers
+                } 
+                while = {
+                   	count = 4
+                    add_subunit = supply_train
+                }  
+                add_food = 400
+                add_morale = 5
+            }
+        }
+
 
 		# World Event
 		every_country = {
@@ -1405,10 +1379,19 @@ razani_civil_war.11 = { # Duny Migrate Decision
         			}
         		}
         	}
-            trigger_event = razani_civil_war.12
+            trigger_event = razani_civil_war.13
         }
 
-        # Owners Get Angry
+        # Invasions
+        trigger_event = razani_civil_war.12
+
+        # Conversion Event
+        trigger_event = {
+            id = razani_civil_war.14
+            days = { 5 20 }
+        }
+
+        # Change Name
 			change_country_adjective = "DKY_ADJ"
 			change_country_color =  "dunykyelen_color"
 			change_country_tag = DKY
@@ -1416,6 +1399,8 @@ razani_civil_war.11 = { # Duny Migrate Decision
 			set_capital = 3163
 		}
 		change_country_name = "DKY"
+		add_treasury = 300
+		add_manpower = 20
     }
 
     option = { # Stay and Raid
@@ -1423,17 +1408,6 @@ razani_civil_war.11 = { # Duny Migrate Decision
         add_treasury = 300
     	change_country_name = "DKY"
 		hidden_effect = {
-			every_country = {
-	        	limit = {
-	        		NOT = {
-	        			OR = {
-	        				tag = DNY
-	        				ai = yes
-	        			}
-	        		}
-	        	}
-	            trigger_event = razani_civil_war.12
-	        }
 			change_country_adjective = "DKY_ADJ"
 			change_country_color =  "dunykyelen_color"
 			change_country_tag = DKY
@@ -1497,11 +1471,88 @@ razani_civil_war.11 = { # Duny Migrate Decision
     }
 }
 
-razani_civil_war.12 = { # World Duny Migration
+razani_civil_war.12 = { # Duny Invasion
+    type = country_event
+    hidden = yes
+
+    fire_only_once = yes
+
+    immediate = {
+    	# Invasions
+		random_neighbour_country = {
+			save_scope_as = duny_invasion_defender_1         	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_1
+        }
+        random_neighbour_country = {
+        	limit = {
+        		NOR = { 
+        			this = scope:duny_invasion_defender_1
+        		} 
+        	}
+			save_scope_as = duny_invasion_defender_2            	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_2
+        }
+        random_neighbour_country = {
+        	limit = {
+        		NOR = { 
+        			this = scope:duny_invasion_defender_1 
+        			this = scope:duny_invasion_defender_2
+        		}
+        	}
+			save_scope_as = duny_invasion_defender_3           	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_3
+        }
+        random_neighbour_country = {
+        	limit = {
+        		NOR = { 
+        			this = scope:duny_invasion_defender_1 
+        			this = scope:duny_invasion_defender_2
+        			this = scope:duny_invasion_defender_3
+        		}
+        	}
+			save_scope_as = duny_invasion_defender_4           	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_4
+        }
+        random_neighbour_country = {
+        	limit = {
+        		NOR = { 
+        			this = scope:duny_invasion_defender_1 
+        			this = scope:duny_invasion_defender_2
+        			this = scope:duny_invasion_defender_3
+        			this = scope:duny_invasion_defender_4
+        		}
+        	}
+			save_scope_as = duny_invasion_defender_5           	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_5
+        }
+	    if = {
+	    	limit = { is_ai = yes }
+	    	add_treasury = 1000
+			add_manpower = 30
+	    }
+    }
+}
+
+razani_civil_war.13 = { # World Duny Migration
     type = country_event
 
-    title = razani_civil_war_12_title
-    desc = razani_civil_war_12_desc
+    title = razani_civil_war_13_title
+    desc = razani_civil_war_13_desc
     picture = city_country
     left_portrait = current_ruler
     right_portrait = c:DNY.current_ruler
@@ -1509,158 +1560,53 @@ razani_civil_war.12 = { # World Duny Migration
     fire_only_once = yes
 
     option = {
-        name = "razani_civil_war_12.a"
-        custom_tooltip = razani_civil_war_12_tooltip
-    }
-}
-
-razani_civil_war.13 = { # EGA Duny Migration
-    type = country_event
-
-    title = razani_civil_war_13_title
-    desc = razani_civil_war_13_desc
-    picture = city_country
-    left_portrait = current_ruler
-    right_portrait = char:117
-
-    fire_only_once = yes
-
-    immediate = {
-        char:117 = {
-            save_scope_as = rebel_scum
-        }
-    }
-
-    option = {
         name = "razani_civil_war_13.a"
         custom_tooltip = razani_civil_war_13_tooltip
-        add_legitimacy = -20
-        add_stability = -10
-		start_civil_war = scope:rebel_scum
-        hidden_effect = { 
-            scope:rebel_scum.employer = {
-                change_country_name = "Great Salahad Ulus"
-                change_country_adjective = "Jarenamite"
-                change_country_color = forrj_red
-                change_country_flag = "SOV2_FLAG"
-                change_government = great_ulus
-                save_scope_as = jarenam_revolt_country
-            }
-        }
-		every_country = {
-            limit = {
-            	NOT = {
-            		tag = JRE
-            	}
-            }
-            trigger_event = razani_civil_war.13
-        }
-        c:JRE = {
-			trigger_event = {
-			    id = razani_civil_war.14
-			    days = { 180 220 }
-			}
-		}
     }
 }
 
-razani_civil_war.14 = { # DNY Razani Hostile Reaction
+razani_civil_war.14 = { # Duny Convert & Settle / Horde
     type = country_event
 
     title = razani_civil_war_14_title
     desc = razani_civil_war_14_desc
     picture = city_country
     left_portrait = current_ruler
-    right_portrait = char:117
 
     fire_only_once = yes
-
-    immediate = {
-        char:117 = {
-            save_scope_as = rebel_scum
-        }
-    }
 
     option = {
         name = "razani_civil_war_14.a"
         custom_tooltip = razani_civil_war_14_tooltip
-        add_legitimacy = -20
-        add_stability = -10
-		start_civil_war = scope:rebel_scum
-        hidden_effect = { 
-            scope:rebel_scum.employer = {
-                change_country_name = "Great Salahad Ulus"
-                change_country_adjective = "Jarenamite"
-                change_country_color = forrj_red
-                change_country_flag = "SOV2_FLAG"
-                change_government = great_ulus
-                save_scope_as = jarenam_revolt_country
-            }
-        }
-		every_country = {
-            limit = {
-            	NOT = {
-            		tag = JRE
-            	}
-            }
-            trigger_event = razani_civil_war.13
-        }
-        c:JRE = {
-			trigger_event = {
-			    id = razani_civil_war.14
-			    days = { 180 220 }
+
+        ai_chance = { factor = 10 }
+
+        add_stability = -5
+        hidden_effect = {
+	        change_government = feudal_monarchy
+	        set_country_religion = helluvian
+	        capital_scope = {
+				hidden_effect = {
+					while = {
+						count = 5
+						random_pops_in_province = {
+							limit = {
+								pop_culture = duny
+							}
+							set_pop_religion = helluvian
+						}
+					}
+				}
+			}
+			current_ruler = {
+				set_character_religion = helluvian
 			}
 		}
     }
-}
-
-razani_civil_war.15 = { # Duny Convert/Settle or Horde
-    type = country_event
-
-    title = razani_civil_war_15_title
-    desc = razani_civil_war_15_desc
-    picture = city_country
-    left_portrait = current_ruler
-    right_portrait = char:117
-
-    fire_only_once = yes
-
-    immediate = {
-        char:117 = {
-            save_scope_as = rebel_scum
-        }
-    }
-
     option = {
-        name = "razani_civil_war_15.a"
-        custom_tooltip = razani_civil_war_15_tooltip
-        add_legitimacy = -20
-        add_stability = -10
-		start_civil_war = scope:rebel_scum
-        hidden_effect = { 
-            scope:rebel_scum.employer = {
-                change_country_name = "Great Salahad Ulus"
-                change_country_adjective = "Jarenamite"
-                change_country_color = forrj_red
-                change_country_flag = "SOV2_FLAG"
-                change_government = great_ulus
-                save_scope_as = jarenam_revolt_country
-            }
-        }
-		every_country = {
-            limit = {
-            	NOT = {
-            		tag = JRE
-            	}
-            }
-            trigger_event = razani_civil_war.13
-        }
-        c:JRE = {
-			trigger_event = {
-			    id = razani_civil_war.14
-			    days = { 180 220 }
-			}
-		}
+        name = "razani_civil_war_14.b"
+        custom_tooltip = razani_civil_war_14_tooltip
+        add_stability = 3
     }
 }
 
