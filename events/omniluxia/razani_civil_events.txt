@@ -65,7 +65,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
     right_portrait = char:138
 
     immediate = {
-    	 char:138 = {
+    	char:138 = {
             save_scope_as = rebel_scum
         }
 
@@ -151,7 +151,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
 		scope:razani_revolt_country = {
 			create_unit = {
                 navy = no
-                name = "Gonessionem Desin 'Baetep'"
+                name = "Gonessionem II 'Baetep'"
                 location = capital_scope
                 hidden_effect = {
                 	while = {
@@ -195,7 +195,8 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
 
         ai_chance = { factor = 10 }
 
-        add_stability = -3
+        add_stability = -12
+        add_legitimacy = -50
         add_manpower = -50
         hidden_effect = {
         	c:WGA = {
@@ -212,6 +213,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
             		NOT = {
             			OR = {
             				tag = EGA
+            				tag = WGA
             				ai = yes
             			}
             		}
@@ -224,7 +226,8 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
         name = "razani_civil_war_2.b"
         custom_tooltip = razani_civil_war_2_tooltip.b
 
-        add_stability = -3
+        add_stability = -12
+        add_legitimacy = -50
         add_manpower = -50
         hidden_effect = {
         	c:WGA = {
@@ -238,6 +241,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
 	        		NOT = {
 	        			OR = {
 	        				tag = EGA
+	        				tag = WGA
 	        				ai = yes
 	        			}
 	        		}
@@ -337,7 +341,7 @@ razani_civil_war.4 = { # WGA Intervene in Civil War
     option = { # Support Pretender
         name = "razani_civil_war_4.a"
         custom_tooltip = razani_civil_war_4_tooltip.a
-        add_stability = -2
+        add_stability = -5
         add_treasury = -150
         add_manpower = -10
         c:EGA = {
@@ -347,7 +351,7 @@ razani_civil_war.4 = { # WGA Intervene in Civil War
     option = { # Support Razani
         name = "razani_civil_war_4.b"
         custom_tooltip = razani_civil_war_4_tooltip.b
-        add_stability = -2
+        add_stability = -5
         add_treasury = -50
         add_manpower = -5
         c:EGA = {
@@ -378,36 +382,24 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 
     immediate = {
     	hidden_effect = {
-			p:2348 = {
-				create_country = {
-	                set_country_religion = the_first_emperor
-	                change_country_name = "Nazani Client State"
-	                change_country_color = "nazani_client_color"
-	                change_government = imperium
-	                change_country_adjective = "Nazani"
-	                change_country_flag = "WGA"
-	                save_scope_as = nazani_revolter
-				}
-			}
-			scope:nazani_rebel = {
+    		scope:nazani_rebel = {
 				remove_all_positions = yes
-				move_country = scope:nazani_revolter
-				set_home_country = scope:nazani_revolter
+				move_country = EGA
+				set_home_country = EGA
 				remove_character_modifier = foreign_citizen
 			}
+			start_civil_war = scope:nazani_rebel
+            scope:nazani_rebel.employer = {
+                change_country_name = "Nazani Empire"
+                change_country_adjective = "Nazani"
+                change_country_color = "nazani_client_color"
+                change_country_flag = "WGA"
+                change_government = imperium
+                save_scope_as = nazani_revolter
+            }
 			scope:nazani_revolter = {
 				add_treasury = 1000
 				add_manpower = 20
-				set_as_ruler = scope:nazani_rebel
-				if = {
-					limit = {
-						NOR = {
-							has_law = republican_recruitment_2 # legions capital
-							has_law = republican_recruitment_4 # legions enabled
-						}
-					}
-					change_law = republican_recruitment_2 # capital
-				}
 			}
 			scope:nazani_revolter = {
 				set_primary_culture_cleanup_effect = {
@@ -422,19 +414,72 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 					add_building_level = fortress_building
 				}
 			}
-			p:2339 = {
-				limit = {
-					NOT = { owner = scope:nazani_revolter }
-					owner = c:EGA
+			p:3467.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:nazani_revolter
+					}
+					set_owned_by = c:EGA
 				}
-				set_owned_by = scope:nazani_revolter
 			}
-			p:2306 = {
-				limit = {
-					NOT = { owner = scope:nazani_revolter }
-					owner = c:EGA
+			p:3806.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:nazani_revolter
+					}
+					set_owned_by = c:EGA
 				}
-				set_owned_by = scope:nazani_revolter
+			}
+			p:2470.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:nazani_revolter
+					}
+					set_owned_by = c:EGA
+				}
+			}
+			p:2348.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:nazani_revolter
+					}
+					set_owned_by = c:EGA
+				}
+			}
+			p:3383.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:nazani_revolter
+					}
+					set_owned_by = c:EGA
+				}
+			}
+
+			scope:nazani_revolter = {
+				create_unit = {
+	                navy = no
+	                name = "Nazani Auxiliaries"
+	                location = capital_scope
+	                hidden_effect = {
+	                	while = {
+	                       	count = 2
+	                        add_subunit = heavy_infantry
+	                    }
+	                    while = {
+	                       	count = 4
+	                        add_subunit = light_infantry
+	                    }
+	                    add_subunit = heavy_cavalry 
+	                    add_subunit = heavy_cavalry
+	                    add_food = 300
+	                    add_morale = 4
+	                }
+	            }
 			}
 
 			c:WGA = {
@@ -450,6 +495,7 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
         name = "razani_civil_war_5.a"
         custom_tooltip = razani_civil_war_5_tooltip
         add_stability = -3
+        add_legitimacy = -5
         scope:nazani_revolter = {
 			declare_war_with_wargoal = {
 				war_goal = conquer_wargoal
@@ -479,8 +525,8 @@ razani_civil_war.6 = { # EGA Nazani Send Help
 
     option = {
         name = "razani_civil_war_6.a"
-        custom_tooltip = razani_civil_war_6_tooltip.a
         add_stability = 2
+        add_legitimacy = 12
         add_treasury = 100
         add_manpower = 5
         c:YGA = {
@@ -495,11 +541,13 @@ razani_civil_war.6 = { # EGA Nazani Send Help
 razani_civil_war.7 = { # YGA Helluvian King Demands Throne
     type = country_event
 
-    title = razani_civil_war_4_title
-    desc = razani_civil_war_4_desc
+    title = razani_civil_war_7_title
+    desc = razani_civil_war_7_desc
     picture = city_country
-    left_portrait = char:94
-    right_portrait = char:139
+    left_portrait = current_ruler
+    left_portrait = char:139
+    right_portrait = c:EGA.current_ruler
+    right_portrait = char:94
 
 	immediate = {
     	char:139 = {
@@ -509,7 +557,7 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
         start_civil_war = scope:yga_rebel_scum
         hidden_effect = {
             scope:yga_rebel_scum.employer = {
-                change_country_name = "HOLY Ytalia"
+                change_country_name = "Holy Ytalian Kingdom"
                 change_country_adjective = "Ytalian"
                 change_country_color = holy_ytalian
                 change_country_flag = "YGA"
@@ -532,6 +580,10 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
 				}
 			}
 
+			scope:yga_rebel_scum = {
+				add_nickname = "Hammer of Hellas"
+			}
+
 			scope:ytalia_revolt_country = {
 				set_capital = 3337
 				add_truce = {
@@ -548,19 +600,20 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
                     }
                     add_subunit = light_cavalry
                     add_subunit = supply_train    
-	                    add_food = 300
-	                    add_morale = 5
-	                }
-	            }
-			}
+                    add_food = 300
+                    add_morale = 5
+                }
+            }
 		}
+	}
 
     option = { # Defend your Throne
-        name = "razani_civil_war_2.a"
-        custom_tooltip = razani_civil_war_2_tooltip.a
+        name = "razani_civil_war_7.a"
+        custom_tooltip = razani_civil_war_7_tooltip.a
         ai_chance = { factor = 10 }
 
-        add_stability = -3
+        add_stability = -12
+        add_legitimacy = -25
         add_manpower = -5
         hidden_effect = { 
         	scope:ytalia_revolt_country = {
@@ -571,10 +624,11 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
         }
     }
     option = { # Switch to Rebels
-        name = "razani_civil_war_2.b"
-        custom_tooltip = razani_civil_war_2_tooltip.b
+        name = "razani_civil_war_7.b"
+        custom_tooltip = razani_civil_war_7_tooltip.b
 
-        add_stability = -5
+        add_stability = -8
+        add_legitimacy = -25
         add_manpower = -50
         hidden_effect = {
 	        c:EGA = { trigger_event = razani_civil_war.8 }
@@ -593,12 +647,16 @@ razani_civil_war.8 = { # EGA Ytalian Revolt
     desc = razani_civil_war_8_desc
     picture = city_country
     left_portrait = current_ruler
+    left_portrait = char:94
+    right_portrait = char:140
+    right_portrait = char:139
 
     fire_only_once = yes
 
     option = {
         name = "razani_civil_war_8.a"
-        custom_tooltip = razani_civil_war_8_tooltip
+        add_stability = -2
+        add_legitimacy = -5
         scope:ytalia_revolt_country = {
 	        declare_war_with_wargoal = {
 				war_goal = independence_wargoal
@@ -609,8 +667,10 @@ razani_civil_war.8 = { # EGA Ytalian Revolt
 		c:EGA = { trigger_event = razani_civil_war.9 }
     }
     option = {
-        name = "razani_civil_war_8.a"
-        custom_tooltip = razani_civil_war_8_tooltip
+        name = "razani_civil_war_8.b"
+        add_stability = 5
+        add_legitimacy = -12
+        add_war_exhaustion = -2
         add_truce = {
             target = scope:ytalia_revolt_country
             duration = 5000 # 5 years
@@ -626,12 +686,15 @@ razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
     desc = razani_civil_war_9_desc
     picture = city_country
     left_portrait = current_ruler
+    left_portrait = char:143
+    right_portrait = char:142
+    right_portrait = char:144
 
     fire_only_once = yes
 
     immediate = {
 		hidden_effect = {
-		    char:141 = {
+		    char:144 = {
 	            save_scope_as = gevanni_rebel_scum
 	        }
 			p:2470 = {
@@ -665,8 +728,8 @@ razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
 			p:2470.area = {
 				every_area_province = {
 					limit = {
-						NOT = { owner = c:scope:gevanni_revolt }
-						owner = EGA
+						NOT = { owner = scope:gevanni_revolt }
+						owner = c:EGA
 					}
 					set_owned_by = scope:gevanni_revolt
 				}
@@ -693,11 +756,17 @@ razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
 				}
 			}
 		}
+		char:143 = {
+        	death = {
+        		death_reason = death_execution
+        	}
+        }
     }
 
     option = {
         name = "razani_civil_war_9.a"
-        custom_tooltip = razani_civil_war_9_tooltip
+        add_stability = -3
+        add_legitimacy = -5
 		scope:gevanni_revolt = {
 	        declare_war_with_wargoal = {
 				war_goal = independence_wargoal
@@ -720,17 +789,12 @@ razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
 
 razani_civil_war.10 = { # AI DUNY DECISION
     type = country_event
-
-    title = razani_civil_war_10_title
-    desc = razani_civil_war_10_desc
-    picture = city_country
-    left_portrait = current_ruler
+    hidden = yes
 
     fire_only_once = yes
 
     option = {
-        name = "razani_civil_war_10.a"
-        custom_tooltip = razani_civil_war_10_tooltip
+        
     }
 }
 
