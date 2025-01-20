@@ -127,7 +127,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
 			p:2682.area = {
 				every_area_province = {
 					limit = {
-						NOT = { owner = c:scope:razani_revolt_country }
+						NOT = { owner = scope:razani_revolt_country }
 						owner = EGA
 					}
 					set_owned_by = scope:razani_revolt_country
@@ -151,7 +151,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
 		scope:razani_revolt_country = {
 			create_unit = {
                 navy = no
-                name = "Gonessionem II 'Baetep'"
+                name = "Defecting Levies"
                 location = capital_scope
                 hidden_effect = {
                 	while = {
@@ -202,7 +202,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
         	c:WGA = {
 			    trigger_event = {
 		            id = razani_civil_war.4
-		            days = { 30 60 }
+		            days = { 120 150 }
 		        }
 	        }
         	scope:razani_revolt_country = {
@@ -233,7 +233,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
         	c:WGA = {
 			    trigger_event = {
 		            id = razani_civil_war.4
-		            days = { 1 20 }
+		            days = { 90 120 }
 		        }
 	        }
 	        every_country = {
@@ -345,7 +345,10 @@ razani_civil_war.4 = { # WGA Intervene in Civil War
         add_treasury = -150
         add_manpower = -10
         c:EGA = {
-			trigger_event = razani_civil_war.5
+			trigger_event = {
+		        id = razani_civil_war.5
+		        days = { 90 120 }
+		    }
         }
     }
     option = { # Support Razani
@@ -355,7 +358,10 @@ razani_civil_war.4 = { # WGA Intervene in Civil War
         add_treasury = -50
         add_manpower = -5
         c:EGA = {
-			trigger_event = razani_civil_war.6
+			trigger_event = {
+		        id = razani_civil_war.6
+		        days = { 90 120 }
+		    }
         }
     }
     option = { # Support Neither
@@ -364,7 +370,7 @@ razani_civil_war.4 = { # WGA Intervene in Civil War
         c:YGA = {
 			trigger_event = {
 		        id = razani_civil_war.7
-		        days = { 60 90 }
+		        days = { 120 150 }
 		    }
         }
     }
@@ -382,29 +388,46 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 
     immediate = {
     	hidden_effect = {
-    		scope:nazani_rebel = {
+			p:2348 = {
+				create_country = {
+	                set_country_religion = the_first_emperor
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = eagelian
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = eagelian
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Eastern Nazani Empire"
+	                change_country_color = "nazani_client_color"
+	                change_government = imperium
+	                change_country_adjective = "Nazani"
+	                change_country_flag = WGA
+	                save_scope_as = nazani_revolter
+				}
+			}
+			scope:nazani_rebel = {
 				remove_all_positions = yes
-				move_country = EGA
-				set_home_country = EGA
+				move_country = scope:nazani_revolter
+				set_home_country = scope:nazani_revolter
 				remove_character_modifier = foreign_citizen
 			}
-			start_civil_war = scope:nazani_rebel
-            scope:nazani_rebel.employer = {
-                change_country_name = "Nazani Empire"
-                change_country_adjective = "Nazani"
-                change_country_color = "nazani_client_color"
-                change_country_flag = "WGA"
-                change_government = imperium
-                save_scope_as = nazani_revolter
-            }
 			scope:nazani_revolter = {
 				add_treasury = 1000
 				add_manpower = 20
-			}
-			scope:nazani_revolter = {
-				set_primary_culture_cleanup_effect = {
-					NEW_PRIMARY_CULTURE = weagelian
-					MAKE_OLD_CULTURE_INTEGRATED = yes
+				set_as_ruler = scope:nazani_rebel
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
 				}
 			}
 			p:2348 = { # capital fort
@@ -414,51 +437,12 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 					add_building_level = fortress_building
 				}
 			}
-			p:3467.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:nazani_revolter
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:3806.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:nazani_revolter
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:2470.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:nazani_revolter
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:2348.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:nazani_revolter
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:3383.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:nazani_revolter
-					}
-					set_owned_by = c:EGA
-				}
-			}
+			scope:nazani_revolter = {
+                set_primary_culture_cleanup_effect = {
+                    NEW_PRIMARY_CULTURE = weagelian
+                    MAKE_OLD_CULTURE_INTEGRATED = yes
+                }
+            }
 
 			scope:nazani_revolter = {
 				create_unit = {
@@ -487,9 +471,9 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 	                type = feudatory
 	                target = scope:nazani_revolter
 	            }
-            }
-		}
-    }
+	        }
+	    }
+	}
 
     option = {
         name = "razani_civil_war_5.a"
@@ -498,15 +482,14 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
         add_legitimacy = -5
         scope:nazani_revolter = {
 			declare_war_with_wargoal = {
-				war_goal = conquer_wargoal
-				province = 2478
+				war_goal = imperial_contest_wargoal
 				target = EGA
 			}
 		}
         c:YGA = {
 			trigger_event = {
 		        id = razani_civil_war.7
-		        days = { 30 90 }
+		        days = { 60 90 }
 		    }
         }
     }
@@ -532,7 +515,7 @@ razani_civil_war.6 = { # EGA Nazani Send Help
         c:YGA = {
 			trigger_event = {
 		        id = razani_civil_war.7
-		        days = { 60 120 }
+		        days = { 90 120 }
 		    }
         }
     }
@@ -620,7 +603,12 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
 				add_treasury = 300
 			}
 
-            c:EGA = { trigger_event = razani_civil_war.8 }
+            c:EGA = { 
+		        trigger_event = {
+			        id = razani_civil_war.8
+			        days = { 15 35 }
+			    }
+		    }
         }
     }
     option = { # Switch to Rebels
@@ -631,7 +619,12 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
         add_legitimacy = -25
         add_manpower = -50
         hidden_effect = {
-	        c:EGA = { trigger_event = razani_civil_war.8 }
+	        c:EGA = { 
+		        trigger_event = {
+			        id = razani_civil_war.8
+			        days = { 15 35 }
+			    }
+		    }
 	        if = {
 		        limit = { is_ai = no }
 	        	set_player_country = scope:ytalia_revolt_country
@@ -667,7 +660,7 @@ razani_civil_war.8 = { # EGA Ytalian Revolt
 		c:EGA = { 
 			trigger_event = {
 		        id = razani_civil_war.9
-		        days = { 30 120 }
+		        days = { 30 90 }
 		    }
 		}
     }
@@ -683,7 +676,7 @@ razani_civil_war.8 = { # EGA Ytalian Revolt
         c:EGA = { 
 			trigger_event = {
 		        id = razani_civil_war.9
-		        days = { 30 120 }
+		        days = { 60 120 }
 		    }
 		}
     }
@@ -1293,6 +1286,10 @@ razani_civil_war.11 = { # Duny Migrate Decision
 			}
 		}
 
+		p:5793 = {
+            change_province_name = Mount Dzunge Duny
+        }
+
 		# Leave Those Who Stayed
 		create_character = {
 	        first_name = "Gorku"
@@ -1470,17 +1467,16 @@ razani_civil_war.11 = { # Duny Migrate Decision
         # Conversion Event
         trigger_event = {
             id = razani_civil_war.14
-            days = { 730 1261 }
+            days = { 1260 1420 }
         }
 
         # Change Name
 			change_country_adjective = "DKY_ADJ"
 			change_country_color =  "dunykyelen_color"
-			change_country_tag = DKY
 			change_country_flag = "DKY_FLAG"
 			set_capital = 3163
 		}
-		add_treasury = 300
+		add_treasury = 800
 		add_manpower = 20
 		change_country_name = "DKY"
 		custom_tooltip = razani_civil_war_11_tooltip.a
@@ -1494,7 +1490,6 @@ razani_civil_war.11 = { # Duny Migrate Decision
 		hidden_effect = {
 			change_country_adjective = "DKY_ADJ"
 			change_country_color =  "dunykyelen_color"
-			change_country_tag = DKY
 			change_country_flag = "DKY_FLAG"
 		    set_capital = 3673					
 		    p:3673 = {
@@ -1637,7 +1632,7 @@ razani_civil_war.13 = { # World Duny Migration
 
     title = razani_civil_war_13_title
     desc = razani_civil_war_13_desc
-    picture = city_country
+    picture = Event_dothraki_attack_slave_city
     left_portrait = current_ruler
     right_portrait = c:DNY.current_ruler
 
@@ -1689,7 +1684,7 @@ razani_civil_war.14 = { # Duny Convert & Settle / Horde
     }
     option = {
         name = "razani_civil_war_14.b"
-        custom_tooltip = razani_civil_war_14_tooltip
+        custom_tooltip = razani_civil_war_14_tooltip.b
         add_stability = 3
     }
 }
