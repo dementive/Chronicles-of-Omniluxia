@@ -388,47 +388,12 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 
     immediate = {
     	hidden_effect = {
-			p:2348 = {
-				create_country = {
-	                set_country_religion = the_first_emperor
-	                if = {
-						limit = {
-							NOT = {
-								primary_culture = eagelian
-							}
-						}
-						set_primary_culture_cleanup_effect = {
-							NEW_PRIMARY_CULTURE = eagelian
-							MAKE_OLD_CULTURE_INTEGRATED = yes
-						}
-					}
-	                change_country_name = "Eastern Nazani Empire"
-	                change_country_color = "nazani_client_color"
-	                change_government = imperium
-	                change_country_adjective = "Nazani"
-	                change_country_flag = WGA
-	                save_scope_as = nazani_revolter
+    		p:2348 = {
+				limit = {
+					NOT = { owner = c:WGA }
+					owner = EGA
 				}
-			}
-			scope:nazani_rebel = {
-				remove_all_positions = yes
-				move_country = scope:nazani_revolter
-				set_home_country = scope:nazani_revolter
-				remove_character_modifier = foreign_citizen
-			}
-			scope:nazani_revolter = {
-				add_treasury = 1000
-				add_manpower = 20
-				set_as_ruler = scope:nazani_rebel
-				if = {
-					limit = {
-						NOR = {
-							has_law = republican_recruitment_2 # legions capital
-							has_law = republican_recruitment_4 # legions enabled
-						}
-					}
-					change_law = republican_recruitment_2 # capital
-				}
+				set_owned_by = c:WGA
 			}
 			p:2348 = { # capital fort
 				state = { set_state_capital = p:2348 }
@@ -437,18 +402,12 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 					add_building_level = fortress_building
 				}
 			}
-			scope:nazani_revolter = {
-                set_primary_culture_cleanup_effect = {
-                    NEW_PRIMARY_CULTURE = weagelian
-                    MAKE_OLD_CULTURE_INTEGRATED = yes
-                }
-            }
 
-			scope:nazani_revolter = {
+			c:WGA = {
 				create_unit = {
 	                navy = no
 	                name = "Nazani Auxiliaries"
-	                location = capital_scope
+	                location = p:2348
 	                hidden_effect = {
 	                	while = {
 	                       	count = 2
@@ -465,13 +424,6 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
 	                }
 	            }
 			}
-
-			c:WGA = {
-				make_subject = {
-	                type = feudatory
-	                target = scope:nazani_revolter
-	            }
-	        }
 	    }
 	}
 
@@ -480,9 +432,9 @@ razani_civil_war.5 = { # EGA Nazani Back a Pretender
         custom_tooltip = razani_civil_war_5_tooltip
         add_stability = -3
         add_legitimacy = -5
-        scope:nazani_revolter = {
+        c:WGA = {
 			declare_war_with_wargoal = {
-				war_goal = imperial_contest_wargoal
+				war_goal = imperial_contest
 				target = EGA
 			}
 		}
@@ -550,7 +502,7 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
             }
 			p:3337 = {
 				limit = {
-					NOT = { owner = c:scope:ytalia_revolt_country }
+					NOT = { owner = scope:ytalia_revolt_country }
 					owner = YGA
 				}
 				set_owned_by = scope:ytalia_revolt_country
@@ -1672,6 +1624,11 @@ razani_civil_war.12 = { # Duny Invasion
     fire_only_once = yes
 
     immediate = {
+    	set_variable = {
+			name = duny_horde_invasion_origin
+			days = 5
+		}
+
     	# Invasions
 		random_neighbour_country = {
 			save_scope_as = duny_invasion_defender_1         	
