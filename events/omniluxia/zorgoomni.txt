@@ -139,7 +139,7 @@ me_zorgoomni.5 = {
         name = "me_zorgoomni.5.c"
         custom_tooltip = me_zorgoomni.5_tooltip
         scope:tadm_mage_scope = {
-           death = {
+            death = {
                 death_reason = death_stabbing
                 killer = root.current_ruler
             }
@@ -2579,6 +2579,600 @@ me_zorgoomni.60 = {
         name = "me_zorgoomni.60.a"
         current_ruler = {
             force_add_trait = druid_trait
+        }
+    }
+}
+
+me_zorgoomni.61 = { # Orcish Pearls
+    type = country_event
+
+    title = me_zorgoomni.61_title
+    desc = me_zorgoomni.61_desc
+    picture = event_deep_forest
+    left_portrait = current_ruler
+
+    fire_only_once = yes
+
+    trigger = {
+        OR = {
+            owns = 2187
+            owns = 2581
+            owns = 2790
+            owns = 3252
+            owns = 2878
+        }
+    }
+
+    immediate = {
+        if = {
+            limit = { owns = 2187 }
+            save_scope_as = orcish_pearl_target
+        }
+        if = {
+            limit = { owns = 2581 }
+            save_scope_as = orcish_pearl_target
+        }
+        if = {
+            limit = { owns = 2790 }
+            save_scope_as = orcish_pearl_target
+        }
+        if = {
+            limit = { owns = 3252 }
+            save_scope_as = orcish_pearl_target
+        }
+        if = {
+            limit = { owns = 2878 }
+            save_scope_as = orcish_pearl_target
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.61.a"
+        add_treasury = -75
+        scope:orcish_pearl_target = { set_trade_goods = opium }
+    }
+    option = {
+        name = "me_zorgoomni.61.b"
+        add_treasury = 50
+    }
+}
+
+me_zorgoomni.62 = { # Orc Sobriety
+    type = country_event
+
+    title = me_zorgoomni.62_title
+    desc = me_zorgoomni.62_desc
+    picture = event_deep_forest
+    left_portrait = scope:new_sober
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                age > 16
+                has_trait = opium_addict_trait
+                has_religion = orcish_ancestral_faith
+            }
+            weight = {
+                base = 1
+                modifier = {
+                    factor = 1
+                    has_trait = lapsed
+                }
+            }
+            save_scope_as = new_sober
+        }
+    }
+
+    trigger = {
+        OR = {
+            country_culture_group = orcish
+            country_culture_group = orcish_humano
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.63.a"
+        scope:new_sober = {
+            remove_trait = opium_addict_trait
+            add_popularity = -25
+        }
+    }
+}
+
+me_zorgoomni.63 = { # Opium Addict
+    type = country_event
+
+    title = me_zorgoomni.63_title
+    desc = me_zorgoomni.63_desc
+    picture = event_deep_forest
+    left_portrait = scope:new_addict
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                age > 16
+            }
+            weight = {
+                base = 1
+                modifier = {
+                    factor = 3
+                    has_trait = reckless
+                }
+                modifier = {
+                    factor = 2
+                    has_trait = lapsed
+                }
+            }
+            save_scope_as = new_addict
+        }
+    }
+
+    trigger = {
+        any_owned_province = {
+            trade_good = opium
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.63.a"
+        scope:new_addict = {
+            force_add_trait = opium_addict_trait
+        }
+    }
+}
+
+me_zorgoomni.64 = { # Fai Attack a Village
+    type = country_event
+
+    title = me_zorgoomni.64_title
+    desc = me_zorgoomni.64_desc
+    picture = event_deep_forest
+    left_portrait = current_ruler
+
+    immediate = {
+        any_owned_province = {
+            limit = {
+                terrain = eldritch_forest
+            }
+            save_scope_as = houdini_village
+        }
+    }
+
+    trigger = {
+        any_owned_province = {
+            terrain = eldritch_forest
+        }
+        NOR = {
+            country_culture_group = forest_elves
+            country_culture_group = morrigon_forest_elves
+            country_culture_group = southern_forest_elves
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.64.a"
+        current_ruler = {
+            add_popularity = -7
+        }
+        scope:houdini_village = {
+            add_city_smoke_effect = yes
+            add_city_fire_effect = yes
+            
+            ordered_pops_in_province = {
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 2
+                }
+                min = {
+                    value = 0
+                }
+                kill_pop = yes
+            }
+        }
+    }
+}
+
+me_zorgoomni.65 = {
+    type = country_event
+
+    title = me_zorgoomni.65_title
+    desc = me_zorgoomni.65_desc
+    picture = event_deep_forest
+    left_portrait = current_ruler
+    right_portrait = scope:new_houdini_village.governor
+
+    immediate = {
+        any_owned_province = {
+            limit = {
+                terrain = eldritch_forest
+                is_capital = no
+            }
+            save_scope_as = new_houdini_village
+        }
+    }
+
+    trigger = {
+        any_owned_province = {
+            terrain = eldritch_forest
+        }
+        NOR = {
+            country_culture_group = forest_elves
+            country_culture_group = morrigon_forest_elves
+            country_culture_group = southern_forest_elves
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.65.a"
+        current_ruler = {
+            add_popularity = -12
+        }
+        scope:new_houdini_village.governor = {
+            death = {
+                death_reason = death_fai
+            }
+        }
+    }
+}
+
+me_zorgoomni.66 = { # Fai Make Man Insane
+    type = country_event
+
+    title = me_zorgoomni.66_title
+    desc = me_zorgoomni.66_desc
+    picture = event_deep_forest
+    right_portrait = scope:schizo_village.governor
+
+    immediate = {
+        any_owned_province = {
+            limit = {
+                terrain = eldritch_forest
+                is_capital = no
+            }
+            save_scope_as = schizo_village
+        }
+    }
+
+    trigger = {
+        any_owned_province = {
+            terrain = eldritch_forest
+        }
+        NOR = {
+            country_culture_group = forest_elves
+            country_culture_group = morrigon_forest_elves
+            country_culture_group = southern_forest_elves
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.66.a"
+        scope:schizo_village.governor = {
+            add_trait = schizophrenic
+        }
+    }
+}
+
+me_zorgoomni.67 = { # High Elf Disease
+    type = country_event
+
+    title = me_zorgoomni.67_title
+    desc = me_zorgoomni.67_desc
+    picture = event_deep_forest
+    left_portrait = scope:dead_guy_walking
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                age > 100
+                has_trait = high_elf_trait
+            }
+            save_scope_as = dead_guy_walking
+        }
+    }
+
+    trigger = {
+        OR = {
+            country_culture_group = high_elves
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.67.a"
+        scope:dead_guy_walking = {
+            add_trait = depressed
+        }
+        trigger_event = {
+            id = me_zorgoomni.68
+            days = { 365 1825 }
+        }
+    }
+}
+
+me_zorgoomni.68 = { # High Elf Disease 2
+    type = country_event
+
+    title = me_zorgoomni.68_title
+    desc = me_zorgoomni.68_desc
+    picture = event_deep_forest
+    left_portrait = scope:dead_guy_walking
+
+    option = {
+        name = "me_zorgoomni.68.a"
+        add_treasury = 50
+        scope:dead_guy_walking = {
+            add_trait = high_elf_disease_trait
+        }
+        trigger_event = {
+            id = me_zorgoomni.69
+            days = { 1825 3650 }
+        }
+    }
+    option = {
+        name = "me_zorgoomni.68.b"
+        add_stability = 2
+        scope:dead_guy_walking = {
+            add_trait = high_elf_disease_trait
+        }
+        trigger_event = {
+            id = me_zorgoomni.69
+            days = { 1825 3650 }
+        }
+    }
+}
+
+me_zorgoomni.69 = { # High Elf Disease Death
+    type = country_event
+
+    title = me_zorgoomni.69_title
+    desc = me_zorgoomni.69_desc
+    picture = event_deep_forest
+    left_portrait = scope:dead_guy_walking
+
+    option = {
+        name = "me_zorgoomni.69.a"
+        scope:dead_guy_walking = {
+            death = {
+                death_reason = death_high_elf
+            }
+        }
+    }
+}
+
+me_zorgoomni.70 = { # Shedding Malfunction
+    type = country_event
+
+    title = me_zorgoomni.70_title
+    desc = me_zorgoomni.70_desc
+    picture = event_deep_forest
+    left_portrait = scope:bad_shedder
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                age > 12
+                has_trait = snakefolk_trait
+            }
+            save_scope_as = bad_shedder
+        }
+    }
+
+    trigger = {
+        OR = {
+            country_culture_group = snakefolk
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.70.a"
+        scope:bad_shedder = {
+            add_trait = shedding_disorder_trait
+        }
+        trigger_event = {
+            id = me_zorgoomni.71
+            days = { 90 180 }
+        }
+    }
+}
+
+me_zorgoomni.71 = { # Cured of Shedding
+    type = country_event
+
+    title = me_zorgoomni.71_title
+    desc = me_zorgoomni.71_desc
+    picture = event_deep_forest
+    left_portrait = scope:bad_shedder
+
+    option = {
+        name = "me_zorgoomni.71.a"
+        scope:bad_shedder = {
+            remove_trait = shedding_disorder_trait
+        }
+    }
+}
+
+me_zorgoomni.72 = {
+    type = country_event
+
+    title = me_zorgoomni.72_title
+    desc = me_zorgoomni.72_desc
+    picture = event_deep_forest
+    left_portrait = scope:insane_guy
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                age > 50
+                has_trait = dragkhan_trait
+            }
+            save_scope_as = insane_guy
+        }
+
+        scope:insane_guy = {
+            add_trait = dragkhanic_insanity_trait
+        }
+    }
+
+    trigger = {
+        OR = {
+            country_culture_group = dragkhanic
+            country_culture_group = dragkhanic_jarenam
+            country_culture_group = dragkhanic_eastern
+            country_culture_group = dragkhanic_western
+        }
+    }
+
+    option = { # Spend for Save
+        name = "me_zorgoomni.72.a"
+        treasury = -25
+        random_list = {
+            40 = {
+                trigger_event = {
+                    id = me_zorgoomni.73
+                    days = { 90 180 }
+                }
+            }
+            60 = {
+                trigger_event = {
+                    id = me_zorgoomni.74
+                    days = { 90 180 }
+                }
+            }
+        }
+    }
+    option = { # If He is Strong he will Live
+        name = "me_zorgoomni.72.b"
+        current_ruler = {
+            add_popularity = -5
+        }
+        random_list = {
+            80 = {
+                trigger_event = {
+                    id = me_zorgoomni.73
+                    days = { 90 180 }
+                }
+            }
+            20 = {
+                trigger_event = {
+                    id = me_zorgoomni.74
+                    days = { 90 180 }
+                }
+            }
+        }
+    }
+}
+
+me_zorgoomni.73 = { # Saved from Insanity
+    type = country_event
+
+    title = me_zorgoomni.73_title
+    desc = me_zorgoomni.73_desc
+    picture = event_deep_forest
+    left_portrait = scope:insane_guy
+
+    option = {
+        name = "me_zorgoomni.73.a"
+        scope:insane_guy = {
+            remove_trait = dragkhanic_insanity_trait
+        }
+    }
+}
+
+me_zorgoomni.74 = { # Goes Insane
+    type = country_event
+
+    title = me_zorgoomni.74_title
+    desc = me_zorgoomni.74_desc
+    picture = event_deep_forest
+    left_portrait = scope:insane_guy
+
+    option = {
+        name = "me_zorgoomni.74.a"
+        scope:insane_guy = {
+            death = {
+                death_reason = death_dragkhanic_madness
+            }
+        }
+    }
+}
+
+me_zorgoomni.75 = { # Mushroom Spots
+    type = country_event
+
+    title = me_zorgoomni.75_title
+    desc = me_zorgoomni.75_desc
+    picture = event_deep_forest
+    left_portrait = scope:mushroom_man
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                age > 20
+                female = no
+                has_trait = drow_trait
+            }
+            save_scope_as = mushroom_man
+        }
+    }
+
+    trigger = {
+        OR = {
+            country_culture_group = drow
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.75.a"
+        scope:mushroom_man = {
+            add_trait = drow_mushroom_spots_trait
+        }
+    }
+}
+
+me_zorgoomni.76 = { # Cursed Child
+    type = country_event
+
+    title = me_zorgoomni.76_title
+    desc = me_zorgoomni.76_desc
+    picture = event_deep_forest
+    left_portrait = current_ruler
+    right_portrait = scope:cursed_kiddy
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                age < 1
+                has_trait = human_trait
+            }
+            save_scope_as = cursed_kiddy
+        }
+
+        scope:cursed_kiddy = {
+            add_trait = wishtheon_curse_trait
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.76.a"
+        add_stability = -3
+        current_ruler = {
+            add_popularity = -12
+        }
+    }
+    option = {
+        name = "me_zorgoomni.76.b"
+        add_stability = 2
+        scope:cursed_kiddy = {
+            death = {
+                death_reason = death_execution
+            }
         }
     }
 }
