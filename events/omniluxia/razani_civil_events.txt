@@ -1,0 +1,1766 @@
+﻿namespace = razani_civil_war
+
+razani_civil_war.99 = {
+    type = country_event
+    hidden = yes
+
+    trigger = {
+        tag = EGA
+    }     
+
+    fire_only_once = yes
+
+    immediate = {
+        trigger_event = {
+                id = razani_civil_war.1
+                days = { 30 60 }
+        }
+        trigger_event = {
+                id = razani_civil_war.10
+                days = { 730 1461 }
+        }
+    }
+}
+
+razani_civil_war.1 = { # Razani Gets Sick and Names Heir
+    type = country_event
+
+    title = razani_civil_war_1_title
+    desc = razani_civil_war_1_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:136
+    right_portrait = char:137
+    right_portrait = char:138
+
+    trigger = {
+        tag = EGA
+    }  
+    
+    fire_only_once = yes
+
+    option = {
+        name = "razani_civil_war_1.a"
+        custom_tooltip = razani_civil_war_1_tooltip.a
+        add_stability = -2
+        current_ruler = {
+        	add_trait = cancer
+        }
+        trigger_event = {
+            id = razani_civil_war.2
+            days = { 120 180 }
+        }
+    }
+}
+
+razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
+    type = country_event
+
+    title = razani_civil_war_2_title
+    desc = razani_civil_war_2_desc
+    picture = city_country
+    left_portrait = char:12
+    left_portrait = char:136
+    right_portrait = char:137
+    right_portrait = char:138
+
+    immediate = {
+    	char:138 = {
+            save_scope_as = rebel_scum
+        }
+
+        start_civil_war = scope:rebel_scum
+        hidden_effect = { 
+            scope:rebel_scum.employer = {
+                change_country_name = "Dedunum Empire"
+                change_country_adjective = "Zanic"
+                change_country_color = forrj_red
+                change_country_flag = "EGA"
+                change_government = imperium
+                save_scope_as = razani_revolt_country
+            }
+	        p:3467.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:razani_revolt_country
+					}
+					set_owned_by = c:EGA
+				}
+			}
+			p:3806.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:razani_revolt_country
+					}
+					set_owned_by = c:EGA
+				}
+			}
+			p:2470.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:razani_revolt_country
+					}
+					set_owned_by = c:EGA
+				}
+			}
+			p:2348.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:razani_revolt_country
+					}
+					set_owned_by = c:EGA
+				}
+			}
+			p:3383.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = c:EGA }
+						owner = scope:razani_revolt_country
+					}
+					set_owned_by = c:EGA
+				}
+			}
+			p:2682.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:razani_revolt_country }
+						owner = EGA
+					}
+					set_owned_by = scope:razani_revolt_country
+				}
+			}
+	        p:2682 = { # capital fort
+				state = { set_state_capital = p:2682 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+			scope:razani_revolt_country = {
+				set_capital = 2682
+			}
+		}
+		
+
+
+        
+		scope:razani_revolt_country = {
+			create_unit = {
+                navy = no
+                name = "Defecting Levies"
+                location = capital_scope
+                hidden_effect = {
+                	while = {
+                       	count = 16
+                        add_subunit = heavy_infantry
+                    }
+                    while = {
+                       	count = 8
+                        add_subunit = light_infantry
+                    }
+                    while = {
+                       	count = 6
+                        add_subunit = light_cavalry
+                    } 
+                    while = {
+                       	count = 6
+                        add_subunit = camels
+                    } 
+                    while = {
+                       	count = 6
+                        add_subunit = supply_train
+                    }  
+                    add_subunit = heavy_cavalry 
+                    add_subunit = heavy_cavalry
+                    add_food = 300
+                    add_morale = 5
+                }
+            }
+		}
+
+        char:12 = {
+        	death = {
+        		death_reason = death_padme
+        	}
+        }
+    }
+
+    option = { # Defend your Throne
+        name = "razani_civil_war_2.a"
+        custom_tooltip = razani_civil_war_2_tooltip.a
+
+        ai_chance = { factor = 10 }
+
+        add_stability = -12
+        add_legitimacy = -50
+        add_manpower = -50
+        hidden_effect = {
+        	c:WGA = {
+			    trigger_event = {
+		            id = razani_civil_war.4
+		            days = { 120 150 }
+		        }
+	        }
+        	scope:razani_revolt_country = {
+				add_treasury = 800
+			}
+            every_country = {
+            	limit = {
+            		NOT = {
+            			OR = {
+            				tag = EGA
+            				tag = WGA
+            				ai = yes
+            			}
+            		}
+            	}
+                trigger_event = razani_civil_war.3
+            }
+        }
+    }
+    option = { # Switch to Rebels
+        name = "razani_civil_war_2.b"
+        custom_tooltip = razani_civil_war_2_tooltip.b
+
+        add_stability = -12
+        add_legitimacy = -50
+        add_manpower = -50
+        hidden_effect = {
+        	c:WGA = {
+			    trigger_event = {
+		            id = razani_civil_war.4
+		            days = { 90 120 }
+		        }
+	        }
+	        every_country = {
+	        	limit = {
+	        		NOT = {
+	        			OR = {
+	        				tag = EGA
+	        				tag = WGA
+	        				ai = yes
+	        			}
+	        		}
+	        	}
+	            trigger_event = razani_civil_war.3
+	        }
+	        if = {
+		        limit = { is_ai = no }
+	        	set_player_country = scope:nazani_revolt_country
+        	}
+	    }
+    }
+}
+
+razani_civil_war.3 = { # WORLD Razani Civil War Begins
+    type = country_event
+
+    title = razani_civil_war_3_title
+    desc = razani_civil_war_3_desc
+    picture = city_country
+    left_portrait = char:137
+    right_portrait = char:138
+
+    option = {
+        name = "razani_civil_war_3.a"
+        custom_tooltip = razani_civil_war_3_tooltip.a
+    }
+}
+
+razani_civil_war.4 = { # WGA Intervene in Civil War
+    type = country_event
+
+    title = razani_civil_war_4_title
+    desc = razani_civil_war_4_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = scope:nazani_pretender
+    right_portrait = char:137
+    right_portrait = char:138
+
+    fire_only_once = yes
+
+    immediate = {
+    	hidden_effect = {
+	    	random_family = {
+	            limit = {
+	                this = root.char:18.family
+	            }
+	            save_scope_as = nazani_family
+	        }
+	        create_character = {
+		        first_name = "O-Unse"
+		       	age = 34
+		        culture = weagelian
+		        religion = the_first_emperor
+		        female = no
+		        good_popularity_trait_effect = yes
+		        save_scope_as = nazani_rebel
+		    }
+		    scope:nazani_rebel = {
+                save_scope_as = target
+                set_family = scope:nazani_family
+                add_character_modifier = {
+                    name = adopted_into_great_family
+                    duration = -1
+                }
+                if = { #Bastards are easier to make family members.
+                    limit = { is_child_of = ROOT }
+                    custom_tooltip = bastard_adoption_event_tooltip
+                }
+                else_if = { #Siblings are easier to make full family members.
+                    limit = { is_sibling_of = ROOT }
+                    custom_tooltip = sibling_adoption_event_tooltip
+                }
+                else_if = { #Extra Marital Relations are harder to make full family members.
+                    limit = {
+                        any_child = {
+                            ROOT = { is_parent_of = PREV }
+                        }
+                    }
+                    custom_tooltip = lover_adoption_event_tooltip
+                }
+                else_if = { #Friends are easier to make full family members.
+                    limit = { is_friend = ROOT }
+                    custom_tooltip = friend_adoption_event_tooltip
+                }
+                else = {
+                    custom_tooltip = adoption_explanation_event_tooltip
+                }
+
+                scope:nazani_family = { add_prestige = adoption_cost_event_pay_svalue }
+                save_scope_as = picked_adoption_candidate
+            }
+        }
+    }
+
+    option = { # Support Pretender
+        name = "razani_civil_war_4.a"
+        custom_tooltip = razani_civil_war_4_tooltip.a
+        add_stability = -5
+        add_treasury = -150
+        add_manpower = -10
+        c:EGA = {
+			trigger_event = {
+		        id = razani_civil_war.5
+		        days = { 90 120 }
+		    }
+        }
+    }
+    option = { # Support Razani
+        name = "razani_civil_war_4.b"
+        custom_tooltip = razani_civil_war_4_tooltip.b
+        add_stability = -5
+        add_treasury = -50
+        add_manpower = -5
+        c:EGA = {
+			trigger_event = {
+		        id = razani_civil_war.6
+		        days = { 90 120 }
+		    }
+        }
+    }
+    option = { # Support Neither
+        name = "razani_civil_war_4.c"
+        add_stability = 3
+        c:YGA = {
+			trigger_event = {
+		        id = razani_civil_war.7
+		        days = { 120 150 }
+		    }
+        }
+    }
+}
+
+razani_civil_war.5 = { # EGA Nazani Back a Pretender
+    type = country_event
+
+    title = razani_civil_war_5_title
+    desc = razani_civil_war_5_desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = scope:nazani_pretender
+    right_portrait = c:WGA.current_ruler
+
+    immediate = {
+    	hidden_effect = {
+    		p:2348 = {
+				limit = {
+					NOT = { owner = c:WGA }
+					owner = EGA
+				}
+				set_owned_by = c:WGA
+			}
+			p:2348 = { # capital fort
+				state = { set_state_capital = p:2348 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+
+			c:WGA = {
+				create_unit = {
+	                navy = no
+	                name = "Nazani Auxiliaries"
+	                location = p:2348
+	                hidden_effect = {
+	                	while = {
+	                       	count = 2
+	                        add_subunit = heavy_infantry
+	                    }
+	                    while = {
+	                       	count = 4
+	                        add_subunit = light_infantry
+	                    }
+	                    add_subunit = heavy_cavalry 
+	                    add_subunit = heavy_cavalry
+	                    add_food = 300
+	                    add_morale = 4
+	                }
+	            }
+			}
+	    }
+	}
+
+    option = {
+        name = "razani_civil_war_5.a"
+        custom_tooltip = razani_civil_war_5_tooltip
+        add_stability = -3
+        add_legitimacy = -5
+        c:WGA = {
+			declare_war_with_wargoal = {
+				war_goal = imperial_contest
+				target = EGA
+			}
+		}
+        c:YGA = {
+			trigger_event = {
+		        id = razani_civil_war.7
+		        days = { 60 90 }
+		    }
+        }
+    }
+}
+
+razani_civil_war.6 = { # EGA Nazani Send Help 
+    type = country_event
+
+    title = razani_civil_war_6_title
+    desc = razani_civil_war_6_desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = c:WGA.current_ruler
+
+    fire_only_once = yes
+
+    option = {
+        name = "razani_civil_war_6.a"
+        add_stability = 2
+        add_legitimacy = 12
+        add_treasury = 100
+        add_manpower = 5
+        c:YGA = {
+			trigger_event = {
+		        id = razani_civil_war.7
+		        days = { 90 120 }
+		    }
+        }
+    }
+}
+
+razani_civil_war.7 = { # YGA Helluvian King Demands Throne
+    type = country_event
+
+    title = razani_civil_war_7_title
+    desc = razani_civil_war_7_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:139
+    right_portrait = c:EGA.current_ruler
+    right_portrait = char:94
+
+	immediate = {
+    	char:139 = {
+            save_scope_as = yga_rebel_scum
+        }
+
+        start_civil_war = scope:yga_rebel_scum
+        hidden_effect = {
+            scope:yga_rebel_scum.employer = {
+                change_country_name = "Holy Ytalian Kingdom"
+                change_country_adjective = "Ytalian"
+                change_country_color = holy_ytalian
+                change_country_flag = "YGA"
+                change_government = theocratic_monarchy
+                set_country_religion = helluvian
+                save_scope_as = ytalia_revolt_country
+            }
+			p:3337 = {
+				limit = {
+					NOT = { owner = scope:ytalia_revolt_country }
+					owner = YGA
+				}
+				set_owned_by = scope:ytalia_revolt_country
+			}
+			p:3337 = {
+				state = { set_state_capital = p:3337 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+
+			scope:yga_rebel_scum = {
+				add_nickname = "Hammer of Hellas"
+			}
+
+			scope:ytalia_revolt_country = {
+				set_capital = 3337
+				add_truce = {
+	                target = scope:razani_revolt_country
+	                duration = 5000 # 5 years
+	            }
+	            create_unit = {
+	                navy = no
+	                name = "Helluvian Levies"
+	                location = capital_scope
+	                while = {
+                       	count = 10
+                        add_subunit = light_infantry
+                    }
+                    add_subunit = light_cavalry
+                    add_subunit = supply_train    
+                    add_food = 300
+                    add_morale = 5
+                }
+            }
+		}
+	}
+
+    option = { # Defend your Throne
+        name = "razani_civil_war_7.a"
+        custom_tooltip = razani_civil_war_7_tooltip.a
+        ai_chance = { factor = 10 }
+
+        add_stability = -12
+        add_legitimacy = -25
+        add_manpower = -5
+        hidden_effect = { 
+        	scope:ytalia_revolt_country = {
+				add_treasury = 300
+			}
+
+            c:EGA = { 
+		        trigger_event = {
+			        id = razani_civil_war.8
+			        days = { 15 35 }
+			    }
+		    }
+        }
+    }
+    option = { # Switch to Rebels
+        name = "razani_civil_war_7.b"
+        custom_tooltip = razani_civil_war_7_tooltip.b
+
+        add_stability = -8
+        add_legitimacy = -25
+        add_manpower = -50
+        hidden_effect = {
+	        c:EGA = { 
+		        trigger_event = {
+			        id = razani_civil_war.8
+			        days = { 15 35 }
+			    }
+		    }
+	        if = {
+		        limit = { is_ai = no }
+	        	set_player_country = scope:ytalia_revolt_country
+        	}
+        }
+    }
+}
+
+razani_civil_war.8 = { # EGA Ytalian Revolt
+    type = country_event
+
+    title = razani_civil_war_8_title
+    desc = razani_civil_war_8_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:94
+    right_portrait = char:140
+    right_portrait = char:139
+
+    fire_only_once = yes
+
+    option = {
+        name = "razani_civil_war_8.a"
+        add_stability = -2
+        add_legitimacy = -5
+        scope:ytalia_revolt_country = {
+	        declare_war_with_wargoal = {
+				war_goal = independence_wargoal
+				province = 3337
+				target = EGA
+			}
+		}
+		c:EGA = { 
+			trigger_event = {
+		        id = razani_civil_war.9
+		        days = { 30 90 }
+		    }
+		}
+    }
+    option = {
+        name = "razani_civil_war_8.b"
+        add_stability = 5
+        add_legitimacy = -12
+        add_war_exhaustion = -2
+        add_truce = {
+            target = scope:ytalia_revolt_country
+            duration = 5000 # 5 years
+        }
+        c:EGA = { 
+			trigger_event = {
+		        id = razani_civil_war.9
+		        days = { 60 120 }
+		    }
+		}
+    }
+}
+
+razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
+    type = country_event
+
+    title = razani_civil_war_9_title
+    desc = razani_civil_war_9_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:143
+    right_portrait = char:142
+    right_portrait = char:144
+
+    fire_only_once = yes
+
+    immediate = {
+		hidden_effect = {
+		    char:144 = {
+	            save_scope_as = gevanni_rebel_scum
+	        }
+			p:2470 = {
+				create_country = {
+	                set_country_religion = the_first_emperor
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = eagelian
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = eagelian
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Republic of Gevanni"
+	                change_country_color = "kanai_confed_purple"
+	                change_government = democratic_republic
+	                change_country_adjective = "Gevannic"
+	                change_country_flag = EGA
+	                save_scope_as = gevanni_revolt
+				}
+			}
+			scope:gevanni_rebel_scum = {
+				remove_all_positions = yes
+				move_country = scope:gevanni_revolt
+				set_home_country = scope:gevanni_revolt
+				remove_character_modifier = foreign_citizen
+			}
+			p:2470.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:gevanni_revolt }
+						owner = c:EGA
+					}
+					set_owned_by = scope:gevanni_revolt
+				}
+			}
+			scope:gevanni_revolt = {
+				add_treasury = 1000
+				add_manpower = 20
+				set_as_ruler = scope:gevanni_rebel_scum
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:2470 = { # capital fort
+				state = { set_state_capital = p:2470 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+		}
+		char:143 = {
+        	death = {
+        		death_reason = death_execution
+        	}
+        }
+    }
+
+    option = {
+        name = "razani_civil_war_9.a"
+        add_stability = -3
+        add_legitimacy = -5
+		scope:gevanni_revolt = {
+	        declare_war_with_wargoal = {
+				war_goal = independence_wargoal
+				province = 2470
+				target = EGA
+			}
+		}
+        c:EGA = {
+			trigger_event = {
+		        id = razani_civil_war.10
+		        days = { 90 180 }
+		    }
+	    }
+    }
+}
+
+
+
+# DUNY MIGRATIONS
+
+razani_civil_war.10 = { # AI DUNY DECISION
+    type = country_event
+    hidden = yes
+
+    fire_only_once = yes
+
+    trigger = {
+    	is_ai = yes
+    }
+
+    immediate = {
+        c:GT1 = { every_owned_province = { set_owned_by = DNY } }
+    	c:GT3 = { every_owned_province = { set_owned_by = DNY } }
+    	c:GT4 = { every_owned_province = { set_owned_by = DNY } }
+    }
+}
+
+razani_civil_war.11 = { # Duny Migrate Decision
+    type = country_event
+
+    title = razani_civil_war_11_title
+    desc = razani_civil_war_11_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = c:EGA.current_ruler
+    right_portrait = c:YGA.current_ruler
+    right_portrait = c:IP6.current_ruler
+
+    fire_only_once = yes
+
+    immediate = {
+    	hidden_effect = {
+	    	p:3163 = {
+	    		limit = {
+					limit = {
+						exists = owner
+					}
+					owner = scope:victim_1
+				}
+			}
+			p:3146 = {
+	    		limit = {
+					tlimit = {
+						exists = owner
+					}
+					owner = scope:victim_2
+				}
+			}
+			p:3043 = {
+	    		limit = {
+					limit = {
+						exists = owner
+					}
+					owner = scope:victim_3
+				}
+			}
+			p:3037 = {
+	    		limit = {
+					limit = {
+						exists = owner
+					}
+					owner = scope:victim_4
+				}
+			}
+			p:3040 = {
+	    		limit = {
+					limit = {
+						exists = owner
+					}
+					owner = scope:victim_5
+				}
+			}
+		}
+    }
+
+    option = { # Migrate
+        name = "razani_civil_war_11.a"
+
+        ai_chance = { factor = 10 }
+
+        # Raze Cities
+        hidden_effect = {
+        	# Cities
+	        p:3163 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
+
+	            set_city_status = city				
+				add_building_level = fortress_building
+				change_province_name = Dunqarya
+	            
+	            ordered_pops_in_province = {
+	                order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+		    }
+			p:3146 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
+
+	            set_city_status = city
+	            change_province_name = Kurykanqa
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+		    }
+			p:3043 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
+
+	            change_province_name = Ummaryakun
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+		    }
+			p:3037 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
+
+	            change_province_name = Onayasah
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+			p:3040 = {
+	    		add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
+
+	            change_province_name = Daçarkin
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+
+			# Settlement
+			p:3145 = {
+	            add_city_fire_effect = yes
+
+	            change_province_name = Baçarsa
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+			p:3120 = {
+	            add_city_fire_effect = yes
+
+	            change_province_name = Muç
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+			p:3171 = {
+	            add_city_fire_effect = yes
+
+	            change_province_name = Akoyna
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+			p:3098 = {
+	            add_city_fire_effect = yes
+
+	            change_province_name = Siças
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+			p:3093 = {
+	            add_city_fire_effect = yes
+
+	            change_province_name = Çozum
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+			p:3028 = {
+	            add_city_fire_effect = yes
+
+	            change_province_name = Erazun
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+			p:3077 = {
+	            add_city_fire_effect = yes
+
+	            change_province_name = Içimir
+	            
+	            ordered_pops_in_province = {
+		            order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 2
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+		        set_owned_by = DNY
+			}
+
+		# Abandon Old Lands
+        while = {
+			count = { 20 25 }
+        	every_owned_province = {
+    			random_pops_in_province = {
+        			limit = {
+						pop_culture_group = selaskusian
+					}
+					kill_pop = yes
+				}
+    		}
+        }
+
+        # Settle Cities
+        # Cities
+        p:3163 = {
+			hidden_effect = {
+				while = {
+					count = 30
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3146 = {
+			hidden_effect = {
+				while = {
+					count = 30
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3043 = {
+			hidden_effect = {
+				while = {
+					count = 30
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3037 = {
+			hidden_effect = {
+				while = {
+					count = 25
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3040 = {
+			hidden_effect = {
+				while = {
+					count = 20
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+
+		# Settlements
+		p:3145 = {
+            hidden_effect = {
+				while = {
+					count = 5
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3120 = {
+            hidden_effect = {
+				while = {
+					count = 5
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3171 = {
+            hidden_effect = {
+				while = {
+					count = 5
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3098 = {
+            hidden_effect = {
+				while = {
+					count = 5
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3093 = {
+            hidden_effect = {
+				while = {
+					count = 5
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3028 = {
+            hidden_effect = {
+				while = {
+					count = 5
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3077 = {
+            hidden_effect = {
+				while = {
+					count = 5
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+
+		p:5793 = {
+            change_province_name = Domaduny
+        }
+
+		# Leave Those Who Stayed
+		create_character = {
+	        first_name = "Gorku"
+	       	age = 32
+	        culture = duny
+	        religion = ancestral_beliefs
+	        female = no
+	        good_popularity_trait_effect = yes
+	        save_scope_as = duny_steppa
+	    }
+		p:3673 = {
+			create_country = {
+                set_country_religion = ancestral_beliefs
+                set_country_culture = duny
+                change_country_name = "Dunykoryu"
+                change_country_color = "death_blue"
+                change_government = nomadic_tribe
+                change_country_adjective = "Duny"
+                change_country_flag = "DNY"
+                save_scope_as = duny_steppers
+			}
+		}
+		scope:duny_steppa = {
+			remove_all_positions = yes
+			move_country = scope:duny_steppers
+			set_home_country = scope:duny_steppers
+			remove_character_modifier = foreign_citizen
+		}
+		scope:duny_steppers = {
+			add_treasury = 300
+			add_manpower = 20
+			set_as_ruler = scope:duny_steppa
+		}
+		scope:duny_steppers = {
+			set_primary_culture_cleanup_effect = {
+				NEW_PRIMARY_CULTURE = duny
+				MAKE_OLD_CULTURE_INTEGRATED = yes
+			}
+		}
+		p:3673 = { # capital fort
+			state = { set_state_capital = p:3673 }
+			if = {
+				limit = { can_build_building = fortress_building }
+				add_building_level = fortress_building
+			}
+			hidden_effect = {
+				while = {
+					count = 25
+					create_state_pop = tribesmen
+					random_pops_in_province = {
+						limit = {
+							pop_type = tribesmen 
+						}
+						set_pop_culture = duny
+					}
+				}
+			}
+		}
+		p:3673.area = {
+			every_area_province = {
+				limit = {
+					NOT = { owner = scope:duny_steppers }
+					owner = c:DNY
+				}
+				set_owned_by = scope:duny_steppers
+			}
+		}
+		p:3837.area = {
+			every_area_province = {
+				limit = {
+					NOT = { owner = scope:duny_steppers }
+					owner = c:DNY
+				}
+				set_owned_by = scope:duny_steppers
+			}
+		}
+		p:3598.area = {
+			every_area_province = {
+				limit = {
+					NOT = { owner = scope:duny_steppers }
+					owner = c:DNY
+				}
+				set_owned_by = scope:duny_steppers
+			}
+		}
+		p:3421.area = {
+			every_area_province = {
+				limit = {
+					NOT = { owner = scope:duny_steppers }
+					owner = c:DNY
+				}
+				set_owned_by = scope:duny_steppers
+			}
+		}
+		p:3518.area = {
+			every_area_province = {
+				limit = {
+					NOT = { owner = scope:duny_steppers }
+					owner = c:DNY
+				}
+				set_owned_by = scope:duny_steppers
+			}
+		}
+		p:3957.area = {
+			every_area_province = {
+				limit = {
+					NOT = { owner = scope:duny_steppers }
+					owner = c:DNY
+				}
+				set_owned_by = scope:duny_steppers
+			}
+		}
+		p:4043.area = {
+			every_area_province = {
+				limit = {
+					NOT = { owner = scope:duny_steppers }
+					owner = c:DNY
+				}
+				set_owned_by = scope:duny_steppers
+			}
+		}
+		p:3872.area = {
+			every_area_province = {
+				limit = {
+					NOT = { owner = scope:duny_steppers }
+					owner = c:DNY
+				}
+				set_owned_by = scope:duny_steppers
+			}
+		}
+
+        if = {
+        	limit = { is_ai = yes }
+        	# Host
+			create_unit = {
+	            navy = no
+	            name = "Teçuklar Host"
+	            location = capital_scope
+	            hidden_effect = {
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_infantry
+	                }
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_cavalry
+	                } 
+	                while = {
+	                   	count = 29
+	                    add_subunit = horse_archers
+	                } 
+	                add_food = 400
+	                add_morale = 5
+	            }
+	        }
+	        # Host
+			create_unit = {
+	            navy = no
+	            name = "Gokruç Host"
+	            location = capital_scope
+	            hidden_effect = {
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_infantry
+	                }
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_cavalry
+	                } 
+	                while = {
+	                   	count = 25
+	                    add_subunit = horse_archers
+	                } 
+	                add_food = 400
+	                add_morale = 5
+	            }
+	        }
+	        # Host
+			create_unit = {
+	            navy = no
+	            name = "Gamaryk Host"
+	            location = capital_scope
+	            hidden_effect = {
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_infantry
+	                }
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_cavalry
+	                } 
+	                while = {
+	                   	count = 25
+	                    add_subunit = horse_archers
+	                } 
+	                add_food = 400
+	                add_morale = 5
+	            }
+	        }
+	        # Host
+			create_unit = {
+	            navy = no
+	            name = "Savinaarsuk Host"
+	            location = capital_scope
+	            hidden_effect = {
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_infantry
+	                }
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_cavalry
+	                } 
+	                while = {
+	                   	count = 25
+	                    add_subunit = horse_archers
+	                } 
+	                add_food = 400
+	                add_morale = 5
+	            }
+	        }
+	        # Host
+			create_unit = {
+	            navy = no
+	            name = "Kurykan Host"
+	            location = capital_scope
+	            hidden_effect = {
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_infantry
+	                }
+	                while = {
+	                   	count = 5
+	                    add_subunit = light_cavalry
+	                } 
+	                while = {
+	                   	count = 25
+	                    add_subunit = horse_archers
+	                } 
+	                add_food = 400
+	                add_morale = 5
+	            }
+	        }
+        }
+        else = {
+        	# Host
+			create_unit = {
+	            navy = no
+	            name = "Great Duny Host"
+	            location = capital_scope
+	            hidden_effect = {
+	                while = {
+	                   	count = 41
+	                    add_subunit = light_infantry
+	                }
+	                while = {
+	                   	count = 6
+	                    add_subunit = light_cavalry
+	                } 
+	                while = {
+	                   	count = 24
+	                    add_subunit = horse_archers
+	                } 
+	                while = {
+	                   	count = 4
+	                    add_subunit = supply_train
+	                }  
+	                add_food = 400
+	                add_morale = 5
+	            }
+	        }
+        }
+
+
+		# World Event
+		every_country = {
+        	limit = {
+        		NOT = {
+        			OR = {
+        				tag = DNY
+        				ai = yes
+        			}
+        		}
+        	}
+            trigger_event = razani_civil_war.13
+        }
+
+        # Invasions
+        trigger_event = razani_civil_war.12
+
+        # Conversion Event
+        trigger_event = {
+            id = razani_civil_war.14
+            days = { 1260 1420 }
+        }
+
+        # Change Name
+	       	c:DNY = {
+				change_country_adjective = "DKY_ADJ"
+				change_country_color =  "dunykyelen_color"
+				change_country_flag = "DKY_FLAG"
+				set_capital = 3163
+			}
+		}
+		add_treasury = 800
+		add_manpower = 20
+		change_country_name = "DKY"
+		custom_tooltip = razani_civil_war_11_tooltip.a
+    }
+
+    option = { # Stay and Raid
+        name = "razani_civil_war_11.b"
+        add_treasury = 300
+    	change_country_name = "DKY"
+    	custom_tooltip = razani_civil_war_11_tooltip.b
+		hidden_effect = {
+			change_country_adjective = "DKY_ADJ"
+			change_country_color =  "dunykyelen_color"
+			change_country_flag = "DKY_FLAG"
+		    set_capital = 3673					
+		    p:3673 = {
+                set_city_status = city
+                change_province_name = Dunqarya
+				add_building_level = population_building
+				add_building_level = commerce_building
+				add_building_level = fortress_building
+				add_building_level = military_building
+		    }
+		    p:3399 = {
+            add_city_smoke_effect = yes
+            add_city_fire_effect = yes
+            
+            ordered_pops_in_province = {
+	                order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 3
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+	        }
+	        p:3618 = {
+	            add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
+	            ordered_pops_in_province = {
+	                order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 3
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+	        }
+	        p:3337 = {
+	            add_city_smoke_effect = yes
+	            add_city_fire_effect = yes
+	            ordered_pops_in_province = {
+	                order_by = pop_hapiness
+	                max = {
+	                    value = total_population
+	                    divide = 3
+	                }
+	                min = {
+	                    value = 0
+	                }
+	                kill_pop = yes
+	            }
+	        }				
+		}	
+    }
+}
+
+razani_civil_war.12 = { # Duny Invasion
+    type = country_event
+    hidden = yes
+
+    fire_only_once = yes
+
+    immediate = {
+    	set_variable = {
+			name = duny_horde_invasion_origin
+			days = 5
+		}
+
+    	# Invasions
+		random_neighbour_country = {
+			save_scope_as = duny_invasion_defender_1         	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_1
+        }
+        random_neighbour_country = {
+        	limit = {
+        		NOR = { 
+        			this = scope:duny_invasion_defender_1
+        		} 
+        	}
+			save_scope_as = duny_invasion_defender_2            	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_2
+        }
+        random_neighbour_country = {
+        	limit = {
+        		NOR = { 
+        			this = scope:duny_invasion_defender_1 
+        			this = scope:duny_invasion_defender_2
+        		}
+        	}
+			save_scope_as = duny_invasion_defender_3           	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_3
+        }
+        random_neighbour_country = {
+        	limit = {
+        		NOR = { 
+        			this = scope:duny_invasion_defender_1 
+        			this = scope:duny_invasion_defender_2
+        			this = scope:duny_invasion_defender_3
+        		}
+        	}
+			save_scope_as = duny_invasion_defender_4           	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_4
+        }
+        random_neighbour_country = {
+        	limit = {
+        		NOR = { 
+        			this = scope:duny_invasion_defender_1 
+        			this = scope:duny_invasion_defender_2
+        			this = scope:duny_invasion_defender_3
+        			this = scope:duny_invasion_defender_4
+        		}
+        	}
+			save_scope_as = duny_invasion_defender_5           	
+        }
+        declare_war_with_wargoal = {
+            war_goal = horde_conquest
+           	target = scope:duny_invasion_defender_5
+        }
+	    if = {
+	    	limit = { is_ai = yes }
+	    	add_treasury = 1000
+			add_manpower = 30
+	    }
+    }
+}
+
+razani_civil_war.13 = { # World Duny Migration
+    type = country_event
+
+    title = razani_civil_war_13_title
+    desc = razani_civil_war_13_desc
+    picture = Event_dothraki_attack_slave_city
+    left_portrait = current_ruler
+    right_portrait = c:DNY.current_ruler
+
+    fire_only_once = yes
+
+    option = {
+        name = "razani_civil_war_13.a"
+        custom_tooltip = razani_civil_war_13_tooltip
+    }
+}
+
+razani_civil_war.14 = { # Duny Convert & Settle / Horde
+    type = country_event
+
+    title = razani_civil_war_14_title
+    desc = razani_civil_war_14_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    fire_only_once = yes
+
+    option = {
+        name = "razani_civil_war_14.a"
+        custom_tooltip = razani_civil_war_14_tooltip.a
+
+        ai_chance = { factor = 10 }
+
+        add_stability = -5
+        hidden_effect = {
+	        change_government = feudal_monarchy
+	        set_country_religion = helluvian
+	        capital_scope = {
+				hidden_effect = {
+					while = {
+						count = 5
+						random_pops_in_province = {
+							limit = {
+								pop_culture = duny
+							}
+							set_pop_religion = helluvian
+						}
+					}
+				}
+			}
+			current_ruler = {
+				set_character_religion = helluvian
+			}
+		}
+    }
+    option = {
+        name = "razani_civil_war_14.b"
+        custom_tooltip = razani_civil_war_14_tooltip.b
+        add_stability = 3
+    }
+}
+
