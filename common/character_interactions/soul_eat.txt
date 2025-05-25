@@ -1,0 +1,72 @@
+﻿eat_soul_char = {
+	
+	on_other_nation = no
+	on_own_nation = yes
+	close_ui = yes
+	
+	sound = "event:/SFX/UI/Character/Unique/sfx_ui_character_banish"
+	
+	message = no
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			is_mercenary = no
+			prisoner_valid_for_country_events_trigger = yes
+			NOT = {
+				has_character_modifier = disloyal_successor_cmod
+			}
+		}
+		scope:actor = {
+			current_ruler = {
+				has_trait = goblin_trait
+			}
+		}
+	}
+	
+	allowed_trigger = {
+		scope:target = {
+			is_ruler = no
+			is_co_ruler = no
+		}
+		scope:actor = {
+			tyranny <= 99
+			trigger_if = {
+				limit = {
+					has_variable = soul_eating_recently_held
+				}
+				custom_tooltip = {
+					text = "SOUL_EATING_RECENTLY_HELD"
+				
+					NOT = { has_variable = soul_eating_recently_held }
+				}
+			}
+		}
+	}
+	
+	effect = {
+		scope:actor = {
+			hidden_effect = {
+				add_tyranny = {
+					value = scope:target.power_base
+					divide = 2
+					min = 1
+				}
+			}
+			custom_tooltip = soul_eating_tt
+			add_stability = -2
+			set_variable = {
+				name = soul_eating_recently_held
+				value = 1
+				months = 6
+			}
+		}
+		custom_tooltip = "due_to_half_power_base"
+		scope:actor = {
+			trigger_event = {
+				id = me_zorgoomni.77
+			}
+		}
+	}
+}
