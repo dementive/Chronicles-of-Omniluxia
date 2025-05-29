@@ -1,4 +1,4 @@
-﻿namespace = me_racial_events
+namespace = me_racial_events
 
 # CHOOSE RACE
 # Cannot choose own race
@@ -4027,41 +4027,111 @@ me_racial_events.24 = {
     desc = me_racial_events_24_desc
     picture = diadochi_coronation
 
+    immediate = {
+        add_stability = -2
+        ordered_owned_province = {
+            limit = {
+                dominant_province_culture = scope:target_culture.culture
+                any_neighbor_province = {
+                    count > 1
+                    dominant_province_culture = scope:target_culture.culture
+                }
+                state = {
+                    NOT = {
+                        any_state_province = {
+                            is_capital = yes
+                        }
+                    }
+                }
+                AND = {
+                    any_neighbor_province = {
+                        owner = ROOT
+                    }
+                    any_neighbor_province = {
+                        exists = owner
+                        NOT = {
+                            owner = ROOT
+                        }
+                    }
+                }
+            }
+            save_scope_as = expel_hometown
+            random_neighbor_province = {
+                limit = {
+                    exists = owner
+                    NOT = {
+                        owner = ROOT
+                    }
+                }
+                save_scope_as = expel_target
+            }
+            order_by = {
+                value = 0
+                add = population_cap
+                subtract = total_population
+            }
+            add_province_modifier = {
+                name = "local_expulsion"
+                duration = 732
+            }
+            add_state_loyalty = -2
+            custom_tooltip = colonia_here_tt
+            trigger_event = { id = cultural_integration.12 }
+        }
+        culture_state_loyalty_effect = yes
+        scope:target_culture = {
+            add_country_culture_modifier = {
+                name = "culture_expulsed" 
+                duration = 365
+            }
+        }
+        add_country_modifier = {
+            name = "culture_expulsed_country"
+            duration = 182
+        }
+    }
+
     # Seize Wealth
     option = {
         name = "me_racial_events_2.a"
         custom_tooltip = integrate_tooltip
+        #cont loss modifier
+        scope:expel_hometown = {
+            ordered_pops_in_province = {
+                limit = {
+                    culture = scope:target_culture.culture
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 2
+                }
+                min = {
+                    value = 0
+                }
+                move_pop = scope:expel_target
+            }
+            ordered_pops_in_province = {
+                limit = {
+                    culture = scope:target_culture.culture
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                min = {
+                    value = 0
+                }
+                move_pop = scope:expel_target
+            }
+        }
     }
     # Allow them to Leave
     option = {
         name = "me_racial_events_2.b"
         custom_tooltip = expel_tooltip
-        hidden_effect = {
-            set_variable = expel_high_elf_var
-            random_list = {
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.24
-                        days = { 2 3 }
-                    }
-                
-                }
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.25
-                        days = { 2 3 }
-                    }
-                
-                }
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.26
-                        days = { 2 3 }
-                    }
-                
-                }
-            }
-        }
+
     }
 }
 
@@ -4082,41 +4152,11 @@ me_racial_events.25 = {
     option = {
         name = "me_racial_events_2.b"
         custom_tooltip = expel_tooltip
-        hidden_effect = {
-            set_variable = expel_high_elf_var
-            random_list = {
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.24
-                        days = { 2 3 }
-                    }
-                
-                }
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.25
-                        days = { 2 3 }
-                    }
-                
-                }
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.26
-                        days = { 2 3 }
-                    }
-                
-                }
-            }
-        }
     }
     # Raze the Province (could cause a revolt)
     option = {
         name = "me_racial_events_2.c"
         custom_tooltip = ignore_tooltip
-        trigger_event = {
-                        id = me_racial_events.26
-                        days = { 2 3 }
-                    }
     }
 
 }
@@ -4138,32 +4178,6 @@ me_racial_events.26 = {
     option = {
         name = "me_racial_events_2.b"
         custom_tooltip = expel_tooltip
-        hidden_effect = {
-            set_variable = expel_high_elf_var
-            random_list = {
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.24
-                        days = { 2 3 }
-                    }
-                
-                }
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.25
-                        days = { 2 3 }
-                    }
-                
-                }
-                1 = {
-                    trigger_event = {
-                        id = me_racial_events.26
-                        days = { 2 3 }
-                    }
-                
-                }
-            }
-        }
     }
 }
 
