@@ -1,0 +1,506 @@
+﻿namespace = orc_flavor
+
+orc_flavor.1 = { # Downgrade to Independent Shogun
+    type = country_event
+
+    title = orc_flavor_1_title
+    desc = orc_flavor_1_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    trigger = {
+        OR = {
+            country_culture_group = orcish
+            country_culture_group = orcish_humano
+        }
+        government = shogun
+        any_subject = {
+			count < 2
+		}
+    }
+
+    option = {
+        name = "orc_flavor_1.a"
+        custom_tooltip = orc_flavor_1_tooltip.a
+        change_government = independent_shogun
+        add_stability = -12
+        current_ruler = {
+        	add_legitimacy = -50
+        }
+    }
+}
+
+orc_flavor.2 = { # Downgrade to Jauzkar
+    type = country_event
+
+    title = orc_flavor_2_title
+    desc = orc_flavor_2_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    trigger = {
+    	OR = {
+            country_culture_group = orcish
+            country_culture_group = orcish_humano
+        }
+        government = independent_shogun
+        is_subject = yes
+    }
+
+    option = { # Defend your Throne
+        name = "orc_flavor_2.a"
+        custom_tooltip = orc_flavor_2_tooltip.a
+		change_government = daimyo
+        add_stability = -12
+        current_ruler = {
+        	add_legitimacy = -50
+        }
+    }
+}
+
+orc_flavor.3 = { # Upgrade to Independent Shogun
+    type = country_event
+
+    title = orc_flavor_3_title
+    desc = orc_flavor_3_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    option = {
+        name = "orc_flavor_3.a"
+        custom_tooltip = orc_flavor_3_tooltip.a
+        change_government = independent_shogun
+        add_stability = 8
+        current_ruler = {
+        	add_legitimacy = 25
+        }
+    }
+}
+
+orc_flavor.4 = { # Upgrade to Shogun
+    type = country_event
+
+    title = orc_flavor_4_title
+    desc = orc_flavor_4_desc
+    picture = city_country
+    left_portrait = current_ruler
+
+    
+
+    option = { # Support Pretender
+        name = "orc_flavor_4.a"
+        custom_tooltip = orc_flavor_4_tooltip.a
+        change_government = shogun
+        add_stability = 12
+        current_ruler = {
+        	add_legitimacy = 50
+        }
+    }
+}
+
+orc_flavor.5 = { # The Journey Begins
+    type = country_event
+
+    title = orc_flavor_5_title
+    desc = orc_flavor_5_desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = scope:nazani_pretender
+    right_portrait = c:WGA.current_ruler
+
+    immediate = {
+    	hidden_effect = {
+    		p:2348 = {
+				limit = {
+					NOT = { owner = c:WGA }
+					owner = EGA
+				}
+				set_owned_by = c:WGA
+			}
+			p:2348 = { # capital fort
+				state = { set_state_capital = p:2348 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+
+			c:WGA = {
+				create_unit = {
+	                navy = no
+	                name = "Nazani Auxiliaries"
+	                location = p:2348
+	                hidden_effect = {
+	                	while = {
+	                       	count = 2
+	                        add_subunit = heavy_infantry
+	                    }
+	                    while = {
+	                       	count = 4
+	                        add_subunit = light_infantry
+	                    }
+	                    add_subunit = heavy_cavalry 
+	                    add_subunit = heavy_cavalry
+	                    add_food = 300
+	                    add_morale = 4
+	                }
+	            }
+			}
+	    }
+	}
+
+    option = {
+        name = "orc_flavor_5.a"
+        custom_tooltip = orc_flavor_5_tooltip
+        add_stability = -3
+        add_legitimacy = -5
+        c:WGA = {
+			declare_war_with_wargoal = {
+				war_goal = imperial_contest
+				target = EGA
+			}
+		}
+        c:YGA = {
+			trigger_event = {
+		        id = orc_flavor.7
+		        days = { 60 90 }
+		    }
+        }
+    }
+}
+
+orc_flavor.6 = { # Event 1
+    type = country_event
+
+    title = orc_flavor_6_title
+    desc = orc_flavor_6_desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = c:WGA.current_ruler
+
+    fire_only_once = yes
+
+    option = {
+        name = "orc_flavor_6.a"
+        add_stability = 2
+        add_legitimacy = 12
+        add_treasury = 100
+        add_manpower = 5
+        c:YGA = {
+			trigger_event = {
+		        id = orc_flavor.7
+		        days = { 90 120 }
+		    }
+        }
+    }
+}
+
+orc_flavor.7 = { # Event 2
+    type = country_event
+
+    title = orc_flavor_7_title
+    desc = orc_flavor_7_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:139
+    right_portrait = c:EGA.current_ruler
+    right_portrait = char:94
+
+	immediate = {
+    	char:139 = {
+            save_scope_as = yga_rebel_scum
+        }
+
+        start_civil_war = scope:yga_rebel_scum
+        hidden_effect = {
+            scope:yga_rebel_scum.employer = {
+                change_country_name = "Holy Ytalian Kingdom"
+                change_country_adjective = "Ytalian"
+                change_country_color = holy_ytalian
+                change_country_flag = "YGA"
+                change_government = theocratic_monarchy
+                set_country_religion = helluvian
+                save_scope_as = ytalia_revolt_country
+            }
+			p:3337 = {
+				limit = {
+					NOT = { owner = scope:ytalia_revolt_country }
+					owner = YGA
+				}
+				set_owned_by = scope:ytalia_revolt_country
+			}
+			p:3337 = {
+				state = { set_state_capital = p:3337 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+
+			scope:yga_rebel_scum = {
+				add_nickname = "Hammer of Hellas"
+			}
+
+			scope:ytalia_revolt_country = {
+				set_capital = 3337
+				add_truce = {
+	                target = scope:razani_revolt_country
+	                duration = 5000 # 5 years
+	            }
+	            create_unit = {
+	                navy = no
+	                name = "Helluvian Levies"
+	                location = capital_scope
+	                while = {
+                       	count = 10
+                        add_subunit = light_infantry
+                    }
+                    add_subunit = light_cavalry
+                    add_subunit = supply_train    
+                    add_food = 300
+                    add_morale = 5
+                }
+            }
+		}
+	}
+
+    option = { # Defend your Throne
+        name = "orc_flavor_7.a"
+        custom_tooltip = orc_flavor_7_tooltip.a
+        ai_chance = { factor = 10 }
+
+        add_stability = -12
+        add_legitimacy = -25
+        add_manpower = -5
+        hidden_effect = { 
+        	scope:ytalia_revolt_country = {
+				add_treasury = 300
+			}
+
+            c:EGA = { 
+		        trigger_event = {
+			        id = orc_flavor.8
+			        days = { 15 35 }
+			    }
+		    }
+        }
+    }
+    option = { # Switch to Rebels
+        name = "orc_flavor_7.b"
+        custom_tooltip = orc_flavor_7_tooltip.b
+
+        add_stability = -8
+        add_legitimacy = -25
+        add_manpower = -50
+        hidden_effect = {
+	        c:EGA = { 
+		        trigger_event = {
+			        id = orc_flavor.8
+			        days = { 15 35 }
+			    }
+		    }
+	        if = {
+		        limit = { is_ai = no }
+	        	set_player_country = scope:ytalia_revolt_country
+        	}
+        }
+    }
+}
+
+orc_flavor.8 = { # Event 3
+    type = country_event
+
+    title = orc_flavor_8_title
+    desc = orc_flavor_8_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:94
+    right_portrait = char:140
+    right_portrait = char:139
+
+    fire_only_once = yes
+
+    option = {
+        name = "orc_flavor_8.a"
+        add_stability = -2
+        add_legitimacy = -5
+        scope:ytalia_revolt_country = {
+	        declare_war_with_wargoal = {
+				war_goal = independence_wargoal
+				province = 3337
+				target = EGA
+			}
+		}
+		c:EGA = { 
+			trigger_event = {
+		        id = orc_flavor.9
+		        days = { 30 90 }
+		    }
+		}
+    }
+    option = {
+        name = "orc_flavor_8.b"
+        add_stability = 5
+        add_legitimacy = -12
+        add_war_exhaustion = -2
+        add_truce = {
+            target = scope:ytalia_revolt_country
+            duration = 5000 # 5 years
+        }
+        c:EGA = { 
+			trigger_event = {
+		        id = orc_flavor.9
+		        days = { 60 120 }
+		    }
+		}
+    }
+}
+
+orc_flavor.9 = { # High Piety
+    type = country_event
+
+    title = orc_flavor_9_title
+    desc = orc_flavor_9_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:143
+    right_portrait = char:142
+    right_portrait = char:144
+
+    fire_only_once = yes
+
+    immediate = {
+		hidden_effect = {
+		    char:144 = {
+	            save_scope_as = gevanni_rebel_scum
+	        }
+			p:2470 = {
+				create_country = {
+	                set_country_religion = the_first_emperor
+	                if = {
+						limit = {
+							NOT = {
+								primary_culture = eagelian
+							}
+						}
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = eagelian
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
+					}
+	                change_country_name = "Republic of Gevanni"
+	                change_country_color = "kanai_confed_purple"
+	                change_government = democratic_republic
+	                change_country_adjective = "Gevannic"
+	                change_country_flag = EGA
+	                save_scope_as = gevanni_revolt
+				}
+			}
+			scope:gevanni_rebel_scum = {
+				remove_all_positions = yes
+				move_country = scope:gevanni_revolt
+				set_home_country = scope:gevanni_revolt
+				remove_character_modifier = foreign_citizen
+			}
+			p:2470.area = {
+				every_area_province = {
+					limit = {
+						NOT = { owner = scope:gevanni_revolt }
+						owner = c:EGA
+					}
+					set_owned_by = scope:gevanni_revolt
+				}
+			}
+			scope:gevanni_revolt = {
+				add_treasury = 1000
+				add_manpower = 20
+				set_as_ruler = scope:gevanni_rebel_scum
+				if = {
+					limit = {
+						NOR = {
+							has_law = republican_recruitment_2 # legions capital
+							has_law = republican_recruitment_4 # legions enabled
+						}
+					}
+					change_law = republican_recruitment_2 # capital
+				}
+			}
+			p:2470 = { # capital fort
+				state = { set_state_capital = p:2470 }
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
+				}
+			}
+		}
+		char:143 = {
+        	death = {
+        		death_reason = death_execution
+        	}
+        }
+    }
+
+    option = {
+        name = "orc_flavor_9.a"
+        add_stability = -3
+        add_legitimacy = -5
+		scope:gevanni_revolt = {
+	        declare_war_with_wargoal = {
+				war_goal = independence_wargoal
+				province = 2470
+				target = EGA
+			}
+		}
+        c:EGA = {
+			trigger_event = {
+		        id = orc_flavor.10
+		        days = { 90 180 }
+		    }
+	    }
+    }
+}
+
+orc_flavor.10 = { # Medium Piety
+    type = country_event
+    hidden = yes
+
+    fire_only_once = yes
+
+    trigger = {
+    	is_ai = yes
+    }
+
+    immediate = {
+        c:GT1 = { every_owned_province = { set_owned_by = DNY } }
+    	c:GT3 = { every_owned_province = { set_owned_by = DNY } }
+    	c:GT4 = { every_owned_province = { set_owned_by = DNY } }
+    }
+}
+
+orc_flavor.11 = { # Low Piety
+    type = country_event
+
+    title = orc_flavor_11_title
+    desc = orc_flavor_11_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = c:EGA.current_ruler
+    right_portrait = c:YGA.current_ruler
+    right_portrait = c:IP6.current_ruler
+
+    fire_only_once = yes
+
+    immediate = {
+
+    }
+
+    option = { # Migrate
+        name = "orc_flavor_11.a"
+
+        ai_chance = { factor = 10 }
+    }
+
+    option = { # Stay and Raid
+        name = "orc_flavor_11.b"
+    }
+}
