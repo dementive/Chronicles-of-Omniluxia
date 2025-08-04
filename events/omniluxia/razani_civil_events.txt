@@ -46,6 +46,18 @@ razani_civil_war.1 = { # Razani Gets Sick and Names Heir
         current_ruler = {
         	add_trait = cancer
         }
+        C:EGM = {
+            trigger_event = {
+                id = razani_civil_war.2
+                days = { 120 180 }
+            }
+        }
+        C:IC8 = {
+            trigger_event = {
+                id = razani_civil_war.2
+                days = { 120 180 }
+            }
+        }
         trigger_event = {
             id = razani_civil_war.2
             days = { 120 180 }
@@ -65,139 +77,49 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
     right_portrait = char:138
 
     immediate = {
-    	char:138 = {
-            save_scope_as = rebel_scum
-        }
-
-        start_civil_war = scope:rebel_scum
-        hidden_effect = { 
-            scope:rebel_scum.employer = {
-                change_country_name = "Dedunum Empire"
-                change_country_adjective = "Zanic"
-                change_country_color = forrj_red
-                change_country_flag = "EGA"
-                change_government = imperium
-                save_scope_as = razani_revolt_country
-            }
-	        p:3467.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:razani_revolt_country
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:3806.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:razani_revolt_country
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:2470.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:razani_revolt_country
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:2348.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:razani_revolt_country
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:3383.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = c:EGA }
-						owner = scope:razani_revolt_country
-					}
-					set_owned_by = c:EGA
-				}
-			}
-			p:2682.area = {
-				every_area_province = {
-					limit = {
-						NOT = { owner = scope:razani_revolt_country }
-						owner = EGA
-					}
-					set_owned_by = scope:razani_revolt_country
-				}
-			}
-	        p:2682 = { # capital fort
-				state = { set_state_capital = p:2682 }
-				if = {
-					limit = { can_build_building = fortress_building }
-					add_building_level = fortress_building
-				}
-			}
-			scope:razani_revolt_country = {
-				set_capital = 2682
-			}
-		}
-		
-
-
-        
-		scope:razani_revolt_country = {
-			create_unit = {
-                navy = no
-                name = "Defecting Levies"
-                location = capital_scope
-                hidden_effect = {
-                	while = {
-                       	count = 16
-                        add_subunit = heavy_infantry
-                    }
-                    while = {
-                       	count = 8
-                        add_subunit = light_infantry
-                    }
-                    while = {
-                       	count = 6
-                        add_subunit = light_cavalry
-                    } 
-                    while = {
-                       	count = 6
-                        add_subunit = camels
-                    } 
-                    while = {
-                       	count = 6
-                        add_subunit = supply_train
-                    }  
-                    add_subunit = heavy_cavalry 
-                    add_subunit = heavy_cavalry
-                    add_food = 300
-                    add_morale = 5
-                }
-            }
-		}
-
         char:12 = {
         	death = {
         		death_reason = death_padme
         	}
         }
+        hidden_effect = {
+            if = {
+                limit = { tag = EGA }
+                c:EGA = {
+                    release_subject = c:EGM
+                    release_subject = c:IC8
+                }
+                c:EGM = {
+                    alliance_with = c:IC8
+                }
+                c:EGM = {
+                    declare_war_with_wargoal = {
+                        war_goal = imperial_contest
+                        target = c:EGA
+                    }
+                    add_treasury = 200
+                }
+                c:IC8 = {
+                    declare_war_with_wargoal = {
+                        war_goal = imperial_contest
+                        target = c:EGA
+                    }
+                    add_treasury = 200
+                }
+            }
+        }
     }
 
     option = { # Defend your Throne
+        trigger = {
+            tag = EGA
+        }
         name = "razani_civil_war_2.a"
         custom_tooltip = razani_civil_war_2_tooltip.a
 
-        ai_chance = { factor = 10 }
-
         add_stability = -12
         add_legitimacy = -50
-        add_manpower = -50
+        add_manpower = -35
         hidden_effect = {
         	c:WGA = {
 			    trigger_event = {
@@ -205,15 +127,14 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
 		            days = { 120 150 }
 		        }
 	        }
-        	scope:razani_revolt_country = {
-				add_treasury = 800
-			}
             every_country = {
             	limit = {
             		NOT = {
             			OR = {
             				tag = EGA
             				tag = WGA
+                            tag = EGM
+                            tag = IC8
             				ai = yes
             			}
             		}
@@ -222,37 +143,91 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
             }
         }
     }
-    option = { # Switch to Rebels
+    option = { # Defeat the Traitor
+        trigger = {
+            tag = EGM
+        }
         name = "razani_civil_war_2.b"
         custom_tooltip = razani_civil_war_2_tooltip.b
 
-        add_stability = -12
-        add_legitimacy = -50
-        add_manpower = -50
+        add_stability = -7
+        add_legitimacy = -8
+        add_manpower = 10
         hidden_effect = {
-        	c:WGA = {
-			    trigger_event = {
-		            id = razani_civil_war.4
-		            days = { 90 120 }
-		        }
-	        }
-	        every_country = {
-	        	limit = {
-	        		NOT = {
-	        			OR = {
-	        				tag = EGA
-	        				tag = WGA
-	        				ai = yes
-	        			}
-	        		}
-	        	}
-	            trigger_event = razani_civil_war.3
-	        }
-	        if = {
-		        limit = { is_ai = no }
-	        	set_player_country = scope:nazani_revolt_country
-        	}
-	    }
+            c:EGM = {
+                create_unit = {
+                    navy = no
+                    name = "Defecting Levies"
+                    location = capital_scope
+                    hidden_effect = {
+                        while = {
+                            count = 8
+                            add_subunit = heavy_infantry
+                        }
+                        while = {
+                            count = 4
+                            add_subunit = light_infantry
+                        }
+                        while = {
+                            count = 2
+                            add_subunit = light_cavalry
+                        } 
+                        while = {
+                            count = 2
+                            add_subunit = camels
+                        } 
+                        while = {
+                            count = 2
+                            add_subunit = supply_train
+                        }  
+                        add_subunit = heavy_cavalry
+                        add_food = 300
+                        add_morale = 3
+                    }
+                }
+            }
+        }
+    }
+    option = { # Support the True King
+        trigger = {
+            tag = IC8
+        }
+        name = "razani_civil_war_2.b"
+        custom_tooltip = razani_civil_war_2_tooltip.c
+
+        add_stability = -7
+        add_legitimacy = -12
+        add_manpower = 25
+        hidden_effect = {
+            c:IC8 = {
+                create_unit = {
+                    navy = no
+                    name = "Defecting Levies"
+                    location = capital_scope
+                    hidden_effect = {
+                        while = {
+                            count = 8
+                            add_subunit = heavy_infantry
+                        }
+                        while = {
+                            count = 6
+                            add_subunit = light_infantry
+                        }
+                        while = {
+                            count = 2
+                            add_subunit = light_cavalry
+                        }
+                        while = {
+                            count = 2
+                            add_subunit = supply_train
+                        }  
+                        add_subunit = heavy_cavalry
+                        add_food = 300
+                        add_morale = 3
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -516,7 +491,7 @@ razani_civil_war.7 = { # YGA Helluvian King Demands Throne
 			}
 
 			scope:yga_rebel_scum = {
-				add_nickname = "Hammer of Hellas"
+				add_nickname = "'the Hammer of Hellas'"
 			}
 
 			scope:ytalia_revolt_country = {
@@ -729,12 +704,14 @@ razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
 				target = EGA
 			}
 		}
-        c:EGA = {
-			trigger_event = {
-		        id = razani_civil_war.10
-		        days = { 90 180 }
-		    }
+		trigger_event = {
+	        id = razani_civil_war.10
+	        days = { 180 240 }
 	    }
+        trigger_event = {
+            id = razani_civil_war.15
+            days = { 90 180 }
+        }
     }
 }
 
@@ -1761,6 +1738,122 @@ razani_civil_war.14 = { # Duny Convert & Settle / Horde
         name = "razani_civil_war_14.b"
         custom_tooltip = razani_civil_war_14_tooltip.b
         add_stability = 3
+    }
+}
+
+razani_civil_war.15 = { # EGA Great Theman Revolt
+    type = country_event
+
+    title = razani_civil_war_15_title
+    desc = razani_civil_war_15_desc
+    picture = city_country
+    left_portrait = current_ruler
+    left_portrait = char:175
+    right_portrait = char:176
+    right_portrait = char:177
+    right_portrait = char:178
+
+    fire_only_once = yes
+
+    immediate = {
+        hidden_effect = {
+            random_list = {
+                1 = { 
+                    theme_setup_effect_1 = yes
+                    add_stability = -3
+                    add_legitimacy = -5
+                }
+                1 = { add_stability = 3 }
+            }
+            random_list = {
+                1 = { 
+                    theme_setup_effect_2 = yes
+                    add_stability = -3
+                    add_legitimacy = -5
+                }
+                1 = { add_stability = 3 }
+            }
+            random_list = {
+                1 = { 
+                    theme_setup_effect_3 = yes
+                    add_stability = -3
+                    add_legitimacy = -5
+                }
+                1 = { add_stability = 3 }
+            }
+            random_list = {
+                1 = { 
+                    theme_setup_effect_4 = yes
+                    add_stability = -3
+                    add_legitimacy = -5
+                }
+                1 = { add_stability = 3 }
+            }
+        }
+    }
+
+    option = {
+        name = "razani_civil_war_15.a"
+        custom_tooltip = razani_civil_war_15_tooltip.a
+        ai_chance = { factor = 10 }
+        
+        add_war_exhaustion = 1
+    }
+    option = {
+        trigger = {
+            scope:lower_ytalia_revolt = {
+                exists = yes
+            }
+        }
+        name = "razani_civil_war_15.a"
+        custom_tooltip = razani_civil_war_15_tooltip.a
+
+        if = {
+            limit = { is_ai = no }
+            set_player_country = scope:lower_ytalia_revolt
+        }
+    }
+    option = {
+        trigger = {
+            scope:nalia_revolt = {
+                exists = yes
+            }
+        }
+        name = "razani_civil_war_15.a"
+        custom_tooltip = razani_civil_war_15_tooltip.a
+
+        if = {
+            limit = { is_ai = no }
+            set_player_country = scope:nalia_revolt
+        }
+    }
+    option = {
+        trigger = {
+            scope:gunstris_revolt = {
+                exists = yes
+            }
+        }
+        name = "razani_civil_war_15.a"
+        custom_tooltip = razani_civil_war_15_tooltip.a
+
+        if = {
+            limit = { is_ai = no }
+            set_player_country = scope:gunstris_revolt
+        }
+    }
+    option = {
+        trigger = {
+            scope:verne_revolt = {
+                exists = yes
+            }
+        }
+        name = "razani_civil_war_15.a"
+        custom_tooltip = razani_civil_war_15_tooltip.a
+
+        if = {
+            limit = { is_ai = no }
+            set_player_country = scope:verne_revolt
+        }
     }
 }
 
