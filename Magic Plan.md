@@ -1,11 +1,5 @@
 # Magic Plan
 
-Going to override 3 different modifiers that do nothing and repurpose them for magic mechanic
-
-1. great_work_tribals_workrate_character_modifier - All uses of this will be replaced with great_work_total_workrate_character_modifier. This will be the **character** modifier used to measure magic.
-2. global_cohort_recruit_speed - Unused in vanilla and does nothing. This will be the **country** modifier used to measure magic.
-3. local_cohort_recruit_speed - Unused in vanilla and does nothing. This will be the **province** modifier used to measure magic.
-
 Things to do to get it to work:
 
 1. Override the 3 modifiers with new icons and localization for magic mechanic. Each modifier will represent the yearly magic gain for each scope.
