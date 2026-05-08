@@ -1,4 +1,4 @@
-namespace = me_zorgoomni
+﻿namespace = me_zorgoomni
 
 me_zorgoomni.1 = {
     type = country_event
@@ -546,11 +546,11 @@ me_zorgoomni.15 = {
         add_stability = -3
         capital_scope = {
             while = {
-                    count = 1
-                    random_pops_in_province = {
-                        kill_pop = yes
-                    }
+                count = 1
+                random_pops_in_province = {
+                    kill_pop = yes
                 }
+            }
         }
     }
 }
@@ -2968,20 +2968,12 @@ me_zorgoomni.68 = { # High Elf Disease 2
         current_ruler = {
             add_popularity = 12
         }
-        trigger_event = {
-            id = me_zorgoomni.69
-            days = { 730 1825 }
-        }
     }
     option = {
         name = "me_zorgoomni.68.b"
         add_stability = -2
         current_ruler = {
             add_popularity = -8
-        }
-        trigger_event = {
-            id = me_zorgoomni.69
-            days = { 730 1825 }
         }
     }
 }
@@ -2993,6 +2985,12 @@ me_zorgoomni.69 = { # High Elf Disease Death
     desc = me_zorgoomni.69_desc
     picture = hellenic_temple
     left_portrait = scope:dead_guy_walking
+
+    trigger = {
+        scope:dead_guy_walking = {
+            has_trait = high_elf_disease_trait
+        }
+    }
 
     option = {
         name = "me_zorgoomni.69.a"
@@ -3719,6 +3717,11 @@ me_zorgoomni.81 = {
     type = country_event
     hidden = yes
 
+    trigger = {
+        NOT = { has_law = magic_banned }
+        NOT = { country_culture_group = snakefolk }
+    }
+
     immediate = {
         random_list = {
             10 = {
@@ -3967,13 +3970,15 @@ me_zorgoomni.85 = { # KAXUD
     left_portrait = current_ruler
 
     immediate = {
-        any_owned_province = {
-            OR = {
-                has_province_rank = city_metropolis
-                has_province_rank = city
+        random_owned_province = {
+            limit = {
+                OR = {
+                    has_province_rank = city_metropolis
+                    has_province_rank = city
+                }
+                NOT = { has_province_modifier = zainudian_mosque_mod }
             }
-            NOT = { has_province_modifier = zainudian_mosque_mod }
-            save_as_scope = mosque_target
+            save_scope_as = mosque_target
         }
     }
 
@@ -3991,9 +3996,11 @@ me_zorgoomni.85 = { # KAXUD
                 duration = -1
             }
         }
+        custom_tooltip = me_zorgoomni.85_tooltip.a
     }
     option = {
         name = "me_zorgoomni.85.b"
+        custom_tooltip = me_zorgoomni.85_tooltip.b
     }
 }
 
@@ -4006,21 +4013,24 @@ me_zorgoomni.86 = { # HOLD BUILDING
     left_portrait = current_ruler
 
     immediate = {
-        any_owned_province = {
-            OR = {
-                terrain = cavern
-                terrain = hills
-                terrain = mountains
+        random_owned_province = {
+            limit = {
+                OR = {
+                    terrain = cavern
+                    terrain = hills
+                    terrain = mountains
+                }
+                has_province_rank = city_metropolis
+                NOT = { has_province_modifier = dwarven_hold_mod }
             }
-            has_province_rank = city_metropolis
-            NOT = { has_province_modifier = dwarven_hold_mod }
-            save_as_scope = hold_target
+            save_scope_as = hold_target
         }
     }
 
     option = {
         name = "me_zorgoomni.86.a"
         add_5_free_province_investments = yes
+        add_innovation = 1
         current_ruler = {
             add_popularity = 100
         }
@@ -4032,9 +4042,11 @@ me_zorgoomni.86 = { # HOLD BUILDING
                 duration = -1
             }
         }
+        custom_tooltip = me_zorgoomni.86_tooltip.a
     }
     option = {
         name = "me_zorgoomni.86.b"
+        custom_tooltip = me_zorgoomni.86_tooltip.b
     }
 }
 
@@ -4047,13 +4059,15 @@ me_zorgoomni.87 = { # HUON-LOC REUOC
     left_portrait = current_ruler
 
     immediate = {
-        any_owned_province = {
-            OR = {
-                has_province_rank = city_metropolis
-                has_province_rank = city
+        random_owned_province = {
+            limit = {
+                OR = {
+                    has_province_rank = city_metropolis
+                    has_province_rank = city
+                }
+                NOT = { has_province_modifier = high_elf_temple_mod }
             }
-            NOT = { has_province_modifier = high_elf_temple_mod }
-            save_as_scope = elf_temple_target
+            save_scope_as = elf_temple_target
         }
     }
 
@@ -4071,9 +4085,11 @@ me_zorgoomni.87 = { # HUON-LOC REUOC
                 duration = -1
             }
         }
+        custom_tooltip = me_zorgoomni.87_tooltip.a
     }
     option = {
         name = "me_zorgoomni.87.b"
+        custom_tooltip = me_zorgoomni.87_tooltip.b
     }
 }
 
@@ -4086,13 +4102,15 @@ me_zorgoomni.88 = { # VAMPIRIC SHRINE
     left_portrait = current_ruler
 
     immediate = {
-        any_owned_province = {
-            OR = {
-                has_province_rank = city_metropolis
-                has_province_rank = city
+        random_owned_province = {
+            limit = {
+                OR = {
+                    has_province_rank = city_metropolis
+                    has_province_rank = city
+                }
+                NOT = { has_province_modifier = vampiric_shrine_mod }
             }
-            NOT = { has_province_modifier = vampiric_shrine_mod }
-            save_as_scope = vampire_shrine_target
+            save_scope_as = vampire_shrine_target
         }
     }
 
@@ -4104,14 +4122,17 @@ me_zorgoomni.88 = { # VAMPIRIC SHRINE
         }
         add_treasury = -250
         add_political_influence = -75
+        manpower >= 5
         scope:vampire_shrine_target = {
             add_province_modifier = {
                 name = vampiric_shrine_mod
                 duration = -1
             }
         }
+        custom_tooltip = me_zorgoomni.88_tooltip.a
     }
     option = {
         name = "me_zorgoomni.88.b"
+        custom_tooltip = me_zorgoomni.88_tooltip.b
     }
 }

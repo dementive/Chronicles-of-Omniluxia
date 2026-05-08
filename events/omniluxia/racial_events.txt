@@ -4157,26 +4157,44 @@ me_racial_events.21 = {
     title = me_racial_events_21_title
     desc = me_racial_events_21_desc
     picture = event_marketplace
-    right_portrait = current_ruler
+    left_portrait = current_ruler
 
     immediate = {
-
         choose_race_integrate_effect = yes
+
+        ordered_owned_province = {
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                is_capital = no
+            }
+            save_scope_as = village_hometown
+        }
+
+        scope:village_hometown = {
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                max = {
+                    value = total_population
+                    divide = 4
+                }
+                order_by = pop_hapiness
+                move_pop = root.capital_scope
+            }
+        }
     }
 
     # Great them With Open Arms
     option = {
         name = "me_racial_events_21.a"
-
-        if = {
-            limit = { has_variable = integrate_half_elf_var }
-            add_treasury = 111111
-        }
         add_treasury = {
             value = 0
             subtract = two_years_income_svalue
         }
-        add_stability = -5
+        add_stability = -3
 
         root.capital_scope = {
             add_province_modifier = {
@@ -4185,14 +4203,6 @@ me_racial_events.21 = {
             }
         }
 
-        #race_integrate_positive_level_effect = yes
-
-        scope:chosen_culture = {
-            add_country_culture_modifier = {
-                name = "cap_migration_angry_mod"
-                duration = 1825
-            }
-        }
 
         every_country_culture = {
             limit = {
@@ -4203,6 +4213,8 @@ me_racial_events.21 = {
                 duration = 1825
             }
         }
+
+        race_integrate_positive_level_effect = yes
 
         hidden_effect = {
             random_list = {
@@ -4237,8 +4249,7 @@ me_racial_events.21 = {
     # Restrict their Migration
     option = {
         name = "me_racial_events_21.b"
-        custom_tooltip = expel_tooltip
-        add_stability = 3
+        add_stability = 2
         
         every_country_culture = {
             limit = {
@@ -4249,7 +4260,8 @@ me_racial_events.21 = {
                 duration = 1825
             }
         }
-        #race_integrate_negative_level_effect = yes
+        
+        race_integrate_negative_level_effect = yes
 
         hidden_effect = {
             random_list = {
@@ -4279,36 +4291,42 @@ me_racial_events.21 = {
     }
 }
 
-# Invest in Local Communities
+# Locals Demand Political Concessions
 me_racial_events.22 = {
     type = country_event
 
     title = me_racial_events_22_title
     desc = me_racial_events_22_desc
     picture = diadochi_coronation
+    right_portrait = current_ruler
 
     immediate = {
-        choose_culture_integrate_effect = yes
+        choose_race_integrate_effect = yes
+
+        random_owned_province = {
+            any_pops_in_province = {
+                pop_culture = scope:chosen_culture.culture
+            }
+            is_capital = no
+            save_scope_as = autonomous_community
+        }
     }
 
-    # Invest
+    # Allow
     option = {
-        name = "me_racial_events_2.a"
-        custom_tooltip = integrate_tooltip
-
-        add_stability = 3
-        add_treasury = -200
-
-        scope:village_hometown = {
+        name = "me_racial_events_22.a"
+        add_stability = -2
+        scope:autonomous_community = {
+            add_state_loyalty = 5
+        }
+        scope:autonomous_community = {
             add_province_modifier = {
-                name = "developed_minority_mod" 
+                name = "autonomous_minority_community_mod" 
                 duration = 120
             }
         }
-        scope:village_hometown = {
-            add_state_loyalty = 5
-        }
         
+        race_integrate_positive_level_effect = yes
 
         hidden_effect = {
             random_list = {
@@ -4340,15 +4358,15 @@ me_racial_events.22 = {
             }
         }
     }
-    # Ignore
+    # Deny
     option = {
-        name = "me_racial_events_2.b"
-        custom_tooltip = expel_tooltip
-
-        add_stability = -2
-        scope:village_hometown = {
-            add_state_loyalty = -5
+        name = "me_racial_events_22.b"
+        add_stability = 3
+        scope:autonomous_community = {
+            add_state_loyalty = -8
         }
+
+        race_integrate_negative_level_effect = yes
 
         hidden_effect = {
             random_list = {
@@ -4382,116 +4400,151 @@ me_racial_events.22 = {
     }
 }
 
-# Locals Demand Political Concessions
+# Prominent Minister
 me_racial_events.23 = {
     type = country_event
 
     title = me_racial_events_23_title
     desc = me_racial_events_23_desc
     picture = diadochi_coronation
+    left_portrait = current_ruler
+    right_portrait = scope:talented_minister
+    right_portrait = scope:original_minister
 
     immediate = {
-        choose_culture_integrate_effect = yes
+        choose_race_integrate_effect = yes
+
+        hidden_effect = {
+            create_character = {
+                female = no
+                culture = scope:chosen_culture.culture
+                save_scope_as = talented_minister
+                
+            }
+            scope:talented_minister = {
+                add_trait = cultured
+                add_trait = intelligent
+                add_trait = ambitious
+            }
+
+            random_character = {
+                limit = {
+                    OR = {
+                        has_office = office_foreign_minister
+                        has_office = office_censor
+                        has_office = office_arbitrator
+                        has_office = office_marshal
+                        has_office = office_tribune_of_the_soldiers
+                        has_office = office_warchief
+                        has_office = office_high_priest_monarchy
+                        has_office = office_augur
+                        has_office = office_high_priest
+                        has_office = office_steward
+                        has_office = office_tribune_of_the_treasury
+                        has_office = office_magistrate
+                    }
+                }
+                save_scope_as = original_minister
+            }
+        }
     }
 
     # Hire Minority
     option = {
-        name = "me_racial_events_2.a"
-        custom_tooltip = integrate_tooltip
+        name = "me_racial_events_23.a"
         add_stability = -7
 
-        scope:poor_sap = {
-            if = {
-                limit = {
-                    has_office = office_physician
-                }
-                remove_office = office_physician
-            }
-        }
-        scope:new_minister = {
-            if = {
-                limit = {
-                    has_any_office = no
-                }
-                give_office = office_physician
-            }
-        }
-        scope:poor_sap = {
-            if = {
-                limit = {
-                    has_office = office_republic_physician
-                }
-                remove_office = office_republic_physician
-            }
-        }
-        scope:new_minister = {
-            if = {
-                limit = {
-                    has_any_office = no
-                }
-                give_office = office_republic_physician
-            }
-        }
-        scope:poor_sap = {
-            if = {
-                limit = {
-                    has_office = office_apothecary
-                }
-                remove_office = office_apothecary
-            }
-        }
-        scope:new_minister = {
-            if = {
-                limit = {
-                    has_any_office = no
-                }
-                give_office = office_apothecary
-            }
-        }
-        scope:poor_sap = {
-            if = {
-                limit = {
-                    can_get_rivals = yes
-                }
-                add_rival = scope:new_minister
-            }
-        }
-
+        # Charisma
         if = {
-            limit = { has_variable = int_level_1 }
-            remove_variable = int_level_1
-            set_variable = int_level_2
-        }
-        else_if = {
-            limit = { has_variable = int_level_2 }
-            remove_variable = int_level_2
-            set_variable = int_level_3
-        }
-        else_if = {
-            limit = { has_variable = int_level_3 }
-            remove_variable = int_level_3
-            set_variable = int_level_4
-        }
-        else_if = {
-            limit = { has_variable = int_level_4 }
-            remove_variable = int_level_4
-            set_variable = int_level_5
-        }
-        else_if = {
-            limit = { has_variable = int_level_5 }
-            remove_variable = int_level_5
-            set_variable = int_level_1
-
-            every_country_culture = {
-                limit = {
-                    this.culture.culture_group = scope:village_hometown.culture.culture_group
-                }
-                add_country_culture_modifier = {
-                    name = "integrated_race_mod"
-                    duration = 1825
-                }
+            limit = {
+                scope:original_minister = { has_office = office_foreign_minister }
             }
+            scope:original_minister = { remove_office = office_foreign_minister }
+            scope:talented_minister = { give_office = office_foreign_minister }
         }
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_censor }
+            }
+            scope:original_minister = { remove_office = office_censor }
+            scope:talented_minister = { give_office = office_censor }
+        }
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_arbitrator }
+            }
+            scope:original_minister = { remove_office = office_arbitrator }
+            scope:talented_minister = { give_office = office_arbitrator }
+        }
+        # Martial
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_marshal }
+            }
+            scope:original_minister = { remove_office = office_marshal }
+            scope:talented_minister = { give_office = office_marshal }
+        }
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_tribune_of_the_soldiers }
+            }
+            scope:original_minister = { remove_office = office_tribune_of_the_soldiers }
+            scope:talented_minister = { give_office = office_tribune_of_the_soldiers }
+        }
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_warchief }
+            }
+            scope:original_minister = { remove_office = office_warchief }
+            scope:talented_minister = { give_office = office_warchief }
+        }
+        # Zeal
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_high_priest_monarchy }
+            }
+            scope:original_minister = { remove_office = office_high_priest_monarchy }
+            scope:talented_minister = { give_office = office_high_priest_monarchy }
+        }
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_augur }
+            }
+            scope:original_minister = { remove_office = office_augur }
+            scope:talented_minister = { give_office = office_augur }
+        }
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_high_priest }
+            }
+            scope:original_minister = { remove_office = office_high_priest }
+            scope:talented_minister = { give_office = office_high_priest }
+        }
+        # Finesse
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_steward }
+            }
+            scope:original_minister = { remove_office = office_steward }
+            scope:talented_minister = { give_office = office_steward }
+        }
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_tribune_of_the_treasury }
+            }
+            scope:original_minister = { remove_office = office_tribune_of_the_treasury }
+            scope:talented_minister = { give_office = office_tribune_of_the_treasury }
+        }
+        else_if = {
+            limit = {
+                scope:original_minister = { has_office = office_magistrate }
+            }
+            scope:original_minister = { remove_office = office_magistrate }
+            scope:talented_minister = { give_office = office_magistrate }
+        }
+        
+
+        race_integrate_positive_level_effect = yes
 
         hidden_effect = {
             random_list = {
@@ -4523,34 +4576,19 @@ me_racial_events.23 = {
             }
         }
     }
+    
     # Give him a minor post in his home
     option = {
-        name = "me_racial_events_2.b"
-        custom_tooltip = expel_tooltip
+        name = "me_racial_events_23.b"
         add_stability = 2
 
-        if = {
-            limit = { has_variable = int_level_2 }
-            remove_variable = int_level_2
-            set_variable = int_level_1
-        }
-        else_if = {
-            limit = { has_variable = int_level_3 }
-            remove_variable = int_level_3
-            set_variable = int_level_2
-        }
-        else_if = {
-            limit = { has_variable = int_level_4 }
-            remove_variable = int_level_4
-            set_variable = int_level_3
-        }
-        else_if = {
-            limit = { has_variable = int_level_5 }
-            remove_variable = int_level_5
-            set_variable = int_level_4
-        }
+        race_integrate_negative_level_effect = yes
 
         hidden_effect = {
+            scope:talented_minister = {
+                banish = yes
+            }
+
             random_list = {
                 1 = {
                     trigger_event = {
@@ -4588,17 +4626,44 @@ me_racial_events.24 = {
 
     immediate = {
         choose_culture_integrate_effect = yes
+
+        every_country_culture = {
+            limit = {
+                this.culture.culture_group = culture_group:scope:chosen_culture
+                this.culture.culture_group = culture_group:werhenssian
+            }
+            save_scope_as = assimilating_culture
+        }
+
+        random_owned_province = {
+            any_pops_in_province = {
+                pop_culture = scope:assimilating_culture.culture
+            }
+            while = {
+                count = 3
+                limit = {
+                    any_pops_in_province = {
+                        pop_culture = scope:assimilating_culture.culture
+                    }
+                }
+                random_pops_in_province = {
+                    limit = {
+                        pop_culture = scope:assimilating_culture.culture
+                    }
+                    set_pop_culture = scope:chosen_culture.culture
+                }
+            }
+            save_scope_as = conversion_city
+        }
     }
 
     # Hire Minority
     option = {
-        name = "me_racial_events_2.a"
-        custom_tooltip = integrate_tooltip
+        name = "me_racial_events_24.a"
     }
     # Give him a minor post in his home
     option = {
-        name = "me_racial_events_2.b"
-        custom_tooltip = expel_tooltip
+        name = "me_racial_events_24.b"
     }
 }
 
@@ -4609,37 +4674,20 @@ me_racial_events.24 = {
 me_racial_events.25 = {
     type = country_event
 
-    title = me_racial_events_24_title
-    desc = me_racial_events_24_desc
+    title = me_racial_events_25_title
+    desc = me_racial_events_25_desc
     picture = diadochi_coronation
+    left_picture = current_ruler
 
     immediate = {
-        add_stability = -2
+        choose_race_integrate_effect = yes
+
         ordered_owned_province = {
             limit = {
-                dominant_province_culture = scope:target_culture.culture
-                any_neighbor_province = {
-                    count > 1
-                    dominant_province_culture = scope:target_culture.culture
+                any_pops_in_province = {
+                    pop_culture = scope:chosen_culture.culture
                 }
-                state = {
-                    NOT = {
-                        any_state_province = {
-                            is_capital = yes
-                        }
-                    }
-                }
-                AND = {
-                    any_neighbor_province = {
-                        owner = ROOT
-                    }
-                    any_neighbor_province = {
-                        exists = owner
-                        NOT = {
-                            owner = ROOT
-                        }
-                    }
-                }
+                is_capital = no
             }
             save_scope_as = expel_hometown
             random_neighbor_province = {
@@ -4661,63 +4709,67 @@ me_racial_events.25 = {
                 duration = 732
             }
             add_state_loyalty = -2
-            custom_tooltip = colonia_here_tt
-            trigger_event = { id = cultural_integration.12 }
         }
-        culture_state_loyalty_effect = yes
-        scope:target_culture = {
+        ordered_owned_province = {
+            limit = {
+                is_capital = no
+                AND = {
+                    any_neighbor_province = {
+                        owner = ROOT
+                    }
+                    any_neighbor_province = {
+                        exists = owner
+                        NOT = {
+                            owner = ROOT
+                        }
+                    }
+                }
+            }
+            random_neighbor_province = {
+                limit = {
+                    exists = owner
+                    NOT = {
+                        owner = ROOT
+                    }
+                }
+                save_scope_as = expel_target
+            }
+        }
+        scope:expel_hometown = {
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                order_by = pop_hapiness
+                move_pop = scope:expel_target
+            }
+        }
+
+        scope:chosen_culture = {
             add_country_culture_modifier = {
                 name = "culture_expulsed" 
                 duration = 365
             }
         }
-        add_country_modifier = {
-            name = "culture_expulsed_country"
-            duration = 182
-        }
     }
 
     # Seize Wealth
     option = {
-        name = "me_racial_events_2.a"
-        custom_tooltip = integrate_tooltip
-        #cont loss modifier
-        scope:expel_hometown = {
-            ordered_pops_in_province = {
-                limit = {
-                    culture = scope:target_culture.culture
-                }
-                order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 2
-                }
-                min = {
-                    value = 0
-                }
-                move_pop = scope:expel_target
-            }
-            ordered_pops_in_province = {
-                limit = {
-                    culture = scope:target_culture.culture
-                }
-                order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 3
-                }
-                min = {
-                    value = 0
-                }
-                move_pop = scope:expel_target
-            }
+        name = "me_racial_events_25.a"
+        add_stability = -3
+        add_treasury = {
+            value = 0
+            add = two_years_income_svalue
         }
     }
     # Allow them to Leave
     option = {
-        name = "me_racial_events_2.b"
-        custom_tooltip = expel_tooltip
-
+        name = "me_racial_events_25.b"
+        add_stability = -1
     }
 }
 
@@ -4725,50 +4777,303 @@ me_racial_events.25 = {
 me_racial_events.26 = {
     type = country_event
 
-    title = me_racial_events_25_title
-    desc = me_racial_events_25_desc
-    picture = diadochi_coronation
-
-    # Try to Settle Diplomatically
-    option = {
-        name = "me_racial_events_2.a"
-        custom_tooltip = integrate_tooltip
-    }
-    # Make an Example of Their Leaders 
-    option = {
-        name = "me_racial_events_2.b"
-        custom_tooltip = expel_tooltip
-    }
-    # Raze the Province (could cause a revolt)
-    option = {
-        name = "me_racial_events_2.c"
-        custom_tooltip = ignore_tooltip
-    }
-
-}
-
-# Settlers Flood In
-me_racial_events.27 = {
-    type = country_event
-
     title = me_racial_events_26_title
     desc = me_racial_events_26_desc
     picture = diadochi_coronation
+    left_picture = current_ruler
 
-    # Encourage
-    option = {
-        name = "me_racial_events_2.a"
-        custom_tooltip = integrate_tooltip
+    immediate = {
+        choose_race_integrate_effect = yes
+
+        ordered_owned_province = {
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                is_capital = no
+            }
+            save_scope_as = angry_minority_town
+        }
     }
-    # Enjoy Benefits
+
+    # Try to Settle Diplomatically
     option = {
-        name = "me_racial_events_2.b"
-        custom_tooltip = expel_tooltip
+        name = "me_racial_events_26.a"
+        add_stability = 3
+        add_legitimacy = -8
+        scope:angry_minority_town = {
+            add_province_modifier = {
+                name = "autonomous_minority_community_mod" 
+                duration = 180
+            }
+        }
+    }
+    # Make an Example of Their Leaders 
+    option = {
+        name = "me_racial_events_26.b"
+        add_stability = -3
+        add_state_loyalty = -5
+        add_treasury = {
+            value = 0
+            subtract = six_months_income_root
+        }
+        scope:angry_minority_town = {
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 5
+                }
+                min = {
+                    value = 0
+                }
+                kill_pop = yes
+            }
+        }
+    }
+    # Raze the Province (could cause a revolt)
+    option = {
+        name = "me_racial_events_26.c"
+        random_list = {
+            40 = { # Revolt
+                custom_tooltip = revolt_tooltip.1
+                hidden_effect = {
+                    add_stability = -8
+                    scope:angry_minority_town = {
+                        create_country = {
+                            change_country_name = "Separatist Revolt"
+                            save_scope_as = minority_revolt
+                        }
+                    }
+                    scope:minority_revolt = {
+                        add_treasury = 500
+                        add_manpower = 20
+                        if = {
+                            limit = {
+                                NOR = {
+                                    has_law = monarchy_recruitment_2 # legions capital
+                                    has_law = monarchy_recruitment_4 # legions enabled
+                                }
+                            }
+                            change_law = monarchy_recruitment_2 # capital
+                        }
+                        create_unit = {
+                            navy = no
+                            name = "Mob"
+                            location = capital_scope
+                            hidden_effect = {
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry                                        
+                                add_food = 150
+                                add_morale = 8
+                            }
+                        }
+                    }
+                    scope:angry_minority_town = { # capital fort
+                        state = { set_state_capital = scope:angry_minority_town }
+                        if = {
+                            limit = { can_build_building = fortress_building }
+                            add_building_level = fortress_building
+                        }
+                    }
+                    scope:minority_revolt = {
+                        declare_war_with_wargoal = {
+                            war_goal = independence_wargoal
+                            province = scope:angry_minority_town
+                            target = ROOT
+                        }
+                    }
+                }
+            }
+            60 = { # Surpressed
+                custom_tooltip = revolt_tooltip.2
+                hidden_effect = {
+                    add_stability = 3
+                    scope:angry_minority_town = {
+                        add_city_smoke_effect = yes
+                        add_city_fire_effect = yes
+                        add_province_modifier = {
+                            name = "revolt_surpressed_mod" 
+                            duration = 180
+                        }
+                        ordered_pops_in_province = {
+                            limit = {
+                                pop_culture = scope:chosen_culture.culture
+                            }
+                            order_by = pop_hapiness
+                            max = {
+                                value = total_population
+                                divide = 3
+                            }
+                            min = {
+                                value = 0
+                            }
+                            kill_pop = yes
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Settler Conflict
+me_racial_events.27 = {
+    type = country_event
+
+    title = me_racial_events_27_title
+    desc = me_racial_events_27_desc
+    picture = diadochi_coronation
+    left_picture = current_ruler
+
+    immediate = {
+        choose_race_integrate_effect = yes
+
+        ordered_owned_province = { # Settler Colony
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                is_capital = no
+            }
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 7
+                }
+                min = {
+                    value = 0
+                }
+                kill_pop = yes
+            }
+            save_scope_as = settler_colony
+        }
+
+        ordered_owned_province = { # Settler Homeland
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = root.culture
+                }
+            }
+            max = {
+                value = 1
+            }
+            save_scope_as = settler_home
+        }
+
+        scope:settler_home = {
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = root.culture
+                }
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                order_by = pop_hapiness
+                move_pop = scope:settler_colony
+            }
+        }
+
+        ordered_owned_province = { # Exile Target
+            limit = {
+                is_capital = no
+                AND = {
+                    any_neighbor_province = {
+                        owner = ROOT
+                    }
+                    any_neighbor_province = {
+                        exists = owner
+                        NOT = {
+                            owner = ROOT
+                        }
+                    }
+                }
+            }
+            random_neighbor_province = {
+                limit = {
+                    exists = owner
+                    NOT = {
+                        owner = ROOT
+                    }
+                }
+                save_scope_as = resettle_target
+            }
+        }
+    }
+
+    # Do Nothing
+    option = {
+        name = "me_racial_events_27.a"
+        add_stability = -1
+        scope:settler_colony = { add_state_loyalty = -8 }
+    }
+
+    # Reprimand Settlers
+    option = {
+        name = "me_racial_events_27.b"
+        add_stability = 4
+        add_legitimacy = -12
+        scope:settler_colony = {
+            add_state_loyalty = 3
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = root.culture
+                }
+                max = {
+                    value = total_population
+                    divide = 7
+                }
+                order_by = pop_hapiness
+                move_pop = scope:settler_home
+            }
+        }
+    }
+
+    # Resettle Minorities
+    option = {
+        name = "me_racial_events_27.c"
+
+        add_treasury = {
+            value = 0
+            subtract = six_months_income_root
+        }
+
+        scope:settler_colony = {
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                order_by = pop_hapiness
+                move_pop = scope:resettle_target
+            }
+        }
     }
 }
 
 
 # SPECIAL INTEGRATION EVENTS
+
+
 
 
 # SPECIAL EXPEL EVENTS
