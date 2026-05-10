@@ -4623,24 +4623,27 @@ me_racial_events.24 = {
     title = me_racial_events_24_title
     desc = me_racial_events_24_desc
     picture = diadochi_coronation
+    left_portrait = current_ruler
 
     immediate = {
         choose_culture_integrate_effect = yes
 
         every_country_culture = {
             limit = {
-                this.culture.culture_group = culture_group:scope:chosen_culture
-                this.culture.culture_group = culture_group:werhenssian
+                culture_group = scope:chosen_culture.CultureGroup
+                #NOT = { culture = scope:chosen_culture.culture }
             }
             save_scope_as = assimilating_culture
         }
 
         random_owned_province = {
-            any_pops_in_province = {
-                pop_culture = scope:assimilating_culture.culture
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:assimilating_culture.culture
+                }
             }
             while = {
-                count = 3
+                count = 2
                 limit = {
                     any_pops_in_province = {
                         pop_culture = scope:assimilating_culture.culture
@@ -4657,13 +4660,40 @@ me_racial_events.24 = {
         }
     }
 
-    # Hire Minority
+    # Accept
     option = {
         name = "me_racial_events_24.a"
+        add_stability = 1
+        scope:assimilating_culture = {
+            add_country_culture_modifier = {
+                name = "cap_migration_angry_mod"
+                duration = 1825
+            }
+        }
     }
-    # Give him a minor post in his home
+    # Push to Encourage
     option = {
         name = "me_racial_events_24.b"
+        add_treasury = {
+            value = 0
+            subtract = six_months_income_root
+        }
+        scope:conversion_city = {
+            while = {
+                count = 1
+                limit = {
+                    any_pops_in_province = {
+                        pop_culture = scope:assimilating_culture.culture
+                    }
+                }
+                random_pops_in_province = {
+                    limit = {
+                        pop_culture = scope:assimilating_culture.culture
+                    }
+                    set_pop_culture = scope:chosen_culture.culture
+                }
+            }
+        }
     }
 }
 
@@ -4677,7 +4707,7 @@ me_racial_events.25 = {
     title = me_racial_events_25_title
     desc = me_racial_events_25_desc
     picture = diadochi_coronation
-    left_picture = current_ruler
+    left_portrait = current_ruler
 
     immediate = {
         choose_race_integrate_effect = yes
@@ -4780,7 +4810,7 @@ me_racial_events.26 = {
     title = me_racial_events_26_title
     desc = me_racial_events_26_desc
     picture = diadochi_coronation
-    left_picture = current_ruler
+    left_portrait = current_ruler
 
     immediate = {
         choose_race_integrate_effect = yes
@@ -4935,7 +4965,7 @@ me_racial_events.27 = {
     title = me_racial_events_27_title
     desc = me_racial_events_27_desc
     picture = diadochi_coronation
-    left_picture = current_ruler
+    left_portrait = current_ruler
 
     immediate = {
         choose_race_integrate_effect = yes
@@ -5073,9 +5103,80 @@ me_racial_events.27 = {
 
 # SPECIAL INTEGRATION EVENTS
 
+# Half Human - > Human
+me_racial_events.28 = {
+    type = country_event
+
+    title = me_racial_events_28_title
+    desc = me_racial_events_28_desc
+    picture = diadochi_coronation
+    left_portrait = current_ruler
+
+    immediate = {
+        choose_culture_integrate_effect = yes
+
+        every_country_culture = {
+            limit = {
+                this.culture.culture_group = culture_group:scope:chosen_culture
+                this.culture.culture_group = culture_group:werhenssian
+            }
+            save_scope_as = assimilating_culture
+        }
+
+        random_owned_province = {
+            any_pops_in_province = {
+                pop_culture = scope:assimilating_culture.culture
+            }
+            while = {
+                count = 3
+                limit = {
+                    any_pops_in_province = {
+                        pop_culture = scope:assimilating_culture.culture
+                    }
+                }
+                random_pops_in_province = {
+                    limit = {
+                        pop_culture = scope:assimilating_culture.culture
+                    }
+                    set_pop_culture = scope:chosen_culture.culture
+                }
+            }
+            save_scope_as = conversion_city
+        }
+    }
+
+    # Hire Minority
+    option = {
+        name = "me_racial_events_24.a"
+    }
+    # Give him a minor post in his home
+    option = {
+        name = "me_racial_events_24.b"
+    }
+}
+
+
+#Halfling
+##Halfling converting to Human
+##Halfling converting to Dwarf
+##Dwarf/Human converting to Halfling
+#Half Elf
+##Half Elf converting to Human
+##Half Elf converting to Elf
+##Elf/Human converting to Half Elf
+#Austropetolian
+##Austropetolian converting to Human
+##Austropetolian converting to Snake
+##Snake/Human converting to Austropetolian
 
 
 
 # SPECIAL EXPEL EVENTS
+
+#Dwarves Hate Dragkhans
+#High Elves Hate Humans
+#Gnomes Hate Humans
+#Everyone Hates Goblins
+#Humans Hate Drow
 
 
