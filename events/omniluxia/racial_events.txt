@@ -4417,6 +4417,11 @@ me_racial_events.23 = {
         hidden_effect = {
             create_character = {
                 female = no
+                age = 23
+                add_martial = 8
+                add_charisma = 8
+                add_finesse = 8
+                add_zeal = 8
                 culture = scope:chosen_culture.culture
                 save_scope_as = talented_minister
                 
@@ -4577,7 +4582,7 @@ me_racial_events.23 = {
         }
     }
     
-    # Give him a minor post in his home
+    # Hire Minority
     option = {
         name = "me_racial_events_23.b"
         add_stability = 2
@@ -4628,12 +4633,25 @@ me_racial_events.24 = {
     immediate = {
         choose_culture_integrate_effect = yes
 
-        every_country_culture = {
+        if = {
             limit = {
-                culture_group = scope:chosen_culture.CultureGroup
-                #NOT = { culture = scope:chosen_culture.culture }
+                exists = scope:chosen_culture
+                any_country_culture = {
+                    #NOT = { is_culture = scope:chosen_culture.culture }
+                    THIS.culture.culture_group = scope:chosen_culture.culture.culture_group
+                }
             }
-            save_scope_as = assimilating_culture
+            every_country_culture = {
+                limit = {
+                    #NOT = { is_culture = scope:chosen_culture.culture }
+                    THIS.culture.culture_group = scope:chosen_culture.culture.culture_group
+                }
+                add_country_culture_modifier = {
+                     name = cap_migration_angry_mod
+                     duration = 12
+                }
+                save_scope_as = assimilating_culture
+            }
         }
 
         random_owned_province = {
@@ -4664,7 +4682,7 @@ me_racial_events.24 = {
     option = {
         name = "me_racial_events_24.a"
         add_stability = 1
-        scope:assimilating_culture = {
+        scope:assimilating_culture.culture = {
             add_country_culture_modifier = {
                 name = "cap_migration_angry_mod"
                 duration = 1825

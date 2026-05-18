@@ -10,31 +10,25 @@
 	
 	potential_trigger = {
 		hidden:scope:target = {
-			NOT = { employer = { tag = REB } }
-			NOT = { employer = { tag = BAR } }
 			is_mercenary = no
-		}
-		hidden:scope:target = {
-			NOT = { employer = { tag = REB } }
-			NOT = { employer = { tag = BAR } }
-			is_mercenary = no
-		}
-	}
-	
-	allowed_trigger = {
-		scope:target = {
-			is_ruler = no
-			is_co_ruler = no
-			OR = {
-				NOT = { has_office = office_apothecary }
-				NOT = { has_office = office_republic_physician }
-				NOT = { has_office = office_physician }
+			is_alive = yes
+			employer = {
+				NOT = { tag = MER }
+				NOT = { tag = BAR }
+				NOT = { tag = REB }
+				NOT = { tag = PIR }
 			}
+			employer = scope:actor
 		}
 		scope:actor = {
 			is_ai = no
-			#loyalty >= 50
-			scope:target = {
+			any_character = {
+				OR = {
+					is_ruler = yes
+					has_office = office_physician
+					has_office = office_republic_physician
+					has_office = office_apothecary
+				}
 				OR = {
 					has_trait = mage_trait
 					has_trait = archmage_trait
@@ -54,11 +48,20 @@
 					has_trait = brain_damaged_trait
 					has_trait = goblin_trait
 				}
+				#save_scope_as = mage_caster
 			}
 		}
 	}
 	
+	allowed_trigger = {
+		#scope:mage_caster = {
+			#loyalty >= 50
+		#}
+	}
+	
 	effect = {
-		
+		scope:actor = {
+			trigger_event = { id = me_zorgo_magic_focus.15 }
+		}
 	}
 }
