@@ -1034,11 +1034,13 @@ me_zorgo_magic_focus.7 = { # Folk Magic
                 has_religion = kinone_pantheon
             }
         }
-        random_list = {
-            1 = { scope:target = { add_martial = 1 } }
-            1 = { scope:target = { add_charisma = 1 } }
-            1 = { scope:target = { add_finesse = 1 } }
-            1 = { scope:target = { add_zeal = 1 } }
+        scope:target = {
+            random_list = {
+                1 = { add_martial = 1 }
+                1 = { add_charisma = 1 }
+                1 = { add_finesse = 1 }
+                1 = { add_zeal = 1 }
+            }
         }
         custom_tooltip = folk_spell_tt
         custom_tooltip = three_year_spell_cooldown_tt
@@ -1063,11 +1065,13 @@ me_zorgo_magic_focus.7 = { # Folk Magic
                 has_religion = fallen_star_pantheon
             }
         }
-        random_list = {
-            1 = { scope:target = { add_martial = 1 } }
-            1 = { scope:target = { add_charisma = 1 } }
-            1 = { scope:target = { add_finesse = 1 } }
-            1 = { scope:target = { add_zeal = 1 } }
+        scope:target = {
+            random_list = {
+                1 = { add_martial = 1 }
+                1 = { add_charisma = 1 }
+                1 = { add_finesse = 1 }
+                1 = { add_zeal = 1 }
+            }
         }
         custom_tooltip = folk_spell_tt
         custom_tooltip = three_year_spell_cooldown_tt
@@ -1081,7 +1085,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
         }
         random_list = {
             1 = { add_military_experience = 8 }
-            1 = { scope:target = { add_innovation = 1 }
+            1 = { add_innovation = 1 }
             1 = { scope:target = { add_zeal = 1 } }
         }
         custom_tooltip = folk_spell_tt
@@ -1099,53 +1103,51 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
 }
 
-
 # CAST OFFENSIVE ----------------------------------------
 
-me_zorgo_magic_focus.8 = { # Main Menu
-    type = country_event
-
-    title = me_zorgo_magic_focus.8_title
-    desc = me_zorgo_magic_focus.8_desc
-    picture = ascetic
-    left_portrait = scope:target
-
-    option = {
-        name = "me_zorgo_magic_focus.8.a"
-        custom_tooltip = me_zorgo_magic_focus.1_tooltip
-        trigger_event = { id = me_zorgo_magic_focus.2 }
-    }
-
-    option = {
-        name = "me_zorgo_magic_focus.8.b"
-        custom_tooltip = me_zorgo_magic_focus.2_tooltip
-    }
-}
-
-# 9 Choose Magic School
-# 10 Omnic
-# 11 Aldic
-# 12 Amten
-# 13 Melodian
-# 14 Folk
-
-
-
-
-
-# CAST DOMESTIC ----------------------------------------
-
-me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
+me_zorgo_magic_focus.8 = { # Main Menu (Who is Casting?)
     type = country_event
 
     title = me_zorgo_magic_focus.15_title
     desc = me_zorgo_magic_focus.15_desc
     picture = ascetic
-    left_portrait = scope:target
+    left_portrait = current_ruler
+    right_portrait = scope:selected_mage
+
+    immediate = {
+        random_character = {
+            limit = {
+                OR = {
+                    has_office = office_physician
+                    has_office = office_republic_physician
+                    has_office = office_apothecary
+                }
+                OR = {
+                    has_trait = mage_trait
+                    has_trait = archmage_trait
+                    has_trait = warlock_trait
+                    has_trait = cleric_trait
+                    has_trait = necromancer_trait
+                    has_trait = lich_trait
+                    has_trait = druid_trait
+                    has_trait = elementalist_trait
+                    has_trait = diviner_trait
+                    has_trait = hierophant_trait
+                    has_trait = illusionist_trait
+                    has_trait = vampire_trait
+                    has_variable = folk_unlocked_var
+                }
+                NOR = {
+                    has_trait = brain_damaged_trait
+                    has_trait = goblin_trait
+                }
+            }
+            save_scope_as = selected_mage
+        }
+    }
 
     option = { # Ruler
         trigger = {
-            scope:target = { limit = { is_ruler = no } }
             current_ruler = {
                 OR = {
                     has_trait = mage_trait
@@ -1165,30 +1167,575 @@ me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
                 NOR = {
                     has_trait = brain_damaged_trait
                     has_trait = goblin_trait
-                } 
+                }
             }
         }
         name = "me_zorgo_magic_focus.15.a"
-        custom_tooltip = me_zorgo_magic_focus.1_tooltip
-        trigger_event = { id = me_zorgo_magic_focus.2 }
+        custom_tooltip = me_zorgo_magic_focus.15_tooltip.a
+        trigger_event = { id = me_zorgo_magic_focus.9 }
         hidden_effect = {
-            current_ruler = {
-                limit = { is_alive = yes }
+            random_character = {
+                limit = {
+                    is_ruler = yes
+                }
                 save_scope_as = selected_mage
             }
         }
     }
+    option = { # Mage
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_office = office_physician
+                    has_office = office_republic_physician
+                    has_office = office_apothecary
+                }
+                OR = {
+                    has_trait = mage_trait
+                    has_trait = archmage_trait
+                    has_trait = warlock_trait
+                    has_trait = cleric_trait
+                    has_trait = necromancer_trait
+                    has_trait = lich_trait
+                    has_trait = druid_trait
+                    has_trait = elementalist_trait
+                    has_trait = diviner_trait
+                    has_trait = hierophant_trait
+                    has_trait = illusionist_trait
+                    has_trait = vampire_trait
+                    has_variable = folk_unlocked_var
+                }
+                NOR = {
+                    has_trait = brain_damaged_trait
+                    has_trait = goblin_trait
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.15.b"
+        custom_tooltip = me_zorgo_magic_focus.15_tooltip.b
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+        hidden_effect = {
+            any_character = {
+                OR = {
+                    has_office = office_physician
+                    has_office = office_republic_physician
+                    has_office = office_apothecary
+                }
+                OR = {
+                    has_trait = mage_trait
+                    has_trait = archmage_trait
+                    has_trait = warlock_trait
+                    has_trait = cleric_trait
+                    has_trait = necromancer_trait
+                    has_trait = lich_trait
+                    has_trait = druid_trait
+                    has_trait = elementalist_trait
+                    has_trait = diviner_trait
+                    has_trait = hierophant_trait
+                    has_trait = illusionist_trait
+                    has_trait = vampire_trait
+                    has_variable = folk_unlocked_var
+                }
+                NOR = {
+                    has_trait = brain_damaged_trait
+                    has_trait = goblin_trait
+                }
+                save_scope_as = selected_mage
+            }
+        }
+    }
+    option = { # Cancel
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
 
+me_zorgo_magic_focus.9 = { # Choose Magic Type
+    type = country_event
+
+    title = me_zorgo_magic_focus.2_title
+    desc = me_zorgo_magic_focus.2_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    # Omnic School
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = diviner_t2_unlocked_var
+                    has_variable = hierophant_t2_unlocked_var
+                    has_variable = magonis_unlocked_var
+                    has_variable = taanka_unlocked_var
+                    has_variable = dragonscale_unlocked_var
+                    has_variable = helluvian_holy_unlocked_var
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.a"
+        trigger_event = { id = me_zorgo_magic_focus.10 }
+    }
+
+    # Aldic School
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = cleric_t2_unlocked_var
+                    has_variable = illusionist_t2_unlocked_var
+                    has_variable = charm_unlocked_var
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.b"
+        trigger_event = { id = me_zorgo_magic_focus.11 }
+     }
+
+    # Amten School
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = elementalist_t2_unlocked_var
+                    has_variable = druid_t2_unlocked_var
+                    has_variable = silver_dwarf_unlocked_var
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.c"
+        trigger_event = { id = me_zorgo_magic_focus.12 }
+    }
+
+    # Melodian School
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = necromancer_t2_unlocked_var
+                    has_variable = warlock_t2_unlocked_var
+                    has_variable = palpan_unlocked_var
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.d"
+        trigger_event = { id = me_zorgo_magic_focus.13 }
+    }
+
+    # Folk Magic
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = folk_unlocked_var
+                    has_trait = vampire_trait
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.e"
+        custom_tooltip = me_zorgo_magic_focus.3.e_tt
+        trigger_event = { id = me_zorgo_magic_focus.14 }
+    }
+
+    # Cancel
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.10 = { # Omnic School
+    type = country_event
+
+    title = me_zorgo_magic_focus.3_title
+    desc = me_zorgo_magic_focus.3_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    option = { # Light Shields D1
+        trigger = {
+            scope:target = {
+                has_variable = diviner_t2_unlocked_var
+            }
+        }
+        scope:target = {
+            force_add_trait = omnic_diviner_spell_t1_trait
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.3.a"
+    }
+    
+    option = { # Revelation H3
+        trigger = {
+            scope:target = {
+                has_variable = hierophant_t4_unlocked_var
+            }
+        }
+        random_list = {
+            1 = { add_innovation = 1 }
+            1 = { add_innovation = 2 }
+            1 = { add_innovation = 3 }
+        }
+        custom_tooltip = tier_three_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.3.c"
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.11 = { # Aldic School
+    type = country_event
+
+    title = me_zorgo_magic_focus.4_title
+    desc = me_zorgo_magic_focus.4_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    option = { # Restoration C1
+        trigger = {
+            scope:target = {
+                OR = {
+                    has_variable = cleric_t2_unlocked_var
+                }
+            }
+        }
+        scope:target = {
+            force_add_trait = aldic_cleric_spell_t1_trait
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.4.a"
+    }
+
+    option = { # Altered Inspiration Illusionist I1
+        trigger = {
+            scope:target = {
+                OR = {
+                    has_variable = illusionist_t2_unlocked_var
+                }
+            }
+        }
+        scope:target = {
+            force_add_trait = aldic_illusionist_spell_t1_trait
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.4.b"
+    }
+
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.12 = { # Amten School
+    type = country_event
+
+    title = me_zorgo_magic_focus.5_title
+    desc = me_zorgo_magic_focus.5_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    immediate = {
+        hidden_effect = {
+            random_owned_province = {
+                limit = { has_food_trade_good_trigger = yes }
+                save_scope_as = food_target
+            }
+            random_owned_province = {
+                limit = { has_minable_trade_good_trigger = yes }
+                save_scope_as = mineral_target
+            }
+        }
+    }
+
+    option = { # Detect Minerals E1
+        trigger = {
+            scope:target = {
+                has_variable = elementalist_t2_unlocked_var
+            }
+        }
+        add_treasury = {
+            value = 0
+            add = six_months_income_root
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.5.a"
+    }
+
+    option = { # Plant Growth D1
+        trigger = {
+            scope:target = {
+                OR = {
+                    has_variable = druid_t2_unlocked_var
+                }
+            }
+            exists = scope:food_target
+        }
+        scope:food_target = {
+            add_province_modifier = {
+                name = amten_druid_spell_t1_mod
+                duration = 90
+            }
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.5.d"
+    }
+
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.13 = { # Melodian School
+    type = country_event
+
+    title = me_zorgo_magic_focus.6_title
+    desc = me_zorgo_magic_focus.6_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                char_can_be_friend_trigger = yes
+                age > 16
+            }
+            weight = {
+                base = 1
+                modifier = {
+                    factor = 5
+                    has_trait = infection
+                }
+                modifier = {
+                    factor = 2
+                    has_same_culture_group_as = ROOT
+                }
+                modifier = {
+                    factor = 0.05
+                    char_is_ill_trigger = yes
+                }
+                title_importance_modifier = yes
+            }
+            save_scope_as = poor_victim
+        }
+    }
+
+    option = { # Summon Warborn N1
+        trigger = {
+            scope:target = {
+                has_variable = necromancer_t2_unlocked_var
+            }
+        }
+        create_unit = {
+            navy = no
+            name = "Undead Auxiliaries"
+            location = capital_scope
+            hidden_effect = {
+                while = {
+                    count = 8
+                    add_subunit = light_infantry
+                }
+                add_food = 300
+                add_morale = 5
+            }
+        }
+        scope:target.employer = {
+            create_character = {
+                first_name = "Larry"
+                age = 25
+                culture = warborn
+                religion = blood_tainted_pantheon
+                female = no
+            }
+            save_scope_as = skelebro
+        }
+        hidden_effect = {
+            scope:skelebro = {
+                add_martial=14
+                force_add_trait="tactician"
+                force_add_trait="aggressive"
+            }
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.6.a"
+    }
+    option = { # Rage W1
+        trigger = {
+            scope:target = {
+                has_variable = warlock_t2_unlocked_var
+            }
+        }
+        scope:target = {
+            force_add_trait = melodian_warlock_spell_t1_trait
+        }
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.6.c"
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.14 = { # Folk Magic
+    type = country_event
+
+    title = me_zorgo_magic_focus.7_title
+    desc = me_zorgo_magic_focus.7_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    
+    option = { # Ancestral Rumination Ascendic
+        trigger = {
+            scope:target = {
+                has_religion = transcendence_enlighten
+            }
+        }
+        random_list = {
+            1 = { add_military_experience = 8 }
+            1 = { add_innovation = 1 }
+            1 = { scope:target = { add_zeal = 1 } }
+        }
+        custom_tooltip = folk_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.7.s"
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+# CAST DOMESTIC ----------------------------------------
+
+me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
+    type = country_event
+
+    title = me_zorgo_magic_focus.15_title
+    desc = me_zorgo_magic_focus.15_desc
+    picture = ascetic
+    left_portrait = current_ruler
+    right_portrait = scope:selected_mage
+
+    immediate = {
+        random_character = {
+            limit = {
+                OR = {
+                    has_office = office_physician
+                    has_office = office_republic_physician
+                    has_office = office_apothecary
+                }
+                OR = {
+                    has_trait = mage_trait
+                    has_trait = archmage_trait
+                    has_trait = warlock_trait
+                    has_trait = cleric_trait
+                    has_trait = necromancer_trait
+                    has_trait = lich_trait
+                    has_trait = druid_trait
+                    has_trait = elementalist_trait
+                    has_trait = diviner_trait
+                    has_trait = hierophant_trait
+                    has_trait = illusionist_trait
+                    has_trait = vampire_trait
+                    has_variable = folk_unlocked_var
+                }
+                NOR = {
+                    has_trait = brain_damaged_trait
+                    has_trait = goblin_trait
+                }
+            }
+            save_scope_as = selected_mage
+        }
+    }
+
+    option = { # Ruler
+        trigger = {
+            scope:target = { is_ruler = no  }
+            current_ruler = {
+                OR = {
+                    has_trait = mage_trait
+                    has_trait = archmage_trait
+                    has_trait = warlock_trait
+                    has_trait = cleric_trait
+                    has_trait = necromancer_trait
+                    has_trait = lich_trait
+                    has_trait = druid_trait
+                    has_trait = elementalist_trait
+                    has_trait = diviner_trait
+                    has_trait = hierophant_trait
+                    has_trait = illusionist_trait
+                    has_trait = vampire_trait
+                    has_variable = folk_unlocked_var
+                }
+                NOR = {
+                    has_trait = brain_damaged_trait
+                    has_trait = goblin_trait
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.15.a"
+        custom_tooltip = me_zorgo_magic_focus.15_tooltip.a
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+        hidden_effect = {
+            random_character = {
+                limit = {
+                    is_ruler = yes
+                }
+                save_scope_as = selected_mage
+            }
+        }
+    }
     option = { # Mage
         trigger = {
             scope:target = {
-                limit = { 
-                    NOR = {
-                        has_office = office_physician
-                        has_office = office_republic_physician
-                        has_office = office_apothecary
-                    }
-                } 
+                NOR = {
+                    has_office = office_physician
+                    has_office = office_republic_physician
+                    has_office = office_apothecary
+                }
             }
             any_character = {
                 OR = {
@@ -1218,7 +1765,8 @@ me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
             }
         }
         name = "me_zorgo_magic_focus.15.b"
-        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+        custom_tooltip = me_zorgo_magic_focus.15_tooltip.b
+        trigger_event = { id = me_zorgo_magic_focus.16 }
         hidden_effect = {
             any_character = {
                 OR = {
@@ -1248,6 +1796,408 @@ me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
                 save_scope_as = selected_mage
             }
         }
+    }
+    option = { # Cancel
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.16 = { # Choose Magic Type
+    type = country_event
+
+    title = me_zorgo_magic_focus.2_title
+    desc = me_zorgo_magic_focus.2_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    # Omnic School
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = diviner_t2_unlocked_var
+                    has_variable = hierophant_t2_unlocked_var
+                    has_variable = magonis_unlocked_var
+                    has_variable = taanka_unlocked_var
+                    has_variable = dragonscale_unlocked_var
+                    has_variable = helluvian_holy_unlocked_var
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.a"
+        trigger_event = { id = me_zorgo_magic_focus.17 }
+    }
+
+    # Aldic School
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = cleric_t2_unlocked_var
+                    has_variable = illusionist_t2_unlocked_var
+                    has_variable = charm_unlocked_var
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.b"
+        trigger_event = { id = me_zorgo_magic_focus.18 }
+     }
+
+    # Amten School
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = elementalist_t2_unlocked_var
+                    has_variable = druid_t2_unlocked_var
+                    has_variable = silver_dwarf_unlocked_var
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.c"
+        trigger_event = { id = me_zorgo_magic_focus.19 }
+    }
+
+    # Melodian School
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = necromancer_t2_unlocked_var
+                    has_variable = warlock_t2_unlocked_var
+                    has_variable = palpan_unlocked_var
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.d"
+        trigger_event = { id = me_zorgo_magic_focus.20 }
+    }
+
+    # Folk Magic
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                OR = {
+                    has_variable = folk_unlocked_var
+                    has_trait = vampire_trait
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.2.e"
+        custom_tooltip = me_zorgo_magic_focus.3.e_tt
+        trigger_event = { id = me_zorgo_magic_focus.21 }
+    }
+
+    # Cancel
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.17 = { # Omnic School
+    type = country_event
+
+    title = me_zorgo_magic_focus.3_title
+    desc = me_zorgo_magic_focus.3_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    option = { # Light Shields D1
+        trigger = {
+            scope:target = {
+                has_variable = diviner_t2_unlocked_var
+            }
+        }
+        scope:target = {
+            force_add_trait = omnic_diviner_spell_t1_trait
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.3.a"
+    }
+    
+    option = { # Revelation H3
+        trigger = {
+            scope:target = {
+                has_variable = hierophant_t4_unlocked_var
+            }
+        }
+        random_list = {
+            1 = { add_innovation = 1 }
+            1 = { add_innovation = 2 }
+            1 = { add_innovation = 3 }
+        }
+        custom_tooltip = tier_three_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.3.c"
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.18 = { # Aldic School
+    type = country_event
+
+    title = me_zorgo_magic_focus.4_title
+    desc = me_zorgo_magic_focus.4_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    option = { # Restoration C1
+        trigger = {
+            scope:target = {
+                OR = {
+                    has_variable = cleric_t2_unlocked_var
+                }
+            }
+        }
+        scope:target = {
+            force_add_trait = aldic_cleric_spell_t1_trait
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.4.a"
+    }
+
+    option = { # Altered Inspiration Illusionist I1
+        trigger = {
+            scope:target = {
+                OR = {
+                    has_variable = illusionist_t2_unlocked_var
+                }
+            }
+        }
+        scope:target = {
+            force_add_trait = aldic_illusionist_spell_t1_trait
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.4.b"
+    }
+
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.19 = { # Amten School
+    type = country_event
+
+    title = me_zorgo_magic_focus.5_title
+    desc = me_zorgo_magic_focus.5_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    immediate = {
+        hidden_effect = {
+            random_owned_province = {
+                limit = { has_food_trade_good_trigger = yes }
+                save_scope_as = food_target
+            }
+            random_owned_province = {
+                limit = { has_minable_trade_good_trigger = yes }
+                save_scope_as = mineral_target
+            }
+        }
+    }
+
+    option = { # Detect Minerals E1
+        trigger = {
+            scope:target = {
+                has_variable = elementalist_t2_unlocked_var
+            }
+        }
+        add_treasury = {
+            value = 0
+            add = six_months_income_root
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.5.a"
+    }
+
+    option = { # Plant Growth D1
+        trigger = {
+            scope:target = {
+                OR = {
+                    has_variable = druid_t2_unlocked_var
+                }
+            }
+            exists = scope:food_target
+        }
+        scope:food_target = {
+            add_province_modifier = {
+                name = amten_druid_spell_t1_mod
+                duration = 90
+            }
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.5.d"
+    }
+
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.20 = { # Melodian School
+    type = country_event
+
+    title = me_zorgo_magic_focus.6_title
+    desc = me_zorgo_magic_focus.6_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_valid_for_country_events_trigger = yes
+                char_can_be_friend_trigger = yes
+                age > 16
+            }
+            weight = {
+                base = 1
+                modifier = {
+                    factor = 5
+                    has_trait = infection
+                }
+                modifier = {
+                    factor = 2
+                    has_same_culture_group_as = ROOT
+                }
+                modifier = {
+                    factor = 0.05
+                    char_is_ill_trigger = yes
+                }
+                title_importance_modifier = yes
+            }
+            save_scope_as = poor_victim
+        }
+    }
+
+    option = { # Summon Warborn N1
+        trigger = {
+            scope:target = {
+                has_variable = necromancer_t2_unlocked_var
+            }
+        }
+        create_unit = {
+            navy = no
+            name = "Undead Auxiliaries"
+            location = capital_scope
+            hidden_effect = {
+                while = {
+                    count = 8
+                    add_subunit = light_infantry
+                }
+                add_food = 300
+                add_morale = 5
+            }
+        }
+        scope:target.employer = {
+            create_character = {
+                first_name = "Larry"
+                age = 25
+                culture = warborn
+                religion = blood_tainted_pantheon
+                female = no
+            }
+            save_scope_as = skelebro
+        }
+        hidden_effect = {
+            scope:skelebro = {
+                add_martial=14
+                force_add_trait="tactician"
+                force_add_trait="aggressive"
+            }
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.6.a"
+    }
+    option = { # Rage W1
+        trigger = {
+            scope:target = {
+                has_variable = warlock_t2_unlocked_var
+            }
+        }
+        scope:target = {
+            force_add_trait = melodian_warlock_spell_t1_trait
+        }
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.6.c"
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.21 = { # Folk Magic
+    type = country_event
+
+    title = me_zorgo_magic_focus.7_title
+    desc = me_zorgo_magic_focus.7_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    
+    option = { # Ancestral Rumination Ascendic
+        trigger = {
+            scope:target = {
+                has_religion = transcendence_enlighten
+            }
+        }
+        random_list = {
+            1 = { add_military_experience = 8 }
+            1 = { add_innovation = 1 }
+            1 = { scope:target = { add_zeal = 1 } }
+        }
+        custom_tooltip = folk_spell_tt
+        custom_tooltip = three_year_spell_cooldown_tt
+        name = "me_zorgo_magic_focus.7.s"
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.1"
+        custom_tooltip = me_zorgo_magic_focus.2.z.tt
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
     }
 }
 
