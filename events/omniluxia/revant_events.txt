@@ -100,6 +100,11 @@ revant.1 = {
 					add_trait = vengeful
 					add_trait = ambitious
 					add_trait = aggressive
+					add_trait = archmage_trait
+					add_trait = melodian_pact_trait
+					set_variable = warlock_t2_unlocked_var
+					set_variable = warlock_t3_unlocked_var
+					set_variable = warlock_t4_unlocked_var
 					add_character_modifier = {
 						name = revant_modifier
 						duration = -1
@@ -261,6 +266,7 @@ revant.1 = {
 				id = revant.8
 				days = { 465 500 } # Blood Angel Girl
 			}
+			set_variable = is_the_revant_country
 		}
 		every_country = {
 			limit = {
@@ -392,7 +398,7 @@ revant.2 = {
     }
 }
 
-revant.3 = {
+revant.3 = { # Revant Arrives WORLD
     type = country_event
     title = revant.3.t
     desc = revant.3.desc
@@ -406,9 +412,12 @@ revant.3 = {
     }
     option = {
     	name = revant.3.b
-    	if = {
-            limit = { is_ai = no }
-            set_player_country = scope:revant_tag
+    	custom_tooltip = revant_tooltip.3
+    	hidden_effect = {
+	    	if = {
+	            limit = { is_ai = no }
+	            set_player_country = scope:revant_tag
+	        }
         }
     }
 }
@@ -495,61 +504,84 @@ revant.5 = {
 }
 
 revant.6 = { # Siege Destruction
-	type = country_event
-    title = revant.3.t
-    desc = revant.3.desc
-    picture = revant_arrived
+	type = character_event
+	title = "warfare.1.t"
+	desc = "warfare.1.desc"
+	
+	picture = city_siege
 	
 	trigger = {
-		OR = {
-			country_culture_group = dissolved 
-			country_culture_group = dissolved_revant
-		}
-		is_ai = yes
-		NOT = { tag = BAR }
+		NOT = { employer = { tag = BAR } }
 		scope:target = {
 			OR = {
 				ROOT = {
 					is_mercenary = yes
 				}
-				NOT = { owner = root }
+				NOT = { owner = root.employer }
+			}
+			OR = {
+				has_city_status = yes
+				is_capital = yes
 			}
 		}
 	}
 	
 	immediate = {
+		save_scope_as = siege_instigator
+		save_scope_as = actor
+		add_popularity = popularity_small
+		if = {
+			limit = {
+				NOT = {
+					has_variable = sieginator
+				}
+			}
+			set_variable = {
+				name = sieginator
+				value = 1
+			}
+		}
+		else = {
+			change_variable = {
+				name = sieginator
+				add = 1
+			}
+		}
+		set_local_variable = {
+			name = sieged_city
+			value = scope:target
+		}
 		scope:target = {
-			add_city_smoke_effect = yes
-            add_city_fire_effect = yes
-            ordered_pops_in_province = {
-                order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 2
-                }
-                min = {
-                    value = 0
-                }
-                kill_pop = yes
-            }
+			save_scope_as = temp_city_scope_warfare_1
+			set_variable = {
+				name = sacking_cooldown
+				days = 1825 # 5 years
+			}
+			owner = {
+				current_ruler = {
+					save_scope_as = enemy_ruler
+				}
+			}
 		}
 	}
-	option = {      
-        name = revant.3.a
-    }
+	
+	option = {
+		name = "warfare.1.a" #Be nice to them
+	}
 }
 
 revant.7 = { # Durobaeste is Taken, Revant Invasion Begins
     type = country_event
-    title = revant.3.t
-    desc = revant.3.desc
-    picture = revant_arrived
+    title = revant.7.t
+    desc = revant.7.desc
+    picture = revolt
     left_portrait = scope:revant_scope
     right_portrait = current_ruler
 
 
     option = {      
-        name = revant.3.a
+        name = revant.7.a
+        add_stability = -5
     }
 }
 
@@ -573,7 +605,7 @@ revant.8 = { # Rise of the Blood Angel Girl
 			no_traits = yes
 			add_trait = ambitious
 			add_trait = loving
-	        add_trait = blood_angel_trait
+	        add_trait = blood_angel_curse_trait
 	        add_trait = brave
 	        add_trait = zealous
 	        add_trait = tactician
@@ -599,6 +631,7 @@ revant.8 = { # Rise of the Blood Angel Girl
                 change_country_name = "The Bloodsworn"
                 change_country_color = "holy_bhaxian"
                 change_government = monastic_order
+                set_country_heritage = bloodsworn_heritage
                 change_country_adjective = "Helluvian"
                 change_country_flag = IP3_FLAG
                 save_scope_as = restorer_army
@@ -611,7 +644,7 @@ revant.8 = { # Rise of the Blood Angel Girl
 			remove_character_modifier = foreign_citizen
 		}
 		scope:restorer_army = {
-			add_treasury = 300
+			add_treasury = 500
 			add_manpower = 20
 			set_as_ruler = scope:blood_angel_girl
 			if = {
@@ -627,129 +660,167 @@ revant.8 = { # Rise of the Blood Angel Girl
 				war_goal = imperial_conquest_wargoal
 				target = scope:revant_tag
 			}
-		}
-		p:3262 = { # capital fort
-			state = { set_state_capital = p:3262 }
-			create_unit = {
-				location = prev
-				while = {
-					count = 15
-					add_subunit = light_infantry
+			p:3262 = { # capital fort
+				state = { set_state_capital = p:3262 }
+				create_unit = {
+					location = prev
+					while = {
+						count = 15
+						add_subunit = light_infantry
+					}
+					while = {
+						count = 5
+						add_subunit = heavy_infantry
+					}
+					while = {
+						count = 5
+						add_subunit = heavy_cavalry
+					}
 				}
-				while = {
-					count = 5
-					add_subunit = heavy_infantry
-				}
-				while = {
-					count = 5
-					add_subunit = heavy_cavalry
+				if = {
+					limit = { can_build_building = fortress_building }
+					add_building_level = fortress_building
 				}
 			}
-			if = {
-				limit = { can_build_building = fortress_building }
-				add_building_level = fortress_building
+			random_list = {
+				1 = { add_stability = 1}
+				1 = {
+					trigger_event = {
+						id = revant.12
+						days = { 730 1095 } # Blood Angel Girl Auto Ai Duel
+					}
+				}
 			}
+			trigger_event = revant.12
 		}
-    	trigger_event = revant.10
+    	every_country = {
+			limit = {
+				is_ai = no
+			}
+			trigger_event = revant.9
+		}
 	}
 }
 
-revant.10 = { # Rise of Blood Angel Girl WORLD
+revant.9 = { # Rise of Blood Angel Girl WORLD
     type = country_event
-    title = revant.3.t
-    desc = revant.3.desc
-    picture = revant_arrived
-    left_portrait = scope:revant_scope
+    title = revant.9.t
+    desc = revant.9.desc
+    picture = elephant_battle
+    left_portrait = scope:blood_angel_girl
     right_portrait = current_ruler
 
 
     option = {      
-        name = revant.3.a
+        name = revant.9.a
+        add_stability = 5
+    }
+    option = {      
+        name = revant.9.b
+        custom_tooltip = revant_tooltip.9
+        hidden_effect = {
+	        if = {
+	            limit = { is_ai = no }
+	            set_player_country = scope:restorer_army
+	        }
+        }
     }
 }
 
-
-revant.11 = { # BLood Angel Revant Duel at Durobaeste; Helluvian Conversion
+revant.10 = { # Blood Angel Revant Duel at Durobaeste; Helluvian Conversion
     type = country_event
-    hidden = yes
+    title = revant.10.t
+    desc = revant.10.desc
+    picture = great_work_celebration
+    left_portrait = current_ruler
+    right_portrait = scope:revant_scope
+
+    goto_location = p:2478
+
+    fire_only_once = yes
+
     trigger = {
-    	is_ai = yes
-    }
-    immediate = {
-    	random_owned_province = {
-    		limit = {
-    			root = {
-    				trigger_if = {
-    					limit = {
-    						tag = REV
-    					}
-    					any_owned_province = {
-    						NOT = { prev.region = root.capital_scope.region }
-    					}
-    				}
-    			}
-    		}
-    		root = {
-    			add_treasury = 1000
-    			create_unit = {
-    				location = prev
-    				while = {
-    					count = 15
-    					add_subunit = light_infantry
-    				}
-    				while = {
-    					count = 5
-    					add_subunit = heavy_infantry
-    				}
-    				while = {
-    					count = 5
-    					add_subunit = heavy_cavalry
-    				}
-    			}
-    		}
+    	current_ruler = {
+    		has_trait = blood_angel_curse_trait
     	}
+    	owns = 2478
+    }
+
+    immediate = {
+    	current_ruler = { save_scope_as = blood_angel_girl }
+    	every_country = {
+    		limit = { current_ruler = { has_character_modifier = revant_modifier } }
+    		current_ruler = { save_scope_as = revant_scope }
+    	}
+    }
+
+
+    option = {      
+        name = revant.10.a
+        add_stability = 15
+        scope:revant_scope = {
+        	death = {
+        		death_reason = death_padme
+        		killer = scope:blood_angel_girl
+        	}
+        }
+        scope:blood_angel_girl = {
+        	death = {
+        		death_reason = death_tribal_duel
+        		killer = scope:revant_scope
+        	}
+        }
+        hidden_effect = {
+        	while = {
+        		count = 20
+	        	random_owned_province = {
+		        	while = {
+			        	count = 12
+				        random_pops_in_province = {
+				            set_pop_religion = helluvian
+				        }
+			        }
+			    }
+		    }
+        }
+        every_country = {
+			limit = {
+				is_ai = no
+			}
+			trigger_event = revant.11
+		}
     }
 }
 
-revant.12 = { # Revant is Killed World Event
+revant.11 = { # Revant is Killed WORLD
+    type = country_event
+    title = revant.11.t
+    desc = revant.11.desc
+    picture = great_work_celebration
+    left_portrait = current_ruler
+    right_portrait = scope:revant_scope
+    right_portrait = scope:blood_angel_girl
+
+
+    option = {      
+        name = revant.11.a
+        add_stability = 10
+    }
+}
+
+revant.12 = { # Blood Angel Girl Auto Ai
     type = country_event
     hidden = yes
+
     trigger = {
+    	scope:revant_tag = { is_ai = yes }
     	is_ai = yes
     }
+
     immediate = {
-    	random_owned_province = {
-    		limit = {
-    			root = {
-    				trigger_if = {
-    					limit = {
-    						tag = REV
-    					}
-    					any_owned_province = {
-    						NOT = { prev.region = root.capital_scope.region }
-    					}
-    				}
-    			}
-    		}
-    		root = {
-    			add_treasury = 1000
-    			create_unit = {
-    				location = prev
-    				while = {
-    					count = 15
-    					add_subunit = light_infantry
-    				}
-    				while = {
-    					count = 5
-    					add_subunit = heavy_infantry
-    				}
-    				while = {
-    					count = 5
-    					add_subunit = heavy_cavalry
-    				}
-    			}
-    		}
-    	}
-    }
+    	p:2409 = {
+	    	set_owned_by = scope:restorer_army
+	    }
+	}
 }
 
