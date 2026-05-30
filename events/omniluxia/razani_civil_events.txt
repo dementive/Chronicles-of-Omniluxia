@@ -27,7 +27,7 @@ razani_civil_war.1 = { # Razani Gets Sick and Names Heir
 
     title = razani_civil_war_1_title
     desc = razani_civil_war_1_desc
-    picture = city_country
+    picture = senator_conversing
     left_portrait = current_ruler
     left_portrait = char:136
     right_portrait = char:137
@@ -49,18 +49,18 @@ razani_civil_war.1 = { # Razani Gets Sick and Names Heir
         C:EGM = {
             trigger_event = {
                 id = razani_civil_war.2
-                days = { 120 180 }
+                days = 120
             }
         }
         C:IC8 = {
             trigger_event = {
                 id = razani_civil_war.2
-                days = { 120 180 }
+                days = 120
             }
         }
         trigger_event = {
             id = razani_civil_war.2
-            days = { 120 180 }
+            days = 120
         }
     }
 }
@@ -100,11 +100,23 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
                     add_treasury = 200
                 }
                 c:IC8 = {
-                    declare_war_with_wargoal = {
-                        war_goal = imperial_contest
-                        target = c:EGA
-                    }
                     add_treasury = 200
+                }
+            }
+            else_if = {
+                limit = { tag = EGM }
+                every_current_war = {
+                    limit = {
+                        any_war_attacker = { THIS = ROOT }
+                        is_war_leader = ROOT
+                    }
+                    c:IC8 = {
+                        add_to_war = {
+                            target = PREV
+                            attacker = yes
+                            leader = no
+                        }
+                    }
                 }
             }
         }
@@ -120,6 +132,11 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
         add_stability = -12
         add_legitimacy = -50
         add_manpower = -35
+        remove_country_modifier = { razani_council_good_mod }
+        add_country_modifier = {
+            name = razani_council_bad_mod
+            duration = -1   
+        }
         hidden_effect = {
         	c:WGA = {
 			    trigger_event = {
@@ -583,7 +600,7 @@ razani_civil_war.8 = { # EGA Ytalian Revolt
 
     title = razani_civil_war_8_title
     desc = razani_civil_war_8_desc
-    picture = city_country
+    picture = catafalc_damaged
     left_portrait = current_ruler
     left_portrait = char:94
     right_portrait = char:140
@@ -751,6 +768,9 @@ razani_civil_war.9 = { # EGA Slave Revolt Around Gevanni
                     id = razani_civil_war.18
                     days = { 90 180 }
                 }
+            }
+            1 = {
+                add_stability = 5
             }
         }
     }
@@ -1741,7 +1761,7 @@ razani_civil_war.15 = { # EGA Great Theman Revolt : Gunstris
 
     title = razani_civil_war_15_title
     desc = razani_civil_war_15_desc
-    picture = elephant_battle
+    picture = greek_city
     left_portrait = current_ruler
     right_portrait = char:177
 
@@ -1782,6 +1802,9 @@ razani_civil_war.15 = { # EGA Great Theman Revolt : Gunstris
                         days = { 90 180 }
                     }
                 }
+                1 = {
+                    add_stability = 5
+                }
             }
         }
     }
@@ -1808,7 +1831,7 @@ razani_civil_war.16 = { # EGA Great Theman Revolt : SHWI
 
     title = razani_civil_war_16_title
     desc = razani_civil_war_16_desc
-    picture = elephant_battle
+    picture = great_work_celebration
     left_portrait = current_ruler
     right_portrait = char:178
 
@@ -1826,6 +1849,16 @@ razani_civil_war.16 = { # EGA Great Theman Revolt : SHWI
                 force_add_trait = epileptic
                 force_add_trait = lunatic
             }
+            any_country = {
+                limit = { primary_culture = shwi }
+                save_scope_as = shwi_revolt
+            }
+            scope:shwi_revolt = { 
+                trigger_event = {
+                    id = razani_civil_war.19
+                    days = 2
+                }
+            }
         }
     }
 
@@ -1838,25 +1871,28 @@ razani_civil_war.16 = { # EGA Great Theman Revolt : SHWI
 
         hidden_effect = {
             random_list = {
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.15
-                    days = { 90 180 }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.15
+                        days = { 90 180 }
+                    }
+                }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.17
+                        days = { 90 180 }
+                    }
+                }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.18
+                        days = { 90 180 }
+                    }
+                }
+                1 = {
+                    add_stability = 5
                 }
             }
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.17
-                    days = { 90 180 }
-                }
-            }
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.18
-                    days = { 90 180 }
-                }
-            }
-        }
         }
     }
     option = {
@@ -1882,9 +1918,10 @@ razani_civil_war.17 = { # EGA Great Theman Revolt : ENENTE
 
     title = razani_civil_war_17_title
     desc = razani_civil_war_17_desc
-    picture = elephant_battle
+    picture = event_royal_court
     left_portrait = current_ruler
-    right_portrait = char:176
+    left_portrait = char:176
+    right_portrait = scope:nalia_revolt.current_ruler
 
     fire_only_once = yes
 
@@ -1893,6 +1930,11 @@ razani_civil_war.17 = { # EGA Great Theman Revolt : ENENTE
             theme_setup_effect_2 = yes
             add_stability = -3
             add_legitimacy = -5
+        }
+        char:176 = {
+            death = {
+                death_reason = death_execution
+            }
         }
     }
 
@@ -1905,25 +1947,28 @@ razani_civil_war.17 = { # EGA Great Theman Revolt : ENENTE
 
         hidden_effect = {
             random_list = {
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.16
-                    days = { 90 180 }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.16
+                        days = { 90 180 }
+                    }
+                }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.15
+                        days = { 90 180 }
+                    }
+                }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.18
+                        days = { 90 180 }
+                    }
+                }
+                1 = {
+                    add_stability = 5
                 }
             }
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.15
-                    days = { 90 180 }
-                }
-            }
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.18
-                    days = { 90 180 }
-                }
-            }
-        }
         }
     }
     option = {
@@ -1949,9 +1994,9 @@ razani_civil_war.18 = { # EGA Great Theman Revolt : LOWER YTALIA
 
     title = razani_civil_war_18_title
     desc = razani_civil_war_18_desc
-    picture = elephant_battle
+    picture = celtic_chiefs
     left_portrait = current_ruler
-    right_portrait = char:177
+    right_portrait = char:175
 
     fire_only_once = yes
 
@@ -1972,25 +2017,28 @@ razani_civil_war.18 = { # EGA Great Theman Revolt : LOWER YTALIA
 
         hidden_effect = {
             random_list = {
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.16
-                    days = { 90 180 }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.16
+                        days = { 90 180 }
+                    }
+                }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.17
+                        days = { 90 180 }
+                    }
+                }
+                1 = { 
+                    trigger_event = {
+                        id = razani_civil_war.15
+                        days = { 90 180 }
+                    }
+                }
+                1 = {
+                    add_stability = 5
                 }
             }
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.17
-                    days = { 90 180 }
-                }
-            }
-            1 = { 
-                trigger_event = {
-                    id = razani_civil_war.15
-                    days = { 90 180 }
-                }
-            }
-        }
         }
     }
     option = {
@@ -2006,6 +2054,22 @@ razani_civil_war.18 = { # EGA Great Theman Revolt : LOWER YTALIA
             if = {
                 limit = { is_ai = no }
                 set_player_country = scope:lower_ytalia_revolt
+            }
+        }
+    }
+}
+
+razani_civil_war.19 = { # DEIFY LISAN AL-GAIB
+    type = country_event
+    hidden = yes
+
+    fire_only_once = yes
+
+    immediate = {
+        char:178 = {
+            deify_character = {
+                deity = deity:omen_first_emperor
+                country = ROOT
             }
         }
     }
