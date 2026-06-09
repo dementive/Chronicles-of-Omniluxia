@@ -2071,7 +2071,6 @@ me_racial_events.10 = {
                         id = me_racial_events.24
                         days = { 30 180 }
                     }
-                
                 }
             }
         }
@@ -4245,7 +4244,6 @@ me_racial_events.21 = {
                         id = me_racial_events.24
                         days = { 30 180 }
                     }
-                
                 }
             }
         }
@@ -4271,24 +4269,27 @@ me_racial_events.21 = {
             random_list = {
                 1 = {
                     trigger_event = {
-                        id = me_racial_events.25
+                        id = me_racial_events.21
                         days = { 30 180 }
                     }
-                
                 }
                 1 = {
                     trigger_event = {
-                        id = me_racial_events.26
+                        id = me_racial_events.22
                         days = { 30 180 }
                     }
-                
                 }
                 1 = {
                     trigger_event = {
-                        id = me_racial_events.27
+                        id = me_racial_events.23
                         days = { 30 180 }
                     }
-                
+                }
+                1 = {
+                    trigger_event = {
+                        id = me_racial_events.24
+                        days = { 30 180 }
+                    }
                 }
             }
         }
@@ -4363,7 +4364,6 @@ me_racial_events.22 = {
                         id = me_racial_events.24
                         days = { 30 180 }
                     }
-                
                 }
             }
         }
@@ -4403,7 +4403,6 @@ me_racial_events.22 = {
                         id = me_racial_events.24
                         days = { 30 180 }
                     }
-                
                 }
             }
         }
@@ -4590,7 +4589,6 @@ me_racial_events.23 = {
                         id = me_racial_events.24
                         days = { 30 180 }
                     }
-                
                 }
             }
         }
@@ -4611,24 +4609,27 @@ me_racial_events.23 = {
             random_list = {
                 1 = {
                     trigger_event = {
-                        id = me_racial_events.25
+                        id = me_racial_events.21
                         days = { 30 180 }
                     }
-                
                 }
                 1 = {
                     trigger_event = {
-                        id = me_racial_events.26
+                        id = me_racial_events.22
                         days = { 30 180 }
                     }
-                
                 }
                 1 = {
                     trigger_event = {
-                        id = me_racial_events.27
+                        id = me_racial_events.23
                         days = { 30 180 }
                     }
-                
+                }
+                1 = {
+                    trigger_event = {
+                        id = me_racial_events.24
+                        days = { 30 180 }
+                    }
                 }
             }
         }
@@ -5334,7 +5335,7 @@ me_racial_events.27 = {
 
 # SPECIAL INTEGRATION EVENTS
 
-# Half Human - > Human
+# Halfling - > Human
 me_racial_events.28 = {
     type = country_event
 
@@ -5343,23 +5344,42 @@ me_racial_events.28 = {
     picture = diadochi_coronation
     left_portrait = current_ruler
 
+    trigger = {
+        has_country_modifier = racial_focus_mod
+    }
+
     immediate = {
         choose_culture_integrate_effect = yes
 
-        every_country_culture = {
+        if = {
             limit = {
-                this.culture.culture_group = culture_group:scope:chosen_culture
-                this.culture.culture_group = culture_group:werhenssian
+                exists = scope:chosen_culture
+                any_country_culture = {
+                    #NOT = { is_culture = scope:chosen_culture.culture }
+                    THIS.culture.culture_group = scope:chosen_culture.culture.culture_group
+                }
             }
-            save_scope_as = assimilating_culture
+            every_country_culture = {
+                limit = {
+                    #NOT = { is_culture = scope:chosen_culture.culture }
+                    THIS.culture.culture_group = scope:chosen_culture.culture.culture_group
+                }
+                add_country_culture_modifier = {
+                     name = cap_migration_angry_mod
+                     duration = 12
+                }
+                save_scope_as = assimilating_culture
+            }
         }
 
         random_owned_province = {
-            any_pops_in_province = {
-                pop_culture = scope:assimilating_culture.culture
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:assimilating_culture.culture
+                }
             }
             while = {
-                count = 3
+                count = 2
                 limit = {
                     any_pops_in_province = {
                         pop_culture = scope:assimilating_culture.culture
@@ -5376,13 +5396,40 @@ me_racial_events.28 = {
         }
     }
 
-    # Hire Minority
+    # Accept
     option = {
         name = "me_racial_events_24.a"
+        add_stability = 1
+        scope:assimilating_culture.culture = {
+            add_country_culture_modifier = {
+                name = "cap_migration_angry_mod"
+                duration = 1825
+            }
+        }
     }
-    # Give him a minor post in his home
+    # Push to Encourage
     option = {
         name = "me_racial_events_24.b"
+        add_treasury = {
+            value = 0
+            subtract = six_months_income_root
+        }
+        scope:conversion_city = {
+            while = {
+                count = 1
+                limit = {
+                    any_pops_in_province = {
+                        pop_culture = scope:assimilating_culture.culture
+                    }
+                }
+                random_pops_in_province = {
+                    limit = {
+                        pop_culture = scope:assimilating_culture.culture
+                    }
+                    set_pop_culture = scope:chosen_culture.culture
+                }
+            }
+        }
     }
 }
 
