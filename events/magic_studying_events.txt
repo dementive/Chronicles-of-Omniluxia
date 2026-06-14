@@ -49,7 +49,17 @@ me_magic_studying.2 = {
         name = "me_magic_studying.2.a"
         add_political_influence = -8
         scope:target = {
-            add_trait = infection
+            if = {
+                limit = { NOT = has_trait = stressed }
+                add_trait = stressed
+            }
+            else_if = {
+                limit = { NOT = has_trait = infection }
+                add_trait = infection
+            }
+            else = {
+                health = -0.025
+            }
         }
         custom_tooltip = me_magic_studying_bad_tooltip
 
@@ -74,12 +84,22 @@ me_magic_studying.3 = {
 
     option = {
         name = "me_magic_studying.3.a"
-        add_treasury = {
-            value = 0
-            subtract = two_years_income_svalue
-        }
+
         scope:target = {
-            add_trait = impatient
+            if = {
+                limit = { NOT = has_trait = impatient }
+                add_trait = impatient
+                add_treasury = {
+                    value = 0
+                    subtract = has_yearly_income_svalue
+                }
+            }
+            else = {
+                add_treasury = {
+                    value = 0
+                    subtract = six_months_income_root
+                }
+            }
         }
         custom_tooltip = me_magic_studying_good_tooltip
 
@@ -91,7 +111,13 @@ me_magic_studying.3 = {
     option = {
         name = "me_magic_studying.3.b"
         scope:target = {
-            add_trait = cautious
+            if = {
+                limit = { NOT = has_trait = cautious }
+                add_trait = cautious
+            }
+            else = {
+                add_political_influence = 5
+            }
         }
         custom_tooltip = me_magic_studying_bad_tooltip
 
@@ -171,7 +197,7 @@ me_magic_studying.5 = {
         }
         add_treasury = {
             value = 0
-            subtract = three_years_income_svalue
+            subtract = two_years_income_svalue
         }
         custom_tooltip = me_magic_studying_bad_tooltip
 
@@ -265,11 +291,11 @@ me_magic_studying.7 = {
         }
         add_country_modifier = {
             name = magic_murder_coverup_mod
-            duration = 182
+            duration = 90
         }
         add_treasury = {
             value = 0
-            subtract = two_years_income_svalue
+            subtract = has_yearly_income_svalue
         }
         custom_tooltip = me_magic_studying_bad_tooltip
         
@@ -322,7 +348,7 @@ me_magic_studying.9 = {
         check_mage_effect = yes
         add_treasury = {
             value = 0
-            subtract = three_years_income_svalue
+            subtract = has_yearly_income_svalue
         }
     }
 
@@ -330,12 +356,12 @@ me_magic_studying.9 = {
         name = "me_magic_studying.9.a"
         add_treasury = {
             value = 0
-            add = three_years_income_svalue
+            add = has_yearly_income_svalue
         }
         add_stability = -2
         add_country_modifier = {
             name = magic_bankrupt_recovery_mod
-            duration = 182
+            duration = 90
         }
         custom_tooltip = me_magic_studying_good_tooltip
 
@@ -348,9 +374,17 @@ me_magic_studying.9 = {
         name = "me_magic_studying.9.b"
         add_treasury = {
             value = 0
-            add = two_years_income_svalue
+            add = has_yearly_income_svalue
         }
         add_political_influence = -35
+        custom_tooltip = me_magic_studying_bad_tooltip
+        hidden_effect = {
+            magic_studying_t1_effect = yes
+        }
+    }
+
+    option = {
+        name = "me_magic_studying.9.c"
         custom_tooltip = me_magic_studying_bad_tooltip
         hidden_effect = {
             magic_studying_t1_effect = yes
@@ -375,7 +409,7 @@ me_magic_studying.10 = {
         name = "me_magic_studying.10.a"
         add_country_modifier = {
             name = magic_ruler_neglect_mod
-            duration = 182
+            duration = 90
         }
         custom_tooltip = me_magic_studying_bad_tooltip
 
@@ -626,8 +660,18 @@ me_magic_studying.17 = {
         name = "me_magic_studying.17.a"
         add_stability = -3
         scope:unfortunate_madman = {
-            force_add_trait = epileptic
-            force_add_trait = lunatic
+            if = {
+                limit = { NOT = { has_trait = epileptic } }
+                force_add_trait = epileptic
+            }
+            else_if = {
+                limit = { NOT = { has_trait = lunatic } }
+                force_add_trait = lunatic
+            }
+            else = {
+                death = { death_reason = death_magic }
+            }
+            add_loyalty = magic_victim_loyalty
         }
         custom_tooltip = me_magic_studying_bad_tooltip
 
@@ -711,7 +755,17 @@ me_magic_studying.19 = {
             duration = 90
         }
         scope:target = {
-            force_add_trait = stressed
+            if = {
+                limit = { NOT = has_trait = stressed }
+                add_trait = stressed
+            }
+            else_if = {
+                limit = { NOT = has_trait = infection }
+                add_trait = infection
+            }
+            else = {
+                health = -0.025
+            }
         }
         custom_tooltip = me_magic_studying_bad_tooltip
 
@@ -735,7 +789,7 @@ me_magic_studying.20 = {
     immediate = {
         check_mage_effect = yes
         scope:target = {
-            add_gold = -100
+            add_gold = -50
         }
         random_character = {
             limit = {
@@ -776,10 +830,10 @@ me_magic_studying.20 = {
             duration = 182
         }
         scope:target = {
-            add_gold = 100
+            add_gold = 50
         }
         scope:political_friend = {
-            add_gold = -100
+            add_gold = -50
         }
 
         custom_tooltip = me_magic_studying_good_tooltip
@@ -790,10 +844,10 @@ me_magic_studying.20 = {
 
     option = {
         name = "me_magic_studying.20.b"
-        add_treasury = -100
+        add_treasury = -50
         add_political_influence = -8
         scope:target = {
-            add_gold = 100
+            add_gold = 50
         }
         custom_tooltip = me_magic_studying_bad_tooltip
         
@@ -845,7 +899,14 @@ me_magic_studying.22 = {
     option = {
         name = "me_magic_studying.22.a"
         scope:target = {
-            force_add_trait = blind
+            if = {
+                limit = { NOT = has_trait = blind }
+                add_trait = blind
+            }
+            else = {
+                death = { death_reason = death_magic }
+            }
+            add_loyalty = magic_victim_loyalty
         }
         add_stability = -3
         custom_tooltip = me_magic_studying_bad_tooltip
@@ -898,7 +959,7 @@ me_magic_studying.23 = {
         scope:target = {
             add_martial = 1
             force_add_trait = lunatic
-            add_popularity = -12
+            add_popularity = -20
         }
         add_stability = -8
         custom_tooltip = me_magic_studying_bad_tooltip
@@ -988,7 +1049,13 @@ me_magic_studying.25 = {
     option = {
         name = "me_magic_studying.25.a"
         scope:easy_pickings = {
-            force_add_trait = weak_willed
+            if = {
+                limit = { NOT = has_trait = weak_willed } }
+                force_add_trait = weak_willed
+            }
+            else = {
+                add_loyalty = charm_magic_loyalty
+            }
             add_gold = -120
         }
         add_treasury = 120
@@ -1017,13 +1084,23 @@ me_magic_studying.26 = {
     option = {
         name = "me_magic_studying.26.b"
         scope:target = {
-            random_list = {
-                1 = { force_add_trait = resourceful }
-                1 = { force_add_trait = generous }
-                1 = { force_add_trait = crafty }
+            if = {
+                limit = { NOT = has_trait = resourceful } }
+                force_add_trait = resourceful
+            }
+            else_if = {
+                limit = { NOT = has_trait = crafty } }
+                force_add_trait = crafty
+            }
+            else_if = {
+                limit = { NOT = has_trait = generous } }
+                force_add_trait = generous
+            }
+            else = {
+                add_1_free_province_investments = yes
             }
         }
-        add_stability = -3
+        add_stability = 3
         add_innovation = 1
         hidden_effect = {
             magic_studying_graduation_effect = yes

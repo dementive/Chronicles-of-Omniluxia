@@ -5449,18 +5449,115 @@ me_racial_events.35 = {
     }
 
     immediate = {
-       
+        choose_race_integrate_effect = yes
+
+        random_owned_province = { # Uprising
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                is_capital = no
+            }
+            random_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                kill_pop = yes
+            }
+            random_pops_in_province = {
+                limit = {
+                    pop_culture = root.culture
+                }
+                kill_pop = yes
+            }
+            save_scope_as = former_slave_uprising
+        }
+
+        random_owned_province = { # Settler Homeland
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = root.culture
+                }
+            }
+            max = {
+                value = 1
+            }
+            save_scope_as = settler_home
+        }
+
+        add_stability = -7
+        add_manpower = -3
     }
 
     # Enslave (Set Pop to Slave)
     option = {
         name = "me_racial_events_35.a"
-        
+
+        add_political_power = -8
+
+        scope:former_slave_uprising = {
+            random_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                min = {
+                    value = 0
+                }
+                set_pop_type = slaves
+            }
+        }
+        scope:settler_home = {
+            while = {
+                count = 2
+                random_pops_in_province = {
+                    limit = {
+                        pop_culture = root.culture
+                    }
+                    order_by = pop_hapiness
+                    move_pop = scope:former_slave_uprising
+                }
+            }
+        }
+
+        random_country_culture = {
+            limit = {
+                this.culture = scope:chosen_culture.culture
+            }
+            set_country_culture_right = slaves
+        }
+
+        add_stability = 5
     }
     # Kill
     option = {
         name = "me_racial_events_35.b"
-        
+
+        add_treasury = {
+            value = 0
+            subtract = six_months_income_root
+        }
+
+        scope:former_slave_uprising = {
+            random_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                min = {
+                    value = 0
+                }
+                kill_pop = yes
+            }
+        }
     }
     option = {
         name = "me_racial_events_21.c"
@@ -5517,18 +5614,130 @@ me_racial_events.37 = {
     }
 
     immediate = {
-       
+       choose_race_integrate_effect = yes
+
+        random_owned_province = { # Goblin Settlement
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                is_capital = no
+            }
+            random_pops_in_province = {
+                limit = {
+                    pop_culture = root.culture
+                }
+                kill_pop = yes
+            }
+            save_scope_as = goblin_settlement
+        }
+
+        random_owned_province = { # Settler Homeland
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = root.culture
+                }
+            }
+            max = {
+                value = 1
+            }
+            save_scope_as = settler_home
+        }
+
+        random_owned_province = { # Exile Target
+            limit = {
+                is_capital = no
+                AND = {
+                    any_neighbor_province = {
+                        owner = ROOT
+                    }
+                    any_neighbor_province = {
+                        exists = owner
+                        NOT = {
+                            owner = ROOT
+                        }
+                    }
+                }
+            }
+            random_neighbor_province = {
+                limit = {
+                    exists = owner
+                    NOT = {
+                        owner = ROOT
+                    }
+                }
+                save_scope_as = resettle_target
+            }
+        }
+
+        add_stability = -2
+        add_treasury = {
+            value = 0
+            subtract = root.has_monthly_income
+        }
     }
 
-    # Evict Them
+    # Recruit Adventurers to Settle / Import Knights
     option = {
         name = "me_racial_events_37.a"
-        
+        add_treasury = {
+            value = 0
+            subtract = six_months_income_root
+        }
+
+        scope:goblin_settlement = {
+            while = {
+                random_pops_in_province = {
+                    limit = {
+                        pop_culture = scope:chosen_culture.culture
+                    }
+                    order_by = pop_hapiness
+                    max = {
+                        value = total_population
+                        divide = 3
+                    }
+                    min = {
+                        value = 0
+                    }
+                    move_pop = scope:resettle_target
+                }
+            }
+        }
+
+        scope:settler_home = {
+            while = {
+                count = 2
+                random_pops_in_province = {
+                    limit = {
+                        pop_culture = root.culture
+                    }
+                    order_by = pop_hapiness
+                    move_pop = scope:goblin_settlement
+                }
+            }
+        }
     }
     # Slay the Monsters
     option = {
         name = "me_racial_events_37.b"
-        
+        add_manpower = -3
+
+        scope:goblin_settlement = {
+            random_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                min = {
+                    value = 0
+                }
+                kill_pop = yes
+            }
+        }
     }
     option = {
         name = "me_racial_events_21.c"
