@@ -1411,6 +1411,7 @@ me_zorgo_magic_focus.8 = { # Main Menu (Who is Casting?)
                 NOR = {
                     has_trait = brain_damaged
                     has_trait = goblin_trait
+                    has_variable = on_orc_adventure
                 }
             }
             save_scope_as = selected_mage
@@ -1438,6 +1439,7 @@ me_zorgo_magic_focus.8 = { # Main Menu (Who is Casting?)
                 NOR = {
                     has_trait = brain_damaged
                     has_trait = goblin_trait
+                    has_variable = on_orc_adventure
                 }
             }
         }
@@ -1472,6 +1474,7 @@ me_zorgo_magic_focus.8 = { # Main Menu (Who is Casting?)
                 NOR = {
                     has_trait = brain_damaged
                     has_trait = goblin_trait
+                    has_variable = on_orc_adventure
                 }
             }
         }
@@ -2225,6 +2228,7 @@ me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
                 NOR = {
                     has_trait = brain_damaged
                     has_trait = goblin_trait
+                    has_variable = on_orc_adventure
                 }
             }
             save_scope_as = selected_mage
@@ -2253,6 +2257,7 @@ me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
                 NOR = {
                     has_trait = brain_damaged
                     has_trait = goblin_trait
+                    has_variable = on_orc_adventure
                 }
             }
         }
@@ -2294,6 +2299,7 @@ me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
                 NOR = {
                     has_trait = brain_damaged
                     has_trait = goblin_trait
+                    has_variable = on_orc_adventure
                 }
             }
         }
@@ -3027,22 +3033,84 @@ me_zorgo_magic_focus.26 = { # Mana Overuse Hurt -25
     desc = me_zorgo_magic_focus.26_desc
     picture = ascetic
 
+    trigger = {
+        any_character = {
+            char_has_magic = { value = -25 }
+            NOT = { has_trait = magical_sickness_trait }
+        }
+    }
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_has_magic = { value = -25 }
+                NOT = { has_trait = magical_sickness_trait }
+            }
+            save_scope_as = foolish_mage
+        }
+        trigger_event = {
+            id = me_zorgo_magic_focus.27
+            days = 365
+        }
+    }
+
     
-    option = { # AAAAIIIIEEEEE
+    option = {
         name = "me_zorgo_magic_focus.26.a"
+        scope:foolish_mage = {
+            force_add_trait = magical_sickness_trait
+        }
     }
 }
 
-me_zorgo_magic_focus.27 = { # Mana Overuse Death -50
+me_zorgo_magic_focus.27 = { # Remove Mana Sickness
     type = country_event
-
-    title = me_zorgo_magic_focus.27_title
-    desc = me_zorgo_magic_focus.27_desc
-    picture = ascetic
+    hidden = yes
 
     
+    immediate = {
+        scope:foolish_mage = {
+            remove_trait = magical_sickness_trait
+        }
+    }
+}
+
+me_zorgo_magic_focus.28 = { # Mana Overuse Death -50
+    type = country_event
+
+    title = me_zorgo_magic_focus.28_title
+    desc = me_zorgo_magic_focus.28_desc
+    picture = ascetic
+
+    trigger = {
+        any_character = {
+            OR = {
+                char_has_magic = { value = -50 }
+                AND = {
+                    char_has_magic = { value = -25 }
+                    has_trait = magical_sickness_trait
+                }
+            }
+        }
+    }
+
+    immediate = {
+        random_character = {
+            limit = {
+                char_has_magic = { value = -25 }
+                NOT = { has_trait = magical_sickness_trait }
+            }
+            save_scope_as = foolish_mage
+        }
+    }
+    
     option = { # AAAAIIIIEEEEE
-        name = "me_zorgo_magic_focus.26.a"
+        name = "me_zorgo_magic_focus.28.a"
+        scope:foolish_mage = {
+            death = {
+                death_reason = death_mana
+            }
+        }
     }
 }
 
