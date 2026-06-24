@@ -6,54 +6,23 @@ lorestart.1 = { # RAZANI
     title = lorestart.1.t
     desc = lorestart.1.desc
     picture = tyre_city
-    left_portrait = current_ruler
+    left_portrait = c:EGA.current_ruler
     left_portrait = char:48
     right_portrait = c:JRE.current_ruler
     right_portrait = c:EGY.current_ruler
 
     trigger = {
         tag = EGA
-    }
-
-    immediate = {
-        hidden_effect = {
-            c:EGM = {
-                razani_legion_setup_effect = yes
-            }
-            c:EGA = {
-                p:2647 = { set_as_governor = char:175 }
-                p:2963 = { set_as_governor = char:176 }
-                p:3249 = { set_as_governor = char:177 }
-                p:3806 = { set_as_governor = char:178 }
-                razani_legion_setup_effect_2 = yes
-            }
-            c:HF1 = {
-                razani_legion_setup_effect_3 = yes
-            }
-            c:EK1 = {
-                razani_legion_setup_effect_4 = yes
-            }
-            c:VF0 = {
-                razani_legion_setup_effect_5 = yes
-            }
-            c:VF6 = {
-                razani_legion_setup_effect_6 = yes
-            }
-            c:IC8 = {
-                razani_legion_setup_effect_7 = yes
-            }
-            c:HF2 = {
-                razani_legion_setup_effect_8 = yes
-            }
-            c:EK7 = {
-                razani_legion_setup_effect_9 = yes
-            }
-        }
+        tag = EGM
+        tag = IC8
     }
 
     fire_only_once = yes
 
-    option = {      
+    option = { # RAZANI
+        trigger = {
+            tag = EGA
+        }
         name = lorestart.1.a
         add_country_modifier = {
             name = razani_council_good_mod
@@ -67,10 +36,34 @@ lorestart.1 = { # RAZANI
             name = razani_slavery_mod
             duration = -1   
         }
-        p:2348 = { set_as_governor = char:175 }
-        p:2862 = { set_as_governor = char:176 }
-        p:3316 = { set_as_governor = char:177 }
-        p:3806 = { set_as_governor = char:178 }
+        hidden_effect = {
+            razani_legion_setup_effect_2 = yes
+            c:VF0 = {
+                razani_legion_setup_effect_5 = yes
+            }
+            p:2348 = { set_as_governor = char:175 }
+            p:2862 = { set_as_governor = char:176 }
+            p:3316 = { set_as_governor = char:177 }
+            p:3806 = { set_as_governor = char:178 }
+        }
+    }
+    option = { # UZANI
+        trigger = {
+            tag = EGM
+        }
+        name = lorestart.1.a
+        hidden_effect = {
+            razani_legion_setup_effect = yes
+        }
+    }
+    option = { # INTERMARENICA
+        trigger = {
+            tag = IC8
+        }
+        name = lorestart.1.a
+        hidden_effect = {
+            razani_legion_setup_effect_7 = yes
+        }
     }
 }
 
@@ -132,12 +125,12 @@ lorestart.3 = { # BAETEP
     }
 }
 
-lorestart.4 = { #SOVENTEIR
+lorestart.4 = { # SOVENTEIR
     type = country_event
     title = lorestart.4.t
     desc = lorestart.4.desc
     picture = Event_dothraki_attack_slave_city
-    left_portrait = current_ruler
+    left_portrait = char:16
     left_portrait = char:123
     right_portrait = c:WGA.current_ruler
     right_portrait = c:HOB.current_ruler
@@ -145,7 +138,16 @@ lorestart.4 = { #SOVENTEIR
     fire_only_once = yes
 
     trigger = {
-        tag = SOV
+        is_ai = no
+        OR = {
+            tag = SOV
+            tag = AUT
+            tag = DN1
+            tag = DN2
+            tag = DN3
+            tag = DN4
+            tag = SEL
+        }
     }
 
     immediate = {
@@ -216,6 +218,7 @@ lorestart.7 = { # Intermarenican
     picture = event_harbor_night
     left_portrait = c:IT8.current_ruler
     left_portrait = c:ITC.current_ruler
+    left_portrait = c:HF1.current_ruler
     right_portrait = c:PW3.current_ruler
     right_portrait = c:PW0.current_ruler
 
@@ -223,12 +226,46 @@ lorestart.7 = { # Intermarenican
     fire_only_once = yes
 
     trigger = {
-        is_ai = no
-        country_culture_group = intermarenican
+        OR = {
+            AND = {
+                is_ai = no
+                OR = {
+                    country_culture_group = intermarenican
+                    primary_culture = qelthean
+                    primary_culture = narfut
+                }
+            }
+            tag = HF1
+            tag = VF6
+        }
     }
 
-    option = {      
+    option = { 
+        trigger = {
+            NOR = {
+                tag = HF1
+                tag = VF6
+            }
+        }     
         name = lorestart.7.a
+    }
+    option = { # LIGHTNING LEGION
+        trigger = {
+            tag = HF1
+        }
+        name = lorestart.7.a
+        hidden_effect = {
+            razani_legion_setup_effect_3 = yes
+        }
+    }
+    option = { # FREE INTERMARENICA LEGION
+        trigger = {
+            tag = VF6
+        }
+        name = lorestart.7.a
+        hidden_effect = {
+            razani_legion_setup_effect_6 = yes
+        }
     }
 }
 
@@ -330,17 +367,47 @@ lorestart.11 = { # Post-Jarenam
     fire_only_once = yes
 
     trigger = {
-        is_ai = no
         OR = {
-            country_culture_group = esquelian
-            country_culture_group = etaredican
-            country_culture_group = phanician
-            tag = JRE
+            AND = {
+                is_ai = no
+                OR = {
+                    country_culture_group = esquelian
+                    country_culture_group = etaredican
+                    country_culture_group = phanician
+                    tag = JRE
+                }
+            }
+            tag = EK1
+            tag = EK7
         }
     }
 
-    option = {      
+    option = {
+        trigger = {
+            NOR = {
+                tag = EK1
+                tag = EK7
+            }
+        }
         name = lorestart.11.a
+    }
+    option = { # Helluvian Legion
+        trigger = {
+            tag = EK1
+        }
+        name = lorestart.11.a
+        hidden_effect = {
+            razani_legion_setup_effect_4 = yes
+        }
+    }
+    option = { # Zainuddian Legion
+        trigger = {
+            tag = EK7
+        }
+        name = lorestart.11.a
+        hidden_effect = {
+            razani_legion_setup_effect_9 = yes
+        }
     }
 }
 
@@ -978,21 +1045,41 @@ lorestart.30 = { # Upper Baetepians
     left_portrait = c:DUN.current_ruler
     left_portrait = c:AGE.current_ruler
     right_portrait = c:EGY.current_ruler
+    right_portrait = c:HF2.current_ruler
 
     fire_only_once = yes
 
     trigger = {
-        is_ai = no
         OR = {
-            tag = DUN
-            tag = AGE
-            tag = PTH
-            tag = AKH
+            AND = {
+                is_ai = no
+                OR = {
+                    tag = DUN
+                    tag = AGE
+                    tag = PTH
+                    tag = AKH
+                }
+            }
+            tag = HF2
         }
     }
 
-    option = {      
+    option = {
+        trigger = {
+            NOR = {
+                tag = HF2
+            }
+        }
         name = lorestart.30.a
+    }
+    option = { # Upper Baetep Legion
+        trigger = {
+            tag = HF2
+        }
+        name = lorestart.30.a
+        hidden_effect = {
+            razani_legion_setup_effect_8 = yes
+        }
     }
 }
 

@@ -172,13 +172,6 @@ me_dune.4 = {
                     target = p:3419.owner
                 }
             }
-            c:AGE = {
-                declare_war_with_wargoal = {
-                    war_goal = conquer_wargoal
-                    province = 3466
-                    target = p:3466.owner
-                }
-            }    
             # GLOBAL ANNOUNCEMENT
             every_country = {
                 limit = {
@@ -652,29 +645,218 @@ me_dune.18 = {
     }
 }
 
-# AI
-me_dune.999 = {
+me_dune.19 = {
     type = country_event
 
-    title = me_dune_ai_title
-    desc = me_dune_ai_desc
-    picture = army_desert
-    left_portrait = current_ruler
-    right_portrait = c:DUN.current_ruler
-    right_portrait = c:AGE.current_ruler
+    title = me_dune_19_title
+    desc = me_dune_19_desc
+    picture = greek_religious_rite
+    left_portrait = char:9
+    right_portrait = char:58
 
-    fire_only_once = yes
+    immediate = {
+        hidden_effect = {
+            current_ruler = {
+                set_can_marry = yes
+            }
+            c:AGE.current_ruler = {
+                set_can_marry = yes
+            }
+        }
+    }
+
+
+    option = {
+        name = "me_dune_19.a"
+        current_ruler = { marry_character = c:AGE.current_ruler }
+        make_subject = {
+            target = c:AGE
+            type = feudatory
+        } 
+        add_legitimacy = 10
+        add_stability = 5
+        show_as_tooltip = {
+            change_country_name = "Djehid Baetep"
+        }
+    }
+}
+
+me_dune.20 = {
+    type = country_event
+
+    title = me_dune_20_title
+    desc = me_dune_20_desc
+    picture = egypt2
+    left_portrait = char:9
+    left_portrait = char:58
+    right_portrait = scope:egypt_son
+
+
+    immediate = {
+        hidden_effect = {
+            create_character = {
+                first_name = "Anesr"
+                female = no
+                age = 0
+                no_traits = yes
+                add_trait = human_trait
+                add_trait = dune
+                add_trait = magically_attuned_trait
+                father = char:9
+                mother = char:58
+                save_scope_as = egypt_son 
+            }
+        }
+    }
+
+
+    option = {
+        name = "me_dune_20.a"
+        add_stability = 3
+
+        hidden_effect = {
+            c:HF2 = {
+                every_owned_province = {
+                    add_claim = root
+                }
+            }
+            c:AGE = {
+                set_as_ruler=scope:egypt_son
+            }
+        }
+    }
+}
+
+me_dune.21 = {
+    hidden = yes
 
     trigger = {
         is_ai = yes
+    }     
+
+    fire_only_once = yes
+
+    immediate = {
+        c:DUN = {
+            current_ruler = {
+                set_can_marry = yes
+            }
+            c:AGE.current_ruler = {
+                set_can_marry = yes
+            }
+            create_character = {
+                first_name = "Anesr"
+                female = no
+                age = 0
+                no_traits = yes
+                add_trait = human_trait
+                add_trait = dune
+                add_trait = magically_attuned_trait
+                father = char:9
+                mother = char:58
+                save_scope_as = egypt_son 
+            }
+            make_subject = {
+                target = c:AGE
+                type = feudatory
+            } 
+            c:HF2 = {
+                every_owned_province = {
+                    add_claim = root
+                }
+            }
+            c:AGE = {
+                set_as_ruler=scope:egypt_son
+            }
+            every_country = {
+                limit = {
+                    NOT = {
+                        tag = DUN
+                    }
+                }
+                trigger_event = me_dune.22
+            }
+            trigger_event = {
+                id = me_dune.2
+                days = { 365 535 }
+            }
+        }
     }
+}
+
+# WORLD ANNOUNCEMENT DJEHID MARRIAGE
+me_dune.22 = {
+    type = country_event
+
+    title = me_dune_22_title
+    desc = me_dune_22_desc
+    picture = egypt2
+    left_portrait = char:9
+    left_portrait = char:58
+    right_portrait = scope:egypt_son
+
+    fire_only_once = yes
 
     option = {
-        name = "me_dune_ai.a"
+        name = "me_dune_22.a"
+        custom_tooltip = me_dune_22_tooltip
+    }
+}
+
+me_dune.23 = {
+    type = country_event
+
+    title = me_dune_23_title
+    desc = me_dune_23_desc
+    picture = egypt9
+    left_portrait = current_ruler
+
+    fire_only_once = yes
+
+    option = {
+        name = "me_dune_23.a"
+        custom_tooltip = me_dune_23_tooltip
+        add_manpower = 5
+        show_as_tooltip = {
+            add_military_experience = 8
+        }
+        hidden_effect = {
+            create_unit = {
+                navy = no
+                name = "Freed Tosepian Archers"
+                location = capital_scope
+                hidden_effect = {
+                    add_subunit = archers
+                    add_subunit = archers
+                    add_subunit = archers
+                    add_subunit = archers
+                    add_subunit = archers  
+                    add_subunit = archers 
+                    add_subunit = supply_train                                        
+                    add_food = 150
+                    add_morale = 3
+                }
+            }
+        }
+    }
+}
+
+
+# AI
+me_dune.999 = {
+    hidden = yes
+
+    trigger = {
+        is_ai = yes
+    }     
+
+    fire_only_once = yes
+
+    immediate = {
         c:DUN = {
             trigger_event = {
                 id = me_dune.2
-                days = { 180 360 }
+                days = { 365 635 }
             }
         }
     }
