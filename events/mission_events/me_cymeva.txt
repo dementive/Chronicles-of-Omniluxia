@@ -77,7 +77,7 @@ me_cymeva.2 = {
     option = {
         name = "me_cymeva_2.a"
         custom_tooltip = me_cymeva_2_tooltip
-        hidden_effect = {
+        show_as_tooltip = {
             c:ACY = {
                 declare_war_with_wargoal = {
                     war_goal = conquer_wargoal
@@ -85,9 +85,49 @@ me_cymeva.2 = {
                     target = ATH
                 }
             }
+        }
+        hidden_effect = {
             # Atheusian Response
             c:ATH = {
-                trigger_event = { id = me_cymeva.3 }
+                trigger_event = { 
+                    id = me_cymeva.3
+                    days = 6
+                }
+            }
+            # Colony Call to Arms
+            hidden_effect = {
+                release_subject = c:HE3
+                release_subject = c:HE4
+                release_subject = c:HE5
+                release_subject = c:HE6
+                release_subject = c:HE7
+            } 
+            c:HE3 = {
+                trigger_event = { id = me_cymeva.4 }
+            }
+            c:HE4 = {
+                trigger_event = { 
+                    id = me_cymeva.4
+                    days = 2
+                }
+            }
+            c:HE5 = {
+                trigger_event = { 
+                    id = me_cymeva.4
+                    days = 3
+                }
+            }
+            c:HE6 = {
+                trigger_event = { 
+                    id = me_cymeva.4
+                    days = 4
+                }
+            }
+            c:HE7 = {
+                trigger_event = { 
+                    id = me_cymeva.4
+                    days = 5
+                }
             }
             # Horteonian Claims
             every_country = {
@@ -110,6 +150,7 @@ me_cymeva.2 = {
                             country_culture_group = horteonian
                             tag = ACY
                             tag = ATH
+                            tag = HE3
                             tag = HE4
                             tag = HE5
                             tag = HE6
@@ -141,19 +182,14 @@ me_cymeva.3 = {
     option = {
         name = "me_cymeva_3.a"
         custom_tooltip = me_cymeva_3_tooltip
+        add_stability = -5
         hidden_effect = {
-            # Colony Call to Arms
-            c:HE4 = {
-                trigger_event = { id = me_cymeva.4 }
-            }
-            c:HE5 = {
-                trigger_event = { id = me_cymeva.4 }
-            }
-            c:HE6 = {
-                trigger_event = { id = me_cymeva.4 }
-            }
-            c:HE7 = {
-                trigger_event = { id = me_cymeva.4 }
+            c:ACY = {
+                declare_war_with_wargoal = {
+                    war_goal = conquer_wargoal
+                    province = 142
+                    target = ATH
+                }
             }
         }
     }
@@ -170,16 +206,22 @@ me_cymeva.4 = {
     right_portrait = c:ACY.current_ruler
     right_portrait = c:ATH.current_ruler
 
-    fire_only_once = yes
-
     immediate = {
-        save_scope_as = horteonic_subject
+        ROOT = {
+            save_scope_as = horteonic_subject
+        }
     }
 
     option = {
         name = "me_cymeva_4.a"
         custom_tooltip = me_cymeva_4_tooltip.a
         hidden_effect = {
+            c:ACY = {
+                make_subject = {
+                    target = scope:horteonic_subject
+                    type = princedom_vassal
+                }
+            }
             scope:horteonic_subject = {
                 declare_war_with_wargoal = {
                     war_goal = independence_wargoal
@@ -188,6 +230,7 @@ me_cymeva.4 = {
                 }
             }
         }
+
         c:ACY = {
             trigger_event = { id = me_cymeva.5 }
         }
@@ -196,7 +239,32 @@ me_cymeva.4 = {
         name = "me_cymeva_4.b"
         custom_tooltip = me_cymeva_4_tooltip.b
         add_manpower = -1
-        add_treasury = -50
+        add_treasury = {
+            value = 0
+            subtract = six_months_income_root
+        }
+
+        hidden_effect = {
+            c:ACY = {
+                make_subject = {
+                    target = scope:horteonic_subject
+                    type = princedom_vassal
+                }
+                every_current_war = {
+                    limit = {
+                        any_war_attacker = { THIS = c:ACY }
+                        is_war_leader = c:ACY
+                    }
+                    scope:horteonic_subject = {
+                        add_to_war = {
+                            target = PREV
+                            attacker = yes
+                            leader = no
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -209,8 +277,6 @@ me_cymeva.5 = {
     picture = army_desert
     left_portrait = current_ruler
     right_portrait = scope:horteonic_subject.current_ruler
-
-    fire_only_once = yes
 
     option = {
         name = "me_cymeva_5.a"
