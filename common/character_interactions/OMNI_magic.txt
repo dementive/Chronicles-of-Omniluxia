@@ -72,3 +72,120 @@
 		}
 	}
 }
+
+omniluxia_magic_plant_growth_target = {
+	on_other_nation = no
+	on_own_nation = yes
+	close_ui = yes
+	message = no
+
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_corruption"
+
+	potential_trigger = {
+		hidden:scope:target = {
+			employer = scope:actor
+			is_alive = yes
+			is_adult = yes
+			has_variable = omni_pending_plant_growth_spell
+			has_variable = druid_t2_unlocked_var
+		}
+		scope:actor = {
+			is_ai = no
+		}
+	}
+
+	allowed_trigger = {
+		scope:target = {
+			has_variable = omni_pending_plant_growth_spell
+			has_variable = druid_t2_unlocked_var
+		}
+	}
+
+	province_target_trigger = {
+		has_owner = yes
+		owner = scope:actor
+		NOT = { is_sea = yes }
+		is_uninhabitable = no
+	}
+
+	effect = {
+		scope:target = {
+			remove_variable = omni_pending_plant_growth_spell
+			remove_25_mana_effect = yes
+		}
+		scope:recipient = {
+			add_province_modifier = {
+				name = amten_druid_spell_t1_mod
+				duration = 180
+			}
+		}
+	}
+}
+
+omniluxia_magic_summon_dryads_target = {
+	on_other_nation = no
+	on_own_nation = yes
+	close_ui = yes
+	message = no
+
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_corruption"
+
+	potential_trigger = {
+		hidden:scope:target = {
+			employer = scope:actor
+			is_alive = yes
+			is_adult = yes
+			has_variable = omni_pending_summon_dryads_spell
+			has_variable = druid_t2_unlocked_var
+		}
+		scope:actor = {
+			is_ai = no
+		}
+	}
+
+	allowed_trigger = {
+		scope:target = {
+			has_variable = omni_pending_summon_dryads_spell
+			has_variable = druid_t2_unlocked_var
+		}
+	}
+
+	province_target_trigger = {
+		has_owner = yes
+		OR = {
+			owner = scope:actor
+			controller = scope:actor
+		}
+		NOT = { is_sea = yes }
+		is_uninhabitable = no
+		OR = {
+			terrain = forest
+			terrain = jungle
+			terrain = eldritch_forest
+		}
+	}
+
+	effect = {
+		scope:target = {
+			remove_variable = omni_pending_summon_dryads_spell
+			remove_50_mana_effect = yes
+		}
+		create_unit = {
+			navy = no
+			name = "Dryad Auxiliaries"
+			location = scope:recipient
+			hidden_effect = {
+				while = {
+					count = 4
+					add_subunit = heavy_infantry
+				}
+				while = {
+					count = 4
+					add_subunit = light_infantry
+				}
+				add_food = 800
+				add_morale = 5
+			}
+		}
+	}
+}
