@@ -1,4 +1,4 @@
-﻿namespace = me_zorgo_magic_focus
+namespace = me_zorgo_magic_focus
 
 # CAST MAGIC -------------------------------------
 me_zorgo_magic_focus.1 = { # Main Menu
@@ -3304,7 +3304,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         custom_tooltip = 75_mana_tt
         name = "me_zorgo_magic_focus.29.f"
     }
-    option = { # Gale Step 4 - 100% movement speed
+    option = { # Gale Step 4 - 100% movement speed (archmage only)
+        trigger = {
+            scope:selected_mage = {
+                has_trait = archmage_trait
+            }
+        }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 100 }
         }
@@ -3402,3 +3407,213 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         custom_tooltip = me_zorgo_magic_focus.2_tooltip
     }
 }
+
+me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your army is besieging
+    type = country_event
+
+    title = me_zorgo_magic_focus.30_title
+    desc = me_zorgo_magic_focus.30_desc
+    picture = ascetic
+    left_portrait = scope:target
+
+    # scope:target = the commander of the player's besieging army (passed by the
+    # omni_siege_magic_button scripted gui). That commander IS the caster - they
+    # must be present leading the siege - so the mana is paid from their pool.
+    # The besieged settlement is that commander's army's unit_location.
+    immediate = {
+        scope:target = {
+            save_scope_as = selected_mage
+        }
+    }
+
+    option = { # Breaching Tremor - shatter the walls (fortification defence)
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 25 }
+        }
+        scope:target = {
+            random_character_unit = {
+                limit = {
+                    is_army = yes
+                    unit_location = { has_siege = yes }
+                }
+                unit_location = {
+                    if = {
+                        limit = { has_province_modifier = omni_siege_breach_spell_mod }
+                        remove_province_modifier = omni_siege_breach_spell_mod
+                    }
+                    add_province_modifier = {
+                        name = omni_siege_breach_spell_mod
+                        duration = 365
+                    }
+                }
+            }
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = omni_siege_breach_tt
+        custom_tooltip = 25_mana_tt
+        name = "me_zorgo_magic_focus.30.a"
+    }
+
+    option = { # Wasting Rot - starve and weaken the garrison
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 50 }
+        }
+        scope:target = {
+            random_character_unit = {
+                limit = {
+                    is_army = yes
+                    unit_location = { has_siege = yes }
+                }
+                unit_location = {
+                    if = {
+                        limit = { has_province_modifier = omni_siege_rot_spell_mod }
+                        remove_province_modifier = omni_siege_rot_spell_mod
+                    }
+                    add_province_modifier = {
+                        name = omni_siege_rot_spell_mod
+                        duration = 365
+                    }
+                }
+            }
+        }
+        custom_tooltip = tier_two_spell_tt
+        custom_tooltip = omni_siege_rot_tt
+        custom_tooltip = 50_mana_tt
+        name = "me_zorgo_magic_focus.30.b"
+    }
+
+    option = { # Storm of the Siege - bless the besieging army for the assault
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 75 }
+        }
+        scope:target = {
+            every_character_unit = {
+                limit = { is_army = yes }
+                if = {
+                    limit = { has_unit_modifier = omni_siege_assault_blessing_spell_mod }
+                    remove_unit_modifier = omni_siege_assault_blessing_spell_mod
+                }
+                add_unit_modifier = {
+                    name = omni_siege_assault_blessing_spell_mod
+                    duration = 365
+                }
+            }
+        }
+        custom_tooltip = tier_three_spell_tt
+        custom_tooltip = omni_siege_assault_blessing_tt
+        custom_tooltip = 75_mana_tt
+        name = "me_zorgo_magic_focus.30.c"
+    }
+
+    option = { # Cancel
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.31 = { # AI: a besieging mage-general auto-casts a siege spell
+    type = country_event
+    hidden = yes
+
+    # Fired monthly for every country from monthly_country_pulse. Lets AI
+    # mage-generals who are PERSONALLY leading a siege cast a siege spell on the
+    # settlement they are besieging - the AI equivalent of the player clicking
+    # the Cast A Spell button on the Siege window. Gated on mana (and on the
+    # breach not already being active) so the AI does not spam it every month.
+    trigger = {
+        is_ai = yes
+        any_character = {
+            is_general = yes
+            is_alive = yes
+            NOT = { has_variable = is_the_revant }
+            OR = {
+                has_trait = mage_trait
+                has_trait = archmage_trait
+                has_trait = warlock_trait
+                has_trait = cleric_trait
+                has_trait = necromancer_trait
+                has_trait = lich_trait
+                has_trait = druid_trait
+                has_trait = elementalist_trait
+                has_trait = diviner_trait
+                has_trait = hierophant_trait
+                has_trait = illusionist_trait
+                has_trait = vampire_trait
+                has_trait = blood_angel_curse_trait
+                has_variable = folk_unlocked_var
+            }
+            NOR = {
+                has_trait = brain_damaged
+                has_trait = goblin_trait
+                has_variable = on_orc_adventure
+            }
+            var:magic >= 25
+            any_character_unit = {
+                is_army = yes
+                unit_owner = { this = ROOT }
+                unit_location = {
+                    has_siege = yes
+                    NOT = { has_province_modifier = omni_siege_breach_spell_mod }
+                }
+            }
+        }
+    }
+
+    immediate = {
+        every_character = {
+            limit = {
+                is_general = yes
+                is_alive = yes
+                NOT = { has_variable = is_the_revant }
+                OR = {
+                    has_trait = mage_trait
+                    has_trait = archmage_trait
+                    has_trait = warlock_trait
+                    has_trait = cleric_trait
+                    has_trait = necromancer_trait
+                    has_trait = lich_trait
+                    has_trait = druid_trait
+                    has_trait = elementalist_trait
+                    has_trait = diviner_trait
+                    has_trait = hierophant_trait
+                    has_trait = illusionist_trait
+                    has_trait = vampire_trait
+                    has_trait = blood_angel_curse_trait
+                    has_variable = folk_unlocked_var
+                }
+                NOR = {
+                    has_trait = brain_damaged
+                    has_trait = goblin_trait
+                    has_variable = on_orc_adventure
+                }
+                var:magic >= 25
+                any_character_unit = {
+                    is_army = yes
+                    unit_owner = { this = ROOT }
+                    unit_location = {
+                        has_siege = yes
+                        NOT = { has_province_modifier = omni_siege_breach_spell_mod }
+                    }
+                }
+            }
+            # Cast Breaching Tremor on the settlement this general is besieging.
+            random_character_unit = {
+                limit = {
+                    is_army = yes
+                    unit_location = {
+                        has_siege = yes
+                        NOT = { has_province_modifier = omni_siege_breach_spell_mod }
+                    }
+                }
+                unit_location = {
+                    add_province_modifier = {
+                        name = omni_siege_breach_spell_mod
+                        duration = 365
+                    }
+                }
+            }
+            omni_spell_mana_cost_effect = { BASE = 25 }
+        }
+    }
+}
+

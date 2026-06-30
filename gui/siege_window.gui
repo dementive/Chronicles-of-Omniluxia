@@ -79,8 +79,8 @@ base_sub_window = {
 					}
 					container = {
 						visible = "[SiegeView.GetSiege.IsSiege]"
-						parentanchor = center
-						position = { 0 17 }
+						parentanchor = vcenter|right
+						position = { -120 17 }
 						#widget = {
 						#	size = { 100 36 }
 						#	position = { 0 28 }
@@ -240,11 +240,14 @@ base_sub_window = {
 							tooltip = "[SiegeView.GetSiege.GetLocation.GetFortLevelTooltip]"
 						}
 					}
+					# Siege actions - all three clickables grouped together on the left:
+					# Assault, Cast A Spell (mage commanders only), Assume Control.
+					# The spell button collapses out of the row when the commander cannot cast.
 					flowcontainer = {
-						visible = "[SiegeView.GetSiege.IsSiege]"				
-						position = { 0 26 }
-						parentanchor = center
-						spacing = 220
+						visible = "[SiegeView.GetSiege.IsSiege]"
+						position = { 112 26 }
+						parentanchor = vcenter|left
+						spacing = 12
 						icon_button_square = {
 							size = { 58 58 }
 							visible = "[SiegeView.GetSiege.IsSiege]"
@@ -254,7 +257,21 @@ base_sub_window = {
 							tooltip = "[SiegeView.GetAssaultTooltip]"
 							blockoverride "Icon" { texture = "gfx/interface/icons/shared_icons/assault.dds" }
 						}
-						
+						icon_button_square = {
+							name = "cast_siege_magic"
+							size = { 58 58 }
+							datacontext = "[GetScriptedGui('omni_siege_magic_button')]"
+							visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( SiegeView.GetSiege.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+							enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( SiegeView.GetSiege.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+							tooltip = "omni_siege_magic_unit_button_tooltip"
+							blockoverride "On_click"
+							{
+								onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( SiegeView.GetSiege.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+							}
+							blockoverride "Icon" {
+								texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+							}
+						}
 						icon_button_square = {
 							size = { 58 58 }
 							visible = "[SiegeView.GetSiege.IsSiege]"

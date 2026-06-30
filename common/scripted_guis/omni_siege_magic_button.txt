@@ -1,0 +1,75 @@
+omni_siege_magic_button = {
+	scope = character
+	saved_scopes = {
+		player
+	}
+
+	# Shown on the Siege window. The root scope is the besieging commander
+	# (SiegeView.GetSiege.GetCommander). The COMMANDER LEADING THE ARMY must
+	# personally be a living, capable mage - the caster has to be present at
+	# the siege. A mage sitting back home cannot reach out and level a fort.
+	is_shown = {
+		is_general = yes
+		is_alive = yes
+		NOT = { has_variable = is_the_revant }
+		# This commander must be able to cast magic themselves.
+		OR = {
+			has_trait = mage_trait
+			has_trait = archmage_trait
+			has_trait = warlock_trait
+			has_trait = cleric_trait
+			has_trait = necromancer_trait
+			has_trait = lich_trait
+			has_trait = druid_trait
+			has_trait = elementalist_trait
+			has_trait = diviner_trait
+			has_trait = hierophant_trait
+			has_trait = illusionist_trait
+			has_trait = vampire_trait
+			has_trait = blood_angel_curse_trait
+			has_variable = folk_unlocked_var
+		}
+		NOR = {
+			has_trait = brain_damaged
+			has_trait = goblin_trait
+			has_variable = on_orc_adventure
+		}
+		# ...and must be leading one of the player's own armies that is
+		# currently conducting a siege.
+		any_character_unit = {
+			is_army = yes
+			unit_owner = {
+				this = scope:player
+			}
+			unit_location = {
+				has_siege = yes
+			}
+		}
+		scope:player = {
+			is_ai = no
+		}
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	is_valid = {
+		any_character_unit = {
+			is_army = yes
+			unit_owner = {
+				this = scope:player
+			}
+			unit_location = {
+				has_siege = yes
+			}
+		}
+	}
+
+	effect = {
+		save_scope_as = target
+		scope:player = {
+			trigger_event = { id = me_zorgo_magic_focus.30 }
+		}
+	}
+}
