@@ -113,3 +113,36 @@ omni_dryad_cohort_count = {
 		add = 4
 	}
 }
+
+
+# How much BASE spell cost the caster can currently afford. This is var:magic
+# with the SAME terrain + rank scaling as omni_scaled_spell_cost_value applied
+# in reverse (divide instead of multiply), so that:
+#   omni_spell_affordable_budget >= BASE   <=>   magic >= scaled cost of BASE
+# Used by the omni_can_afford_spell trigger to gate spell options. Evaluated in
+# the CASTER (character) scope.
+omni_spell_affordable_budget = {
+	value = var:magic
+	if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_harsh_nature_terrain_trigger = yes }
+			}
+		}
+		divide = 1.5
+	}
+	else_if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_fertile_nature_terrain_trigger = yes }
+			}
+		}
+		divide = 0.85
+	}
+	if = {
+		limit = { has_trait = archmage_trait }
+		divide = 0.6
+	}
+}
