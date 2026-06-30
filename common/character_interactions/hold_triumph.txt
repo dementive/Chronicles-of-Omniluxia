@@ -1,0 +1,150 @@
+﻿hold_triumph = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	
+	needs_senate_approval = yes
+	
+	sound = "event:/SFX/UI/Character/Unique/sfx_ui_character_hold_triumph"
+	
+	potential_trigger = {
+		hidden:scope:target = {
+			is_alive = yes
+			employer = scope:actor
+			prisoner = no
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			is_mercenary = no
+			NOT = { has_character_modifier = foreign_citizen }
+		}
+	}
+	
+	allowed_trigger = {
+		hidden:scope:actor = {
+			can_pay_price = hold_triumph
+			trigger_if = {
+				limit = {
+					has_variable = triumph_recently_held
+				}
+				custom_tooltip = {
+					text = "TRIUMPH_RECENTLY_HELD"
+				
+					NOT = { has_variable = triumph_recently_held }
+				}
+			}
+		}
+		scope:target = {
+			is_adult = yes
+			custom_tooltip = {
+				text = GOVERNOR_OR_LEGION_COMMANDER_TT
+				OR = {
+					is_governor = yes
+					has_legion_trigger = yes
+				}
+			}
+			loyalty > 20
+			custom_tooltip = {
+				text = hold_triumph_allow_tt
+				days_since_last_victory < 720
+				has_variable = great_battle_won_flag
+			}
+		}
+	}
+	
+	effect = {
+		scope:actor = {
+			pay_price = hold_triumph
+			set_variable = {
+				name = triumph_recently_held
+				value = 1
+				months = 60
+			}
+		}
+		scope:target = {
+			remove_variable = great_battle_won_flag
+			if = {
+				limit = {
+					is_ruler = no
+					OR = {
+						is_governor = yes
+						has_legion_trigger = yes
+					}
+				}
+				#custom_tooltip = triumph_generalship_revoked
+				if = {
+					limit = { has_legion_trigger = yes }
+					if = {
+						limit = {
+							has_dlc = "Heirs of Alexander"
+							legion = {
+								NOT = { has_distinction = distinction_triumphalis }
+							}
+						}
+						legion = { save_scope_as = triumph_legion }
+						employer = {
+							trigger_event = {
+								id = distinction.17
+								days = 10
+							}
+						}
+					}
+					hidden_effect = {
+						legion = { remove_commander = scope:target }
+						remove_command = yes
+					}
+				}
+				if = {
+					limit = { is_governor = yes }
+					hidden_effect = {
+						remove_command = yes
+						remove_as_governor = yes
+					}
+				}	
+			}
+			hidden_effect = { # Update TT if changing this!
+				add_loyalty = triumph_l #10 years
+				add_popularity = popularity_huge
+			}
+			custom_tooltip = triumph_l_tt
+			if = {
+				limit = {
+					has_nickname = no
+				}
+				custom_tooltip = may_gain_nickname
+				hidden_effect = {
+					random_list = {
+						20 = { add_triumph_nickname_effect = yes }
+						80 = {}
+					}
+				}
+			}
+			if = {
+				limit = {
+					NOT = { has_trait = victorious }
+					NOT = { has_trait = conqueror }
+					number_of_status_traits < max_number_of_status_traits_svalue
+				}
+				custom_tooltip = victorious_conqueror_gain_tt
+				hidden_effect = {
+					random_list = {
+						50 = { add_trait = victorious }
+						50 = { add_trait = conqueror }
+					}
+				}
+			}
+			if = {
+				limit = {
+					is_minor_character = no
+				}
+				family = {
+					add_prestige = {
+						value = prestige
+						divide = 10
+						min = 25
+						max = 1000
+					}
+				}
+			}
+		}
+	}
+}	
