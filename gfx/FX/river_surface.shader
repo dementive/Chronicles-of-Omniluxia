@@ -27,7 +27,12 @@ PixelShader =
 				float4 Color = CalcRiverSurface( Input );
 				
 				Color.rgb = ApplyFogOfWar( Color.rgb, Input.WorldSpacePos, FogOfWarAlpha );
-				Color.rgb = ApplyDistanceFog( Color.rgb, Input.WorldSpacePos );
+
+				float vFogFactor = min(CalculateDistanceFogFactor( Input.WorldSpacePos ),0.6);
+				#if defined(nightLight)
+					vFogFactor *= 0.05;
+				#endif
+				Color.rgb = ApplyDistanceFog( Color.rgb, vFogFactor );
 				
 				Color.a *= 1.0f - FlatMapLerp;
 				return Color;

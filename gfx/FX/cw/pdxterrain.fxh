@@ -102,16 +102,6 @@ PixelShader =
 
 Code
 [[
-	// MOD(godherja)
-	float2 GH_WorldSpacePosXZToMapUV(float2 WorldSpacePosXZ)
-	{
-		float2 MapUV = WorldSpacePosXZ * WorldSpaceToDetail;
-		MapUV.y = 1.0f - MapUV.y;
-
-		return MapUV;
-	}
-	// END MOD
-
 	float GetLerpedHeight( float2 WorldSpacePosXZ, float2 LodDirection )
 	{
 		float h1 = GetHeight( WorldSpacePosXZ - LodDirection );
@@ -251,17 +241,7 @@ VertexShader
 		
 		float3 FixPositionForSkirt( float3 WorldSpacePosition, uint nVertexID )
 		{
-			// MOD(godherja)
-			//WorldSpacePosition.y += SkirtSize * ((nVertexID + 1) % 2);
-
-			// Vanilla terrain skirt is visible through see-through chasms, which ruins the effect.
-			// We can't completely remove it, otherwise subpixel "seams" between terrain node meshes appear.
-			// So instead we shorten the skirt. This constant can be used to control the trade-off between
-			// the visibility of terrain seams and the visibility of skirt inside chasms.
-			const float GH_SKIRT_SIZE_MULTIPLIER = 0.1f;
-
-			WorldSpacePosition.y += SkirtSize * GH_SKIRT_SIZE_MULTIPLIER * ((nVertexID + 1) % 2);
-			// END MOD
+			WorldSpacePosition.y += SkirtSize * ((nVertexID + 1) % 2);
 			return WorldSpacePosition;
 		}
 	]]

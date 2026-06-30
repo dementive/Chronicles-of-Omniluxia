@@ -6,5 +6,5 @@ tags={
 	"Total Conversions"
 }
 name="Omniluxia"
-supported_version="2.*"
-remote_file_id="3154169256"
+supported_version="2.0.*"
+path="mod/Omniluxia"
