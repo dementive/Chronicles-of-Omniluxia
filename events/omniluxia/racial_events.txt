@@ -1,4 +1,4 @@
-namespace = me_racial_events
+﻿namespace = me_racial_events
 
 # CHOOSE RACE
 # Cannot choose own race
@@ -4056,7 +4056,7 @@ me_racial_events.24 = {
                         pop_culture = scope:converting_culture.culture
                     }
                 }
-                random_pops_in_province = {
+			ordered_pops_in_province = {
                     limit = {
                         pop_culture = scope:converting_culture.culture
                     }
@@ -4180,6 +4180,354 @@ me_racial_events.25 = {
             }
         }
         scope:expel_hometown = {
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                check_range_bounds = no
+                move_pop = scope:expel_target
+            }
+        }
+
+        scope:chosen_culture = {
+            add_country_culture_modifier = {
+                name = "culture_expulsed" 
+                duration = 365
+            }
+        }
+    }
+
+    # Seize Wealth
+    option = {
+        name = "me_racial_events_25.a"
+        add_stability = -5
+        add_treasury = {
+            value = 0
+            add = two_years_income_svalue
+        }
+        hidden_effect = {
+            random_list = {
+                60 = {
+                    trigger_event = {
+                        id = me_racial_events.25
+                        days = { 30 180 }
+                    }
+                }
+                15 = {
+                    trigger_event = {
+                        id = me_racial_events.26
+                        days = { 30 180 }
+                    }
+                }
+                25 = {
+                    trigger_event = {
+                        id = me_racial_events.27
+                        days = { 30 180 }
+                    }
+                
+                }
+            }
+        }
+    }
+    # Allow them to Leave
+    option = {
+        name = "me_racial_events_25.b"
+        hidden_effect = {
+            random_list = {
+                60 = {
+                    trigger_event = {
+                        id = me_racial_events.25
+                        days = { 30 180 }
+                    }
+                }
+                15 = {
+                    trigger_event = {
+                        id = me_racial_events.26
+                        days = { 30 180 }
+                    }
+                }
+                25 = {
+                    trigger_event = {
+                        id = me_racial_events.27
+                        days = { 30 180 }
+                    }
+                
+                }
+            }
+        }
+    }
+    option = {
+        name = "me_racial_events_21.c"
+        custom_tooltip = end_focus_tooltip
+        race_end_focus_effect = yes
+    }
+}
+
+# Rise Up
+me_racial_events.26 = {
+    type = country_event
+
+    title = me_racial_events_26_title
+    desc = me_racial_events_26_desc
+    picture = diadochi_coronation
+    left_portrait = current_ruler
+
+    goto_location = scope:angry_minority_town
+
+    trigger = {
+        has_country_modifier = racial_focus_mod
+    }
+
+    immediate = {
+        choose_race_integrate_effect = yes
+
+        random_owned_province = {
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                is_capital = no
+            }
+            save_scope_as = angry_minority_town
+        }
+    }
+
+    # Try to Settle Diplomatically
+    option = {
+        name = "me_racial_events_26.a"
+        add_stability = 3
+        add_legitimacy = -8
+        scope:angry_minority_town = {
+            add_province_modifier = {
+                name = "autonomous_minority_community_mod" 
+                duration = 180
+            }
+        }
+        hidden_effect = {
+            random_list = {
+                60 = {
+                    trigger_event = {
+                        id = me_racial_events.25
+                        days = { 30 180 }
+                    }
+                }
+                15 = {
+                    trigger_event = {
+                        id = me_racial_events.26
+                        days = { 30 180 }
+                    }
+                }
+                25 = {
+                    trigger_event = {
+                        id = me_racial_events.27
+                        days = { 30 180 }
+                    }
+                
+                }
+            }
+        }
+    }
+    # Make an Example of Their Leaders 
+    option = {
+        name = "me_racial_events_26.b"
+        add_stability = -3
+        scope:angry_minority_town = { add_state_loyalty = -5 }
+        add_treasury = {
+            value = 0
+            subtract = six_months_income_root
+        }
+        scope:angry_minority_town = {
+            ordered_pops_in_province = {
+                limit = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                max = {
+                    value = total_population
+                    divide = 3
+                }
+                order_by = pop_hapiness
+                max = {
+                    value = total_population
+                    divide = 5
+                }
+                min = {
+                    value = 0
+                }
+                kill_pop = yes
+            }
+        }
+        hidden_effect = {
+            random_list = {
+                60 = {
+                    trigger_event = {
+                        id = me_racial_events.25
+                        days = { 30 180 }
+                    }
+                }
+                15 = {
+                    trigger_event = {
+                        id = me_racial_events.26
+                        days = { 30 180 }
+                    }
+                }
+                25 = {
+                    trigger_event = {
+                        id = me_racial_events.27
+                        days = { 30 180 }
+                    }
+                
+                }
+            }
+        }
+    }
+    # Raze the Province (could cause a revolt)
+    option = {
+        name = "me_racial_events_26.c"
+        random_list = {
+            40 = { # Revolt
+                custom_tooltip = revolt_tooltip.1
+                hidden_effect = {
+                    add_stability = -8
+                    scope:angry_minority_town = {
+                        create_country = {
+                            change_country_name = "Separatist Revolt"
+                            save_scope_as = minority_revolt
+                        }
+                    }
+                    scope:minority_revolt = {
+                        add_treasury = 500
+                        add_manpower = 20
+                        if = {
+                            limit = {
+                                NOR = {
+                                    has_law = work_for_the_best # legions capital
+                                    has_law = monarchy_recruitment_4 # legions enabled
+                                }
+                            }
+                            change_law = work_for_the_best # capital
+                        }
+                        create_unit = {
+                            navy = no
+                            name = "Mob"
+                            location = capital_scope
+                            hidden_effect = {
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry
+                                add_subunit = light_infantry                                        
+                                add_food = 150
+                                add_morale = 8
+                            }
+                        }
+                    }
+                    scope:angry_minority_town = { # capital fort
+                        state = { set_state_capital = scope:angry_minority_town }
+                        if = {
+                            limit = { can_build_building = fortress_building }
+                            add_building_level = fortress_building
+                        }
+                    }
+                    scope:minority_revolt = {
+                        declare_war_with_wargoal = {
+                            war_goal = independence_wargoal
+                            province = scope:angry_minority_town
+                            target = ROOT
+                        }
+                    }
+                }
+            }
+            60 = { # Surpressed
+                custom_tooltip = revolt_tooltip.2
+                hidden_effect = {
+                    add_stability = 3
+                    scope:angry_minority_town = {
+                        add_city_smoke_effect = yes
+                        add_city_fire_effect = yes
+                        add_province_modifier = {
+                            name = "revolt_surpressed_mod" 
+                            duration = 180
+                        }
+                        ordered_pops_in_province = {
+                            limit = {
+                                pop_culture = scope:chosen_culture.culture
+                            }
+                            order_by = pop_hapiness
+                            max = {
+                                value = total_population
+                                divide = 3
+                            }
+                            min = {
+                                value = 0
+                            }
+                            kill_pop = yes
+                        }
+                    }
+                }
+            }
+        }
+        hidden_effect = {
+            random_list = {
+                60 = {
+                    trigger_event = {
+                        id = me_racial_events.25
+                        days = { 30 180 }
+                    }
+                }
+                15 = {
+                    trigger_event = {
+                        id = me_racial_events.26
+                        days = { 30 180 }
+                    }
+                }
+                25 = {
+                    trigger_event = {
+                        id = me_racial_events.27
+                        days = { 30 180 }
+                    }
+                
+                }
+            }
+        }
+    }
+    option = {
+        name = "me_racial_events_21.c"
+        custom_tooltip = end_focus_tooltip
+        race_end_focus_effect = yes
+    }
+}
+
+# Settler Conflict
+me_racial_events.27 = {
+    type = country_event
+
+    title = me_racial_events_27_title
+    desc = me_racial_events_27_desc
+    picture = diadochi_coronation
+    left_portrait = current_ruler
+
+    goto_location = scope:settler_colony
+
+    trigger = {
+        has_country_modifier = racial_focus_mod
+    }
+
+    immediate = {
+        choose_race_integrate_effect = yes
+
+        random_owned_province = { # Settler Colony
+            limit = {
+                any_pops_in_province = {
+                    pop_culture = scope:chosen_culture.culture
+                }
+                is_capital = no
+            }
             ordered_pops_in_province = {
                 limit = {
                     pop_culture = scope:chosen_culture.culture

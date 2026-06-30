@@ -1,0 +1,148 @@
+# Dynamic mana costs for magic spells.
+# Evaluated in the CASTER (character) scope.
+# Cost scales with the terrain the caster's army occupies and the caster's rank:
+#   harsh terrain  x1.5 (+50%)   fertile terrain x0.85 (-15%)   normal x1.0
+#   archmage rank  x0.6 (-40%)
+
+# Generic scaled cost used by every spell. Reads the flat base cost from
+# var:omni_spell_base (set immediately before by omni_spell_mana_cost_effect)
+# and applies the same terrain + rank scaling as the bespoke spell costs.
+omni_scaled_spell_cost_value = {
+	value = var:omni_spell_base
+	if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_harsh_nature_terrain_trigger = yes }
+			}
+		}
+		multiply = 1.5
+	}
+	else_if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_fertile_nature_terrain_trigger = yes }
+			}
+		}
+		multiply = 0.85
+	}
+	if = {
+		limit = { has_trait = archmage_trait }
+		multiply = 0.6
+	}
+}
+
+omni_plant_growth_spell_cost = {
+	value = 25
+	if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_harsh_nature_terrain_trigger = yes }
+			}
+		}
+		multiply = 1.5
+	}
+	else_if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_fertile_nature_terrain_trigger = yes }
+			}
+		}
+		multiply = 0.85
+	}
+	if = {
+		limit = { has_trait = archmage_trait }
+		multiply = 0.6
+	}
+}
+
+omni_summon_dryads_spell_cost = {
+	value = 50
+	if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_harsh_nature_terrain_trigger = yes }
+			}
+		}
+		multiply = 1.5
+	}
+	else_if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_fertile_nature_terrain_trigger = yes }
+			}
+		}
+		multiply = 0.85
+	}
+	if = {
+		limit = { has_trait = archmage_trait }
+		multiply = 0.6
+	}
+}
+
+# Size of the dryad army raised by Summon Dryads (cohorts; ~500 dryads each).
+# Evaluated in COUNTRY scope - reads the caster via scope:target.
+#   plain mage          3 cohorts  (~1500 dryads)
+#   druid OR archmage   6 cohorts  (~3000 dryads)
+#   druid AND archmage  10 cohorts (~5000 dryads)
+omni_dryad_cohort_count = {
+	value = 3
+	if = {
+		limit = {
+			scope:target = {
+				OR = {
+					has_trait = druid_trait
+					has_trait = archmage_trait
+				}
+			}
+		}
+		add = 3
+	}
+	if = {
+		limit = {
+			scope:target = {
+				has_trait = druid_trait
+				has_trait = archmage_trait
+			}
+		}
+		add = 4
+	}
+}
+
+
+# How much BASE spell cost the caster can currently afford. This is var:magic
+# with the SAME terrain + rank scaling as omni_scaled_spell_cost_value applied
+# in reverse (divide instead of multiply), so that:
+#   omni_spell_affordable_budget >= BASE   <=>   magic >= scaled cost of BASE
+# Used by the omni_can_afford_spell trigger to gate spell options. Evaluated in
+# the CASTER (character) scope.
+omni_spell_affordable_budget = {
+	value = var:magic
+	if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_harsh_nature_terrain_trigger = yes }
+			}
+		}
+		divide = 1.5
+	}
+	else_if = {
+		limit = {
+			any_character_unit = {
+				is_army = yes
+				unit_location = { omni_fertile_nature_terrain_trigger = yes }
+			}
+		}
+		divide = 0.85
+	}
+	if = {
+		limit = { has_trait = archmage_trait }
+		divide = 0.6
+	}
+}

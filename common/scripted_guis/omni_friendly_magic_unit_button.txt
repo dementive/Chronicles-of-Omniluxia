@@ -1,0 +1,78 @@
+omni_friendly_magic_unit_button = {
+	scope = character
+	saved_scopes = {
+		player
+	}
+
+	# Shown when the selected unit is one of the player's OWN armies and the
+	# player has a character capable of casting magic. Mirror of
+	# omni_offensive_magic_unit_button, but for friendly (buff) spells.
+	is_shown = {
+		is_general = yes
+		is_alive = yes
+		NOT = { has_variable = is_the_revant }
+		any_character_unit = {
+			is_army = yes
+			unit_owner = {
+				this = scope:player
+			}
+		}
+		scope:player = {
+			is_ai = no
+			any_character = {
+				OR = {
+					is_ruler = yes
+					is_general = yes
+					has_office = office_physician
+					has_office = office_republic_physician
+					has_office = office_apothecary
+				}
+				OR = {
+					has_trait = mage_trait
+					has_trait = archmage_trait
+					has_trait = warlock_trait
+					has_trait = cleric_trait
+					has_trait = necromancer_trait
+					has_trait = lich_trait
+					has_trait = druid_trait
+					has_trait = elementalist_trait
+					has_trait = diviner_trait
+					has_trait = hierophant_trait
+					has_trait = illusionist_trait
+					has_trait = vampire_trait
+					has_trait = blood_angel_curse_trait
+					has_variable = folk_unlocked_var
+				}
+				NOR = {
+					has_trait = brain_damaged
+					has_trait = goblin_trait
+					has_variable = on_orc_adventure
+				}
+			}
+		}
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	# is_valid drives the ENABLED state. is_shown keeps the button visible whenever
+	# the player has a mage; this greys it out - like the siege spell button - when
+	# no eligible mage can afford even the cheapest battle blessing (25 MP scaled).
+	is_valid = {
+		custom_tooltip = {
+			text = omni_friendly_magic_unit_button_tooltip
+		}
+		custom_tooltip = {
+			text = omni_unit_magic_need_mana_tt
+			scope:player = { omni_player_has_affordable_mage = { BASE = 25 } }
+		}
+	}
+
+	effect = {
+		save_scope_as = target
+		scope:player = {
+			trigger_event = { id = me_zorgo_magic_focus.29 }
+		}
+	}
+}

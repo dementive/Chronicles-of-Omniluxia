@@ -1,4 +1,4 @@
-template unit_action_item
+﻿template unit_action_item
 {
 	widget = {
 		size = { 44 44 }
@@ -309,6 +309,36 @@ base_window = {
 					tooltip = "NO_GOVERNOR_TOOLTIP"
 					visible = "[And( SingleUnitWindow.GetSelectedUnit.IsLevy, Not( SingleUnitWindow.GetSelectedUnit.GetCommander.IsValid ) )]"
 				}
+				icon_button_square = {
+					name = "cast_offensive_magic"
+					size = { 32 32 }
+					datacontext = "[GetScriptedGui('omni_offensive_magic_unit_button')]"
+					visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+					enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+					tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+					blockoverride "On_click"
+					{
+						onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+					}
+					blockoverride "Icon" {
+						texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+					}
+				}
+				icon_button_square = {
+					name = "cast_friendly_magic"
+					size = { 32 32 }
+					datacontext = "[GetScriptedGui('omni_friendly_magic_unit_button')]"
+					visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+					enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+					tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+					blockoverride "On_click"
+					{
+						onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( SingleUnitWindow.GetSelectedUnit.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+					}
+					blockoverride "Icon" {
+						texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+					}
+				}
 			}
 			icon = {
 				visible = "[And( SingleUnitWindow.GetSelectedUnit.GetCommander.IsValid, LessThanOrEqualTo_int32( SingleUnitWindow.GetSelectedUnit.GetCommander.GetAge, '(int32)4' ))]"
@@ -342,28 +372,9 @@ base_window = {
 				}
 			}
 
-			margin_widget = {
-				size = { 132 35 }
-				position = { 112 0 }
-				margin = { 8 8 }
-				using = NoninteractableBG
-
-				overlappingitembox = {
-					datamodel = "[SingleUnitWindow.GetSelectedUnit.GetTemporaryModifiers]"
-					position = { 0 -4 }
-					size = { 100% 100% }
-					spacing = 5
-
-					item = {
-						modifier_icon = {
-							datacontext = "[TimedModifier.GetModifier]"
-							tooltip = "[TimedModifier.GetTooltip]"
-						}
-					}
-				}
-			}
 			container = {
 				position = { 251 1 }
+				size = { 72 36 }
 				using = NoninteractableBG
 				blockoverride "Margins" {
 					margin = { 2 7 }
@@ -470,7 +481,51 @@ base_window = {
 				}
 			}
 		}
-		margin_widget = { size = { 0 20 } }
+		# Active spells cast on this army - dedicated, readable strip
+		margin_widget = {
+			size = { 0 38 }
+			margin = { 12 0 }
+			layoutpolicy_horizontal = expanding
+			tooltip = "OMNI_ACTIVE_UNIT_SPELLS_TT"
+
+			background = {
+				shaderfile = "gfx/FX/pdxgui_default.shader"
+				texture = "gfx/interface/base_parts/background_noninteractable_texture.dds"
+				size = { 100% 100% }
+				alpha = 0.55
+			}
+
+			flowcontainer = {
+				parentanchor = vcenter|left
+				position = { 8 0 }
+				spacing = 4
+				ignoreinvisible = yes
+
+				icon = {
+					parentanchor = vcenter
+					size = { 26 26 }
+					texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+					tooltip = "OMNI_ACTIVE_UNIT_SPELLS_TT"
+				}
+				dynamicgridbox = {
+					parentanchor = vcenter
+					datamodel = "[SingleUnitWindow.GetSelectedUnit.GetTemporaryModifiers]"
+					datamodel_wrap = 12
+
+					item = {
+						widget = {
+							size = { 36 34 }
+							modifier_icon = {
+								size = { 32 32 }
+								position = { 2 1 }
+								datacontext = "[TimedModifier.GetModifier]"
+								tooltip = "[TimedModifier.GetTooltip]"
+							}
+						}
+					}
+				}
+			}
+		}
 		margin_widget = {
 			size = { 0 160 }
 			margin = { 0 0 }

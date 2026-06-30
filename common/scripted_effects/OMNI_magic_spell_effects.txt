@@ -1,0 +1,24 @@
+# Generic dynamic spell cost. Replaces the old flat remove_N_mana_effect calls.
+# Runs in the CASTER (character) scope.
+#   $BASE$ = the spell's base mana cost.
+# Final cost = base, scaled by the terrain the caster's army occupies
+# (harsh +50%, fertile -15%) and the caster's rank (archmage -40%).
+omni_spell_mana_cost_effect = {
+	set_variable = {
+		name = omni_spell_base
+		value = $BASE$
+	}
+	change_variable = {
+		name = magic
+		subtract = omni_scaled_spell_cost_value
+	}
+	clamp_character_magic_to_max = yes
+	# Safety net: casting must never push a caster into a mana deficit.
+	# Options are gated by omni_can_afford_spell, but floor here too so no
+	# code path can ever leave magic below zero.
+	if = {
+		limit = { var:magic < 0 }
+		set_variable = { name = magic value = 0 }
+	}
+	remove_variable = omni_spell_base
+}

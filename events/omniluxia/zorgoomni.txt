@@ -1087,14 +1087,23 @@ me_zorgoomni.31 = {
 	right_portrait = scope:aggressive_neighbor.current_ruler
 
 	immediate = {
-		random_neighbour_country = {
-			limit = {
-				has_land = yes
-				is_subject = no
-				NOT = { alliance_with = root }
-				in_diplomatic_range = root
+		if = {
+			limit = { exists = scope:recipient }
+			scope:recipient = {
+				save_scope_as = aggressive_neighbor
 			}
-			save_scope_as = aggressive_neighbor
+		}
+		else = {
+			random_neighbour_country = {
+				limit = {
+					has_land = yes
+					is_subject = no
+					NOT = { alliance_with = root }
+					NOT = { has_variable = stop_raiding_me_every_day_please_var }
+					in_diplomatic_range = root
+				}
+				save_scope_as = aggressive_neighbor
+			}
 		}
         root = { save_scope_as = nomadic_raid_country }
 	}
@@ -1102,6 +1111,12 @@ me_zorgoomni.31 = {
     option = {
         name = "me_zorgoomni.31.a"
         custom_tooltip = me_zorgoomni.31_tooltip1
+		scope:aggressive_neighbor = {
+			set_variable = {
+				name = stop_raiding_me_every_day_please_var
+				days = 1825
+			}
+		}
         trigger_event = { id = me_zorgoomni.32 days = 7 }
         
     }
@@ -4231,22 +4246,43 @@ me_zorgoomni.89 = { # Develop Hold
     }
 }
 
-me_zorgoomni.999 = { # TESTING
+me_zorgoomni.998 = { # DEBUG: refill current ruler mana
     type = country_event
 
-    title = me_zorgo_magic_focus.7_title
-    desc = me_zorgo_magic_focus.21_desc
+    title = me_zorgo_magic_focus.998_title
+    desc = me_zorgo_magic_focus.998_desc
     picture = ascetic
+    left_portrait = current_ruler
+
+    immediate = {
+        current_ruler = {
+            recalculate_character_magic_vars = yes
+        }
+    }
+
+    option = {
+        name = "me_zorgo_magic_focus.998.a"
+        custom_tooltip = me_zorgo_magic_focus.998_tooltip
+        hidden_effect = {
+            current_ruler = {
+                refill_character_magic_to_max = yes
+            }
+        }
+    }
+}
+
+me_zorgoomni.999 = { # DEBUG: grant all ruler magic
+    type = country_event
+
+    title = me_zorgo_magic_focus.999_title
+    desc = me_zorgo_magic_focus.999_desc
+    picture = ascetic
+    left_portrait = current_ruler
     
     option = {
-        name = "me_zorgo_magic_focus.2.z.2"
+        name = "me_zorgo_magic_focus.999.a"
         custom_tooltip = me_zorgo_magic_focus.2_tooltip
-        create_character = {
-            female = no
-            family_name = Duggmoggen
-            culture = sunset_elf
-            add_zeal = 8
-            force_add_trait = zealous
+        current_ruler = {
             force_add_trait = archmage_trait
             set_variable = diviner_t2_unlocked_var
             set_variable = diviner_t3_unlocked_var
@@ -4281,6 +4317,49 @@ me_zorgoomni.999 = { # TESTING
             set_variable = soul_unlocked_var
             set_variable = silver_dwarf_unlocked_var
             set_variable = palpan_unlocked_var
+        }
+        hidden_effect = {
+            create_character = {
+                female = no
+                family_name = Duggmoggen
+                culture = sunset_elf
+                add_zeal = 8
+                force_add_trait = zealous
+                force_add_trait = archmage_trait
+                set_variable = diviner_t2_unlocked_var
+                set_variable = diviner_t3_unlocked_var
+                set_variable = diviner_t4_unlocked_var
+                set_variable = hierophant_t2_unlocked_var
+                set_variable = hierophant_t3_unlocked_var
+                set_variable = hierophant_t4_unlocked_var
+                set_variable = cleric_t2_unlocked_var
+                set_variable = cleric_t3_unlocked_var
+                set_variable = cleric_t4_unlocked_var
+                set_variable = illusionist_t2_unlocked_var
+                set_variable = illusionist_t3_unlocked_var
+                set_variable = illusionist_t4_unlocked_var
+                set_variable = elementalist_t2_unlocked_var
+                set_variable = elementalist_t3_unlocked_var
+                set_variable = elementalist_t4_unlocked_var
+                set_variable = druid_t2_unlocked_var
+                set_variable = druid_t3_unlocked_var
+                set_variable = druid_t4_unlocked_var
+                set_variable = necromancer_t2_unlocked_var
+                set_variable = necromancer_t3_unlocked_var
+                set_variable = necromancer_t4_unlocked_var
+                set_variable = warlock_t2_unlocked_var
+                set_variable = warlock_t3_unlocked_var
+                set_variable = warlock_t4_unlocked_var
+                set_variable = folk_unlocked_var
+                set_variable = magonis_unlocked_var
+                set_variable = taanka_unlocked_var
+                set_variable = dragonscale_unlocked_var
+                set_variable = helluvian_holy_unlocked_var
+                set_variable = charm_unlocked_var
+                set_variable = soul_unlocked_var
+                set_variable = silver_dwarf_unlocked_var
+                set_variable = palpan_unlocked_var
+            }
         }
     }
 }

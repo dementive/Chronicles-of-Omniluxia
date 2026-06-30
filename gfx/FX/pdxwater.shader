@@ -130,16 +130,6 @@ PixelShader =
 				float Depth;
 				float4 Water = CalcWater( Input, Depth );
 
-				// MOD(godherja)
-				float AccurateHeight = GetHeight( Input.WorldSpacePos.xz );
-
-				#ifndef GH_LAKE
-					// Don't render water surface underground (otherwise it interferes with the see-through chasm effect).
-					if (AccurateHeight - WaterHeight > 0.01f)
-						discard;
-				#endif
-				// END MOD
-
 				// Ice
 				#ifndef PDX_OSX // [ED] Note: Definitely exceeds the limit of 16 samplers on mac
 					#ifdef ENABLE_SNOW
@@ -162,7 +152,12 @@ PixelShader =
 
 				// FoW and Fog
 				Water.rgb = ApplyFogOfWarMultiSampled( Water.rgb, Input.WorldSpacePos, FogOfWarAlpha );
-				Water.rgb = ApplyDistanceFog( Water.rgb, Input.WorldSpacePos );
+
+				float vFogFactor = min(CalculateDistanceFogFactor( Input.WorldSpacePos ),0.6);
+				#if defined(nightLight)
+					vFogFactor *= 0.05;
+				#endif
+				Water.rgb = ApplyDistanceFog( Water.rgb, vFogFactor );
 
 				// Lerp to flat map terrain for smooth transition. When FlatMapLerp >= 1.0 this shader is not called at all!
 				#ifdef TERRAIN_FLAT_MAP_LERP
@@ -188,16 +183,10 @@ Effect lake
 {
 	VertexShader = "VS_jomini_water_mesh"
 	PixelShader = "PixelShader"
-	# MOD(godherja)
-	Defines = { "GH_LAKE" }
-	# END MOD
 }
 
 Effect lake_mapobject
 {
 	VertexShader = "VS_jomini_water_mapobject"
 	PixelShader = "PixelShader"
-	# MOD(godherja)
-	Defines = { "GH_LAKE" }
-	# END MOD
 }
