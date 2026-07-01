@@ -241,7 +241,17 @@ VertexShader
 		
 		float3 FixPositionForSkirt( float3 WorldSpacePosition, uint nVertexID )
 		{
-			WorldSpacePosition.y += SkirtSize * ((nVertexID + 1) % 2);
+			// MOD(godherja)
+			//WorldSpacePosition.y += SkirtSize * ((nVertexID + 1) % 2);
+
+			// Vanilla terrain skirt is visible through see-through chasms, which ruins the effect.
+			// We can't completely remove it, otherwise subpixel "seams" between terrain node meshes appear.
+			// So instead we shorten the skirt. This constant can be used to control the trade-off between
+			// the visibility of terrain seams and the visibility of skirt inside chasms.
+			const float GH_SKIRT_SIZE_MULTIPLIER = 0.1f;
+
+			WorldSpacePosition.y += SkirtSize * GH_SKIRT_SIZE_MULTIPLIER * ((nVertexID + 1) % 2);
+			// END MOD
 			return WorldSpacePosition;
 		}
 	]]

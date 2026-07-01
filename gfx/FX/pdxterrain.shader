@@ -11,6 +11,9 @@ Includes = {
 	"terrain.fxh"
 	"fog_of_war.fxh"
 	"winter.fxh"
+	# MOD(wok-chasm)
+	"gh_chasm.fxh"
+	# END MOD
 }
 
 VertexStruct VS_OUTPUT_PDX_TERRAIN
@@ -174,15 +177,24 @@ PixelShader =
 			#endif
 
 			float3 Normal = CalculateNormal( Input.WorldSpacePos.xz );
-			
+
+			// MOD(wok-chasm)
+			float RelativeChasmDepth;
+			GH_PrepareChasmEffect( Input.WorldSpacePos, /*TerrainVariantIndex,*/ Normal, DetailDiffuse, DetailNormal, DetailMaterial, RelativeChasmDepth );
+			// END MOD
+
 			//#ifdef ENABLE_SNOW
-			ApplySnow( DetailDiffuse.rgb, DetailNormal, DetailMaterial, Normal, Input.WorldSpacePos, WinterMap, DetailTextures, NormalTextures, MaterialTextures );							
+			ApplySnow( DetailDiffuse.rgb, DetailNormal, DetailMaterial, Normal, Input.WorldSpacePos, WinterMap, DetailTextures, NormalTextures, MaterialTextures );
 			//#endif
-			
+
 			float3 Diffuse = GetOverlay( DetailDiffuse.rgb, ColorMap, ColorMapOverlayStrength );
-			
-			
-			float3 ReorientedNormal = ReorientNormal( Normal, DetailNormal );
+
+			// MOD(wok-chasm)
+			//float3 ReorientedNormal = ReorientNormal( Normal, DetailNormal );
+			float3 ReorientedNormal = Normal.z > -0.999
+				? ReorientNormal( Normal, DetailNormal )
+				: Normal;
+			// END MOD
 
 			#ifdef TERRAIN_COLOR_OVERLAY
 				float3 BorderColor;
@@ -203,6 +215,10 @@ PixelShader =
 			SLightingProperties LightingProps = GetSunLightingProperties( Input.WorldSpacePos, ShadowTerm );
 
 			float3 FinalColor = CalculateSunLighting( MaterialProps, LightingProps, EnvironmentMap );
+
+			// MOD(wok-chasm)
+			GH_AdjustChasmFinalColor( FinalColor, RelativeChasmDepth, Input.WorldSpacePos );
+			// END MOD
 
 			#ifdef TERRAIN_COLOR_OVERLAY
 				FinalColor = lerp( FinalColor, BorderColor, BorderPostLightingBlend );
