@@ -9,7 +9,9 @@
 
 	
 	hidden = {
-		is_army = yes
+		unit_owner = {
+			is_tribal = no
+		}
 	}
 	
 	allow = {
@@ -18,18 +20,38 @@
 		is_moving = no
 		in_siege = no
 		is_exiled = no
-		hidden:unit_location = { 
-			has_owner = yes
-			civilization_value >= 5
-			total_population > 0
-			OR = {
+		OR = {
+			hidden:unit_location = {
 				has_owner = yes
+				civilization_value >= 5
+				total_population > 0
+				OR = {
+					has_city_status = yes
+					is_state_capital = yes
+				}
+			}
+			AND = {
+				num_of_migrants > 0
+				hidden:unit_location = {
+					has_owner = yes
+					civilization_value >= 5
+					total_population > 0
+				}
+			}
+		}
+		NOR = {
+			hidden:unit_location = {
+				has_province_modifier = province_pillaged
+			}
+			hidden:unit_location = {
+				has_province_modifier = province_razed_ua
+			}
+			hidden:unit_location = {
+				owner = root.unit_owner
 			}
 		}
 		hidden:unit_owner = {
 			can_pay_price = raid
-		}
-		trigger_if = {
 		}
 		trigger_if = {
 			limit = {
@@ -184,4 +206,5 @@
 			}
 		}
 	}
+}
 }

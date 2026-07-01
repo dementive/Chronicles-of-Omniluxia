@@ -1,0 +1,51 @@
+﻿# Character-window "Cast Spell On" button.
+# Replaces the old domestic_magic character interaction ("Cast Spell On").
+# Root scope = the character currently shown in the character window. This
+# character is always the RECIPIENT of the spell.
+# scope:player = the player country.
+#
+# On click the button opens me_zorgo_magic_focus.15 ("Who is Casting?"), which
+# lists every eligible mage in the player's court (with their available mana) so
+# the player chooses who casts. The chosen caster pays the mana and their own
+# spellbook is used (.16 -> .17-.21), casting on the viewed character.
+omni_cast_spell_character_button = {
+	scope = character
+	saved_scopes = {
+		player
+	}
+
+	is_shown = {
+		is_alive = yes
+		is_mercenary = no
+		employer = scope:player
+		employer = {
+			NOT = { tag = MER }
+			NOT = { tag = BAR }
+			NOT = { tag = REB }
+			NOT = { tag = PIR }
+		}
+		scope:player = {
+			is_ai = no
+			# Only show when the player actually has a mage who can afford to cast.
+			omni_player_has_affordable_mage = { BASE = 25 }
+		}
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	# is_valid drives the CLICKABLE (enabled) state and the tooltip.
+	is_valid = {
+		custom_tooltip = {
+			text = omni_cast_spell_character_button_tooltip
+		}
+	}
+
+	effect = {
+		save_scope_as = target
+		scope:player = {
+			trigger_event = { id = me_zorgo_magic_focus.15 }
+		}
+	}
+}

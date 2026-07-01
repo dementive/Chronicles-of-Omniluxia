@@ -1,0 +1,316 @@
+namespace = generic_migration_invasion
+
+generic_migration_invasion.1 = {
+	type = country_event
+	title = "generic_migration_invasion.1.t"
+	desc = "generic_migration_invasion.1.desc"
+	picture = city_siege
+
+	goto_location = scope:migration_invasion_sacked_city
+	left_portrait = current_ruler
+	right_portrait = scope:migration_invasion_sacked_city.owner.current_ruler
+
+	trigger = {
+		exists = scope:migration_invasion_sacked_city
+	}
+
+	option = {
+		name = "generic_migration_invasion.1.a"
+		add_treasury = {
+			value = 0
+			add = root.has_monthly_income
+			multiply = 3
+			min = 30
+			max = 90
+		}
+	}
+}
+
+generic_migration_invasion.2 = {
+	type = country_event
+	title = "generic_migration_invasion.2.t"
+	desc = "generic_migration_invasion.2.desc"
+	picture = city_siege
+
+	goto_location = scope:migration_invasion_sacked_city
+	left_portrait = current_ruler
+	right_portrait = scope:migration_invasion_sacked_city.owner.current_ruler
+
+	trigger = {
+		exists = scope:migration_invasion_sacked_city
+	}
+
+	option = {
+		name = "generic_migration_invasion.2.a"
+		add_military_experience = 5
+		add_manpower = 3
+	}
+}
+
+generic_migration_invasion.3 = {
+	type = country_event
+	title = "generic_migration_invasion.3.t"
+	desc = "generic_migration_invasion.3.desc"
+	picture = city_siege
+
+	goto_location = scope:migration_invasion_sacked_city
+	left_portrait = current_ruler
+	right_portrait = scope:migration_invasion_sacked_city.owner.current_ruler
+
+	trigger = {
+		exists = scope:migration_invasion_sacked_city
+	}
+
+	option = {
+		name = "generic_migration_invasion.3.a"
+		custom_tooltip = generic_migration_invasion_sack_bust_tt
+	}
+}
+
+generic_migration_invasion.4 = {
+	type = country_event
+	title = "generic_migration_invasion.4.t"
+	desc = "generic_migration_invasion.4.desc"
+	picture = city_siege
+
+	goto_location = scope:migration_invasion_sacked_city
+	left_portrait = current_ruler
+	right_portrait = scope:migration_invasion_sacked_city.owner.current_ruler
+
+	trigger = {
+		exists = scope:migration_invasion_sacked_city
+	}
+
+	option = {
+		name = "generic_migration_invasion.4.a"
+		add_treasury = {
+			value = 0
+			add = root.has_monthly_income
+			multiply = 6
+			min = 75
+			max = 175
+		}
+		add_political_influence = influence_small
+		add_tyranny = 1
+		current_ruler = {
+			add_popularity = popularity_small
+		}
+	}
+}
+
+generic_migration_invasion.5 = {
+	type = country_event
+	title = "generic_migration_invasion.5.t"
+	desc = "generic_migration_invasion.5.desc"
+	picture = scribe_tools
+
+	goto_location = scope:migration_invasion_sacked_city
+	left_portrait = current_ruler
+	right_portrait = scope:migration_invasion_sacked_city.owner.current_ruler
+
+	trigger = {
+		exists = scope:migration_invasion_sacked_city
+	}
+
+	option = {
+		name = "generic_migration_invasion.5.a"
+		add_innovation = 1
+	}
+}
+
+generic_migration_invasion.6 = {
+	type = country_event
+	title = "generic_migration_invasion.6.t"
+	desc = "generic_migration_invasion.6.desc"
+	picture = war_council
+
+	goto_location = scope:migration_invasion_target
+	left_portrait = current_ruler
+
+	trigger = {
+		exists = scope:migration_invasion_target
+		exists = scope:migration_invasion_region
+	}
+
+	option = {
+		name = "generic_migration_invasion.6.a"
+		ai_chance = { factor = 6 }
+		trigger = {
+			generic_migration_invasion_annexable_territories_svalue >= 1
+		}
+		custom_tooltip = generic_migration_invasion_claim_annex_tt
+		add_aggressive_expansion = 6
+		add_tyranny = 4
+		hidden_effect = {
+			scope:migration_invasion_region = {
+				every_region_province = {
+					limit = {
+						has_owner = yes
+						OR = {
+							owner = { is_subject_of = ROOT }
+							AND = {
+								NOT = { owner = ROOT }
+								NOT = { owner = { is_subject_of = ROOT } }
+								controller = ROOT
+							}
+						}
+					}
+					set_owned_by = ROOT
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "generic_migration_invasion.6.b"
+		ai_chance = { factor = 4 }
+		trigger = {
+			generic_migration_invasion_vassalizable_territories_svalue >= 1
+		}
+		custom_tooltip = generic_migration_invasion_claim_vassal_tt
+		add_aggressive_expansion = 2
+		add_political_influence = subtract_influence_small
+		hidden_effect = {
+			scope:migration_invasion_region = {
+				random_region_province = {
+					limit = {
+						has_owner = yes
+						OR = {
+							owner = ROOT
+							AND = {
+								NOT = { owner = ROOT }
+								NOT = { owner = { is_subject_of = ROOT } }
+								controller = ROOT
+							}
+						}
+					}
+					save_scope_as = migration_invasion_vassal_capital
+				}
+			}
+			scope:migration_invasion_vassal_capital = {
+				create_country = {
+					change_government = tribal_chiefdom
+					save_scope_as = migration_invasion_vassal_country
+					create_character = {
+						culture = scope:migration_invasion_vassal_country.culture
+						religion = scope:migration_invasion_vassal_country.religion
+						save_scope_as = migration_invasion_vassal_ruler
+					}
+					set_as_ruler = scope:migration_invasion_vassal_ruler
+				}
+			}
+			scope:migration_invasion_region = {
+				every_region_province = {
+					limit = {
+						has_owner = yes
+						OR = {
+							owner = ROOT
+							AND = {
+								NOT = { owner = ROOT }
+								NOT = { owner = { is_subject_of = ROOT } }
+								controller = ROOT
+							}
+						}
+					}
+					set_owned_by = scope:migration_invasion_vassal_country
+				}
+			}
+			root = {
+				make_subject = {
+					target = scope:migration_invasion_vassal_country
+					type = vassal_tribe
+				}
+			}
+			scope:migration_invasion_vassal_country = {
+				add_opinion = {
+					modifier = opinion_liberated_us
+					target = root
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "generic_migration_invasion.6.c"
+		ai_chance = { factor = 2 }
+		trigger = {
+			generic_migration_invasion_elite_pops_svalue >= 1
+		}
+		custom_tooltip = generic_migration_invasion_claim_elites_tt
+		add_tyranny = 3
+		hidden_effect = {
+			scope:migration_invasion_region = {
+				every_region_province = {
+					limit = {
+						has_owner = yes
+						OR = {
+							owner = ROOT
+							owner = { is_subject_of = ROOT }
+							controller = ROOT
+						}
+						any_pops_in_province = {
+							OR = {
+								pop_type = nobles
+								pop_type = citizen
+							}
+						}
+					}
+					random_pops_in_province = {
+						limit = {
+							OR = {
+								pop_type = nobles
+								pop_type = citizen
+							}
+						}
+						move_pop = root.capital_scope
+						set_pop_type = slaves
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "generic_migration_invasion.6.d"
+		ai_chance = { factor = 0 }
+		trigger = {
+			generic_migration_invasion_unintegrated_pops_svalue >= 1
+		}
+		custom_tooltip = generic_migration_invasion_claim_purge_tt
+		add_tyranny = 15
+		add_aggressive_expansion = 8
+		add_stability = -10
+		hidden_effect = {
+			scope:migration_invasion_region = {
+				every_region_province = {
+					limit = {
+						has_owner = yes
+						OR = {
+							owner = ROOT
+							owner = { is_subject_of = ROOT }
+							controller = ROOT
+						}
+						any_pops_in_province = {
+							exists = country_culture
+							country_culture = { is_integrated = no }
+						}
+					}
+					every_pops_in_province = {
+						limit = {
+							exists = country_culture
+							country_culture = { is_integrated = no }
+						}
+						kill_pop = yes
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "generic_migration_invasion.6.e"
+		ai_chance = { factor = 1 }
+		custom_tooltip = generic_migration_invasion_claim_warning_tt
+		add_political_influence = influence_small
+	}
+}

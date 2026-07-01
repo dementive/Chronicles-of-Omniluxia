@@ -1,0 +1,607 @@
+generic_migration_invasion = {
+	header = lotr_generic_mission_landscape_headers
+	icon = lotr_generic_army_mission_icon
+
+	repeatable = yes
+
+	chance = {}
+
+	ai_chance = {
+		factor = 1
+	}
+
+	potential = {
+		choo_generic_mission_blocker = yes
+		has_civil_war = no
+		OR = {
+			government = nomadic_tribe
+			government = tribal_chiefdom
+		}
+		any_owned_province = {
+			any_neighbor_province = {
+				is_sea = no
+				is_inhabitable = yes
+				has_owner = yes
+				exists = region
+				NOT = { owner = ROOT }
+				NOT = { owner = { is_subject_of = ROOT } }
+				area = {
+					any_area_province = {
+						count >= 3
+						has_owner = yes
+						civilization_value >= 5
+						total_population > 0
+						NOT = { owner = ROOT }
+						NOT = { owner = { is_subject_of = ROOT } }
+					}
+				}
+				region = {
+					any_region_province = {
+						has_owner = yes
+						NOT = { owner = ROOT }
+						NOT = { owner = { is_subject_of = ROOT } }
+					}
+				}
+			}
+		}
+	}
+
+	abort = {
+		OR = {
+			NOT = { exists = scope:migration_invasion_region }
+			ai_mission_back_out_trigger = yes
+		}
+	}
+
+	on_abort = {
+		destroy_generic_mission_variables_effect = yes
+		add_stability = -5
+	}
+
+	on_potential = {
+		random_owned_province = {
+			limit = {
+				any_neighbor_province = {
+					is_sea = no
+					is_inhabitable = yes
+					has_owner = yes
+					exists = region
+					NOT = { owner = ROOT }
+					NOT = { owner = { is_subject_of = ROOT } }
+					area = {
+						any_area_province = {
+							count >= 3
+							has_owner = yes
+							civilization_value >= 5
+							total_population > 0
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+						}
+					}
+					region = {
+						any_region_province = {
+							has_owner = yes
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+						}
+					}
+				}
+			}
+			random_neighbor_province = {
+				limit = {
+					is_sea = no
+					is_inhabitable = yes
+					has_owner = yes
+					exists = region
+					NOT = { owner = ROOT }
+					NOT = { owner = { is_subject_of = ROOT } }
+					area = {
+						any_area_province = {
+							count >= 3
+							has_owner = yes
+							civilization_value >= 5
+							total_population > 0
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+						}
+					}
+					region = {
+						any_region_province = {
+							has_owner = yes
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+						}
+					}
+				}
+				save_scope_as = migration_invasion_target
+				region = {
+					save_scope_as = migration_invasion_region
+				}
+			}
+		}
+	}
+
+	on_start = {
+		start_mission_ai_effect = yes
+		hidden_effect = {
+			scope:migration_invasion_target.area = {
+				save_scope_as = first
+				save_scope_as = migration_invasion_target_area
+			}
+			scope:migration_invasion_region = {
+				every_region_area = {
+					limit = {
+						any_area_province = {
+							has_owner = yes
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+						}
+						any_area_province = {
+							any_neighbor_province = {
+								owner = ROOT
+							}
+						}
+					}
+					save_iterative_scope_effect = yes
+				}
+				every_region_area = {
+					limit = {
+						any_area_province = {
+							has_owner = yes
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+						}
+					}
+					save_iterative_scope_effect = yes
+				}
+			}
+		}
+	}
+
+	on_completion = {
+		complete_mission_effect = yes
+	}
+
+	generic_migration_invasion_prepare = {
+		icon = "task_battle"
+
+		duration = 30
+
+		potential = {
+			exists = scope:migration_invasion_target_area
+		}
+
+		allow = {
+			custom_tooltip = {
+				text = generic_migration_invasion_prepare_tt
+				has_country_modifier = assemble_raiding_party_button_modifier
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				exists = area
+				this.area = scope:migration_invasion_target_area
+			}
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_completion = {
+			add_country_modifier = {
+				name = generic_migration_invasion_warbands
+				duration = 3650
+			}
+			if = {
+				limit = { exists = scope:first }
+				scope:first = { add_provincial_claim_effect = yes }
+			}
+			if = {
+				limit = { exists = scope:second }
+				scope:second = { add_provincial_claim_effect = yes }
+			}
+			if = {
+				limit = { exists = scope:third }
+				scope:third = { add_provincial_claim_effect = yes }
+			}
+		}
+
+		on_bypass = {
+			add_country_modifier = {
+				name = generic_migration_invasion_warbands
+				duration = 3650
+			}
+			if = {
+				limit = { exists = scope:first }
+				scope:first = { add_provincial_claim_effect = yes }
+			}
+			if = {
+				limit = { exists = scope:second }
+				scope:second = { add_provincial_claim_effect = yes }
+			}
+			if = {
+				limit = { exists = scope:third }
+				scope:third = { add_provincial_claim_effect = yes }
+			}
+		}
+	}
+
+	generic_migration_invasion_raise_horde = {
+		icon = "task_expansion"
+
+		requires = { generic_migration_invasion_prepare }
+
+		potential = {
+			exists = scope:migration_invasion_target_area
+		}
+
+		allow = {
+			custom_tooltip = {
+				text = generic_migration_invasion_raise_horde_tt
+				any_unit = {
+					is_army = yes
+					num_of_migrants > 0
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				owner = ROOT
+				total_population > 0
+			}
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+	}
+
+	generic_migration_invasion_foothold = {
+		icon = "task_expansion"
+
+		requires = { generic_migration_invasion_raise_horde }
+
+		potential = {
+			exists = scope:migration_invasion_target_area
+		}
+
+		allow = {
+			custom_tooltip = {
+				text = generic_migration_invasion_foothold_tt
+				any_unit = {
+					is_army = yes
+					is_exiled = no
+					num_of_migrants > 0
+					unit_location = {
+						exists = area
+						this.area = scope:migration_invasion_target_area
+					}
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				exists = area
+				this.area = scope:migration_invasion_target_area
+			}
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_completion = {
+			add_military_experience = 5
+		}
+	}
+
+	generic_migration_invasion_scour_area = {
+		icon = "task_conquest"
+
+		requires = { generic_migration_invasion_raise_horde }
+
+		potential = {
+			exists = scope:migration_invasion_target_area
+		}
+
+		allow = {
+			custom_tooltip = {
+				text = generic_migration_invasion_scour_area_tt
+				scope:migration_invasion_target_area = {
+					any_area_province = {
+						count >= 2
+						OR = {
+							has_province_modifier = province_razed_ua
+							has_province_modifier = province_pillaged
+						}
+					}
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				exists = area
+				this.area = scope:migration_invasion_target_area
+			}
+		}
+
+		on_completion = {
+			add_country_modifier = {
+				name = generic_migration_invasion_burned_paths
+				duration = 1825
+			}
+		}
+	}
+
+	generic_migration_invasion_seize_stronghold = {
+		icon = "task_battle"
+
+		requires = { generic_migration_invasion_foothold }
+
+		potential = {
+			exists = scope:migration_invasion_region
+			scope:migration_invasion_region = {
+				any_region_province = {
+					has_owner = yes
+					NOT = { owner = ROOT }
+					NOT = { owner = { is_subject_of = ROOT } }
+					has_city_status = yes
+				}
+			}
+		}
+
+		allow = {
+			custom_tooltip = {
+				text = generic_migration_invasion_seize_stronghold_tt
+				scope:migration_invasion_region = {
+					any_region_province = {
+						has_owner = yes
+						NOT = { owner = ROOT }
+						NOT = { owner = { is_subject_of = ROOT } }
+						has_city_status = yes
+						controller = ROOT
+					}
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				exists = region
+				this.region = scope:migration_invasion_region
+				has_owner = yes
+				NOT = { owner = ROOT }
+				NOT = { owner = { is_subject_of = ROOT } }
+				has_city_status = yes
+			}
+		}
+
+		on_completion = {
+			hidden_effect = {
+				scope:migration_invasion_region = {
+					random_region_province = {
+						limit = {
+							has_owner = yes
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+							has_city_status = yes
+							controller = ROOT
+						}
+						save_scope_as = migration_invasion_sacked_city
+					}
+				}
+			}
+			scope:migration_invasion_sacked_city = {
+				add_province_modifier = {
+					name = province_pillaged
+					duration = 1825
+				}
+				add_city_smoke_effect = yes
+			}
+			custom_tooltip = generic_migration_invasion_seize_stronghold_reward_tt
+			hidden_effect = {
+				random_list = {
+					30 = { trigger_event = { id = generic_migration_invasion.1 } }
+					30 = { trigger_event = { id = generic_migration_invasion.2 } }
+					30 = { trigger_event = { id = generic_migration_invasion.3 } }
+					9 = { trigger_event = { id = generic_migration_invasion.4 } }
+					1 = { trigger_event = { id = generic_migration_invasion.5 } }
+				}
+			}
+		}
+	}
+
+	generic_migration_invasion_drive_captives = {
+		icon = "task_expansion"
+
+		requires = { generic_migration_invasion_foothold }
+
+		duration = 30
+
+		potential = {
+			exists = scope:migration_invasion_region
+		}
+
+		allow = {
+			custom_tooltip = {
+				text = generic_migration_invasion_drive_captives_tt
+				scope:migration_invasion_region = {
+					any_region_province = {
+						count >= 1
+						has_owner = yes
+						total_population > 0
+						exists = state
+						NOT = { owner = ROOT }
+						NOT = { owner = { is_subject_of = ROOT } }
+						state = {
+							has_state_food >= generic_migration_invasion_burned_fields_food_svalue
+						}
+						OR = {
+							controller = ROOT
+							has_province_modifier = province_pillaged
+							has_province_modifier = province_razed_ua
+						}
+					}
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				exists = region
+				this.region = scope:migration_invasion_region
+				has_owner = yes
+				total_population > 0
+				exists = state
+				NOT = { owner = ROOT }
+				NOT = { owner = { is_subject_of = ROOT } }
+				state = {
+					has_state_food >= generic_migration_invasion_burned_fields_food_svalue
+				}
+				OR = {
+					controller = ROOT
+					has_province_modifier = province_pillaged
+					has_province_modifier = province_razed_ua
+				}
+			}
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			hidden_effect = {
+				scope:migration_invasion_region = {
+					random_region_province = {
+						limit = {
+							has_owner = yes
+							total_population > 0
+							exists = state
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+							state = {
+								has_state_food >= generic_migration_invasion_burned_fields_food_svalue
+							}
+							OR = {
+								controller = ROOT
+								has_province_modifier = province_pillaged
+								has_province_modifier = province_razed_ua
+							}
+						}
+						save_scope_as = migration_invasion_burned_fields_province
+					}
+				}
+			}
+		}
+
+		on_completion = {
+			custom_tooltip = generic_migration_invasion_burn_fields_reward_tt
+			scope:migration_invasion_burned_fields_province = {
+				add_province_modifier = {
+					name = province_pillaged
+					duration = 1825
+				}
+				add_city_smoke_effect = yes
+				hidden_effect = {
+					state = {
+						add_state_food = generic_migration_invasion_burned_fields_food_pay_svalue
+					}
+				}
+			}
+			capital_scope.state = {
+				add_state_food = generic_migration_invasion_burned_fields_food_svalue
+			}
+		}
+	}
+
+	generic_migration_invasion_sell_captives = {
+		icon = "task_economical"
+
+		requires = { generic_migration_invasion_drive_captives }
+
+		potential = {
+			exists = scope:migration_invasion_region
+		}
+
+		allow = {
+			custom_tooltip = {
+				text = generic_migration_invasion_sell_captives_tt
+				scope:migration_invasion_region = {
+					any_region_province = {
+						count >= 3
+						has_owner = yes
+						NOT = { owner = ROOT }
+						NOT = { owner = { is_subject_of = ROOT } }
+						OR = {
+							controller = ROOT
+							has_province_modifier = province_pillaged
+							has_province_modifier = province_razed_ua
+						}
+					}
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				exists = region
+				this.region = scope:migration_invasion_region
+			}
+		}
+
+		on_completion = {
+			custom_tooltip = generic_migration_invasion_sell_captives_reward_tt
+			add_tyranny = 5
+			add_treasury = generic_migration_invasion_captive_sale_income_svalue
+		}
+	}
+
+	generic_migration_invasion_complete = {
+		icon = "task_political"
+
+		requires = { generic_migration_invasion_drive_captives }
+
+		final = yes
+
+		allow = {
+			custom_tooltip = {
+				text = generic_migration_invasion_complete_tt
+				scope:migration_invasion_target_area = {
+					any_area_province = {
+						percent >= 0.5
+						has_owner = yes
+						OR = {
+							owner = ROOT
+							owner = { is_subject_of = ROOT }
+						}
+					}
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				exists = area
+				this.area = scope:migration_invasion_target_area
+			}
+		}
+
+		on_completion = {
+			add_military_experience = 10
+			add_country_modifier = {
+				name = generic_migration_invasion_legend
+				duration = 3650
+			}
+			custom_tooltip = generic_migration_invasion_complete_reward_tt
+			hidden_effect = {
+				trigger_event = { id = generic_migration_invasion.6 }
+			}
+		}
+	}
+}

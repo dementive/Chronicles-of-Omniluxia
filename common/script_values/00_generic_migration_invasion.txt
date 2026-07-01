@@ -1,0 +1,261 @@
+generic_migration_invasion_target_area_foothold_svalue = {
+	value = 0
+	every_unit = {
+		limit = {
+			is_army = yes
+			is_exiled = no
+			num_of_migrants > 0
+			unit_location = {
+				exists = area
+				this.area = scope:migration_invasion_target_area
+			}
+		}
+		add = 1
+	}
+}
+
+generic_migration_invasion_migratory_horde_svalue = {
+	value = 0
+	every_unit = {
+		limit = {
+			is_army = yes
+			num_of_migrants > 0
+		}
+		add = 1
+	}
+}
+
+generic_migration_invasion_target_area_devastated_svalue = {
+	value = 0
+	scope:migration_invasion_target_area = {
+		every_area_province = {
+			limit = {
+				OR = {
+					has_province_modifier = province_razed_ua
+					has_province_modifier = province_pillaged
+				}
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_region_strongholds_controlled_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				has_owner = yes
+				NOT = { owner = ROOT }
+				NOT = { owner = { is_subject_of = ROOT } }
+				has_city_status = yes
+				controller = ROOT
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_region_owned_or_devastated_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				OR = {
+					owner = ROOT
+					controller = ROOT
+					has_province_modifier = province_razed_ua
+					has_province_modifier = province_pillaged
+				}
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_burned_fields_food_svalue = 100
+
+generic_migration_invasion_burned_fields_food_pay_svalue = {
+	value = generic_migration_invasion_burned_fields_food_svalue
+	multiply = -1
+}
+
+generic_migration_invasion_burnable_fields_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				has_owner = yes
+				total_population > 0
+				exists = state
+				NOT = { owner = ROOT }
+				NOT = { owner = { is_subject_of = ROOT } }
+				state = {
+					has_state_food >= generic_migration_invasion_burned_fields_food_svalue
+				}
+				OR = {
+					controller = ROOT
+					has_province_modifier = province_pillaged
+					has_province_modifier = province_razed_ua
+				}
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_captives_available_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				has_owner = yes
+				NOT = { owner = ROOT }
+				NOT = { owner = { is_subject_of = ROOT } }
+				OR = {
+					controller = ROOT
+					has_province_modifier = province_pillaged
+					has_province_modifier = province_razed_ua
+				}
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_captive_sale_income_svalue = {
+	value = generic_migration_invasion_captives_available_svalue
+	multiply = 10
+	min = 25
+	max = 50
+}
+
+generic_migration_invasion_region_broken_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				OR = {
+					owner = ROOT
+					controller = ROOT
+					has_province_modifier = province_razed_ua
+					has_province_modifier = province_pillaged
+				}
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_target_area_owned_or_subject_owned_svalue = {
+	value = 0
+	scope:migration_invasion_target_area = {
+		every_area_province = {
+			limit = {
+				has_owner = yes
+				OR = {
+					owner = ROOT
+					owner = { is_subject_of = ROOT }
+				}
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_target_area_total_territories_svalue = {
+	value = 0
+	scope:migration_invasion_target_area = {
+		every_area_province = {
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_annexable_territories_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				has_owner = yes
+				OR = {
+					owner = { is_subject_of = ROOT }
+					AND = {
+						NOT = { owner = ROOT }
+						NOT = { owner = { is_subject_of = ROOT } }
+						controller = ROOT
+					}
+				}
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_vassalizable_territories_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				has_owner = yes
+				OR = {
+					owner = ROOT
+					AND = {
+						NOT = { owner = ROOT }
+						NOT = { owner = { is_subject_of = ROOT } }
+						controller = ROOT
+					}
+				}
+			}
+			add = 1
+		}
+	}
+}
+
+generic_migration_invasion_elite_pops_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				has_owner = yes
+				OR = {
+					owner = ROOT
+					owner = { is_subject_of = ROOT }
+					controller = ROOT
+				}
+			}
+			every_pops_in_province = {
+				limit = {
+					OR = {
+						pop_type = nobles
+						pop_type = citizen
+					}
+				}
+				add = 1
+			}
+		}
+	}
+}
+
+generic_migration_invasion_unintegrated_pops_svalue = {
+	value = 0
+	scope:migration_invasion_region = {
+		every_region_province = {
+			limit = {
+				has_owner = yes
+				OR = {
+					owner = ROOT
+					owner = { is_subject_of = ROOT }
+					controller = ROOT
+				}
+			}
+			every_pops_in_province = {
+				limit = {
+					exists = country_culture
+					country_culture = { is_integrated = no }
+				}
+				add = 1
+			}
+		}
+	}
+}

@@ -2338,122 +2338,94 @@ me_zorgo_magic_focus.14 = { # Folk Magic
 
 # CAST DOMESTIC ----------------------------------------
 
-me_zorgo_magic_focus.15 = { # Main Menu (Who is Casting?)
+me_zorgo_magic_focus.15 = { # Who is Casting?
     type = country_event
 
     title = me_zorgo_magic_focus.15_title
     desc = me_zorgo_magic_focus.15_desc
     picture = ascetic
-    left_portrait = current_ruler
-    right_portrait = scope:selected_mage
+    left_portrait = scope:target
 
     immediate = {
-        random_character = {
+        # Build an ordered list (by available mana) of every eligible caster in
+        # the player's court, saved as scope:caster_1 .. scope:caster_8.
+        ordered_character = {
             limit = {
                 OR = {
+                    is_ruler = yes
+                    is_general = yes
                     has_office = office_physician
                     has_office = office_republic_physician
                     has_office = office_apothecary
                 }
-                OR = {
-                    has_trait = mage_trait
-                    has_trait = archmage_trait
-                    has_trait = warlock_trait
-                    has_trait = cleric_trait
-                    has_trait = necromancer_trait
-                    has_trait = lich_trait
-                    has_trait = druid_trait
-                    has_trait = elementalist_trait
-                    has_trait = diviner_trait
-                    has_trait = hierophant_trait
-                    has_trait = illusionist_trait
-                    has_trait = vampire_trait
-                    has_variable = folk_unlocked_var
-                }
-                NOR = {
-                    has_trait = brain_damaged
-                    has_trait = goblin_trait
-                    has_variable = on_orc_adventure
-                }
+                omni_character_is_eligible_caster = yes
+                # Only list mages with enough mana to cast the cheapest spell (25).
+                omni_can_afford_spell = { BASE = 25 }
             }
-            save_scope_as = selected_mage
+            order_by = omni_spell_affordable_budget
+            check_range_bounds = no
+            max = 8
+            if = { limit = { NOT = { exists = scope:caster_1 } } save_scope_as = caster_1 }
+            else_if = { limit = { NOT = { exists = scope:caster_2 } } save_scope_as = caster_2 }
+            else_if = { limit = { NOT = { exists = scope:caster_3 } } save_scope_as = caster_3 }
+            else_if = { limit = { NOT = { exists = scope:caster_4 } } save_scope_as = caster_4 }
+            else_if = { limit = { NOT = { exists = scope:caster_5 } } save_scope_as = caster_5 }
+            else_if = { limit = { NOT = { exists = scope:caster_6 } } save_scope_as = caster_6 }
+            else_if = { limit = { NOT = { exists = scope:caster_7 } } save_scope_as = caster_7 }
+            else_if = { limit = { NOT = { exists = scope:caster_8 } } save_scope_as = caster_8 }
         }
     }
 
-    option = { # Ruler
-        trigger = {
-            scope:target = { is_ruler = no  }
-            current_ruler = {
-                OR = {
-                    has_trait = mage_trait
-                    has_trait = archmage_trait
-                    has_trait = warlock_trait
-                    has_trait = cleric_trait
-                    has_trait = necromancer_trait
-                    has_trait = lich_trait
-                    has_trait = druid_trait
-                    has_trait = elementalist_trait
-                    has_trait = diviner_trait
-                    has_trait = hierophant_trait
-                    has_trait = illusionist_trait
-                    has_trait = vampire_trait
-                    has_variable = folk_unlocked_var
-                }
-                NOR = {
-                    has_trait = brain_damaged
-                    has_trait = goblin_trait
-                    has_variable = on_orc_adventure
-                }
-            }
-        }
-        name = "me_zorgo_magic_focus.15.a"
-        custom_tooltip = me_zorgo_magic_focus.15_tooltip.a
-        current_ruler = { save_scope_as = selected_mage }
+    option = {
+        name = me_zorgo_magic_focus.15.cast1
+        trigger = { exists = scope:caster_1 }
+        scope:caster_1 = { save_scope_as = selected_mage }
         trigger_event = { id = me_zorgo_magic_focus.16 }
     }
-    option = { # Mage
-        trigger = {
-            scope:target = {
-                NOR = {
-                    has_office = office_physician
-                    has_office = office_republic_physician
-                    has_office = office_apothecary
-                }
-            }
-            any_character = {
-                OR = {
-                    has_office = office_physician
-                    has_office = office_republic_physician
-                    has_office = office_apothecary
-                }
-                OR = {
-                    has_trait = mage_trait
-                    has_trait = archmage_trait
-                    has_trait = warlock_trait
-                    has_trait = cleric_trait
-                    has_trait = necromancer_trait
-                    has_trait = lich_trait
-                    has_trait = druid_trait
-                    has_trait = elementalist_trait
-                    has_trait = diviner_trait
-                    has_trait = hierophant_trait
-                    has_trait = illusionist_trait
-                    has_trait = vampire_trait
-                    has_variable = folk_unlocked_var
-                }
-                NOR = {
-                    has_trait = brain_damaged
-                    has_trait = goblin_trait
-                    has_variable = on_orc_adventure
-                }
-            }
-        }
-        name = "me_zorgo_magic_focus.15.b"
-        custom_tooltip = me_zorgo_magic_focus.15_tooltip.b
+    option = {
+        name = me_zorgo_magic_focus.15.cast2
+        trigger = { exists = scope:caster_2 }
+        scope:caster_2 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast3
+        trigger = { exists = scope:caster_3 }
+        scope:caster_3 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast4
+        trigger = { exists = scope:caster_4 }
+        scope:caster_4 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast5
+        trigger = { exists = scope:caster_5 }
+        scope:caster_5 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast6
+        trigger = { exists = scope:caster_6 }
+        scope:caster_6 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast7
+        trigger = { exists = scope:caster_7 }
+        scope:caster_7 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.16 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast8
+        trigger = { exists = scope:caster_8 }
+        scope:caster_8 = { save_scope_as = selected_mage }
         trigger_event = { id = me_zorgo_magic_focus.16 }
     }
     option = { # Cancel
-        name = "me_zorgo_magic_focus.2.z.2"
+        name = me_zorgo_magic_focus.2.z.2
         custom_tooltip = me_zorgo_magic_focus.2_tooltip
     }
 }
@@ -2866,6 +2838,44 @@ me_zorgo_magic_focus.19 = { # Amten School
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
+    option = { # Nature's Vigor (Druid) - heal a character in your realm
+        trigger = {
+            scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+            scope:selected_mage = { has_variable = druid_t2_unlocked_var }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 50 }
+        }
+        scope:target = {
+            add_health = 3
+        }
+        custom_tooltip = omni_natures_vigor_spell_tt
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = 50_mana_tt
+        name = "me_zorgo_magic_focus.19.a"
+    }
+    option = { # Aegis of Stone (Elementalist) - temporary defensive/economic buff
+        trigger = {
+            scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+            scope:selected_mage = { has_variable = elementalist_t2_unlocked_var }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 50 }
+        }
+        scope:target = {
+            force_add_trait = stone_magic_trait
+            save_scope_as = remove_magic_target
+        }
+        trigger_event = {
+            id = me_zorgo_magic_focus.22
+            days = 365
+        }
+        custom_tooltip = omni_aegis_of_stone_spell_tt
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = 50_mana_tt
+        name = "me_zorgo_magic_focus.19.b"
+    }
+
     option = {
         name = "me_zorgo_magic_focus.2.z.1"
         custom_tooltip = me_zorgo_magic_focus.2.z.tt
@@ -2885,6 +2895,44 @@ me_zorgo_magic_focus.20 = { # Melodian School
     picture = ascetic
     left_portrait = scope:selected_mage
     right_portrait = scope:target
+
+    option = { # Bestow Rage (Warlock) - temporary martial buff on a general
+        trigger = {
+            scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+            scope:selected_mage = { has_variable = warlock_t2_unlocked_var }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 50 }
+        }
+        scope:target = {
+            force_add_trait = melodian_warlock_spell_t1_trait
+            save_scope_as = remove_magic_target
+        }
+        trigger_event = {
+            id = me_zorgo_magic_focus.22
+            days = 365
+        }
+        custom_tooltip = omni_bestow_rage_spell_tt
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = 50_mana_tt
+        name = "me_zorgo_magic_focus.20.a"
+    }
+    option = { # Withering Touch (Necromancer) - hostile health drain
+        trigger = {
+            scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
+            scope:selected_mage = { has_variable = necromancer_t2_unlocked_var }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 75 }
+        }
+        scope:target = {
+            add_health = -3
+        }
+        custom_tooltip = omni_withering_touch_spell_tt
+        custom_tooltip = tier_two_spell_tt
+        custom_tooltip = 75_mana_tt
+        name = "me_zorgo_magic_focus.20.b"
+    }
 
     option = {
         name = "me_zorgo_magic_focus.2.z.1"
