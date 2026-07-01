@@ -126,62 +126,6 @@ ai_can_recruit_mercenary_in_territory = {
         }
     }
 
-    # If we or our ally own Rhodope enclave, but our capital is not in it, Europa must have land path for mercs.
-    # Should remake this into generally applicable solution, but it's pathfinding territory so may be expensive.
-    trigger_if = {
-        limit = {
-            OR = {
-                this = p:270
-                this = p:297
-                this = p:1774
-            }
-            exists = owner
-            owner = {
-                OR = {
-                    this = scope:potential_employer
-                    alliance_with = scope:potential_employer
-                }
-            }
-            scope:potential_employer = {
-                capital_scope = {
-                    NOR = {
-                        this = p:270
-                        this = p:297
-                        this = p:1774
-                    }
-                }
-            }
-        }
-        p:349 = {
-            OR = {
-                NOT = {
-                    exists = owner
-                }
-                owner = {
-                    OR = {
-                        this = scope:potential_employer
-                        alliance_with = scope:potential_employer
-                        war_with = scope:potential_employer
-                    }
-                }
-            }
-        }
-        area:europa_area = {
-            any_area_state = {
-                owner = {
-                    OR = {
-                        this = scope:potential_employer
-                        alliance_with = scope:potential_employer
-                        war_with = scope:potential_employer
-                    }
-                }
-            }
-        }
-    }
-    trigger_else = {
-        always = yes
-    }
-
     # Normally mercs are available by diplomatic range, but a proper check would be to compare distance from every
     # province of the recruiting country, which is very expensive for such a frequently used trigger. Instead do a
     # series of simpler checks which should give us a good enough result, as mercs don't need a super precise one.
