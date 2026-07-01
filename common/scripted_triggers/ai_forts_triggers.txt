@@ -1,0 +1,156 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# Fort AI trigger definitions used by common/script_values/ai_forts_values.txt.
+# Ported/adapted from Invictus's common/scripted_triggers/ai_forts_triggers.txt - this mod includes ai_forts_values.txt
+# (a verbatim copy of Invictus's file) but never included its trigger/effect dependencies, which caused "Unknown trigger
+# type" errors for every trigger below.
+#
+# NOTE: ai_territory_state_is_perimeter and ai_territory_state_is_important depend on local variable list caches
+# (cached_perimeter_states_of_country / cached_important_states_of_country) that in Invictus are only populated by the
+# optimize_state_capitals_and_forts AI effect. Omniluxia does not call that effect (see common/on_action/ai_pulse.txt,
+# which deliberately only enables a subset of Invictus's AI systems), so these two triggers will safely evaluate to "no"
+# unless/until that fort-optimization system is fully ported and hooked into the AI pulse.
+# ----------------------------------------------------------------------------------------------------------------------
+
+territory_is_ownable = {
+    trigger_if = {
+        limit = {
+            has_non_empty_global_variable_list = {
+                name = ownable_territories
+            }
+        }
+        is_target_in_global_variable_list = {
+            name = ownable_territories
+            target = this
+        }
+    }
+    trigger_else = {
+        any_ownable_province = {
+            this = prev
+        }
+    }
+}
+
+territory_eligible_for_mine_or_farm = {
+    has_city_status = no
+    OR = {
+        has_minable_trade_good_trigger = yes
+        has_food_trade_good_trigger = yes
+    }
+}
+
+# There's a bug where after secession a capital state can have separate state capital
+is_state_capital_double_checked = {
+    trigger_if = {
+        limit = {
+            exists = state
+            state = {
+                is_capital_state = yes
+            }
+        }
+        is_capital = yes
+    }
+    trigger_else = {
+        is_state_capital = yes
+    }
+}
+
+ai_state_has_redoubt_territory = {
+    has_variable = cached_redoubt_territory_of_state
+}
+
+ai_territory_is_redoubt_of_state = {
+    # Mandatory checks for fort decision making to rule out error log spam in edge cases
+    exists = owner
+    exists = state
+
+    trigger_if = {
+        limit = {
+            state = {
+                ai_state_has_redoubt_territory = yes
+            }
+        }
+        this = state.var:cached_redoubt_territory_of_state
+    }
+    trigger_else = {
+        always = no
+    }
+}
+
+ai_state_is_perimeter_of_country = {
+    # Mandatory checks for fort decision making to rule out error log spam in edge cases
+    exists = owner
+
+    has_non_empty_local_variable_list = {
+        name = cached_perimeter_states_of_country
+    }
+    is_target_in_local_variable_list = {
+        name = cached_perimeter_states_of_country
+        target = this
+    }
+}
+
+ai_territory_state_is_perimeter = {
+    exists = state
+    state = {
+        ai_state_is_perimeter_of_country = yes
+    }
+}
+
+ai_state_is_important_for_country = {
+    # Mandatory checks for fort decision making to rule out error log spam in edge cases
+    exists = owner
+
+    has_non_empty_local_variable_list = {
+        name = cached_important_states_of_country
+    }
+    is_target_in_local_variable_list = {
+        name = cached_important_states_of_country
+        target = this
+    }
+}
+
+ai_territory_state_is_important = {
+    exists = state
+    state = {
+        ai_state_is_important_for_country = yes
+    }
+}
+
+ai_fort_level_is_lower_than_wanted = {
+    fort_level_projected < ai_fort_level_wanted_in_territory
+}
+
+# Covers gates, mountain passes, their desert alternatives, and probably various modifiers from missions etc.
+ai_territory_is_deadly_to_armies = {
+    OR = {
+        modifier:attrition > 0
+        modifier:local_hostile_attrition > 0
+    }
+    OR = {
+        modifier:supply_limit < 0
+        modifier:supply_limit_modifier < 0
+        modifier:local_combat_width_modifier < 0
+    }
+}
+
+ai_territory_is_good_for_defense = {
+    OR = {
+        ai_territory_is_deadly_to_armies = yes
+        AND = {
+            save_temporary_scope_as = potential_defense_territory
+            any_neighbor_province = {
+                ai_territory_is_deadly_to_armies = yes
+                territory_is_ownable = no
+                NOT = {
+                    any_neighbor_province = {
+                        NOT = {
+                            this = scope:potential_defense_territory
+                        }
+                        owner = scope:potential_defense_territory.owner
+                        territory_priority_by_population > scope:potential_defense_territory.territory_priority_by_population
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,224 @@
+pdxmesh = {
+	name = "test_object_mesh"
+	file = "test_cube.mesh"
+
+	meshsettings = {
+		name = "pCubeShape1"
+		index = 0
+		texture_diffuse = "test_diffuse.dds"
+		texture_normal = "nonormal.dds"
+		texture_specular = "nospec.dds"
+		shader = "standard"
+		shader_file = "gfx/FX/pdxmesh.shader"
+	}
+	scale = 1.0
+	cull_distance = 5000
+}	
+pdxmesh = {
+	name = "test_object_animated_mesh"
+	file = "test_object.mesh"
+	animation = { id = "idle" type = "test_object_idle.anim" }				
+	scale = 1.0
+	cull_distance = 5000
+	meshsettings = {
+		shader = "standard_snow"
+	}
+}	
+pdxmesh = {
+	name = "test_lake_mesh"
+	file = "test_object.mesh"
+	scale = 1.0
+	cull_distance = 50000
+	meshsettings = {
+		shader = "lake"
+		shader_file = "gfx/FX/pdxwater.shader"
+	}
+}	
+	
+entity = {
+	name = "test_object_entity"
+	pdxmesh = "test_object_mesh"
+	scale = 3
+}
+entity = {
+	name = "test_lake_entity"
+	pdxmesh = "test_lake_mesh"
+	scale = -100.0
+}
+
+#entity = {
+#	name = "test_sphere_entity"
+#	pdxmesh = "test_sphere_mesh"
+#	#state = { name = "idle"	animation = "idle" }
+#	scale = 1
+#}
+
+entity = {
+	name = "test_light_entity"
+	pdxmesh = "test_object_mesh"
+	scale = 30
+	
+	locator = { name = loc01 position = { -0.4 -0.45 1.0 } }
+	locator = { name = loc02 position = { -0.2 -0.45 1.0 } }
+	locator = { name = loc03 position = {  0.0 -0.45 1.0 } }
+	locator = { name = loc04 position = {  0.2 -0.45 1.0 } }
+	locator = { name = loc05 position = {  0.4 -0.45 1.0 } }
+
+	locator = { name = loc11 position = { -0.4 -0.45 1.2 } }
+	locator = { name = loc12 position = { -0.2 -0.45 1.2 } }
+	locator = { name = loc13 position = {  0.0 -0.45 1.2 } }
+	locator = { name = loc14 position = {  0.2 -0.45 1.2 } }
+	locator = { name = loc15 position = {  0.4 -0.45 1.2 } }
+	
+	default_state = "idle"
+	state = { name = "idle"
+			  start_event = { node = "loc01" light = "debug_light" }
+			  start_event = { node = "loc02" light = "debug_light" }
+			  start_event = { node = "loc03" light = "debug_light" }
+			  start_event = { node = "loc04" light = "debug_light" }
+			  start_event = { node = "loc05" light = "debug_light" }
+			  
+			  start_event = { node = "loc11" light = "debug_light" }
+			  start_event = { node = "loc12" light = "debug_light" }
+			  start_event = { node = "loc13" light = "debug_light" }
+			  start_event = { node = "loc14" light = "debug_light" }
+			  start_event = { node = "loc15" light = "debug_light" }
+	}
+}
+entity = {
+	name = "test_particle_entity"
+	pdxmesh = test_object_mesh
+	scale = 1
+	
+	default_state = "idle"
+	state = {
+		name = "idle"
+		state_time = 2.0
+		looping = yes
+		event = { time = 0.0 particle = debug_axis node = loc1 }
+		event = { time = 1.0 particle = debug_axis node = loc2 }
+	}
+	
+	locator = { name = loc1 position = { 1 0 0 } }
+	locator = { name = loc2 position = { 0 0 -1 } }
+}
+entity = {
+	name = "test_locator_entity"
+	pdxmesh = "test_object_mesh"
+	scale = 1
+	
+	cull_radius = 10
+	
+	default_state = "idle"
+	state = { name = "idle" }
+		
+	locator = { name = loc1 position = { 0 0 0 } }
+	locator = { name = loc2 position = { 2 0 0 } }
+	locator = { name = loc3 position = { 4 0 0 } }
+	locator = { name = loc4 position = { 6 0 0 } }
+	locator = { name = loc5 position = { 8 0 0 } }
+	locator = { name = loc6 position = { 10 0 0 } }
+	
+	locator = { name = test }
+	attach = { test = "test_parent_node_state_entity" }
+}
+entity = {
+	name = "test_locator_entity2"
+	pdxmesh = "test_object_mesh"
+	scale = 1
+	
+	cull_radius = 10
+	
+	default_state = "idle"
+	state = { name = "idle" };
+		
+	locator = { name = loc1 position = { 0 0 0 } }
+	locator = { name = loc2 position = { 0 0 2 } }
+	locator = { name = loc3 position = { 0 0 4 } }
+	locator = { name = loc4 position = { 0 0 6 } }
+	locator = { name = loc5 position = { 0 0 8 } }
+	locator = { name = loc6 position = { 0 0 10 } }
+	
+	locator = { name = test }
+	attach = { test = "test_parent_node_state_entity" }
+}
+
+entity = {
+	name = "test_parent_node_state_entity"
+	scale = 2.0
+	get_state_from_parent = no
+	default_state = idle
+	state = {
+		name = "idle" looping = yes state_time = 1.2
+		event = { time = 0.0 use_parent_nodes = yes node = loc1 entity = "test_object_entity" life = 0.3 }
+		event = { time = 0.2 use_parent_nodes = yes node = loc2 entity = "test_object_entity" life = 0.3 }
+		event = { time = 0.4 use_parent_nodes = yes node = loc3 entity = "test_object_entity" life = 0.3 }
+		event = { time = 0.6 use_parent_nodes = yes node = loc4 entity = "test_object_entity" life = 0.3 }
+		event = { time = 0.8 use_parent_nodes = yes node = loc5 entity = "test_object_entity" life = 0.3 }
+		event = { time = 1.0 use_parent_nodes = yes node = loc6 entity = "test_object_entity" life = 0.3 }
+	}
+}
+
+entity = {
+	name = "test_entity_spawning_entity"
+	scale = 1.0
+	
+	
+	locator = { name = loc1 position = { 0 0 0 } }
+	locator = { name = loc2 position = { 5 0 0 } }
+	locator = { name = loc3 position = { 10 0 0 } }
+	
+	locator = { name = loc4 position = { 20 0 0 } }
+	locator = { name = loc5 position = { 25 0 0 } }
+	locator = { name = loc6 position = { 30 0 0 } }
+	
+	locator = { name = loc7 position = { 40 0 0 } }
+	locator = { name = loc8 position = { 45 0 0 } }
+	locator = { name = loc9 position = { 50 0 0 } }
+	
+	default_state = "idle"
+	state = { 
+		name = "idle"
+		state_time = 1.5
+		chance = 4
+		
+		looping = no
+		next_state = "idle"
+		
+		#This one will disappear for one frame every loop. The reason for this is that it is removed at the end of the state, but time = 0.0 won't happen until after the next frame.
+		event = { time = 0.0 node = loc1 entity = "test_object_entity" }	
+		#start_events work a bit differently and solves this one-frame delay. This one should always be visible
+		start_event = { node = loc2 entity = "test_object_entity" }	
+		
+		#This events spawns an entity that fades in. Note the attachment_id
+		event = { time = 0.0 node = loc3 entity = "test_object_entity" attachment_id = "fading_box" entity_fade_speed = 2.0 } 
+		#This events removes that entity
+		event = { time = 1.0 remove_attachment = "fading_box" entity_fade_speed = 2.0 }
+		
+		#Here's a chain of events that moves an attachment to other joints.
+		#This works by using the same attachment_id in all events.
+		#Note that the fade-in only works for the first event. This is because fading is only applied if there are no existing entities with the same attachment_id already
+		event = { time = 0.0 node = loc4 entity = "test_object_entity" attachment_id = "moving_box_1" entity_fade_speed = 2.0 }
+		event = { time = 0.5 node = loc5 entity = "test_object_entity" attachment_id = "moving_box_1" entity_fade_speed = 2.0 }
+		event = { time = 1.0 node = loc6 entity = "test_object_entity" attachment_id = "moving_box_1" entity_fade_speed = 2.0 }
+		event = { time = 1.1 remove_attachment = "moving_box_1" entity_fade_speed = 2.0 }
+		
+		#Here's a chain of events that moves an attachment to other joints, and keeps it alive after leaving this state
+		# Note that this one will not fade in if this state loops (since the "moving_box_2" id already exists!)
+		# It will, however, fade out if the next state turns out to be the "idle" below which just removes stuff
+		event = { time = 0.0 node = loc7 entity = "test_object_entity" attachment_id = "moving_box_2" entity_fade_speed = 2.0 keep_entity = yes }
+		event = { time = 0.5 node = loc8 entity = "test_object_entity" attachment_id = "moving_box_2" entity_fade_speed = 2.0 keep_entity = yes }
+		event = { time = 1.0 node = loc9 entity = "test_object_entity" attachment_id = "moving_box_2" entity_fade_speed = 2.0 keep_entity = yes }
+	}
+	state = {
+		name = "idle"
+		state_time = 1.0
+		looping = no
+		next_state = "idle"
+		
+		chance = 1
+		start_event = { remove_attachment = "fading_box" entity_fade_speed = 2.0 }
+		start_event = { remove_attachment = "moving_box_1" entity_fade_speed = 2.0 }
+		start_event = { remove_attachment = "moving_box_2" entity_fade_speed = 2.0 }
+	}
+}

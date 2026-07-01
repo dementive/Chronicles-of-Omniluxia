@@ -1,4 +1,8 @@
 ﻿NGame = {
+	TAG_LIMIT = 16384 # Omniluxia uses generated fantasy tags beyond vanilla's 4096; 8192 was still hit and asserted
+	# (TagID < NDefines::NGame::TAG_LIMIT) in play, so this raises it further. If it gets hit again as the game grows,
+	# it's worth checking whether whatever spawns dynamic tags (migrations/splits/formables) is reclaiming old ones,
+	# since an ever-growing count could mean tags aren't being freed rather than just needing a higher ceiling.
 	START_DATE = "1001.1.1"
 	END_DATE = "2001.1.1"
 	GAME_SPEED_TICKS = {	 #how many seconds should a day take in every game speed
@@ -184,7 +188,7 @@ NPop = {
 	PRIMARY_CULTURE_HAPPINESS = 0.3
 	WRONG_CULTURE_GROUP_HAPPYNESS = 0.12
 	WRONG_CULTURE_HAPPYNESS = 0.2
-	WRONG_RELIGION_HAPPNESS = 0
+	WRONG_RELIGION_HAPPINESS = 0
 	WRONG_GOVERNOR_RELIGION_HAPPYNESS = -0.06
 	DEITY_SAME_RELIGION_HAPPINESS = 0.04
 	
@@ -215,8 +219,19 @@ NCombat = {
 	NAVAL_EXPERIENCE_DAMAGE_REDUCTION = 0.3
 	LAND_EXPERIENCE_DAMAGE_REDUCTION = 0.3
 
+	MINIMUM_LOSS_RATIO_THRESHOLD_FOR_BATTLE_RESULT = 0.1
+
+	BATTLE_COMMANDER_ESCAPE_CAPTURE = 10
+	BATTLE_COMMANDER_CAPTURE_MARTIAL_CHECK = 100
+
+	BATTLE_MIN_CASUALTIES_IMPACT = 0.1
+	BATTLE_NO_POPULARITY_LOSS_IF_RATIO_AS_ATTACKER = 2.0
+	BATTLE_NO_POPULARITY_LOSS_IF_RATIO_AS_DEFENDER = 2.0
+
 	BATTLE_RESULT_SCALE = 3
 	BATTLE_RESULT_CAP = 20.0
+	END_OF_COMBAT_STRENGTH_RATIO_MODIFIER = 1.25
+	END_OF_COMBAT_MORALE_BOOST_MAX = 0.75
 	
 
 	LAND_STRENGTH_DAMAGE_MODIFIER = 0.2
@@ -231,6 +246,10 @@ NCombat = {
 	# Percentage of total Unit Morale
 	MORALE_HIT_FOR_LATE_DEPLOYMENT = 0.10 # Applied to all units that are instantly deployed to the battlefield AFTER your army is already able to retreat
 	MORALE_HIT_FOR_NON_SECONDARY_REINFORCEMENT = 0.05 # Applied to all units that reinforce a battle from behind, but are not designated as the secondary rank unit type
+
+	OVERRUN_FACTOR_FOR_INITIAL_CHECK = 10
+	OVERRUN_RETREAT_AVAILABLE = 10
+	OVERRUN_RETREAT_UNAVAILABLE = 2
 
 	DAYS_PER_PHASE = 5
 	DAYS_PER_SIEGE_PHASE = 25
@@ -602,6 +621,22 @@ NCharacter = {
 	CULTURE_HAPPINESS_LOWER_THRESHOLD = 0.3 #Lower threshold for culture happiness. If Culture happiness < CULTURE_HAPPINESS_LOWER_THRESHOLD - CULTURE_HAPPINESS_THRESHOLD , character loyalty will be negatively affected
 	CULTURE_HAPPINESS_FACTOR = 3 #Scale culture happiness to loyalty after exceeding threshold
 	CULTURE_HAPPINESS_LOYALTY_MAX = 12 #Max/min values that culture happiness can have on loyalty
+
+	CIV_WAR_LEADER_SAME_CULTURE = 1 #If a disloyal character has the same culture as the origin country, add this score
+	CIV_WAR_LEADER_PROMINENCE_DIVIDER = 10 #If a disloyal character has any prominence, divide it by this number and add it to the score
+	CIV_WAR_LEADER_GOVERNOR_JOB = 10 #If a disloyal character is a governor, add this to the score
+	CIV_WAR_LEADER_GENERAL_UNITS_MULT = 1 #NumUnits * this number = impact on civil war leader score
+
+	CIV_WAR_LOYALTY_FRIEND_TO_REBEL = -50
+	CIV_WAR_LOYALTY_RIVAL_TO_REBEL = 25
+	CIV_WAR_LOYALTY_SAME_FAMILY_AS_REBEL_BUT_NOT_HEIR = -30
+	CIV_WAR_LOYALTY_SAME_FAMILY_AS_RULER_BUT_NOT_HEIR = 10
+	CIV_WAR_LOYALTY_RIVAL_TO_RULER = -35
+	CIV_WAR_LOYALTY_FRIEND_TO_RULER = 25
+	CIV_WAR_LOYALTY_REBEL_NOT_HEIR_RIVAL_TO_HEIR = -25
+	CIV_WAR_LOYALTY_REBEL_NOT_HEIR_FRIEND_TO_HEIR = 25
+	BONUS_LOYALITY_CIVIL_WAR_CUTOFF = 50
+	BONUS_LOYALITY_CIVIL_WAR_ADD = 30
 }
 
 NFamily = {
