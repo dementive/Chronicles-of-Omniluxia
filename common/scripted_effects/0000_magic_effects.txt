@@ -193,6 +193,14 @@ change_country_scope_magic_vars = {
 		limit = {
 			is_sea = no
 			is_inhabitable = yes
+			# Perf: skip provinces where this month's tick is provably a no-op:
+			# var already initialized, zero regen to add, and no clamping needed.
+			# Behavior identical to running the body.
+			NAND = {
+				has_variable = magic
+				modifier:local_cohort_recruit_speed = 0
+				var:magic <= 100
+			}
 		}
 		if = {
 			limit = {
@@ -218,6 +226,17 @@ change_country_scope_magic_vars = {
 	every_character = {
 		limit = {
 			is_alive = yes
+			# Perf: skip characters where the monthly tick is provably a no-op:
+			# var initialized, zero regen, and magic <= 100 with a non-negative max
+			# bonus means the clamp cannot trigger. magic_max/magic_monthly are only
+			# ever read right after being recalculated, so skipping the recalc here
+			# is unobservable. Behavior identical.
+			NAND = {
+				has_variable = magic
+				modifier:great_work_tribals_workrate_character_modifier = 0
+				modifier:great_work_freemen_workrate_character_modifier >= 0
+				var:magic <= 100
+			}
 		}
 		if = {
 			limit = {

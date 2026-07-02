@@ -1,0 +1,125 @@
+﻿engage_in_piracy = {
+
+	duration = -1
+	enable = yes
+	toggle = yes
+	navy_only = yes
+
+	soundeffect = "event:/SFX/UI/Unit/sfx_ui_unit_capture_port"
+
+	allow = {
+		is_navy = yes
+		unit_size >= 10
+		in_combat = no
+		is_moving = no
+		is_exiled = no
+		unit_location = {
+			custom_tooltip = {
+				text = naval_raiding_sea_province
+				OR = {
+					terrain = riverine_terrain
+					terrain = ocean
+					terrain = coastal_terrain
+				}
+			}
+		}
+		trigger_if = {
+			limit = {
+				exists = commander
+			}
+			commander = {
+				loyalty > 33
+			}
+		}
+	}
+
+	start_effect = {
+		hidden_effect = {
+			if = {
+				limit = {
+					has_variable = engage_in_piracy_recently_disabled
+				}
+				remove_variable = engage_in_piracy_recently_disabled
+			}
+			if = {
+				limit = {
+					has_unit_modifier = engage_in_piracy_unit_modifier
+				}
+				remove_unit_modifier = engage_in_piracy_unit_modifier
+			}
+			add_unit_modifier = {
+				name = engage_in_piracy_unit_modifier
+				duration = -1
+			}
+			engage_in_piracy_apply_privateering_effect = yes
+			unit_owner = {
+				engage_in_piracy_refresh_country_income_effect = yes
+			}
+			engage_in_piracy_apply_current_fleet_commerce_fallback_effect = yes
+		}
+	}
+
+	on_entering_province = {
+		hidden_effect = {
+			engage_in_piracy_apply_privateering_effect = yes
+			unit_owner = {
+				engage_in_piracy_refresh_country_income_effect = yes
+			}
+			engage_in_piracy_apply_current_fleet_commerce_fallback_effect = yes
+		}
+	}
+
+	finish_effect = {
+		hidden_effect = {
+			set_variable = {
+				name = engage_in_piracy_recently_disabled
+				days = 2
+			}
+			if = {
+				limit = {
+					has_unit_modifier = engage_in_piracy_unit_modifier
+				}
+				remove_unit_modifier = engage_in_piracy_unit_modifier
+			}
+			unit_owner = {
+				engage_in_piracy_refresh_country_income_effect = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		modifier = {
+			trigger = {
+				unit_location = {
+					any_neighbor_province = {
+						engage_in_piracy_target_province_trigger = yes
+						NOT = { owner = root.unit_owner }
+						owner = {
+							NOT = { alliance_with = root.unit_owner }
+							NOT = { is_subject_of = root.unit_owner }
+						}
+					}
+				}
+			}
+			add = {
+				value = 100
+				divide = unit_size_rank
+			}
+		}
+	}
+
+	ai_will_revoke = {
+		unit_location = {
+			NOT = {
+				any_neighbor_province = {
+					engage_in_piracy_target_province_trigger = yes
+					NOT = { owner = root.unit_owner }
+					owner = {
+						NOT = { alliance_with = root.unit_owner }
+						NOT = { is_subject_of = root.unit_owner }
+					}
+				}
+			}
+		}
+	}
+}

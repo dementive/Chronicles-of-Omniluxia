@@ -617,27 +617,10 @@ me_zorgo_magic_focus.5 = { # Amten School
         trigger = {
             scope:target = {
                 has_variable = druid_t2_unlocked_var
-                is_general = yes
-                any_character_unit = {
-                    is_army = yes
-                }
             }
         }
         scope:target = {
-            change_variable = {
-                name = magic
-                subtract = omni_plant_growth_spell_cost
-            }
-            clamp_character_magic_to_max = yes
-            random_character_unit = {
-                limit = { is_army = yes }
-                unit_location = {
-                    add_province_modifier = {
-                        name = amten_druid_spell_t1_mod
-                        duration = 180
-                    }
-                }
-            }
+            set_variable = omni_pending_plant_growth_spell
         }
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = plant_growth_unit_location_tt
@@ -648,57 +631,10 @@ me_zorgo_magic_focus.5 = { # Amten School
         trigger = {
             scope:target = {
                 has_variable = druid_t2_unlocked_var
-                is_general = yes
-                any_character_unit = {
-                    is_army = yes
-                    unit_location = {
-                        OR = {
-                            terrain = forest
-                            terrain = eldritch_forest
-                            terrain = jungle
-                        }
-                    }
-                }
             }
         }
         scope:target = {
-            change_variable = {
-                name = magic
-                subtract = omni_summon_dryads_spell_cost
-            }
-            clamp_character_magic_to_max = yes
-            random_character_unit = {
-                limit = {
-                    is_army = yes
-                    unit_location = {
-                        OR = {
-                            terrain = forest
-                            terrain = eldritch_forest
-                            terrain = jungle
-                        }
-                    }
-                }
-                unit_location = {
-                    save_scope_as = dryad_forest_province
-                    add_province_modifier = {
-                        name = summon_dryads_mod
-                        duration = 180
-                    }
-                }
-            }
-        }
-        create_unit = {
-            navy = no
-            name = "Summoned Dryads"
-            location = scope:dryad_forest_province
-            hidden_effect = {
-                while = {
-                    count = omni_dryad_cohort_count
-                    add_subunit = archers
-                }
-                add_food = 300
-                add_morale = 4
-            }
+            set_variable = omni_pending_summon_dryads_spell
         }
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = summon_dryads_unit_location_tt
@@ -3412,7 +3348,7 @@ me_zorgo_magic_focus.28 = { # Mana Overuse Death -50
 }
 
 
-me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own army unit
+me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own army or navy unit
     type = country_event
 
     title = me_zorgo_magic_focus.29_title
@@ -3421,7 +3357,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
-    # scope:target = the commander of the player's selected army unit (passed by
+    # scope:target = the commander of the player's selected army/navy unit (passed by
     # the omni_friendly_magic_unit_button scripted gui). Auto-select the best
     # available caster, matching the offensive/domestic menus.
     immediate = {
@@ -3430,6 +3366,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 OR = {
                     is_ruler = yes
                     is_general = yes
+                    is_admiral = yes
                     has_office = office_physician
                     has_office = office_republic_physician
                     has_office = office_apothecary
@@ -3470,7 +3407,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:target = {
             every_character_unit = {
-                limit = { is_army = yes }
+                limit = {
+                    OR = {
+                        is_army = yes
+                        is_navy = yes
+                    }
+                }
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_spell_mod }
                     remove_unit_modifier = omni_battle_haste_spell_mod
@@ -3495,7 +3437,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:target = {
             every_character_unit = {
-                limit = { is_army = yes }
+                limit = {
+                    OR = {
+                        is_army = yes
+                        is_navy = yes
+                    }
+                }
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_2_spell_mod }
                     remove_unit_modifier = omni_battle_haste_2_spell_mod
@@ -3520,7 +3467,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:target = {
             every_character_unit = {
-                limit = { is_army = yes }
+                limit = {
+                    OR = {
+                        is_army = yes
+                        is_navy = yes
+                    }
+                }
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_3_spell_mod }
                     remove_unit_modifier = omni_battle_haste_3_spell_mod
@@ -3548,7 +3500,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:target = {
             every_character_unit = {
-                limit = { is_army = yes }
+                limit = {
+                    OR = {
+                        is_army = yes
+                        is_navy = yes
+                    }
+                }
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_4_spell_mod }
                     remove_unit_modifier = omni_battle_haste_4_spell_mod
@@ -3573,7 +3530,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:target = {
             every_character_unit = {
-                limit = { is_army = yes }
+                limit = {
+                    OR = {
+                        is_army = yes
+                        is_navy = yes
+                    }
+                }
                 if = {
                     limit = { has_unit_modifier = omni_battle_rally_spell_mod }
                     remove_unit_modifier = omni_battle_rally_spell_mod
@@ -3598,7 +3560,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:target = {
             every_character_unit = {
-                limit = { is_army = yes }
+                limit = {
+                    OR = {
+                        is_army = yes
+                        is_navy = yes
+                    }
+                }
                 if = {
                     limit = { has_unit_modifier = omni_battle_discipline_spell_mod }
                     remove_unit_modifier = omni_battle_discipline_spell_mod
@@ -3626,7 +3593,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:target = {
             every_character_unit = {
-                limit = { is_army = yes }
+                limit = {
+                    OR = {
+                        is_army = yes
+                        is_navy = yes
+                    }
+                }
                 if = {
                     limit = { has_unit_modifier = omni_battle_blessing_spell_mod }
                     remove_unit_modifier = omni_battle_blessing_spell_mod
