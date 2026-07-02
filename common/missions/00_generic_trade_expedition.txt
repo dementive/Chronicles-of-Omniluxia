@@ -1,0 +1,864 @@
+generic_trade_expedition = {
+	header = "lotr_generic_mission_ships_headers"
+	icon = lotr_generic_ship_mission_icon
+
+	repeatable = yes
+
+	chance = {}
+
+	ai_chance = {
+		factor = 0
+	}
+
+	potential = {
+		choo_generic_mission_blocker = yes
+		has_civil_war = no
+		civic_tech >= 2
+		num_of_ports >= 1
+		NOT = { has_variable = generic_trade_expedition_cooldown }
+		any_owned_province = {
+			generic_trade_expedition_valid_home_port_trigger = yes
+		}
+		any_country = {
+			generic_trade_expedition_valid_partner_trigger = yes
+		}
+	}
+
+	abort = {
+		OR = {
+			NOT = { exists = scope:generic_trade_expedition_partner }
+			NOT = { exists = scope:generic_trade_expedition_home_port }
+			NOT = { exists = scope:generic_trade_expedition_partner_port }
+			scope:generic_trade_expedition_partner = {
+				OR = {
+					has_land = no
+					war_with = ROOT
+				}
+			}
+			scope:generic_trade_expedition_home_port = {
+				NOT = { owner = ROOT }
+			}
+			scope:generic_trade_expedition_partner_port = {
+				OR = {
+					NOT = { owner = scope:generic_trade_expedition_partner }
+					NOT = { is_port = yes }
+					NOT = { has_building = commerce_building }
+				}
+			}
+			AND = {
+				has_variable = generic_trade_expedition_envoy_selected
+				NOT = {
+					any_character = {
+						has_character_modifier = generic_trade_expedition_envoy_charmod
+					}
+				}
+			}
+			ai_mission_back_out_trigger = yes
+		}
+	}
+
+	on_abort = {
+		generic_trade_expedition_cleanup_effect = yes
+		set_variable = {
+			name = generic_trade_expedition_cooldown
+			days = 730
+		}
+	}
+
+	on_potential = {
+		random_owned_province = {
+			limit = {
+				generic_trade_expedition_valid_home_port_trigger = yes
+			}
+			save_scope_as = generic_trade_expedition_home_port
+		}
+		random_country = {
+			limit = {
+				generic_trade_expedition_valid_partner_trigger = yes
+			}
+			save_scope_as = generic_trade_expedition_partner
+			random_owned_province = {
+				limit = {
+					generic_trade_expedition_valid_partner_port_trigger = yes
+				}
+				save_scope_as = generic_trade_expedition_partner_port
+			}
+		}
+	}
+
+	on_start = {
+		start_mission_ai_effect = yes
+	}
+
+	on_completion = {
+		complete_mission_effect = yes
+		generic_trade_expedition_cleanup_effect = yes
+		set_variable = {
+			name = generic_trade_expedition_cooldown
+			days = 1825
+		}
+	}
+
+	generic_trade_expedition_open_contacts = {
+		icon = "task_diplomatic"
+
+		duration = 30
+
+		allow = {
+			political_influence >= 10
+			custom_tooltip = {
+				text = generic_trade_expedition_eligible_envoy_tt
+				any_character = {
+					generic_trade_expedition_eligible_envoy_trigger = yes
+				}
+			}
+			hidden:scope:generic_trade_expedition_partner = {
+				opinion = {
+					target = ROOT
+					value >= 25
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_start = {
+			add_political_influence = -10
+		}
+
+		on_completion = {
+			add_country_modifier = {
+				name = generic_trade_expedition_chartered_venture_cmod
+				duration = 730
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_envoys
+					target = ROOT
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.4 }
+		}
+	}
+
+	generic_trade_expedition_hire_interpreters = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_open_contacts }
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_envoy_selected_tt
+				has_variable = generic_trade_expedition_envoy_selected
+			}
+			treasury >= generic_trade_expedition_small_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			add_treasury = generic_trade_expedition_small_pay_svalue
+			add_country_modifier = {
+				name = generic_trade_expedition_interpreters_cmod
+				duration = 730
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_interpreters
+					target = ROOT
+				}
+			}
+		}
+	}
+
+	generic_trade_expedition_survey_home_market = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_open_contacts }
+
+		duration = 30
+
+		allow = {
+			treasury >= generic_trade_expedition_small_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_start = {
+			add_treasury = generic_trade_expedition_small_pay_svalue
+		}
+
+		on_completion = {
+			scope:generic_trade_expedition_home_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_home_market_survey_pmod
+					duration = 1095
+				}
+			}
+		}
+	}
+
+	generic_trade_expedition_exchange_gifts = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_hire_interpreters generic_trade_expedition_survey_home_market }
+
+		allow = {
+			treasury >= generic_trade_expedition_gift_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			trigger_event = { id = generic_trade_expedition.5 }
+		}
+	}
+
+	generic_trade_expedition_harbor_rights = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_exchange_gifts }
+
+		duration = 30
+
+		allow = {
+			political_influence >= 15
+			hidden:scope:generic_trade_expedition_partner = {
+				opinion = {
+					target = ROOT
+					value >= 40
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_start = {
+			add_political_influence = -15
+		}
+
+		on_completion = {
+			if = {
+				limit = {
+					NOT = { has_military_access = scope:generic_trade_expedition_partner }
+				}
+				add_military_access = scope:generic_trade_expedition_partner
+			}
+			add_country_modifier = {
+				name = generic_trade_expedition_harbor_rights_cmod
+				duration = 730
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_harbor_rights
+					target = ROOT
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.1 }
+		}
+	}
+
+	generic_trade_expedition_chart_course = {
+		icon = "task_expansion"
+
+		requires = { generic_trade_expedition_harbor_rights }
+
+		duration = 30
+
+		allow = {
+			political_influence >= 5
+		}
+
+		highlight = {
+			scope:province = {
+				OR = {
+					THIS = scope:generic_trade_expedition_home_port
+					THIS = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		on_start = {
+			add_political_influence = -5
+		}
+
+		on_completion = {
+			set_variable = generic_trade_expedition_charts_prepared
+			add_country_modifier = {
+				name = generic_trade_expedition_outbound_charts_cmod
+				duration = 730
+			}
+		}
+	}
+
+	generic_trade_expedition_provision_convoy = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_harbor_rights }
+
+		allow = {
+			treasury >= generic_trade_expedition_provision_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_treasury = generic_trade_expedition_provision_pay_svalue
+			add_country_modifier = {
+				name = generic_trade_expedition_provisioned_convoy_cmod
+				duration = 730
+			}
+			scope:generic_trade_expedition_home_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_outfitting_quays_pmod
+					duration = 730
+				}
+			}
+		}
+	}
+
+	generic_trade_expedition_departure_feast = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_harbor_rights }
+
+		allow = {
+			treasury >= generic_trade_expedition_feast_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_treasury = generic_trade_expedition_feast_pay_svalue
+			current_ruler = {
+				add_popularity = popularity_small
+				add_opinion = {
+					modifier = opinion_trade_expedition_feasted_with_envoy
+					target = scope:generic_trade_expedition_envoy
+				}
+			}
+			scope:generic_trade_expedition_envoy = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_feasted_with_envoy
+					target = ROOT.current_ruler
+				}
+			}
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_trade_expedition_departure_feast_cmod
+					duration = 365
+				}
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_departure_feast
+					target = ROOT
+				}
+			}
+		}
+	}
+
+	generic_trade_expedition_assemble_convoy = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_chart_course generic_trade_expedition_provision_convoy }
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_assemble_convoy_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_home_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+	}
+
+	generic_trade_expedition_reach_partner_port = {
+		icon = "task_expansion"
+
+		requires = { generic_trade_expedition_assemble_convoy }
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_reach_partner_port_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			trigger_event = { id = generic_trade_expedition.2 }
+		}
+	}
+
+	generic_trade_expedition_register_harbor_master = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_reach_partner_port }
+
+		duration = 30
+
+		allow = {
+			political_influence >= 5
+			custom_tooltip = {
+				text = generic_trade_expedition_reach_partner_port_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_start = {
+			add_political_influence = -5
+		}
+
+		on_completion = {
+			trigger_event = { id = generic_trade_expedition.6 }
+		}
+	}
+
+	generic_trade_expedition_inspect_warehouses = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_register_harbor_master }
+
+		duration = 30
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_harbor_registered_tt
+				has_variable = generic_trade_expedition_harbor_registered
+			}
+			custom_tooltip = {
+				text = generic_trade_expedition_reach_partner_port_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			trigger_event = { id = generic_trade_expedition.8 }
+		}
+	}
+
+	generic_trade_expedition_meet_market_guilds = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_reach_partner_port }
+
+		duration = 30
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_reach_partner_port_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			trigger_event = { id = generic_trade_expedition.7 }
+		}
+	}
+
+	generic_trade_expedition_record_customs = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_inspect_warehouses }
+
+		duration = 30
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_reach_partner_port_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			set_variable = generic_trade_expedition_customs_recorded
+			add_research = {
+				technology = oratory_tech
+				value = 1
+			}
+			add_political_influence = 5
+		}
+	}
+
+	generic_trade_expedition_load_cargo = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_inspect_warehouses generic_trade_expedition_meet_market_guilds }
+
+		duration = 90
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_load_cargo_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_start = {
+			add_country_modifier = {
+				name = generic_trade_expedition_loading_cargo
+				duration = 90
+			}
+			trigger_event = { id = generic_trade_expedition.100 days = 20 }
+			trigger_event = { id = generic_trade_expedition.100 days = 50 }
+			trigger_event = { id = generic_trade_expedition.100 days = 80 }
+		}
+
+		on_completion = {
+			if = {
+				limit = { has_country_modifier = generic_trade_expedition_loading_cargo }
+				remove_country_modifier = generic_trade_expedition_loading_cargo
+			}
+			add_country_modifier = {
+				name = generic_trade_expedition_full_holds
+				duration = 365
+			}
+			scope:generic_trade_expedition_partner_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_foreign_quarter
+					duration = 1825
+				}
+			}
+		}
+	}
+
+	generic_trade_expedition_plant_factor_house = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_load_cargo }
+
+		allow = {
+			political_influence >= 10
+			treasury >= generic_trade_expedition_factor_house_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			add_political_influence = -10
+			add_treasury = generic_trade_expedition_factor_house_pay_svalue
+			set_variable = generic_trade_expedition_factor_house_planted
+			scope:generic_trade_expedition_partner_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_factor_house_pmod
+					duration = 3650
+				}
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_factor_house
+					target = ROOT
+				}
+			}
+		}
+	}
+
+	generic_trade_expedition_seal_manifest = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_load_cargo }
+
+		duration = 15
+
+		allow = {
+			has_country_modifier = generic_trade_expedition_full_holds
+			custom_tooltip = {
+				text = generic_trade_expedition_load_cargo_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			set_variable = generic_trade_expedition_manifest_sealed
+			add_country_modifier = {
+				name = generic_trade_expedition_manifest_sealed_cmod
+				duration = 365
+			}
+		}
+	}
+
+	generic_trade_expedition_return_home = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_seal_manifest }
+
+		allow = {
+			has_country_modifier = generic_trade_expedition_full_holds
+			custom_tooltip = {
+				text = generic_trade_expedition_return_home_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_home_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			remove_country_modifier = generic_trade_expedition_full_holds
+			add_country_modifier = {
+				name = generic_trade_expedition_returned_home_cmod
+				duration = 365
+			}
+		}
+	}
+
+	generic_trade_expedition_honor_envoy = {
+		icon = "task_political"
+
+		requires = { generic_trade_expedition_return_home }
+
+		allow = {
+			political_influence >= 10
+			has_variable = generic_trade_expedition_envoy_character
+			var:generic_trade_expedition_envoy_character = {
+				exists = this
+				has_character_modifier = generic_trade_expedition_envoy_charmod
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_political_influence = -10
+			set_variable = generic_trade_expedition_envoy_honored
+			var:generic_trade_expedition_envoy_character = {
+				add_prominence = prominence_medium
+				add_popularity = popularity_medium
+			}
+			add_country_modifier = {
+				name = generic_trade_expedition_honored_envoy_cmod
+				duration = 1095
+			}
+		}
+	}
+
+	generic_trade_expedition_publish_charts = {
+		icon = "task_expansion"
+
+		requires = { generic_trade_expedition_return_home }
+
+		potential = {
+			has_variable = generic_trade_expedition_charts_prepared
+		}
+
+		allow = {
+			political_influence >= 5
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_political_influence = -5
+			set_variable = generic_trade_expedition_charts_published
+			add_country_modifier = {
+				name = generic_trade_expedition_published_charts_cmod
+				duration = 1825
+			}
+			add_research = {
+				technology = civic_tech
+				value = 10
+			}
+		}
+	}
+
+	generic_trade_expedition_count_profits = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_return_home }
+
+		final = yes
+
+		allow = {
+			has_country_modifier = generic_trade_expedition_returned_home_cmod
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			if = {
+				limit = { has_country_modifier = generic_trade_expedition_returned_home_cmod }
+				remove_country_modifier = generic_trade_expedition_returned_home_cmod
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cargo_bulk }
+				add_treasury = generic_trade_expedition_event_profit_svalue
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cargo_luxury }
+				add_treasury = generic_trade_expedition_large_event_profit_svalue
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cargo_knowledge }
+				add_research = {
+					technology = civic_tech
+					value = 20
+				}
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_bonded_warehouses }
+				add_treasury = generic_trade_expedition_event_profit_svalue
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_guarded_warehouses }
+				add_political_influence = 5
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cramped_warehouses }
+				add_research = {
+					technology = civic_tech
+					value = 5
+				}
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_customs_recorded }
+				add_political_influence = 5
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_factor_house_planted }
+				scope:generic_trade_expedition_partner = {
+					add_opinion = {
+						modifier = opinion_trade_expedition_factor_house
+						target = ROOT
+					}
+				}
+			}
+			add_country_modifier = {
+				name = generic_trade_expedition_successful
+				duration = 3650
+			}
+			scope:generic_trade_expedition_home_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_returned_merchants
+					duration = 3650
+				}
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_success
+					target = ROOT
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.3 }
+		}
+	}
+}

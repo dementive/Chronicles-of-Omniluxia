@@ -1,0 +1,1027 @@
+namespace = generic_trade_expedition
+
+generic_trade_expedition.4 = {
+	type = country_event
+	title = "generic_trade_expedition.4.t"
+	desc = "generic_trade_expedition.4.desc"
+	picture = greek_court
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy_1
+	left_portrait = scope:generic_trade_expedition_envoy_2
+	right_portrait = scope:generic_trade_expedition_envoy_3
+	right_portrait = scope:generic_trade_expedition_envoy_4
+
+	trigger = {
+		exists = scope:generic_trade_expedition_home_port
+		NOT = { has_variable = generic_trade_expedition_envoy_selected }
+		any_character = {
+			generic_trade_expedition_eligible_envoy_trigger = yes
+		}
+	}
+
+	immediate = {
+		ordered_character = {
+			order_by = charisma
+			limit = {
+				generic_trade_expedition_eligible_envoy_trigger = yes
+			}
+			save_scope_as = generic_trade_expedition_envoy_1
+		}
+		ordered_character = {
+			order_by = charisma
+			limit = {
+				generic_trade_expedition_eligible_envoy_trigger = yes
+				NOT = { this = scope:generic_trade_expedition_envoy_1 }
+			}
+			save_scope_as = generic_trade_expedition_envoy_2
+		}
+		ordered_character = {
+			order_by = charisma
+			limit = {
+				generic_trade_expedition_eligible_envoy_trigger = yes
+				NOT = { this = scope:generic_trade_expedition_envoy_1 }
+				NOT = { this = scope:generic_trade_expedition_envoy_2 }
+			}
+			save_scope_as = generic_trade_expedition_envoy_3
+		}
+		ordered_character = {
+			order_by = charisma
+			limit = {
+				generic_trade_expedition_eligible_envoy_trigger = yes
+				NOT = { this = scope:generic_trade_expedition_envoy_1 }
+				NOT = { this = scope:generic_trade_expedition_envoy_2 }
+				NOT = { this = scope:generic_trade_expedition_envoy_3 }
+			}
+			save_scope_as = generic_trade_expedition_envoy_4
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.4.a"
+		trigger = { exists = scope:generic_trade_expedition_envoy_1 }
+		scope:generic_trade_expedition_envoy_1 = {
+			save_scope_as = generic_trade_expedition_envoy
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_charmod
+				duration = 1825
+			}
+			add_prominence = prominence_small
+			add_popularity = popularity_small
+		}
+		set_variable = {
+			name = generic_trade_expedition_envoy_character
+			value = scope:generic_trade_expedition_envoy_1
+			days = -1
+		}
+		set_variable = generic_trade_expedition_envoy_selected
+	}
+
+	option = {
+		name = "generic_trade_expedition.4.b"
+		trigger = { exists = scope:generic_trade_expedition_envoy_2 }
+		scope:generic_trade_expedition_envoy_2 = {
+			save_scope_as = generic_trade_expedition_envoy
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_charmod
+				duration = 1825
+			}
+			add_prominence = prominence_small
+			add_popularity = popularity_small
+		}
+		set_variable = {
+			name = generic_trade_expedition_envoy_character
+			value = scope:generic_trade_expedition_envoy_2
+			days = -1
+		}
+		set_variable = generic_trade_expedition_envoy_selected
+	}
+
+	option = {
+		name = "generic_trade_expedition.4.c"
+		trigger = { exists = scope:generic_trade_expedition_envoy_3 }
+		scope:generic_trade_expedition_envoy_3 = {
+			save_scope_as = generic_trade_expedition_envoy
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_charmod
+				duration = 1825
+			}
+			add_prominence = prominence_small
+			add_popularity = popularity_small
+		}
+		set_variable = {
+			name = generic_trade_expedition_envoy_character
+			value = scope:generic_trade_expedition_envoy_3
+			days = -1
+		}
+		set_variable = generic_trade_expedition_envoy_selected
+	}
+
+	option = {
+		name = "generic_trade_expedition.4.d"
+		trigger = { exists = scope:generic_trade_expedition_envoy_4 }
+		scope:generic_trade_expedition_envoy_4 = {
+			save_scope_as = generic_trade_expedition_envoy
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_charmod
+				duration = 1825
+			}
+			add_prominence = prominence_small
+			add_popularity = popularity_small
+		}
+		set_variable = {
+			name = generic_trade_expedition_envoy_character
+			value = scope:generic_trade_expedition_envoy_4
+			days = -1
+		}
+		set_variable = generic_trade_expedition_envoy_selected
+	}
+}
+
+generic_trade_expedition.5 = {
+	type = country_event
+	title = "generic_trade_expedition.5.t"
+	desc = "generic_trade_expedition.5.desc"
+	picture = greek_court
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_partner_port
+		has_variable = generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.5.a"
+		trigger = {
+			treasury >= generic_trade_expedition_lavish_gift_cost_svalue
+		}
+		add_treasury = generic_trade_expedition_lavish_gift_pay_svalue
+		set_variable = generic_trade_expedition_gift_lavish
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_lavish_gifts
+				target = ROOT
+			}
+		}
+		current_ruler = {
+			add_popularity = popularity_small
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.5.b"
+		trigger = {
+			treasury >= generic_trade_expedition_gift_cost_svalue
+		}
+		add_treasury = generic_trade_expedition_gift_pay_svalue
+		set_variable = generic_trade_expedition_gift_practical
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_gifts
+				target = ROOT
+			}
+		}
+		scope:generic_trade_expedition_home_port = {
+			add_province_modifier = {
+				name = generic_trade_expedition_home_market_survey_pmod
+				duration = 730
+			}
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.5.c"
+		trigger = {
+			treasury >= generic_trade_expedition_small_cost_svalue
+		}
+		add_treasury = generic_trade_expedition_small_pay_svalue
+		set_variable = generic_trade_expedition_gift_ceremonial
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_ceremonial_gifts
+				target = ROOT
+			}
+		}
+		add_political_influence = 5
+	}
+}
+
+generic_trade_expedition.6 = {
+	type = country_event
+	title = "generic_trade_expedition.6.t"
+	desc = "generic_trade_expedition.6.desc"
+	picture = trade_port
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_partner_port
+		has_variable = generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.6.a"
+		trigger = {
+			treasury >= generic_trade_expedition_small_cost_svalue
+		}
+		add_treasury = generic_trade_expedition_small_pay_svalue
+		set_variable = generic_trade_expedition_harbor_registered
+		set_variable = generic_trade_expedition_harbor_seals
+		add_country_modifier = {
+			name = generic_trade_expedition_registered_cleanly_cmod
+			duration = 730
+		}
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_harbor_dues
+				target = ROOT
+			}
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.6.b"
+		set_variable = generic_trade_expedition_harbor_registered
+		set_variable = generic_trade_expedition_harbor_bargained
+		var:generic_trade_expedition_envoy_character = {
+			add_popularity = popularity_small
+			add_prominence = prominence_small
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.6.c"
+		set_variable = generic_trade_expedition_harbor_registered
+		set_variable = generic_trade_expedition_harbor_shortcut
+		add_country_modifier = {
+			name = generic_trade_expedition_market_confusion_cmod
+			duration = 365
+		}
+		add_political_influence = 5
+	}
+}
+
+generic_trade_expedition.8 = {
+	type = country_event
+	title = "generic_trade_expedition.8.t"
+	desc = "generic_trade_expedition.8.desc"
+	picture = hellenic_marketplace
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_partner_port
+		has_variable = generic_trade_expedition_harbor_registered
+		has_variable = generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.8.a"
+		trigger = {
+			OR = {
+				has_variable = generic_trade_expedition_harbor_seals
+				treasury >= generic_trade_expedition_small_cost_svalue
+			}
+		}
+		if = {
+			limit = { NOT = { has_variable = generic_trade_expedition_harbor_seals } }
+			add_treasury = generic_trade_expedition_small_pay_svalue
+		}
+		set_variable = generic_trade_expedition_bonded_warehouses
+		scope:generic_trade_expedition_partner_port = {
+			add_province_modifier = {
+				name = generic_trade_expedition_bonded_warehouses_pmod
+				duration = 1825
+			}
+		}
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_bonded_warehouses
+				target = ROOT
+			}
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.8.b"
+		trigger = {
+			treasury >= generic_trade_expedition_small_cost_svalue
+		}
+		add_treasury = generic_trade_expedition_small_pay_svalue
+		set_variable = generic_trade_expedition_guarded_warehouses
+		add_country_modifier = {
+			name = generic_trade_expedition_guarded_cargo_cmod
+			duration = 1095
+		}
+		var:generic_trade_expedition_envoy_character = {
+			add_prominence = prominence_small
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.8.c"
+		set_variable = generic_trade_expedition_cramped_warehouses
+		scope:generic_trade_expedition_partner_port = {
+			add_province_modifier = {
+				name = generic_trade_expedition_quayside_storage_pmod
+				duration = 1095
+			}
+		}
+		add_country_modifier = {
+			name = generic_trade_expedition_market_confusion_cmod
+			duration = 365
+		}
+	}
+}
+
+generic_trade_expedition.7 = {
+	type = country_event
+	title = "generic_trade_expedition.7.t"
+	desc = "generic_trade_expedition.7.desc"
+	picture = hellenic_marketplace
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_partner_port
+		has_variable = generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.7.a"
+		set_variable = generic_trade_expedition_cargo_bulk
+		add_country_modifier = {
+			name = generic_trade_expedition_bulk_cargo_cmod
+			duration = 1095
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.7.b"
+		trigger = {
+			treasury >= generic_trade_expedition_gift_cost_svalue
+		}
+		set_variable = generic_trade_expedition_cargo_luxury
+		add_treasury = generic_trade_expedition_gift_pay_svalue
+		add_country_modifier = {
+			name = generic_trade_expedition_luxury_cargo_cmod
+			duration = 1095
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.7.c"
+		set_variable = generic_trade_expedition_cargo_knowledge
+		add_country_modifier = {
+			name = generic_trade_expedition_knowledge_cargo_cmod
+			duration = 1095
+		}
+		add_research = {
+			technology = civic_tech
+			value = 10
+		}
+	}
+}
+
+generic_trade_expedition.1 = {
+	type = country_event
+	title = "generic_trade_expedition.1.t"
+	desc = "generic_trade_expedition.1.desc"
+	picture = hellenic_marketplace
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_partner_port
+	}
+
+	option = {
+		name = "generic_trade_expedition.1.a"
+	}
+}
+
+generic_trade_expedition.100 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		has_country_modifier = generic_trade_expedition_loading_cargo
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_home_port
+		exists = scope:generic_trade_expedition_partner_port
+		has_variable = generic_trade_expedition_envoy_character
+		var:generic_trade_expedition_envoy_character = {
+			exists = this
+			has_character_modifier = generic_trade_expedition_envoy_charmod
+		}
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+		generic_trade_expedition_random_port_event_effect = yes
+	}
+}
+
+generic_trade_expedition.110 = {
+	type = country_event
+	title = "generic_trade_expedition.110.t"
+	desc = "generic_trade_expedition.110.desc"
+	picture = greek_city_market
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.110.a"
+		add_treasury = generic_trade_expedition_event_profit_svalue
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_good_port_conduct
+				target = ROOT
+			}
+		}
+	}
+}
+
+generic_trade_expedition.111 = {
+	type = country_event
+	title = "generic_trade_expedition.111.t"
+	desc = "generic_trade_expedition.111.desc"
+	picture = greek_city_market
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.111.a"
+		add_treasury = generic_trade_expedition_event_loss_svalue
+		add_country_modifier = {
+			name = generic_trade_expedition_market_confusion_cmod
+			duration = 365
+		}
+	}
+}
+
+generic_trade_expedition.112 = {
+	type = country_event
+	title = "generic_trade_expedition.112.t"
+	desc = "generic_trade_expedition.112.desc"
+	picture = hellenic_marketplace
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.112.a"
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_bad_port_conduct
+				target = ROOT
+			}
+		}
+		var:generic_trade_expedition_envoy_character = {
+			add_popularity = popularity_small
+		}
+	}
+}
+
+generic_trade_expedition.113 = {
+	type = country_event
+	title = "generic_trade_expedition.113.t"
+	desc = "generic_trade_expedition.113.desc"
+	picture = shrine_city
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.113.a"
+		add_political_influence = 5
+	}
+}
+
+generic_trade_expedition.114 = {
+	type = country_event
+	title = "generic_trade_expedition.114.t"
+	desc = "generic_trade_expedition.114.desc"
+	picture = greek_marketplace
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.114.a"
+		add_treasury = generic_trade_expedition_event_loss_svalue
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_good_port_conduct
+				target = ROOT
+			}
+		}
+	}
+}
+
+generic_trade_expedition.115 = {
+	type = country_event
+	title = "generic_trade_expedition.115.t"
+	desc = "generic_trade_expedition.115.desc"
+	picture = ship_in_storm
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.115.a"
+		add_military_experience = 3
+	}
+}
+
+generic_trade_expedition.116 = {
+	type = country_event
+	title = "generic_trade_expedition.116.t"
+	desc = "generic_trade_expedition.116.desc"
+	picture = greek_court
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.116.a"
+		add_research = {
+			technology = oratory_tech
+			value = 10
+		}
+	}
+}
+
+generic_trade_expedition.117 = {
+	type = country_event
+	title = "generic_trade_expedition.117.t"
+	desc = "generic_trade_expedition.117.desc"
+	picture = trade_port
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.117.a"
+		scope:generic_trade_expedition_home_port = {
+			add_province_modifier = {
+				name = generic_trade_expedition_shipwright_notes_pmod
+				duration = 730
+			}
+		}
+	}
+}
+
+generic_trade_expedition.118 = {
+	type = country_event
+	title = "generic_trade_expedition.118.t"
+	desc = "generic_trade_expedition.118.desc"
+	picture = event_bread_basket
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.118.a"
+		add_treasury = generic_trade_expedition_event_loss_svalue
+	}
+}
+
+generic_trade_expedition.119 = {
+	type = country_event
+	title = "generic_trade_expedition.119.t"
+	desc = "generic_trade_expedition.119.desc"
+	picture = greek_marketplace
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.119.a"
+		add_treasury = generic_trade_expedition_event_profit_svalue
+	}
+}
+
+generic_trade_expedition.120 = {
+	type = country_event
+	title = "generic_trade_expedition.120.t"
+	desc = "generic_trade_expedition.120.desc"
+	picture = burning_alexandria
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.120.a"
+		add_stability = -2
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_good_port_conduct
+				target = ROOT
+			}
+		}
+	}
+}
+
+generic_trade_expedition.121 = {
+	type = country_event
+	title = "generic_trade_expedition.121.t"
+	desc = "generic_trade_expedition.121.desc"
+	picture = greek_court
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.121.a"
+		current_ruler = {
+			add_popularity = popularity_small
+		}
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_good_port_conduct
+				target = ROOT
+			}
+		}
+	}
+}
+
+generic_trade_expedition.122 = {
+	type = country_event
+	title = "generic_trade_expedition.122.t"
+	desc = "generic_trade_expedition.122.desc"
+	picture = greek_marketplace
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.122.a"
+		add_treasury = generic_trade_expedition_event_profit_svalue
+		add_research = {
+			technology = civic_tech
+			value = 5
+		}
+	}
+}
+
+generic_trade_expedition.123 = {
+	type = country_event
+	title = "generic_trade_expedition.123.t"
+	desc = "generic_trade_expedition.123.desc"
+	picture = grand_ship
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.123.a"
+		add_country_modifier = {
+			name = generic_trade_expedition_foreign_charts_cmod
+			duration = 730
+		}
+	}
+}
+
+generic_trade_expedition.124 = {
+	type = country_event
+	title = "generic_trade_expedition.124.t"
+	desc = "generic_trade_expedition.124.desc"
+	picture = greek_city_market
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.124.a"
+		add_treasury = generic_trade_expedition_event_profit_svalue
+	}
+}
+
+generic_trade_expedition.125 = {
+	type = country_event
+	title = "generic_trade_expedition.125.t"
+	desc = "generic_trade_expedition.125.desc"
+	picture = greek_court
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.125.a"
+		add_political_influence = 3
+		var:generic_trade_expedition_envoy_character = {
+			add_prominence = prominence_small
+			add_popularity = popularity_small
+		}
+	}
+}
+
+generic_trade_expedition.126 = {
+	type = country_event
+	title = "generic_trade_expedition.126.t"
+	desc = "generic_trade_expedition.126.desc"
+	picture = hellenic_marketplace
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.126.a"
+		add_country_modifier = {
+			name = generic_trade_expedition_market_confusion_cmod
+			duration = 365
+		}
+	}
+}
+
+generic_trade_expedition.127 = {
+	type = country_event
+	title = "generic_trade_expedition.127.t"
+	desc = "generic_trade_expedition.127.desc"
+	picture = grand_ship
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.127.a"
+		add_military_experience = 3
+		add_country_modifier = {
+			name = generic_trade_expedition_foreign_charts_cmod
+			duration = 365
+		}
+	}
+}
+
+generic_trade_expedition.128 = {
+	type = country_event
+	title = "generic_trade_expedition.128.t"
+	desc = "generic_trade_expedition.128.desc"
+	picture = great_library
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.128.a"
+		add_research = {
+			technology = civic_tech
+			value = 10
+		}
+		add_research = {
+			technology = religious_tech
+			value = 5
+		}
+	}
+}
+
+generic_trade_expedition.129 = {
+	type = country_event
+	title = "generic_trade_expedition.129.t"
+	desc = "generic_trade_expedition.129.desc"
+	picture = hellenic_marketplace
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.129.a"
+		add_treasury = generic_trade_expedition_event_loss_svalue
+		add_country_modifier = {
+			name = generic_trade_expedition_dockside_contacts_cmod
+			duration = 365
+		}
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_good_port_conduct
+				target = ROOT
+			}
+		}
+	}
+}
+
+generic_trade_expedition.2 = {
+	type = country_event
+	title = "generic_trade_expedition.2.t"
+	desc = "generic_trade_expedition.2.desc"
+	picture = greek_city_market
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_partner_port
+	}
+
+	option = {
+		name = "generic_trade_expedition.2.a"
+	}
+}
+
+generic_trade_expedition.3 = {
+	type = country_event
+	title = "generic_trade_expedition.3.t"
+	desc = "generic_trade_expedition.3.desc"
+	picture = greek_marketplace
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_partner.current_ruler
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_home_port
+	}
+
+	option = {
+		name = "generic_trade_expedition.3.a"
+		add_treasury = generic_trade_expedition_large_profit_svalue
+		add_political_influence = 10
+	}
+
+	option = {
+		name = "generic_trade_expedition.3.b"
+		add_treasury = generic_trade_expedition_profit_svalue
+		add_political_influence = 25
+		current_ruler = {
+			add_popularity = 10
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.3.c"
+		add_treasury = generic_trade_expedition_profit_svalue
+		add_political_influence = 10
+		add_research = {
+			technology = civic_tech
+			value = 25
+		}
+	}
+}
