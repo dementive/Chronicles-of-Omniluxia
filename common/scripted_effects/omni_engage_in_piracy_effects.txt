@@ -354,7 +354,7 @@ engage_in_piracy_apply_country_income_tier_effect = {
 		}
 	}
 	else_if = {
-		limit = { var:engage_in_piracy_income_power >= 10 }
+		limit = { var:engage_in_piracy_income_power >= 1 }
 		add_country_modifier = {
 			name = engage_in_piracy_commerce_10
 			duration = 35
@@ -371,14 +371,13 @@ engage_in_piracy_refresh_country_income_effect = {
 	every_unit = {
 		limit = {
 			has_unit_modifier = engage_in_piracy_unit_modifier
-			NOT = { is_unit_ability_used = engage_in_piracy }
+			NOT = { has_variable = engage_in_piracy_active }
 		}
 		remove_unit_modifier = engage_in_piracy_unit_modifier
 	}
 	every_unit = {
 		limit = {
-			is_unit_ability_used = engage_in_piracy
-			NOT = { has_variable = engage_in_piracy_recently_disabled }
+			has_variable = engage_in_piracy_active
 			is_navy = yes
 			in_combat = no
 			is_exiled = no
@@ -395,37 +394,4 @@ engage_in_piracy_refresh_country_income_effect = {
 		engage_in_piracy_add_fleet_raid_score_effect = yes
 	}
 	engage_in_piracy_apply_country_income_tier_effect = yes
-}
-
-engage_in_piracy_apply_current_fleet_commerce_fallback_effect = {
-	unit_owner = {
-		save_scope_as = engage_in_piracy_score_country
-	}
-	if = {
-		limit = {
-			unit_owner = {
-				NOT = { engage_in_piracy_has_active_commerce_modifier_trigger = yes }
-			}
-			unit_location = {
-				any_neighbor_province = {
-					engage_in_piracy_target_province_trigger = yes
-					NOT = { owner = scope:engage_in_piracy_score_country }
-					owner = {
-						NOT = { alliance_with = scope:engage_in_piracy_score_country }
-						NOT = { is_subject_of = scope:engage_in_piracy_score_country }
-					}
-				}
-			}
-		}
-		unit_owner = {
-			set_variable = {
-				name = engage_in_piracy_income_power
-				value = 0
-			}
-		}
-		engage_in_piracy_add_fleet_raid_score_effect = yes
-		unit_owner = {
-			engage_in_piracy_apply_country_income_tier_effect = yes
-		}
-	}
 }
