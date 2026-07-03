@@ -1,4 +1,4 @@
-﻿namespace = me_zorgo_magic_focus
+namespace = me_zorgo_magic_focus
 
 # CAST MAGIC -------------------------------------
 me_zorgo_magic_focus.1 = { # Main Menu
@@ -128,9 +128,6 @@ me_zorgo_magic_focus.3 = { # Omnic School
                 has_variable = diviner_t2_unlocked_var
             }
         }
-        # Custom SFX on cast — streams a raw OGG via the file:/ protocol,
-        # bypassing the FMOD soundbanks that normally block modded sound effects.
-        play_sound_effect = "file:/music/sfx/healing_tier_1.ogg"
         scope:target = {
             force_add_trait = omnic_diviner_spell_t1_trait
             omni_spell_mana_cost_effect = { BASE = 25 }
@@ -3969,5 +3966,103 @@ me_zorgo_magic_focus.35 = { # AI: mage-generals auto-cast friendly battle buffs 
             }
             omni_ai_battlecast_effect = yes
         }
+    }
+}
+
+me_zorgo_magic_focus.36 = { # Teleport Army (unit button)
+    type = country_event
+
+    title = me_zorgo_magic_focus.36_title
+    desc = me_zorgo_magic_focus.36_desc
+    picture = ascetic
+    left_portrait = scope:target
+
+    # scope:target = the commander of the selected army (passed by
+    # omni_teleport_unit_button). The general casts the teleport themselves.
+    immediate = {
+        scope:target = {
+            random_character_unit = {
+                limit = { is_army = yes }
+                unit_location = { save_scope_as = teleport_origin }
+            }
+        }
+    }
+
+    # Teleport to Capital
+    option = {
+        trigger = {
+            scope:target = { omni_can_afford_spell = { BASE = 15 } }
+        }
+        scope:target = {
+            if = {
+                limit = { scope:target.employer.capital_scope = { is_in_area = scope:teleport_origin } }
+                omni_spell_mana_cost_effect = { BASE = 15 }
+            }
+            else_if = {
+                limit = { scope:teleport_origin = { is_on_neighboring_or_same_continent = { PROVINCE = scope:target.employer.capital_scope } } }
+                omni_spell_mana_cost_effect = { BASE = 50 }
+            }
+            else_if = {
+                limit = { scope:teleport_origin = { is_on_neighboring_continent = { PROVINCE = scope:target.employer.capital_scope } } }
+                omni_spell_mana_cost_effect = { BASE = 100 }
+            }
+            else = {
+                omni_spell_mana_cost_effect = { BASE = 200 }
+            }
+        }
+        scope:target = {
+            if = {
+                limit = { scope:target.employer.capital_scope = { is_in_area = scope:teleport_origin } }
+                every_character_unit = {
+                    limit = { is_army = yes }
+                    add_unit_modifier = {
+                        name = omni_teleport_spell_mod
+                        duration = 7
+                    }
+                    add_morale = -1
+                }
+            }
+            else_if = {
+                limit = { scope:teleport_origin = { is_on_neighboring_or_same_continent = { PROVINCE = scope:target.employer.capital_scope } } }
+                every_character_unit = {
+                    limit = { is_army = yes }
+                    add_unit_modifier = {
+                        name = omni_teleport_spell_mod
+                        duration = 7
+                    }
+                    add_morale = -4
+                }
+            }
+            else_if = {
+                limit = { scope:teleport_origin = { is_on_neighboring_continent = { PROVINCE = scope:target.employer.capital_scope } } }
+                every_character_unit = {
+                    limit = { is_army = yes }
+                    add_unit_modifier = {
+                        name = omni_teleport_spell_mod
+                        duration = 7
+                    }
+                    add_morale = -8
+                }
+            }
+            else = {
+                every_character_unit = {
+                    limit = { is_army = yes }
+                    add_unit_modifier = {
+                        name = omni_teleport_spell_mod
+                        duration = 7
+                    }
+                    add_morale = 0.5
+                }
+            }
+        }
+        custom_tooltip = me_zorgo_magic_focus.36_tooltip
+        trigger_event = { id = omniluxia_teleport.1 }
+        name = "me_zorgo_magic_focus.36.a"
+    }
+
+    # Cancel
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
     }
 }

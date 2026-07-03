@@ -1,4 +1,4 @@
-﻿monthly_country_pulse = {
+monthly_country_pulse = {
 	on_actions = {
 		omni_engage_in_piracy_monthly_pulse
 	}
@@ -6,7 +6,6 @@
 
 omni_engage_in_piracy_monthly_pulse = {
 	effect = {
-		engage_in_piracy_refresh_country_income_effect = yes
 		every_unit = {
 			limit = {
 				has_variable = engage_in_piracy_active
@@ -15,7 +14,8 @@ omni_engage_in_piracy_monthly_pulse = {
 				is_exiled = no
 				unit_location = {
 					any_neighbor_province = {
-						engage_in_piracy_target_province_trigger = yes
+						is_sea = no
+						has_owner = yes
 						NOT = { owner = root }
 						owner = {
 							NOT = { alliance_with = root }
@@ -24,7 +24,68 @@ omni_engage_in_piracy_monthly_pulse = {
 					}
 				}
 			}
-			engage_in_piracy_apply_privateering_effect = yes
+			hidden_effect = {
+				save_scope_as = omni_piracy_fleet
+				scope:omni_piracy_fleet.unit_owner = {
+					save_scope_as = omni_piracy_raider_country
+				}
+				unit_location = {
+					random_neighbor_province = {
+						limit = {
+							is_sea = no
+							has_owner = yes
+							NOT = { owner = scope:omni_piracy_raider_country }
+							owner = {
+								NOT = { alliance_with = scope:omni_piracy_raider_country }
+								NOT = { is_subject_of = scope:omni_piracy_raider_country }
+							}
+						}
+						save_scope_as = omni_piracy_raided_province
+						add_province_modifier = {
+							name = engage_in_piracy_raided_port_modifier
+							duration = 35
+						}
+						owner = {
+							add_opinion = {
+								modifier = opinion_engage_in_piracy_raided_us
+								target = scope:omni_piracy_raider_country
+							}
+							if = {
+								limit = {
+									NOT = { has_variable = engage_in_piracy_raid_event_cooldown }
+									NOT = { war_with = scope:omni_piracy_raider_country }
+								}
+								set_variable = {
+									name = engage_in_piracy_raid_event_cooldown
+									days = 180
+								}
+								trigger_event = {
+									id = omni_piracy.1
+								}
+							}
+						}
+					}
+				}
+				scope:omni_piracy_raider_country = {
+					random_list = {
+						300 = { set_variable = { name = omni_piracy_num_raids value = 1 } }
+						300 = { set_variable = { name = omni_piracy_num_raids value = 3 } }
+						200 = { set_variable = { name = omni_piracy_num_raids value = 5 } }
+						200 = { set_variable = { name = omni_piracy_num_raids value = 8 } }
+						150 = { set_variable = { name = omni_piracy_num_raids value = 12 } }
+						100 = { set_variable = { name = omni_piracy_num_raids value = 15 } }
+						 75 = { set_variable = { name = omni_piracy_num_raids value = 20 } }
+						 50 = { set_variable = { name = omni_piracy_num_raids value = 25 } }
+						 25 = { set_variable = { name = omni_piracy_num_raids value = 30 } }
+					}
+					random_list = {
+						40 = { trigger_event = { id = omni_piracy.10 } }
+						25 = { trigger_event = { id = omni_piracy.11 } }
+						25 = { trigger_event = { id = omni_piracy.12 } }
+						10 = { trigger_event = { id = omni_piracy.13 } }
+					}
+				}
+			}
 		}
 	}
 }
