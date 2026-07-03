@@ -1,0 +1,69 @@
+﻿go_on_adventure = {
+	on_other_nation = no
+	on_own_nation = yes
+
+	message = no
+
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_scholar"
+
+	potential_trigger = {
+		hidden:scope:target = {
+			employer = scope:actor
+			is_ruler = yes
+			is_alive = yes
+			is_adult = yes
+			prisoner = no
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+		}
+		scope:actor = {
+			has_land = yes
+			war = no
+			any_owned_province = {
+				num_of_adventurer_guild_building >= 1
+			}
+		}
+	}
+
+	allowed_trigger = {
+		scope:target = {
+			is_ruler = yes
+			is_alive = yes
+			is_adult = yes
+			prisoner = no
+			custom_tooltip = {
+				text = is_on_omni_adventure_tt
+				NOR = {
+					has_variable = omni_adventure_cooldown
+					has_variable = on_omni_adventure
+				}
+			}
+		}
+		scope:actor = {
+			war = no
+			any_owned_province = {
+				num_of_adventurer_guild_building >= 1
+			}
+			any_character = {
+				count >= 3
+				omni_adventure_companion_candidate_trigger = yes
+				NOT = { is_ruler = yes }
+			}
+		}
+	}
+
+	effect = {
+		scope:target = {
+			omni_adventure_clear_variables_effect = yes
+			set_variable = {
+				name = omni_adventure_cooldown
+				days = 1095
+			}
+			set_variable = {
+				name = on_omni_adventure
+				days = 1200
+			}
+			trigger_event = { id = adventure.1 }
+		}
+	}
+}
