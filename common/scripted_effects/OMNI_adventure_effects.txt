@@ -1,4 +1,4 @@
-save_adventurer_var = {
+﻿save_adventurer_var = {
 	scope:$SCOPE$ = {
 		if = {
 			limit = {
@@ -115,6 +115,8 @@ omni_adventure_clear_variables_effect = {
 	remove_variable = soulgems_adventure
 	remove_variable = holy_site_adventure
 	remove_variable = generic_adventure
+	remove_variable = adventure_grants_item
+	remove_variable = adventure_item_given
 }
 
 omni_adventure_mark_party_busy_effect = {
@@ -155,9 +157,9 @@ omni_adventure_mark_party_busy_effect = {
 }
 
 omni_adventure_add_score_effect = {
-	add_to_variable = {
+	change_variable = {
 		name = adventure_score
-		value = $VALUE$
+		add = $VALUE$
 	}
 }
 
@@ -167,6 +169,25 @@ omni_adventure_release_party_effect = {
 		limit = { exists = var:adventure_party_1 }
 		var:adventure_party_1 = {
 			remove_variable = on_omni_adventure
+		}
+	}
+}
+
+# Grants an adventure item, but ONLY if this adventure rolled the 1-in-3 item
+# reward (adventure_grants_item) AND no item has been handed out yet this
+# adventure (adventure_item_given). The custom_tooltip names the exact item so
+# the player always sees what they received; the actual grant is hidden so the
+# generic "Character received item" line does not clutter the tooltip.
+omni_adventure_give_item_effect = {
+	if = {
+		limit = {
+			has_variable = adventure_grants_item
+			NOT = { has_variable = adventure_item_given }
+		}
+		set_variable = adventure_item_given
+		custom_tooltip = adventure_found_$item_ID$_tt
+		hidden_effect = {
+			give_character_an_item = { item_ID = $item_ID$ }
 		}
 	}
 }

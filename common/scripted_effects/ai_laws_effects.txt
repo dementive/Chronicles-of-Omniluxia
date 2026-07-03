@@ -1,4 +1,4 @@
-ai_choose_and_enact_law = {
+﻿ai_choose_and_enact_law = {
     if = {
         limit = {
             is_ai = yes
@@ -93,26 +93,8 @@ ai_choose_and_enact_law = {
                         limit = {
                             is_republic = yes
                         }
-                        if = {
-                            limit = {
-                                tag = ROM
-                            }
-                            ai_choose_and_enact_law_by_government = {
-                                type = republic_rome
-                            }
-                        }
-                        else_if = {
-                            limit = {
-                                tag = CAR
-                            }
-                            ai_choose_and_enact_law_by_government = {
-                                type = republic_carthage
-                            }
-                        }
-                        else = {
-                            ai_choose_and_enact_law_by_government = {
-                                type = republic
-                            }
+                        ai_choose_and_enact_law_by_government = {
+                            type = republic
                         }
                     }
 
@@ -283,23 +265,8 @@ ai_choose_and_enact_law_tribal_extreme_priority = {
 }
 
 ai_choose_and_enact_law_tribal_high_priority = {
-    if = {
-        limit = {
-            # No law enacted in the group
-            NOR = {
-                has_law = steppe_horde_levy_size_2
-                has_law = steppe_horde_levy_size_3
-                has_law = steppe_horde_levy_size_5
-            }
-            # Conditions of the law itself
-            government = steppe_horde
-        }
-        ai_enact_law = {
-            name = steppe_horde_levy_size_3
-        }
-    }
     # Required to Codify State Lands and removes found city price debuff
-    else_if = {
+    if = {
         limit = {
             # No law enacted in the group
             NOR = {
@@ -956,194 +923,4 @@ ai_choose_and_enact_law_republic_medium_priority = {}
 
 ai_choose_and_enact_law_republic_low_priority = {}
 
-# ------------------ #
-# REPUBLIC ROME LAWS #
-# ------------------ #
 
-ai_choose_and_enact_law_republic_rome_extreme_priority = {}
-
-ai_choose_and_enact_law_republic_rome_high_priority = {
-    if = {
-        limit = {
-            # The law is not enacted
-            NOT = {
-                has_law = marian_reforms # legions in any region
-            }
-            # Conditions of the law itself
-            invention = discipline_inv_5
-			OR = {
-				rank >= great_power
-				custom_tooltip = {
-					text = marian_event_fired
-					has_variable = had_military_reforms
-				}
-			}
-            # Additional conditions we want to match
-            trigger_if = {
-                limit = {
-                    OR = {
-                        # Auxiliary Recruitment
-                        invention = global_manpower_modifier_inv_1
-                        # Levy size is at least base + highest size law + 2.5%
-                        modifier:levy_size_multiplier >= 0.175
-                    }
-                }
-                non_capital_regions_levy_population >= country_levy_population_35_percent
-            }
-            trigger_else = {
-                non_capital_regions_levy_population >= country_levy_population_40_percent
-            }
-        }
-        ai_enact_law = {
-            name = marian_reforms
-        }
-    }
-    else_if = {
-        limit = {
-            # The law is not enacted
-            NOT = {
-                has_law = punic_reforms # legions in capital only
-            }
-            # Conditions of the law itself
-            invention = global_cohort_recruit_speed_inv
-			rank >= regional_power
-            # Additional conditions we want to match
-            num_of_territories_svalue >= 75 # Small countries are too poor for legions + we are losing levy size
-            trigger_if = {
-                limit = {
-                    has_law = marian_reforms
-                }
-                # Switch from legions in any region only if you gain nothing from them and only lose levy size
-                capital_region_levy_population >= country_levy_population_90_percent
-            }
-            trigger_else = {
-                # Switch only if gains from capital legion outweight losing levy size for all regions
-                trigger_if = {
-                    limit = {
-                        OR = {
-                            # Auxiliary Recruitment
-                            invention = global_manpower_modifier_inv_1
-                            # Levy size is at least base + highest size law + 2.5%
-                            modifier:levy_size_multiplier >= 0.175
-                        }
-                    }
-                    capital_region_levy_population >= country_levy_population_35_percent
-                }
-                trigger_else = {
-                    capital_region_levy_population >= country_levy_population_40_percent
-                }
-            }
-        }
-        ai_enact_law = {
-            name = punic_reforms
-        }
-    }
-    else_if = {
-        limit = {
-            # Has a weaker base law from AI perspective
-            has_law = testamentum_militis
-            # Conditions of the law itself
-            # None
-        }
-        ai_enact_law = {
-            name = lex_porcia
-        }
-    }
-}
-
-ai_choose_and_enact_law_republic_rome_medium_priority = {}
-
-ai_choose_and_enact_law_republic_rome_low_priority = {}
-
-# ---------------------- #
-# REPUBLIC CARTHAGE LAWS #
-# ---------------------- #
-
-ai_choose_and_enact_law_republic_carthage_extreme_priority = {}
-
-ai_choose_and_enact_law_republic_carthage_high_priority = {
-    if = {
-        limit = {
-            # The law is not enacted
-            NOT = {
-                has_law = republic_military_recruitment_car_4 # legions_in_any_region
-            }
-            # Conditions of the law itself
-            invention = discipline_inv_5
-			rank >= great_power
-            # Additional conditions we want to match
-            trigger_if = {
-                limit = {
-                    OR = {
-                        # Auxiliary Recruitment
-                        invention = global_manpower_modifier_inv_1
-                        # Levy size is at least base + highest size law + 2.5%
-                        modifier:levy_size_multiplier >= 0.15
-                    }
-                }
-                non_capital_regions_levy_population >= country_levy_population_30_percent
-            }
-            trigger_else = {
-                non_capital_regions_levy_population >= country_levy_population_35_percent
-            }
-        }
-        ai_enact_law = {
-            name = republic_military_recruitment_car_4
-        }
-    }
-    else_if = {
-        limit = {
-            # The law is not enacted
-            NOT = {
-                has_law = republic_military_recruitment_car_2 # legions_in_any_region
-            }
-            # Conditions of the law itself
-            invention = global_cohort_recruit_speed_inv
-			rank >= regional_power
-            # Additional conditions we want to match
-            num_of_territories_svalue >= 50 # Small countries are too poor for legions + we are losing levy size
-            trigger_if = {
-                limit = {
-                    has_law = republic_military_recruitment_car_4
-                }
-                # Switch from legions in any region only if you gain nothing from them and only lose levy size
-                capital_region_levy_population >= country_levy_population_90_percent
-            }
-            trigger_else = {
-                # Switch only if gains from capital legion outweight losing levy size for all regions
-                trigger_if = {
-                    limit = {
-                        OR = {
-                            # Auxiliary Recruitment
-                            invention = global_manpower_modifier_inv_1
-                            # Levy size is at least base + highest size law + 2.5%
-                            modifier:levy_size_multiplier >= 0.15
-                        }
-                    }
-                    capital_region_levy_population >= country_levy_population_30_percent
-                }
-                trigger_else = {
-                    capital_region_levy_population >= country_levy_population_35_percent
-                }
-            }
-        }
-        ai_enact_law = {
-            name = republic_military_recruitment_car_2
-        }
-    }
-    else_if = {
-        limit = {
-            # Has a weaker base law from AI perspective
-            has_law = republic_military_recruitment_car_1
-            # Conditions of the law itself
-            # None
-        }
-        ai_enact_law = {
-            name = republic_military_recruitment_car_3
-        }
-    }
-}
-
-ai_choose_and_enact_law_republic_carthage_medium_priority = {}
-
-ai_choose_and_enact_law_republic_carthage_low_priority = {}

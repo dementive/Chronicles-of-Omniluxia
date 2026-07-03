@@ -322,13 +322,8 @@
         duration = 60
         highlight = {
             scope:province = {
-                OR = {
-                    province_id = 2720
-                    province_id = 3382
-                    province_id = 2347
-                    province_id = 2384
-                    province_id = 2422
-                }
+                owner = ROOT
+                territory_has_any_roads = no
             }
         }
         allow = {
@@ -340,32 +335,16 @@
                     has_completed_mission_task = 03_nazani_task_6_esenzeu
                 }
             }
-            trigger_if = {
-                limit = {
-                    has_completed_mission_task = 03_nazani_task_6_pdeso
+            custom_tooltip = {
+                text = nazani_roads_50_percent_tt
+                any_owned_province = {
+                    percent >= 0.50
+                    territory_has_any_roads = yes
                 }
-                p:3382 = {
-                    owner = ROOT
-                    has_road_towards = p:3302
-                }
-            }
-            trigger_if = {
-                limit = {
-                    has_completed_mission_task = 03_nazani_task_6_esenzeu
-                }
-                p:2347 = {
-                    owner = ROOT
-                    has_road_towards = p:2384
-                }
-                p:2384 = {
-                    owner = ROOT
-                    has_road_towards = p:2422
-                }
-                p:2422 = { owner = ROOT }
             }
         }
         on_completion = {
-            add_treasury = -100
+            add_treasury = 500
             add_country_modifier = {
                 name = nazani_road_between_crowns_mod
                 duration = 7300
@@ -385,6 +364,8 @@
             }
         }
         allow = {
+            owns = 3382
+            owns = 2347
             custom_tooltip = {
                 text = nazani_second_city_chosen_tt
                 OR = {
@@ -397,9 +378,9 @@
                     has_completed_mission_task = 03_nazani_task_6_pdeso
                 }
                 p:3382 = {
-                    owner = ROOT
-                    num_of_workshop_building >= 1
-                    has_building = commerce_building
+                    total_population >= 45
+                    num_of_commerce_building >= 2
+                    has_building = workshop_building
                     has_no_ongoing_construction = yes
                 }
                 custom_tooltip = {
@@ -422,12 +403,24 @@
                     has_completed_mission_task = 03_nazani_task_6_esenzeu
                 }
                 p:2347 = {
-                    owner = ROOT
-                    has_city_status = yes
                     total_population >= 45
-                    has_building = commerce_building
-                    has_building = fortress_building
+                    num_of_commerce_building >= 2
+                    has_building = workshop_building
                     has_no_ongoing_construction = yes
+                }
+                custom_tooltip = {
+                    text = nazani_pdeso_stone_tt
+                    OR = {
+                        hidden:p:3382.state = {
+                            trade_good_surplus = {
+                                target = stone
+                                value >= 1
+                            }
+                        }
+                        p:3382 = {
+                            is_importing_trade_good = marble
+                        }
+                    }
                 }
             }
         }
@@ -467,20 +460,18 @@
         requires = { 03_nazani_task_4 }
         duration = 90
         allow = {
-            political_influence >= 40
             custom_tooltip = {
                 text = nazani_eyes_of_emperor_tt
                 has_variable = used_imperial_blindness
             }
         }
         on_completion = {
-            add_political_influence = -40
             add_country_modifier = {
                 name = nazani_purple_justice_mod
                 duration = -1
             }
-            add_tyranny = -5
-            add_legitimacy = 5
+            add_tyranny = 5
+            add_legitimacy = 20
         }
     }
 
@@ -499,23 +490,22 @@
         }
         allow = {
             p:2720 = {
-                owner = ROOT
                 total_population >= 50
                 num_of_workshop_building >= 2
                 has_building = temple_building
                 has_building = court_building
+                num_of_fortress_building >= 2
             }
             trigger_if = {
                 limit = {
                     has_completed_mission_task = 03_nazani_task_6_pdeso
                 }
                 p:3382 = {
-                    owner = ROOT
                     total_population >= 45
                     num_of_workshop_building >= 1
                     has_building = commerce_building
                     has_building = port_building
-                    has_building = fortress_building
+                    num_of_fortress_building >= 2
                 }
             }
             trigger_if = {
@@ -523,11 +513,10 @@
                     has_completed_mission_task = 03_nazani_task_6_esenzeu
                 }
                 p:2347 = {
-                    owner = ROOT
                     has_city_status = yes
                     total_population >= 50
                     has_building = commerce_building
-                    has_building = fortress_building
+                    num_of_fortress_building >= 2
                 }
             }
         }
@@ -570,7 +559,7 @@
         requires = { 03_nazani_task_10 }
         prevented_by = { 03_nazani_task_11_tall }
         allow = {
-            manpower >= 10
+            manpower >= 20
             trigger_if = {
                 limit = {
                     capital_scope.governorship = { has_legion_trigger = yes }
@@ -593,24 +582,11 @@
             }
         }
         on_completion = {
-            add_manpower = -10
+            add_manpower = -20
             add_military_experience = 25
             add_country_modifier = {
                 name = nazani_theme_armies_mod
                 duration = -1
-            }
-            custom_tooltip = nazani_wide_claims_tt
-            hidden_effect = {
-                region:marshland_region = {
-                    every_region_province = {
-                        add_claim = root
-                    }
-                }
-                region:border_lands_morrigon = {
-                    every_region_province = {
-                        add_claim = root
-                    }
-                }
             }
         }
     }
@@ -632,21 +608,17 @@
         allow = {
             treasury >= 500
             political_influence >= 75
-            p:2720 = {
-                owner = ROOT
-                has_building = palace_building
-                has_building = academy_building
-                total_population >= 60
+            hidden:p:2720 = {
+                has_province_rank = city_metropolis
             }
             trigger_if = {
                 limit = {
                     has_completed_mission_task = 03_nazani_task_6_pdeso
                 }
                 p:3382 = {
-                    owner = ROOT
                     has_building = palace_building
                     has_building = academy_building
-                    total_population >= 55
+                    total_population >= 60
                 }
             }
             trigger_if = {
@@ -654,10 +626,9 @@
                     has_completed_mission_task = 03_nazani_task_6_esenzeu
                 }
                 p:2347 = {
-                    owner = ROOT
                     has_building = palace_building
                     has_building = academy_building
-                    total_population >= 55
+                    total_population >= 60
                 }
             }
         }
@@ -714,7 +685,25 @@
         requires = { 03_nazani_task_10 }
         final = yes
         duration = 120
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = border_lands_morrigon
+                    is_in_region = old_fronlines_region
+                    is_in_region = wegalia_north_region
+                    is_in_region = wegalia_major_region
+                    is_in_region = wegalia_shout_region
+                }
+            }
+        }
+
         allow = {
+            owns_or_subject_owns_region = border_lands_morrigon
+            owns_or_subject_owns_region = old_fronlines_region
+            owns_or_subject_owns_region = wegalia_north_region
+            owns_or_subject_owns_region = wegalia_major_region
+            owns_or_subject_owns_region = wegalia_shout_region
             stability >= 50
             legitimacy >= 60
             custom_tooltip = {
@@ -726,6 +715,12 @@
             }
         }
         on_completion = {
+            current_ruler = {
+                add_martial = 3
+                add_finesse = 3
+                add_popularity = 20
+                add_nickname = NICKNAME_THE_SHIELD
+            }
             add_country_modifier = {
                 name = nazani_reborn_west_mod
                 duration = -1

@@ -1,0 +1,780 @@
+﻿#add an item to a char requires item_ID has_effect yes or no effect_name
+
+give_character_an_item = {
+
+if = {
+    limit = { 
+        NOT = { 
+        
+            is_target_in_variable_list = {  
+                name = item_list   
+                target = flag:$item_ID$
+                                        }  
+
+                
+            }
+    }
+
+    add_to_variable_list = {
+        name = item_list
+        target = flag:$item_ID$
+    }
+    
+    custom_tooltip = character_recieved_item
+
+
+
+
+
+}
+else = {
+    
+    custom_tooltip = character_already_have_this_item
+
+}
+
+
+
+
+    # AI-run characters auto-equip whatever they can whenever they gain an item,
+    # so the AI actually uses the item system. Human players equip via the menu.
+    if = {
+        limit = { employer = { is_ai = yes } }
+        omni_ai_auto_equip_items = yes
+    }
+}
+# removes item of a character 
+remove_character_item = {
+    if = {
+        limit = {
+            has_item = {
+                item_ID = $item_ID$
+            }
+        }
+        remove_list_variable = {
+            name = item_list
+            target = flag:$item_ID$
+        }
+
+        # If the item was equipped, drop it from the equipped list so the
+        # category slot frees up and it no longer counts as worn.
+        if = {
+            limit = {
+                has_variable_list = equiped_item_list
+                is_target_in_variable_list = { name = equiped_item_list target = flag:$item_ID$ }
+            }
+            remove_list_variable = {
+                name = equiped_item_list
+                target = flag:$item_ID$
+            }
+        }
+
+        # Strip the character modifier the item applied on equip (if any).
+        if = {
+            limit = { has_character_modifier = $item_ID$_modifier }
+            remove_character_modifier = $item_ID$_modifier
+        }
+    }
+    else = {
+        custom_tooltip = character_dont_have_such_item
+    }
+}
+
+omni_sell_character_item = {
+    set_variable = {
+        name = omni_item_sale_price
+        value = $base_price$
+    }
+    random_list = {
+        20 = { change_variable = { name = omni_item_sale_price multiply = 0.92 } }
+        20 = { change_variable = { name = omni_item_sale_price multiply = 0.96 } }
+        20 = {}
+        20 = { change_variable = { name = omni_item_sale_price multiply = 1.04 } }
+        20 = { change_variable = { name = omni_item_sale_price multiply = 1.08 } }
+    }
+    if = {
+        limit = { root.country = { stability >= 70 } }
+        change_variable = { name = omni_item_sale_price multiply = 1.04 }
+    }
+    else_if = {
+        limit = { root.country = { stability <= 30 } }
+        change_variable = { name = omni_item_sale_price multiply = 0.94 }
+    }
+    if = {
+        limit = { root.country = { current_ruler = { popularity >= 80 } } }
+        change_variable = { name = omni_item_sale_price multiply = 1.04 }
+    }
+    else_if = {
+        limit = { root.country = { current_ruler = { popularity <= 30 } } }
+        change_variable = { name = omni_item_sale_price multiply = 0.95 }
+    }
+    root.country = {
+        current_ruler = {
+            if = { limit = { has_trait = silver_tongued } root = { change_variable = { name = omni_item_sale_price multiply = 1.04 } } }
+            if = { limit = { has_trait = orator } root = { change_variable = { name = omni_item_sale_price multiply = 1.03 } } }
+            if = { limit = { has_trait = crafty } root = { change_variable = { name = omni_item_sale_price multiply = 1.03 } } }
+            if = { limit = { has_trait = shrewd } root = { change_variable = { name = omni_item_sale_price multiply = 1.03 } } }
+            if = { limit = { has_trait = honest } root = { change_variable = { name = omni_item_sale_price multiply = 0.98 } } }
+            if = { limit = { has_trait = generous } root = { change_variable = { name = omni_item_sale_price multiply = 0.98 } } }
+            if = { limit = { has_trait = trusting } root = { change_variable = { name = omni_item_sale_price multiply = 0.98 } } }
+            if = { limit = { has_trait = lazy } root = { change_variable = { name = omni_item_sale_price multiply = 0.98 } } }
+        }
+    }
+    if = { limit = { has_trait = silver_tongued } change_variable = { name = omni_item_sale_price multiply = 1.04 } }
+    if = { limit = { has_trait = charming } change_variable = { name = omni_item_sale_price multiply = 1.03 } }
+    if = { limit = { has_trait = crafty } change_variable = { name = omni_item_sale_price multiply = 1.03 } }
+    if = { limit = { has_trait = shrewd } change_variable = { name = omni_item_sale_price multiply = 1.03 } }
+    if = { limit = { has_trait = honest } change_variable = { name = omni_item_sale_price multiply = 0.98 } }
+    if = { limit = { has_trait = generous } change_variable = { name = omni_item_sale_price multiply = 0.98 } }
+    if = { limit = { has_trait = trusting } change_variable = { name = omni_item_sale_price multiply = 0.98 } }
+    if = { limit = { has_trait = content } change_variable = { name = omni_item_sale_price multiply = 0.98 } }
+    if = {
+        limit = { exists = scope:omni_item_merchant }
+        scope:omni_item_merchant = {
+            if = { limit = { has_trait = generous } root = { change_variable = { name = omni_item_sale_price multiply = 1.04 } } }
+            if = { limit = { has_trait = trusting } root = { change_variable = { name = omni_item_sale_price multiply = 1.03 } } }
+            if = { limit = { has_trait = honest } root = { change_variable = { name = omni_item_sale_price multiply = 1.02 } } }
+            if = { limit = { has_trait = miserly } root = { change_variable = { name = omni_item_sale_price multiply = 0.96 } } }
+            if = { limit = { has_trait = selfish } root = { change_variable = { name = omni_item_sale_price multiply = 0.97 } } }
+            if = { limit = { has_trait = suspicious } root = { change_variable = { name = omni_item_sale_price multiply = 0.97 } } }
+            if = { limit = { has_trait = silver_tongued } root = { change_variable = { name = omni_item_sale_price multiply = 0.98 } } }
+            if = { limit = { has_trait = deceitful } root = { change_variable = { name = omni_item_sale_price multiply = 0.98 } } }
+        }
+    }
+    round_variable = {
+        name = omni_item_sale_price
+        nearest = 1
+    }
+    if = {
+        limit = { var:omni_item_sale_price < 1 }
+        set_variable = {
+            name = omni_item_sale_price
+            value = 1
+        }
+    }
+    root.country = {
+        add_treasury = {
+            value = root.var:omni_item_sale_price
+        }
+    }
+    custom_tooltip = omni_items.sell_price_tt
+    remove_character_item = { item_ID = $item_ID$ }
+    remove_variable = omni_item_sale_price
+}
+
+omni_add_item_to_shop_stock = {
+    if = {
+        limit = {
+            NOT = {
+                is_target_in_variable_list = {
+                    name = omni_item_shop_stock
+                    target = flag:$item_ID$
+                }
+            }
+        }
+        add_to_variable_list = {
+            name = omni_item_shop_stock
+            target = flag:$item_ID$
+        }
+    }
+}
+
+omni_roll_common_shop_item = {
+    random_list = {
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_chainmail } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_chainmail_coif } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_light_armour } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_bow } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_elven_bow } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_crossbow } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_sword } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_axe } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_daggers } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_mace } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_lance } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_spear } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_long_axe } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_shield } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_ring_1 } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_ring_2 } }
+    }
+}
+
+omni_roll_uncommon_shop_item = {
+    random_list = {
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_plated_coat } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_grand_helmet } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_plate_armour } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_armet_helmet } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_oratory } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_military } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_fineese } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_zeal } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_royal_emblem } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_royal_banner } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_crown } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_legislative_code } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_administrative_cenus } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_holy_scripture_wishteon } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_ring_of_confidence } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_treaty_about_diplomatic_managment } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_masterwork_great_sword } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_masterwork_sword } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_masterwork_bow } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_masterwork_crossbow } }
+    }
+}
+
+omni_roll_rare_shop_item = {
+    random_list = {
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_dark_arts_scripture } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_statue_of_grom } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_spirits_essence } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_great_contract_of_subjects_rights } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_plans_of_grand_desing } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_statuatory_treaty } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_conquerors_banner } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_memento_for_people } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_masterwork_armour } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_masterwork_helmet } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_pre_catalysm_sword } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_pre_catalysm_armour } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_angelic_spear } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_glorious_lance } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_groms_warhammer } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_shield_of_father_protector } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_wreath_of_joy } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_dragon_slayer_spear } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_bow_of_the_hunter } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_precious_gemstone } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_precious_jewelry } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_gift_of_the_god_of_blood } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_rooftile } }
+    }
+}
+
+omni_roll_unique_shop_item = {
+    random_list = {
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_zanis_spear } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_revenant_element } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_revenant_staff } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_axe_of_thunder } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_robe_of_wielkopan } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_veill_of_helluvos } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_element_of_star } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_particle_of_father_stone } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_chalice_of_victoria } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_crown_of_zanis } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_amulet_of_the_wolf } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_balthazar_cape } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_rhyton_of_measis } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_robes_of_qhagan } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_euryalean_regalia } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_staff_of_enslavement } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_flameshield_of_qoes } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_grand_maul_seeker } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_crown_of_oaths } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_helluvian_bible } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_black_pearl_atheus } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_ancestral_records } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_dragon_tooth } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_dragon_head } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_mythril_drill } }
+        10 = { omni_add_item_to_shop_stock = { item_ID = item_stellaric_urn } }
+    }
+}
+
+omni_roll_market_shop_item = {
+    if = {
+        limit = { var:omni_market_quality < 30 }
+        random_list = {
+            80 = { omni_roll_common_shop_item = yes }
+            20 = { omni_roll_uncommon_shop_item = yes }
+        }
+    }
+    else_if = {
+        limit = {
+            var:omni_market_quality >= 30
+            var:omni_market_quality < 60
+        }
+        random_list = {
+            45 = { omni_roll_common_shop_item = yes }
+            45 = { omni_roll_uncommon_shop_item = yes }
+            10 = { omni_roll_rare_shop_item = yes }
+        }
+    }
+    else_if = {
+        limit = {
+            var:omni_market_quality >= 60
+            var:omni_market_quality < 90
+        }
+        random_list = {
+            20 = { omni_roll_common_shop_item = yes }
+            50 = { omni_roll_uncommon_shop_item = yes }
+            25 = { omni_roll_rare_shop_item = yes }
+            5 = { omni_roll_unique_shop_item = yes }
+        }
+    }
+    else = {
+        random_list = {
+            10 = { omni_roll_common_shop_item = yes }
+            35 = { omni_roll_uncommon_shop_item = yes }
+            40 = { omni_roll_rare_shop_item = yes }
+            15 = { omni_roll_unique_shop_item = yes }
+        }
+    }
+}
+
+omni_build_item_shop_stock = {
+    clear_variable_list = omni_item_shop_stock
+    set_variable = {
+        name = omni_market_quality
+        value = 0
+    }
+    root.location = {
+        save_scope_as = omni_item_market_province
+        if = { limit = { num_of_commerce_building >= 1 } root = { change_variable = { name = omni_market_quality add = 20 } } }
+        if = { limit = { num_of_commerce_building >= 2 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_commerce_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_port_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_port_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_workshop_building >= 1 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+        if = { limit = { num_of_foundry_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_library_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        if = { limit = { num_of_academy_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        if = { limit = { num_of_used_building_slots >= 8 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+        if = { limit = { num_of_used_building_slots >= 16 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_used_building_slots >= 30 } root = { change_variable = { name = omni_market_quality add = 12 } } }
+        if = { limit = { total_population >= 20 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+        if = { limit = { total_population >= 50 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { total_population >= 100 } root = { change_variable = { name = omni_market_quality add = 15 } } }
+        if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+        if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_market_quality add = 12 } } }
+    }
+    omni_roll_common_shop_item = yes
+    omni_roll_common_shop_item = yes
+    omni_roll_market_shop_item = yes
+    omni_roll_market_shop_item = yes
+    omni_roll_market_shop_item = yes
+    if = {
+        limit = { var:omni_market_quality >= 45 }
+        omni_roll_market_shop_item = yes
+    }
+    if = {
+        limit = { var:omni_market_quality >= 75 }
+        omni_roll_rare_shop_item = yes
+    }
+    if = {
+        limit = { var:omni_market_quality >= 110 }
+        omni_roll_unique_shop_item = yes
+    }
+}
+
+omni_build_ai_country_item_shop_stock = {
+    clear_variable_list = omni_item_shop_stock
+    root.country = {
+        every_owned_province = {
+            limit = { has_building = commerce_building }
+            root = {
+                set_variable = {
+                    name = omni_market_quality
+                    value = 0
+                }
+            }
+            if = { limit = { num_of_commerce_building >= 1 } root = { change_variable = { name = omni_market_quality add = 20 } } }
+            if = { limit = { num_of_commerce_building >= 2 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+            if = { limit = { num_of_commerce_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+            if = { limit = { num_of_port_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+            if = { limit = { num_of_port_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+            if = { limit = { num_of_workshop_building >= 1 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+            if = { limit = { num_of_foundry_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+            if = { limit = { num_of_library_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+            if = { limit = { num_of_academy_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+            if = { limit = { num_of_used_building_slots >= 8 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+            if = { limit = { num_of_used_building_slots >= 16 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+            if = { limit = { num_of_used_building_slots >= 30 } root = { change_variable = { name = omni_market_quality add = 12 } } }
+            if = { limit = { total_population >= 20 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+            if = { limit = { total_population >= 50 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+            if = { limit = { total_population >= 100 } root = { change_variable = { name = omni_market_quality add = 15 } } }
+            if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+            if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+            if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_market_quality add = 12 } } }
+            root = {
+                omni_roll_common_shop_item = yes
+                omni_roll_market_shop_item = yes
+                omni_roll_market_shop_item = yes
+                if = {
+                    limit = { var:omni_market_quality >= 45 }
+                    omni_roll_market_shop_item = yes
+                }
+                if = {
+                    limit = { var:omni_market_quality >= 75 }
+                    omni_roll_rare_shop_item = yes
+                }
+                if = {
+                    limit = { var:omni_market_quality >= 110 }
+                    omni_roll_unique_shop_item = yes
+                }
+            }
+        }
+    }
+}
+
+# RECONSTRUCTED by assistant from its call signature ( item_ID + price ) and the
+# omni_sell_character_item logic, because the original was lost to file truncation.
+# Deducts the price from the buyer's treasury, gives them the item, and clears it
+# from that country's shop stock. PLEASE REVIEW against your intended design.
+omni_buy_character_item = {
+    root.country = {
+        add_treasury = { value = $price$ multiply = -1 }
+    }
+    give_character_an_item = { item_ID = $item_ID$ }
+    if = {
+        limit = { is_target_in_variable_list = { name = omni_item_shop_stock target = flag:$item_ID$ } }
+        remove_list_variable = { name = omni_item_shop_stock target = flag:$item_ID$ }
+    }
+}
+
+##############################################################################
+# ENGINE DEFINITIONS restored below (lost to file truncation this session).   #
+# Helpers, category/rarity assignment, and the equip effects.                 #
+##############################################################################
+
+get_all_items_from_chosen_character = {
+    limit = {
+        has_variable_list = item_list
+    }
+    every_in_list = {
+        variable = item_list
+        char:$char_id$ = {
+            add_to_variable_list = {
+                name = all_items_of_char
+                target = PREV
+            }
+        }
+    }
+}
+
+get_all_existing_items = {
+    every_character = {
+        limit = {
+            has_variable_list = item_list
+        }
+        every_in_list = {
+            variable = item_list
+            ROOT = {
+                add_to_global_variable_list = {
+                    name = all_item_list
+                    target = PREV
+                }
+            }
+        }
+    }
+}
+
+clear_items = {
+    if = {
+        limit = {
+            has_variable_list = item_list
+        }
+        clear_variable_list = item_list
+    }
+}
+
+remove_all_item_effect = {
+}
+
+assing_all_item_effect = {
+}
+
+transfer_all_items_to = {
+    clear_global_variable_list = item_transfer_list
+    $transfer_from$ = {
+        every_in_list = {
+            variable = item_list
+            prev = {
+                add_to_global_variable_list = {
+                    name = item_transfer_list
+                    target = prev
+                }
+            }
+        }
+        clear_variable_list = item_list
+    }
+    $transfer_to$ = {
+        every_in_global_list = {
+            variable = item_transfer_list
+            prev = {
+                add_to_variable_list = {
+                    name = item_list
+                    target = prev
+                }
+            }
+        }
+    }
+}
+
+gift_item_pre = {
+    clear_global_variable_list = transfered_item_id
+    clear_variable_list = item_transfer_recipients_list
+    add_to_global_variable_list = { name = transfered_item_id target = flag:$item_ID$ }
+    set_variable = { name = transfered_item_number value = 1 }
+    root.country = {
+        every_character = {
+            limit = {
+                is_adult = yes
+                NOT = { root = this }
+            }
+            root = {
+                add_to_variable_list = {
+                    name = item_transfer_recipients_list
+                    target = prev
+                }
+            }
+        }
+    }
+}
+
+transfer_item = {
+    $transfer_from$ = {
+        remove_character_item = { item_ID = $transfered_item$ }
+    }
+    $transfer_to$ = {
+        give_character_an_item = { item_ID = $transfered_item$ }
+    }
+}
+
+assing_item_to_category = {
+    add_to_global_variable_list = {
+        name = item_$item_category$
+        target = flag:$item_ID$
+    }
+}
+
+assing_item_to_rarity = {
+    add_to_global_variable_list = {
+        name = item_$item_rarity$
+        target = flag:$item_ID$
+    }
+}
+
+assign_all_items_to_categories = {
+    assing_item_to_category = { item_category = armour  item_ID = item_chainmail }
+    assing_item_to_category = { item_category = helmet  item_ID = item_chainmail_coif }
+    assing_item_to_category = { item_category = armour  item_ID = item_plated_coat }
+    assing_item_to_category = { item_category = helmet  item_ID = item_grand_helmet }
+    assing_item_to_category = { item_category = armour  item_ID = item_plate_armour }
+    assing_item_to_category = { item_category = helmet  item_ID = item_armet_helmet }
+    assing_item_to_category = { item_category = armour  item_ID = item_light_armour }
+    assing_item_to_category = { item_category = weapon_ranged  item_ID = item_bow }
+    assing_item_to_category = { item_category = weapon_ranged  item_ID = item_elven_bow }
+    assing_item_to_category = { item_category = weapon_ranged  item_ID = item_crossbow }
+    assing_item_to_category = { item_category = weapon  item_ID = item_sword }
+    assing_item_to_category = { item_category = weapon  item_ID = item_axe }
+    assing_item_to_category = { item_category = weapon  item_ID = item_daggers }
+    assing_item_to_category = { item_category = weapon  item_ID = item_mace }
+    assing_item_to_category = { item_category = weapon  item_ID = item_lance }
+    assing_item_to_category = { item_category = weapon  item_ID = item_spear }
+    assing_item_to_category = { item_category = weapon  item_ID = item_long_axe }
+    assing_item_to_category = { item_category = shield  item_ID = item_shield }
+    assing_item_to_category = { item_category = ring  item_ID = item_ring_1 }
+    assing_item_to_category = { item_category = ring  item_ID = item_ring_2 }
+    assing_item_to_category = { item_category = trinket  item_ID = item_book_of_skills_oratory }
+    assing_item_to_category = { item_category = trinket  item_ID = item_book_of_skills_military }
+    assing_item_to_category = { item_category = trinket  item_ID = item_book_of_skills_fineese }
+    assing_item_to_category = { item_category = trinket  item_ID = item_book_of_skills_zeal }
+    assing_item_to_category = { item_category = weapon  item_ID = item_zanis_spear }
+    assing_item_to_category = { item_category = special  item_ID = item_revenant_element }
+    assing_item_to_category = { item_category = weapon  item_ID = item_revenant_staff }
+    assing_item_to_category = { item_category = weapon  item_ID = item_axe_of_thunder }
+    assing_item_to_category = { item_category = armour  item_ID = item_robe_of_wielkopan }
+    assing_item_to_category = { item_category = trinket  item_ID = item_veill_of_helluvos }
+    assing_item_to_category = { item_category = trinket  item_ID = item_element_of_star }
+    assing_item_to_category = { item_category = trinket  item_ID = item_particle_of_father_stone }
+    assing_item_to_category = { item_category = trinket  item_ID = item_dark_arts_scripture }
+    assing_item_to_category = { item_category = emblem  item_ID = item_royal_emblem }
+    assing_item_to_category = { item_category = trinket  item_ID = item_royal_banner }
+    assing_item_to_category = { item_category = emblem  item_ID = item_crown }
+    assing_item_to_category = { item_category = trinket  item_ID = item_legislative_code }
+    assing_item_to_category = { item_category = trinket  item_ID = item_administrative_cenus }
+    assing_item_to_category = { item_category = trinket  item_ID = item_statue_of_grom }
+    assing_item_to_category = { item_category = trinket  item_ID = item_spirits_essence }
+    assing_item_to_category = { item_category = trinket  item_ID = item_holy_scripture_wishteon }
+    assing_item_to_category = { item_category = trinket  item_ID = item_ring_of_confidence }
+    assing_item_to_category = { item_category = trinket  item_ID = item_great_contract_of_subjects_rights }
+    assing_item_to_category = { item_category = trinket  item_ID = item_treaty_about_diplomatic_managment }
+    assing_item_to_category = { item_category = trinket  item_ID = item_plans_of_grand_desing }
+    assing_item_to_category = { item_category = trinket  item_ID = item_statuatory_treaty }
+    assing_item_to_category = { item_category = trinket  item_ID = item_conquerors_banner }
+    assing_item_to_category = { item_category = trinket  item_ID = item_memento_for_people }
+    assing_item_to_category = { item_category = armour  item_ID = item_masterwork_armour }
+    assing_item_to_category = { item_category = helmet  item_ID = item_masterwork_helmet }
+    assing_item_to_category = { item_category = weapon  item_ID = item_masterwork_great_sword }
+    assing_item_to_category = { item_category = weapon  item_ID = item_masterwork_sword }
+    assing_item_to_category = { item_category = weapon_ranged  item_ID = item_masterwork_bow }
+    assing_item_to_category = { item_category = weapon_ranged  item_ID = item_masterwork_crossbow }
+    assing_item_to_category = { item_category = ring  item_ID = item_precious_gemstone }
+    assing_item_to_category = { item_category = ring  item_ID = item_precious_jewelry }
+    assing_item_to_category = { item_category = curse  item_ID = item_gift_of_the_god_of_blood }
+    assing_item_to_category = { item_category = weapon  item_ID = item_pre_catalysm_sword }
+    assing_item_to_category = { item_category = armour  item_ID = item_pre_catalysm_armour }
+    assing_item_to_category = { item_category = weapon  item_ID = item_angelic_spear }
+    assing_item_to_category = { item_category = weapon  item_ID = item_glorious_lance }
+    assing_item_to_category = { item_category = weapon  item_ID = item_groms_warhammer }
+    assing_item_to_category = { item_category = shield  item_ID = item_shield_of_father_protector }
+    assing_item_to_category = { item_category = trinket  item_ID = item_chalice_of_victoria }
+    assing_item_to_category = { item_category = weapon  item_ID = item_wreath_of_joy }
+    assing_item_to_category = { item_category = weapon  item_ID = item_dragon_slayer_spear }
+    assing_item_to_category = { item_category = weapon_ranged  item_ID = item_bow_of_the_hunter }
+    assing_item_to_category = { item_category = emblem  item_ID = item_crown_of_zanis }
+    assing_item_to_category = { item_category = trinket  item_ID = item_amulet_of_the_wolf }
+    assing_item_to_category = { item_category = armour  item_ID = item_balthazar_cape }
+    assing_item_to_category = { item_category = trinket  item_ID = item_rhyton_of_measis }
+    assing_item_to_category = { item_category = armour  item_ID = item_robes_of_qhagan }
+    assing_item_to_category = { item_category = weapon  item_ID = item_euryalean_regalia }
+    assing_item_to_category = { item_category = weapon  item_ID = item_staff_of_enslavement }
+    assing_item_to_category = { item_category = shield  item_ID = item_flameshield_of_qoes }
+    assing_item_to_category = { item_category = weapon  item_ID = item_grand_maul_seeker }
+    assing_item_to_category = { item_category = emblem  item_ID = item_crown_of_oaths }
+    assing_item_to_category = { item_category = trinket  item_ID = item_helluvian_bible }
+    assing_item_to_category = { item_category = trinket  item_ID = item_black_pearl_atheus }
+    assing_item_to_category = { item_category = trinket  item_ID = item_ancestral_records }
+    assing_item_to_category = { item_category = trinket  item_ID = item_dragon_tooth }
+    assing_item_to_category = { item_category = special  item_ID = item_dragon_head }
+    assing_item_to_category = { item_category = trinket  item_ID = item_mythril_drill }
+    assing_item_to_category = { item_category = trinket  item_ID = item_stellaric_urn }
+    assing_item_to_category = { item_category = curse  item_ID = item_rooftile }
+}
+
+assign_all_items_to_rarities = {
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_chainmail }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_chainmail_coif }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_plated_coat }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_grand_helmet }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_plate_armour }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_armet_helmet }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_light_armour }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_bow }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_elven_bow }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_crossbow }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_sword }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_axe }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_daggers }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_mace }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_lance }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_spear }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_long_axe }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_shield }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_ring_1 }
+    assing_item_to_rarity = { item_rarity = common_rarity  item_ID = item_ring_2 }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_book_of_skills_oratory }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_book_of_skills_military }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_book_of_skills_fineese }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_book_of_skills_zeal }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_zanis_spear }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_revenant_element }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_revenant_staff }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_axe_of_thunder }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_robe_of_wielkopan }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_veill_of_helluvos }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_element_of_star }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_particle_of_father_stone }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_dark_arts_scripture }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_royal_emblem }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_royal_banner }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_crown }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_legislative_code }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_administrative_cenus }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_statue_of_grom }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_spirits_essence }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_holy_scripture_wishteon }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_ring_of_confidence }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_great_contract_of_subjects_rights }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_treaty_about_diplomatic_managment }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_plans_of_grand_desing }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_statuatory_treaty }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_conquerors_banner }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_memento_for_people }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_masterwork_armour }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_masterwork_helmet }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_masterwork_great_sword }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_masterwork_sword }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_masterwork_bow }
+    assing_item_to_rarity = { item_rarity = uncommon_rarity  item_ID = item_masterwork_crossbow }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_precious_gemstone }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_precious_jewelry }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_gift_of_the_god_of_blood }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_pre_catalysm_sword }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_pre_catalysm_armour }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_angelic_spear }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_glorious_lance }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_groms_warhammer }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_shield_of_father_protector }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_chalice_of_victoria }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_wreath_of_joy }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_dragon_slayer_spear }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_bow_of_the_hunter }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_crown_of_zanis }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_amulet_of_the_wolf }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_balthazar_cape }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_rhyton_of_measis }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_robes_of_qhagan }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_euryalean_regalia }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_staff_of_enslavement }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_flameshield_of_qoes }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_grand_maul_seeker }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_crown_of_oaths }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_helluvian_bible }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_black_pearl_atheus }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_ancestral_records }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_dragon_tooth }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_dragon_head }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_mythril_drill }
+    assing_item_to_rarity = { item_rarity = unique_rarity  item_ID = item_stellaric_urn }
+    assing_item_to_rarity = { item_rarity = rare_rarity  item_ID = item_rooftile }
+}
+
+equip_item = {
+    if = {
+        limit = {
+            has_variable_list = equiped_item_list
+            is_target_in_variable_list = { name = equiped_item_list target = flag:$item_ID$ }
+        }
+        remove_list_variable = {
+            name = equiped_item_list
+            target = flag:$item_ID$
+        }
+        custom_tooltip = unequiping_$item_ID$_tt
+    }
+    else = {
+        custom_tooltip = equiping_$item_ID$_tt
+        add_to_variable_list = {
+            name = equiped_item_list
+            target = flag:$item_ID$
+        }
+    }
+}
+
+equip_item_with_modifier = {
+    if = {
+        limit = {
+            has_variable_list = equiped_item_list
+            is_target_in_variable_list = { name = equiped_item_list target = flag:$item_ID$ }
+        }
+        remove_list_variable = {
+            name = equiped_item_list
+            target = flag:$item_ID$
+        }
+        custom_tooltip = unequiping_$item_ID$_tt
+        remove_character_modifier = $item_ID$_modifier
+    }
+    else = {
+        add_to_variable_list = {
+            name = equiped_item_list
+            target = flag:$item_ID$
+        }
+        custom_tooltip = equiping_$item_ID$_tt
+        add_character_modifier = { name = $item_ID$_modifier  duration = -1 }
+    }
+}
