@@ -46,59 +46,53 @@ omni_annual_character_equipment_check = {
 # a weighted average of market quality based on infrastructure
 omni_build_country_market_average = {
 	employer = {
-		set_variable = {
-			name = omni_country_avg_market_quality
-			value = 0
-		}
-		set_variable = {
-			name = omni_country_market_count
-			value = 0
-		}
+		# Initialize variables
+		set_variable = { name = omni_country_avg_market_quality value = 0 }
+		set_variable = { name = omni_country_market_count value = 0 }
 
-		# Iterate through all owned provinces to build average market quality
+		# Iterate through all owned provinces to build average market quality.
+		# Each building bonus is added directly to the country's running quality
+		# total. Summing per-province bonuses across all provinces is equivalent to
+		# summing each province's quality, and avoids an uninitialized temp variable.
 		every_owned_province = {
-			limit = { is_city = yes }
-
-			# Calculate this province's market quality
-			root = {
-				change_variable = { name = omni_country_market_count add = 1 }
-
-				set_variable = { name = omni_temp_market_quality value = 0 }
-
-				# Evaluate buildings in this province
-				prev = {
-					if = { limit = { num_of_commerce_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 20 } } }
-					if = { limit = { num_of_commerce_building >= 2 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
-					if = { limit = { num_of_commerce_building >= 3 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
-					if = { limit = { num_of_port_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
-					if = { limit = { num_of_port_building >= 3 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
-					if = { limit = { num_of_workshop_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 8 } } }
-					if = { limit = { num_of_foundry_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
-					if = { limit = { num_of_library_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 5 } } }
-					if = { limit = { num_of_academy_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 5 } } }
-					if = { limit = { num_of_used_building_slots >= 8 } root = { change_variable = { name = omni_temp_market_quality add = 8 } } }
-					if = { limit = { num_of_used_building_slots >= 16 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
-					if = { limit = { num_of_used_building_slots >= 30 } root = { change_variable = { name = omni_temp_market_quality add = 12 } } }
-					if = { limit = { total_population >= 20 } root = { change_variable = { name = omni_temp_market_quality add = 8 } } }
-					if = { limit = { total_population >= 50 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
-					if = { limit = { total_population >= 100 } root = { change_variable = { name = omni_temp_market_quality add = 15 } } }
-					if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_temp_market_quality add = 8 } } }
-					if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
-					if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_temp_market_quality add = 12 } } }
+			limit = {
+				OR = {
+					has_province_rank = city
+					has_province_rank = city_metropolis
 				}
-
-				change_variable = { name = omni_country_avg_market_quality add = var:omni_temp_market_quality }
 			}
+
+			# Evaluate buildings in this province, adding to the country's quality total
+			if = { limit = { num_of_commerce_building >= 1 } prev = { change_variable = { name = omni_country_avg_market_quality add = 20 } } }
+			if = { limit = { num_of_commerce_building >= 2 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
+			if = { limit = { num_of_commerce_building >= 3 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
+			if = { limit = { num_of_port_building >= 1 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
+			if = { limit = { num_of_port_building >= 3 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
+			if = { limit = { num_of_workshop_building >= 1 } prev = { change_variable = { name = omni_country_avg_market_quality add = 8 } } }
+			if = { limit = { num_of_foundry_building >= 1 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
+			if = { limit = { num_of_library_building >= 1 } prev = { change_variable = { name = omni_country_avg_market_quality add = 5 } } }
+			if = { limit = { num_of_academy_building >= 1 } prev = { change_variable = { name = omni_country_avg_market_quality add = 5 } } }
+			if = { limit = { num_of_used_building_slots >= 8 } prev = { change_variable = { name = omni_country_avg_market_quality add = 8 } } }
+			if = { limit = { num_of_used_building_slots >= 16 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
+			if = { limit = { num_of_used_building_slots >= 30 } prev = { change_variable = { name = omni_country_avg_market_quality add = 12 } } }
+			if = { limit = { total_population >= 20 } prev = { change_variable = { name = omni_country_avg_market_quality add = 8 } } }
+			if = { limit = { total_population >= 50 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
+			if = { limit = { total_population >= 100 } prev = { change_variable = { name = omni_country_avg_market_quality add = 15 } } }
+			if = { limit = { civilization_value >= 50 } prev = { change_variable = { name = omni_country_avg_market_quality add = 8 } } }
+			if = { limit = { civilization_value >= 75 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
+			if = { limit = { civilization_value >= 95 } prev = { change_variable = { name = omni_country_avg_market_quality add = 12 } } }
+
+			# Count this province toward the average
+			prev = { change_variable = { name = omni_country_market_count add = 1 } }
 		}
 
 		# Calculate the average
 		if = {
 			limit = { var:omni_country_market_count > 0 }
-			divide_variable = { name = omni_country_avg_market_quality value = var:omni_country_market_count }
+			change_variable = { name = omni_country_avg_market_quality divide = var:omni_country_market_count }
 		}
 
 		remove_variable = omni_country_market_count
-		remove_variable = omni_temp_market_quality
 	}
 }
 

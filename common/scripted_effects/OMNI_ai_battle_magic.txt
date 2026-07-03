@@ -1,8 +1,9 @@
 ﻿# ----------------------------------------------------------------------------------------------------------------------
 # Omniluxia - AI battle-magic auto-cast
 #
-# Lets AI mage-generals cast the same friendly army buffs a player can (Gale Step
-# tiers, Battle Hymn, Blessing of War) when their army is in danger or in a fight.
+# Lets AI mage-generals cast the same friendly army/fleet buffs a player can
+# (Gale Step tiers, Battle Hymn, Blessing of War, plus the new arcane support
+# spells) when their forces are in danger or in a fight.
 # Driven monthly from me_zorgo_magic_focus.35. All effects run in the CASTER
 # (general / character) scope and pay mana through omni_spell_mana_cost_effect, so
 # the AI obeys the exact same mana rules and tier gating as the player.
@@ -12,7 +13,12 @@
 #   $MOD$ = the unit modifier name to apply.
 omni_apply_unit_buff_effect = {
 	every_character_unit = {
-		limit = { is_army = yes }
+		limit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+		}
 		if = {
 			limit = { has_unit_modifier = $MOD$ }
 			remove_unit_modifier = $MOD$
@@ -32,7 +38,10 @@ omni_ai_cast_mobility_buff_effect = {
 		limit = {
 			NOT = {
 				any_character_unit = {
-					is_army = yes
+					OR = {
+						is_army = yes
+						is_navy = yes
+					}
 					OR = {
 						has_unit_modifier = omni_battle_haste_spell_mod
 						has_unit_modifier = omni_battle_haste_2_spell_mod
@@ -71,22 +80,39 @@ omni_ai_cast_mobility_buff_effect = {
 
 # COMBAT cast: best affordable survival buff for an army already locked in battle.
 # Archmages cast Blessing of War (morale + discipline + speed); everyone else casts
-# Battle Hymn (morale) to keep the stack from routing and being wiped. Skips if the
-# army already has a combat buff.
+# Blessing of War (morale + discipline + speed) to keep the stack from routing and
+# being wiped. Naval forces can also get Spectral Boarders, while Arcane Aegis
+# helps regular battle lines and Battle Clarity is used as a safe reinforcement buff.
 omni_ai_cast_combat_buff_effect = {
 	if = {
 		limit = {
 			NOT = {
 				any_character_unit = {
-					is_army = yes
+					OR = {
+						is_army = yes
+						is_navy = yes
+					}
 					OR = {
 						has_unit_modifier = omni_battle_blessing_spell_mod
 						has_unit_modifier = omni_battle_rally_spell_mod
+						has_unit_modifier = omni_arcane_aegis_spell_mod
+						has_unit_modifier = omni_battle_clarity_spell_mod
+						has_unit_modifier = omni_spectral_boarders_spell_mod
 					}
 				}
 			}
 		}
 		if = {
+			limit = {
+				any_character_unit = {
+					is_navy = yes
+				}
+				omni_can_afford_spell = { BASE = 50 }
+			}
+			omni_spell_mana_cost_effect = { BASE = 50 }
+			omni_apply_unit_buff_effect = { MOD = omni_spectral_boarders_spell_mod }
+		}
+		else_if = {
 			limit = {
 				has_trait = archmage_trait
 				omni_can_afford_spell = { BASE = 75 }
@@ -97,8 +123,67 @@ omni_ai_cast_combat_buff_effect = {
 		else_if = {
 			limit = { omni_can_afford_spell = { BASE = 25 } }
 			omni_spell_mana_cost_effect = { BASE = 25 }
+			omni_apply_unit_buff_effect = { MOD = omni_arcane_aegis_spell_mod }
+		}
+		else_if = {
+			limit = { omni_can_afford_spell = { BASE = 25 } }
+			omni_spell_mana_cost_effect = { BASE = 25 }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod }
+		}
+		else_if = {
+			limit = { omni_can_afford_spell = { BASE = 25 } }
+			omni_spell_mana_cost_effect = { BASE = 25 }
 			omni_apply_unit_buff_effect = { MOD = omni_battle_rally_spell_mod }
 		}
+	}
+}
+
+# SUPPORT cast: use spare mana to reinforce logistics or shore up a quiet stack.
+# Conjured Supply is prioritized when the country is actually facing food trouble;
+# Battle Clarity is a lighter upkeep buff used when the army/fleet is safe.
+omni_ai_cast_support_buff_effect = {
+	if = {
+		limit = {
+			scope:caster_country = {
+				any_state_province = {
+					state_has_low_food = yes
+				}
+			}
+			omni_can_afford_spell = { BASE = 50 }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = {
+			if = {
+				limit = { has_country_modifier = omni_conjured_supply_spell_mod }
+				remove_country_modifier = omni_conjured_supply_spell_mod
+			}
+			add_country_modifier = {
+				name = omni_conjured_supply_spell_mod
+				duration = 365
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 25 }
+			NOT = {
+				any_character_unit = {
+					OR = {
+						is_army = yes
+						is_navy = yes
+					}
+					OR = {
+						has_unit_modifier = omni_arcane_aegis_spell_mod
+						has_unit_modifier = omni_battle_clarity_spell_mod
+						has_unit_modifier = omni_battle_rally_spell_mod
+						has_unit_modifier = omni_battle_blessing_spell_mod
+						has_unit_modifier = omni_spectral_boarders_spell_mod
+					}
+				}
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod }
 	}
 }
 
@@ -111,7 +196,10 @@ omni_ai_battlecast_effect = {
 	if = {
 		limit = {
 			any_character_unit = {
-				is_army = yes
+				OR = {
+					is_army = yes
+					is_navy = yes
+				}
 				in_combat = yes
 			}
 		}
@@ -120,10 +208,16 @@ omni_ai_battlecast_effect = {
 	else_if = {
 		limit = {
 			any_character_unit = {
-				is_army = yes
+				OR = {
+					is_army = yes
+					is_navy = yes
+				}
 				unit_location = {
 					any_unit_in_province = {
-						is_army = yes
+						OR = {
+							is_army = yes
+							is_navy = yes
+						}
 						unit_owner = { war_with = scope:caster_country }
 					}
 				}
@@ -134,11 +228,17 @@ omni_ai_battlecast_effect = {
 	else_if = {
 		limit = {
 			any_character_unit = {
-				is_army = yes
+				OR = {
+					is_army = yes
+					is_navy = yes
+				}
 				unit_location = {
 					any_neighbor_province = {
 						any_unit_in_province = {
-							is_army = yes
+							OR = {
+								is_army = yes
+								is_navy = yes
+							}
 							unit_owner = { war_with = scope:caster_country }
 						}
 					}
@@ -146,5 +246,8 @@ omni_ai_battlecast_effect = {
 			}
 		}
 		omni_ai_cast_mobility_buff_effect = yes
+	}
+	else_if = {
+		omni_ai_cast_support_buff_effect = yes
 	}
 }
