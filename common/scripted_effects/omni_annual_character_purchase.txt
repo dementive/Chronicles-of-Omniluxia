@@ -1,0 +1,420 @@
+# Annual character equipment purchasing system
+# Characters in their own country will check available equipment across all markets
+# and purchase better gear if they can afford it with their personal wealth
+# NPCs now spend actual gold on items based on realistic tier prices
+
+# PRICE TIERS (base costs before market quality modifiers)
+# Common items: 50-70 gold
+# Uncommon items: 100-150 gold
+# Rare items: 180-250 gold
+# Unique items: 300+ gold
+
+# Main effect - called once per character per year
+omni_annual_character_equipment_check = {
+	# Only run for characters who have wealth to spend and are in a country
+	if = {
+		limit = {
+			wealth >= 40
+			exists = employer
+		}
+		# Initialize the country's average market quality variable if not already set
+		employer = {
+			if = {
+				limit = { NOT = { has_variable = omni_country_avg_market_quality } }
+				set_variable = {
+					name = omni_country_avg_market_quality
+					value = 0
+				}
+			}
+		}
+
+		# Build the available market items across all provinces of the character's country
+		omni_build_country_market_average = yes
+
+		# Now check each item category and see if we should buy an upgrade
+		omni_check_and_buy_weapon = yes
+		omni_check_and_buy_ranged = yes
+		omni_check_and_buy_armour = yes
+		omni_check_and_buy_helmet = yes
+		omni_check_and_buy_shield = yes
+		omni_check_and_buy_trinket = yes
+	}
+}
+
+# Build average market quality across the entire country
+# This scans all provinces owned by the character's employer and calculates
+# a weighted average of market quality based on infrastructure
+omni_build_country_market_average = {
+	employer = {
+		set_variable = {
+			name = omni_country_avg_market_quality
+			value = 0
+		}
+		set_variable = {
+			name = omni_country_market_count
+			value = 0
+		}
+
+		# Iterate through all owned provinces to build average market quality
+		every_owned_province = {
+			limit = { is_city = yes }
+
+			# Calculate this province's market quality
+			root = {
+				change_variable = { name = omni_country_market_count add = 1 }
+
+				set_variable = { name = omni_temp_market_quality value = 0 }
+
+				# Evaluate buildings in this province
+				prev = {
+					if = { limit = { num_of_commerce_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 20 } } }
+					if = { limit = { num_of_commerce_building >= 2 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
+					if = { limit = { num_of_commerce_building >= 3 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
+					if = { limit = { num_of_port_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
+					if = { limit = { num_of_port_building >= 3 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
+					if = { limit = { num_of_workshop_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 8 } } }
+					if = { limit = { num_of_foundry_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
+					if = { limit = { num_of_library_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 5 } } }
+					if = { limit = { num_of_academy_building >= 1 } root = { change_variable = { name = omni_temp_market_quality add = 5 } } }
+					if = { limit = { num_of_used_building_slots >= 8 } root = { change_variable = { name = omni_temp_market_quality add = 8 } } }
+					if = { limit = { num_of_used_building_slots >= 16 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
+					if = { limit = { num_of_used_building_slots >= 30 } root = { change_variable = { name = omni_temp_market_quality add = 12 } } }
+					if = { limit = { total_population >= 20 } root = { change_variable = { name = omni_temp_market_quality add = 8 } } }
+					if = { limit = { total_population >= 50 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
+					if = { limit = { total_population >= 100 } root = { change_variable = { name = omni_temp_market_quality add = 15 } } }
+					if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_temp_market_quality add = 8 } } }
+					if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_temp_market_quality add = 10 } } }
+					if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_temp_market_quality add = 12 } } }
+				}
+
+				change_variable = { name = omni_country_avg_market_quality add = var:omni_temp_market_quality }
+			}
+		}
+
+		# Calculate the average
+		if = {
+			limit = { var:omni_country_market_count > 0 }
+			divide_variable = { name = omni_country_avg_market_quality value = var:omni_country_market_count }
+		}
+
+		remove_variable = omni_country_market_count
+		remove_variable = omni_temp_market_quality
+	}
+}
+
+# Check if should buy better weapon
+omni_check_and_buy_weapon = {
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 60 }
+			# Only buy weapons that are meaningfully better
+			# If you don't have a weapon, consider common ones
+		}
+		# High-quality markets: look for rare/unique weapons (320+ gold)
+		if = {
+			limit = {
+				wealth >= 320
+				NOT = { has_item = { item_ID = item_axe_of_thunder } }
+			}
+			omni_buy_character_item = { item_ID = item_axe_of_thunder price = 320 }
+		}
+		else_if = {
+			limit = {
+				wealth >= 300
+				NOT = { has_item = { item_ID = item_revenant_element } }
+			}
+			omni_buy_character_item = { item_ID = item_revenant_element price = 300 }
+		}
+		else_if = {
+			limit = {
+				wealth >= 290
+				NOT = { has_item = { item_ID = item_robe_of_wielkopan } }
+			}
+			omni_buy_character_item = { item_ID = item_robe_of_wielkopan price = 290 }
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 45 }
+		}
+		# Mid-tier weapons for decent markets (130-160 gold)
+		if = {
+			limit = {
+				wealth >= 140
+				NOT = { has_item = { item_ID = item_masterwork_sword } }
+				NOT = { has_item = { item_ID = item_masterwork_great_sword } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_masterwork_great_sword price = 160 } }
+				1 = { omni_buy_character_item = { item_ID = item_masterwork_sword price = 140 } }
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 30 }
+		}
+		# Common weapons for any market (50-70 gold)
+		if = {
+			limit = {
+				wealth >= 60
+				NOT = { has_item = { item_ID = item_sword } }
+				NOT = { has_item = { item_ID = item_axe } }
+				NOT = { has_item = { item_ID = item_mace } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_sword price = 60 } }
+				1 = { omni_buy_character_item = { item_ID = item_axe price = 65 } }
+				1 = { omni_buy_character_item = { item_ID = item_long_axe price = 70 } }
+				1 = { omni_buy_character_item = { item_ID = item_mace price = 60 } }
+			}
+		}
+	}
+}
+
+# Check if should buy better ranged weapon
+omni_check_and_buy_ranged = {
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 60 }
+		}
+		# High-quality markets: look for masterwork ranged (130-150 gold)
+		if = {
+			limit = {
+				wealth >= 135
+				NOT = { has_item = { item_ID = item_masterwork_bow } }
+				NOT = { has_item = { item_ID = item_masterwork_crossbow } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_masterwork_bow price = 135 } }
+				1 = { omni_buy_character_item = { item_ID = item_masterwork_crossbow price = 150 } }
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 30 }
+		}
+		# Common ranged for basic markets (55-65 gold)
+		if = {
+			limit = {
+				wealth >= 60
+				NOT = { has_item = { item_ID = item_bow } }
+				NOT = { has_item = { item_ID = item_crossbow } }
+				NOT = { has_item = { item_ID = item_elven_bow } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_bow price = 60 } }
+				1 = { omni_buy_character_item = { item_ID = item_crossbow price = 65 } }
+				1 = { omni_buy_character_item = { item_ID = item_elven_bow price = 60 } }
+			}
+		}
+	}
+}
+
+# Check if should buy better armour
+omni_check_and_buy_armour = {
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 60 }
+		}
+		# High-quality markets: look for masterwork/rare armour (150-200 gold)
+		if = {
+			limit = {
+				wealth >= 180
+				NOT = { has_item = { item_ID = item_masterwork_armour } }
+			}
+			omni_buy_character_item = { item_ID = item_masterwork_armour price = 180 }
+		}
+		else_if = {
+			limit = {
+				wealth >= 125
+				NOT = { has_item = { item_ID = item_plate_armour } }
+			}
+			omni_buy_character_item = { item_ID = item_plate_armour price = 125 }
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 40 }
+		}
+		# Mid-tier armour (100-125 gold)
+		if = {
+			limit = {
+				wealth >= 115
+				NOT = { has_item = { item_ID = item_plated_coat } }
+				NOT = { has_item = { item_ID = item_plate_armour } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_plated_coat price = 115 } }
+				1 = { omni_buy_character_item = { item_ID = item_plate_armour price = 125 } }
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 20 }
+		}
+		# Common armour (55-70 gold)
+		if = {
+			limit = {
+				wealth >= 65
+				NOT = { has_item = { item_ID = item_chainmail } }
+				NOT = { has_item = { item_ID = item_light_armour } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_chainmail price = 65 } }
+				1 = { omni_buy_character_item = { item_ID = item_light_armour price = 60 } }
+			}
+		}
+	}
+}
+
+# Check if should buy better helmet
+omni_check_and_buy_helmet = {
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 60 }
+		}
+		# High-quality markets: look for masterwork helmets (120-140 gold)
+		if = {
+			limit = {
+				wealth >= 135
+				NOT = { has_item = { item_ID = item_masterwork_helmet } }
+			}
+			omni_buy_character_item = { item_ID = item_masterwork_helmet price = 135 }
+		}
+		else_if = {
+			limit = {
+				wealth >= 110
+				NOT = { has_item = { item_ID = item_armet_helmet } }
+			}
+			omni_buy_character_item = { item_ID = item_armet_helmet price = 110 }
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 40 }
+		}
+		# Mid-tier helmets (100-120 gold)
+		if = {
+			limit = {
+				wealth >= 115
+				NOT = { has_item = { item_ID = item_grand_helmet } }
+				NOT = { has_item = { item_ID = item_armet_helmet } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_grand_helmet price = 120 } }
+				1 = { omni_buy_character_item = { item_ID = item_armet_helmet price = 110 } }
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 20 }
+		}
+		# Common helmets (50-60 gold)
+		if = {
+			limit = {
+				wealth >= 55
+				NOT = { has_item = { item_ID = item_chainmail_coif } }
+			}
+			omni_buy_character_item = { item_ID = item_chainmail_coif price = 55 }
+		}
+	}
+}
+
+# Check if should buy better shield
+omni_check_and_buy_shield = {
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 60 }
+		}
+		# High-quality markets: rare shields (180-220 gold)
+		if = {
+			limit = {
+				wealth >= 200
+				NOT = { has_item = { item_ID = item_shield_of_father_protector } }
+				NOT = { has_item = { item_ID = item_flameshield_of_qoes } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_shield_of_father_protector price = 220 } }
+				1 = { omni_buy_character_item = { item_ID = item_flameshield_of_qoes price = 200 } }
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 30 }
+		}
+		# Common shield (60-75 gold)
+		if = {
+			limit = {
+				wealth >= 70
+				NOT = { has_item = { item_ID = item_shield } }
+			}
+			omni_buy_character_item = { item_ID = item_shield price = 70 }
+		}
+	}
+}
+
+# Check if should buy better trinket/ring
+omni_check_and_buy_trinket = {
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 70 }
+		}
+		# High-quality markets: rare trinkets (200-250 gold)
+		if = {
+			limit = {
+				wealth >= 225
+				NOT = { has_item = { item_ID = item_precious_gemstone } }
+				NOT = { has_item = { item_ID = item_precious_jewelry } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_precious_gemstone price = 250 } }
+				1 = { omni_buy_character_item = { item_ID = item_precious_jewelry price = 225 } }
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 40 }
+		}
+		# Mid-tier trinkets (100-130 gold)
+		if = {
+			limit = {
+				wealth >= 120
+				NOT = { has_item = { item_ID = item_ring_of_confidence } }
+			}
+			omni_buy_character_item = { item_ID = item_ring_of_confidence price = 120 }
+		}
+	}
+
+	if = {
+		limit = {
+			employer = { var:omni_country_avg_market_quality >= 20 }
+		}
+		# Basic rings (40-50 gold)
+		if = {
+			limit = {
+				wealth >= 50
+				NOT = { has_item = { item_ID = item_ring_1 } }
+				NOT = { has_item = { item_ID = item_ring_2 } }
+			}
+			random_list = {
+				1 = { omni_buy_character_item = { item_ID = item_ring_1 price = 45 } }
+				1 = { omni_buy_character_item = { item_ID = item_ring_2 price = 50 } }
+			}
+		}
+	}
+}
