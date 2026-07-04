@@ -1,4 +1,4 @@
-﻿#add an item to a char requires item_ID has_effect yes or no effect_name
+#add an item to a char requires item_ID has_effect yes or no effect_name
 
 give_character_an_item = {
 
@@ -421,14 +421,10 @@ omni_build_ai_country_item_shop_stock = {
     }
 }
 
-# RECONSTRUCTED by assistant from its call signature ( item_ID + price ) and the
-# omni_sell_character_item logic, because the original was lost to file truncation.
-# Deducts the price from the buyer's treasury, gives them the item, and clears it
-# from that country's shop stock. PLEASE REVIEW against your intended design.
+# Deducts the price from the character's wealth, gives them the item, and clears it
+# from that country's shop stock.
 omni_buy_character_item = {
-    root.country = {
-        add_treasury = { value = $price$ multiply = -1 }
-    }
+    add_wealth = { value = $price$ multiply = -1 }
     give_character_an_item = { item_ID = $item_ID$ }
     if = {
         limit = { is_target_in_variable_list = { name = omni_item_shop_stock target = flag:$item_ID$ } }

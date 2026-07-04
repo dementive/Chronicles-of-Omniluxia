@@ -46,23 +46,12 @@ omni_annual_character_equipment_check = {
 # a weighted average of market quality based on infrastructure
 omni_build_country_market_average = {
 	employer = {
-		# Initialize variables
+		# Initialize variable
 		set_variable = { name = omni_country_avg_market_quality value = 0 }
-		set_variable = { name = omni_country_market_count value = 0 }
 
-		# Iterate through all owned provinces to build average market quality.
-		# Each building bonus is added directly to the country's running quality
-		# total. Summing per-province bonuses across all provinces is equivalent to
-		# summing each province's quality, and avoids an uninitialized temp variable.
-		every_owned_province = {
-			limit = {
-				OR = {
-					has_province_rank = city
-					has_province_rank = city_metropolis
-				}
-			}
-
-			# Evaluate buildings in this province, adding to the country's quality total
+		# Evaluate buildings in the capital province (smooth O(1) check!)
+		# The capital represents the nation's best market, preventing large empires from dragging the average down.
+		capital_scope = {
 			if = { limit = { num_of_commerce_building >= 1 } prev = { change_variable = { name = omni_country_avg_market_quality add = 20 } } }
 			if = { limit = { num_of_commerce_building >= 2 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
 			if = { limit = { num_of_commerce_building >= 3 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
@@ -81,18 +70,7 @@ omni_build_country_market_average = {
 			if = { limit = { civilization_value >= 50 } prev = { change_variable = { name = omni_country_avg_market_quality add = 8 } } }
 			if = { limit = { civilization_value >= 75 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
 			if = { limit = { civilization_value >= 95 } prev = { change_variable = { name = omni_country_avg_market_quality add = 12 } } }
-
-			# Count this province toward the average
-			prev = { change_variable = { name = omni_country_market_count add = 1 } }
 		}
-
-		# Calculate the average
-		if = {
-			limit = { var:omni_country_market_count > 0 }
-			change_variable = { name = omni_country_avg_market_quality divide = var:omni_country_market_count }
-		}
-
-		remove_variable = omni_country_market_count
 	}
 }
 
