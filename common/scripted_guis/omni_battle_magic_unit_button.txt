@@ -1,0 +1,65 @@
+omni_battle_magic_unit_button = {
+	scope = character
+	saved_scopes = {
+		player
+	}
+
+	# Shown on the battle popup for the player's side. The root scope is the
+	# commander leading the force that is currently fighting.
+	is_shown = {
+		is_alive = yes
+		OR = {
+			is_general = yes
+			is_admiral = yes
+		}
+		OR = {
+			country = scope:player
+			employer = scope:player
+		}
+		NOT = { has_variable = is_the_revant }
+		scope:player = {
+			is_ai = no
+			omni_player_has_eligible_mage = yes
+		}
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	# is_valid drives the ENABLED state. Keep the button visible for the battle
+	# commander, then grey it out when no eligible mage can afford even the
+	# cheapest battle spell.
+	is_valid = {
+		custom_tooltip = {
+			text = omni_battle_magic_unit_button_tooltip
+		}
+		trigger_if = {
+			limit = {
+				scope:player = {
+					has_variable = omni_battle_spell_cooldown
+				}
+			}
+			custom_tooltip = {
+				text = omni_battle_spell_cooldown_tt
+				scope:player = {
+					NOT = { has_variable = omni_battle_spell_cooldown }
+				}
+			}
+		}
+		custom_tooltip = {
+			text = omni_unit_magic_need_mana_tt
+			scope:player = {
+				omni_player_has_affordable_mage = { BASE = 25 }
+			}
+		}
+	}
+
+	effect = {
+		save_scope_as = target
+		scope:player = {
+			save_scope_as = battle_spell_context
+			trigger_event = { id = me_zorgo_magic_focus.29 }
+		}
+	}
+}
