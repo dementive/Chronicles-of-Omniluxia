@@ -70,6 +70,9 @@ STAT_LABELS = {
     "monthly_political_influence_modifier": ("Political Influence", PCT), "omen_power": ("Omen Power", PCT),
     "war_exhaustion": ("War Exhaustion", PCT), "agressive_expansion_impact": ("Aggressive Expansion Impact", PCT),
     "build_cost": ("Build Cost", PCT), "build_time": ("Build Time", PCT),
+    "global_monthly_state_loyalty": ("Monthly Provincial Loyalty", MON),
+    "great_work_tribals_workrate_character_modifier": ("Tribal Workrate", PCT),
+    "global_defensive": ("Global Defense", PCT),
 }
 
 
@@ -89,19 +92,31 @@ def stat_str(key, val):
 def main():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     mods_path = os.path.join(root, "common", "modifiers", "choo_items_modifiers.txt")
+    artifact_mods_path = os.path.join(root, "common", "modifiers", "omni_artifact_modifiers.txt")
     names_path = os.path.join(root, "localization", "english", "choo_items_l_english.yml")
+    artifact_names_path = os.path.join(root, "localization", "english", "omni_artifact_items_l_english.yml")
     equip_path = os.path.join(root, "common", "scripted_guis", "choo_items_gui.txt")
     out_path = os.path.join(root, "localization", "english", "omni_equipped_l_english.yml")
 
     # item display order = order of equip_item_<id> scripted GUI definitions
     order = []
+    seen = set()
     for line in open(equip_path, encoding="utf-8"):
         m = re.match(r"^[ ]{0,2}equip_item_(\w+)\s*=\s*\{\s*$", line)
         if m and m.group(1) != "with_modifier":
             order.append(m.group(1))
+            seen.add(m.group(1))
+        
+        m_art = re.search(r"target = flag:item_(artifact_\w+)", line)
+        if m_art and m_art.group(1) not in seen:
+            order.append(m_art.group(1))
+            seen.add(m_art.group(1))
 
     # item -> [(stat, value), ...]
     mod_text = open(mods_path, encoding="utf-8").read()
+    if os.path.exists(artifact_mods_path):
+        mod_text += "\n" + open(artifact_mods_path, encoding="utf-8").read()
+        
     item_mods = {}
     for m in re.finditer(r"item_(\w+)_modifier\s*=\s*\{([^}]*)\}", mod_text):
         stats = [(km.group(1), float(km.group(2)))
@@ -110,8 +125,11 @@ def main():
 
     # item -> display name
     names = {}
-    for m in re.finditer(r'^\s*item_(\w+):0\s*"([^"]*)"',
-                         open(names_path, encoding="utf-8-sig").read(), re.M):
+    names_text = open(names_path, encoding="utf-8-sig").read()
+    if os.path.exists(artifact_names_path):
+        names_text += "\n" + open(artifact_names_path, encoding="utf-8-sig").read()
+        
+    for m in re.finditer(r'^\s*item_(\w+?)(?:_modifier)?:0\s*"([^"]*)"', names_text, re.M):
         names[m.group(1)] = m.group(2)
 
     unknown = set()

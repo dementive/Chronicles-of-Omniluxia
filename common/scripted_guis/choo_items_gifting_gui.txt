@@ -42,19 +42,21 @@ transfer_item_to_the_character = {
 				text = has_this_item_already_tt
 				
 				NOT = {
-
 					any_in_global_list = { 
 						variable = transfered_item_id
 							
 							PREV = {
-	
-								is_target_in_variable_list = {   
-									name = item_list   
-									target = prev
-								}
-	
+                                OR = {
+                                    is_target_in_variable_list = {   
+                                        name = item_list   
+                                        target = prev
+                                    }
+                                    is_target_in_global_variable_list = {
+                                        name = item_artifact_rarity
+                                        target = prev
+                                    }
+                                }
 							}	
-	
 					
 					}
 
@@ -112,14 +114,44 @@ transfer_item_to_the_character = {
             variable = transfered_item_id
             
             prev = {
-
                 add_to_variable_list = {
                     name = item_list
                     target = prev
                 }
-
+                
+                # Apply Opinion and Loyalty based on item rarity
+                if = {
+                    limit = {
+                        any_in_global_list = {
+                            variable = transfered_item_id
+                            PREV = {
+                                OR = {
+                                    is_target_in_global_variable_list = { name = item_rare_rarity target = prev }
+                                    is_target_in_global_variable_list = { name = item_unique_rarity target = prev }
+                                }
+                            }
+                        }
+                    }
+                    add_loyalty = omni_gifted_rare_item_loyalty
+                    add_opinion = { target = scope:sender modifier = omni_gifted_rare_item }
+                }
+                else_if = {
+                    limit = {
+                        any_in_global_list = {
+                            variable = transfered_item_id
+                            PREV = {
+                                is_target_in_global_variable_list = { name = item_uncommon_rarity target = prev }
+                            }
+                        }
+                    }
+                    add_loyalty = omni_gifted_uncommon_item_loyalty
+                    add_opinion = { target = scope:sender modifier = omni_gifted_uncommon_item }
+                }
+                else = {
+                    add_loyalty = omni_gifted_common_item_loyalty
+                    add_opinion = { target = scope:sender modifier = omni_gifted_common_item }
+                }
             }
-        
         }
 		
 

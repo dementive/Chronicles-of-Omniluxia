@@ -1179,7 +1179,9 @@ on_character_death = {
 			trigger_event = me_zorgo_magic_focus.24
 		}
 		if = {
-			limit = { has_variable_list = item_list }
+			limit = {
+				has_variable_list = item_list
+			}
 			employer = {
 				current_ruler = {
 					transfer_all_items_to = {
@@ -2329,6 +2331,78 @@ on_great_battle_won_country = { #root = country scope of the main unit on the wi
 
 on_battle_won_country = { #root = country scope of the main unit on the winning side, scope:actor = main unit on the winning side, scope:target = main unit on the losing side
 	effect = {
+		# Omniluxia Battlefield Looting Logic
+		if = {
+			limit = {
+				scope:target = { has_commander = yes }
+				scope:target.commander = { has_variable_list = item_list }
+			}
+			# If the winner has a commander
+			if = {
+				limit = { scope:actor = { has_commander = yes } }
+				# Target survived: 5% chance to drop
+				if = {
+					limit = { scope:target.commander = { is_alive = yes } }
+					random = {
+						chance = 5
+						scope:actor.commander = {
+							transfer_all_items_to = {
+								transfer_from = scope:target.commander
+								transfer_to = this
+							}
+							trigger_event = omni_loot.1
+						}
+						scope:target.commander = {
+							trigger_event = omni_loot.2
+						}
+					}
+				}
+				# Target died in battle: 100% chance to drop
+				if = {
+					limit = { scope:target.commander = { is_alive = no } }
+					scope:actor.commander = {
+						transfer_all_items_to = {
+							transfer_from = scope:target.commander
+							transfer_to = this
+						}
+						trigger_event = omni_loot.3
+					}
+				}
+			}
+			# If the winner has NO commander
+			if = {
+				limit = { NOT = { scope:actor = { has_commander = yes } } }
+				# Target survived: 5% chance
+				if = {
+					limit = { scope:target.commander = { is_alive = yes } }
+					random = {
+						chance = 5
+						root.current_ruler = {
+							transfer_all_items_to = {
+								transfer_from = scope:target.commander
+								transfer_to = this
+							}
+						}
+						root = { trigger_event = omni_loot.4 }
+						scope:target.commander = {
+							trigger_event = omni_loot.2
+						}
+					}
+				}
+				# Target died: 100% chance
+				if = {
+					limit = { scope:target.commander = { is_alive = no } }
+					root.current_ruler = {
+						transfer_all_items_to = {
+							transfer_from = scope:target.commander
+							transfer_to = this
+						}
+					}
+					root = { trigger_event = omni_loot.5 }
+				}
+			}
+		}
+
 		if = {
 			limit = {
 				scope:target.unit_owner = c:REB #All REB stacks are slave stacks

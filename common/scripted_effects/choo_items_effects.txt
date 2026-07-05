@@ -1,4 +1,4 @@
-#add an item to a char requires item_ID has_effect yes or no effect_name
+﻿#add an item to a char requires item_ID has_effect yes or no effect_name
 
 give_character_an_item = {
 
@@ -163,24 +163,27 @@ omni_sell_character_item = {
 }
 
 omni_add_item_to_shop_stock = {
-    if = {
-        limit = {
-            NOT = {
-                is_target_in_variable_list = {
-                    name = omni_item_shop_stock
-                    target = flag:$item_ID$
+    scope:omni_shop_owner = {
+        if = {
+            limit = {
+                NOT = {
+                    is_target_in_variable_list = {
+                        name = omni_item_shop_stock
+                        target = flag:$item_ID$
+                    }
                 }
             }
-        }
-        add_to_variable_list = {
-            name = omni_item_shop_stock
-            target = flag:$item_ID$
+            add_to_variable_list = {
+                name = omni_item_shop_stock
+                target = flag:$item_ID$
+            }
         }
     }
 }
 
 omni_roll_common_shop_item = {
     random_list = {
+        2000 = { omni_roll_generated_common_shop_item = yes }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_chainmail } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_chainmail_coif } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_light_armour } }
@@ -202,6 +205,7 @@ omni_roll_common_shop_item = {
 
 omni_roll_uncommon_shop_item = {
     random_list = {
+        2000 = { omni_roll_generated_uncommon_shop_item = yes }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_plated_coat } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_grand_helmet } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_plate_armour } }
@@ -227,6 +231,7 @@ omni_roll_uncommon_shop_item = {
 
 omni_roll_rare_shop_item = {
     random_list = {
+        2000 = { omni_roll_generated_rare_shop_item = yes }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_dark_arts_scripture } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_statue_of_grom } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_spirits_essence } }
@@ -286,7 +291,7 @@ omni_roll_unique_shop_item = {
 
 omni_roll_market_shop_item = {
     if = {
-        limit = { var:omni_market_quality < 30 }
+        limit = { root.var:omni_market_quality < 30 }
         random_list = {
             80 = { omni_roll_common_shop_item = yes }
             20 = { omni_roll_uncommon_shop_item = yes }
@@ -294,8 +299,8 @@ omni_roll_market_shop_item = {
     }
     else_if = {
         limit = {
-            var:omni_market_quality >= 30
-            var:omni_market_quality < 60
+            root.var:omni_market_quality >= 30
+            root.var:omni_market_quality < 60
         }
         random_list = {
             45 = { omni_roll_common_shop_item = yes }
@@ -305,8 +310,8 @@ omni_roll_market_shop_item = {
     }
     else_if = {
         limit = {
-            var:omni_market_quality >= 60
-            var:omni_market_quality < 90
+            root.var:omni_market_quality >= 60
+            root.var:omni_market_quality < 90
         }
         random_list = {
             20 = { omni_roll_common_shop_item = yes }
@@ -326,6 +331,7 @@ omni_roll_market_shop_item = {
 }
 
 omni_build_item_shop_stock = {
+    save_scope_as = omni_shop_owner
     clear_variable_list = omni_item_shop_stock
     set_variable = {
         name = omni_market_quality
@@ -351,29 +357,44 @@ omni_build_item_shop_stock = {
         if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_market_quality add = 8 } } }
         if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_market_quality add = 10 } } }
         if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_market_quality add = 12 } } }
+        if = { limit = { is_capital = yes } root = { change_variable = { name = omni_market_quality add = 15 } } }
+        if = { limit = { is_holy_site = yes } root = { change_variable = { name = omni_market_quality add = 20 } } }
+        if = { limit = { OR = { trade_goods = iron trade_goods = base_metals trade_goods = hardwood } } root = { change_variable = { name = omni_market_quality add = 15 } } }
+        if = { limit = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } root = { change_variable = { name = omni_market_quality add = 20 } } }
     }
-    omni_roll_common_shop_item = yes
-    omni_roll_common_shop_item = yes
-    omni_roll_market_shop_item = yes
-    omni_roll_market_shop_item = yes
-    omni_roll_market_shop_item = yes
-    if = {
-        limit = { var:omni_market_quality >= 45 }
+    employer = {
+        omni_roll_common_shop_item = yes
+        omni_roll_common_shop_item = yes
         omni_roll_market_shop_item = yes
-    }
-    if = {
-        limit = { var:omni_market_quality >= 75 }
-        omni_roll_rare_shop_item = yes
-    }
-    if = {
-        limit = { var:omni_market_quality >= 110 }
-        omni_roll_unique_shop_item = yes
+        omni_roll_market_shop_item = yes
+        omni_roll_market_shop_item = yes
+        omni_roll_market_shop_item = yes
+        
+        if = { limit = { root.location = { is_holy_site = yes } } random_list = { 10 = { omni_add_item_to_shop_stock = { item_ID = item_holy_scripture_wishteon } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_dark_arts_scripture } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_spirits_essence } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_statue_of_grom } } } }
+        if = { limit = { root.location = { trade_goods = papyrus } } random_list = { 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_oratory } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_military } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_fineese } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_zeal } } } }
+        if = { limit = { root.location = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } } omni_roll_rare_shop_item = yes }
+        if = { limit = { exists = scope:omni_item_merchant scope:omni_item_merchant = { has_trait = generous } } omni_roll_common_shop_item = yes }
+        if = { limit = { exists = scope:omni_item_merchant scope:omni_item_merchant = { OR = { has_trait = shrewd has_trait = crafty } } } root = { change_variable = { name = omni_market_quality add = 20 } } }
+
+        if = {
+            limit = { root.var:omni_market_quality >= 45 }
+            omni_roll_market_shop_item = yes
+        }
+        if = {
+            limit = { root.var:omni_market_quality >= 75 }
+            omni_roll_rare_shop_item = yes
+        }
+        if = {
+            limit = { root.var:omni_market_quality >= 110 }
+            omni_roll_unique_shop_item = yes
+        }
     }
 }
 
 omni_build_ai_country_item_shop_stock = {
     clear_variable_list = omni_item_shop_stock
     root = {
+        save_scope_as = omni_shop_owner
         every_owned_province = {
             limit = { has_building = commerce_building }
             root = {
@@ -400,20 +421,30 @@ omni_build_ai_country_item_shop_stock = {
             if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_market_quality add = 8 } } }
             if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_market_quality add = 10 } } }
             if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_market_quality add = 12 } } }
+            if = { limit = { is_capital = yes } root = { change_variable = { name = omni_market_quality add = 15 } } }
+            if = { limit = { is_holy_site = yes } root = { change_variable = { name = omni_market_quality add = 20 } } }
+            if = { limit = { OR = { trade_goods = iron trade_goods = base_metals trade_goods = hardwood } } root = { change_variable = { name = omni_market_quality add = 15 } } }
+            if = { limit = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } root = { change_variable = { name = omni_market_quality add = 20 } } }
             root = {
                 omni_roll_common_shop_item = yes
                 omni_roll_market_shop_item = yes
                 omni_roll_market_shop_item = yes
+                omni_roll_market_shop_item = yes
+                
+                if = { limit = { prev = { is_holy_site = yes } } random_list = { 10 = { omni_add_item_to_shop_stock = { item_ID = item_holy_scripture_wishteon } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_dark_arts_scripture } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_spirits_essence } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_statue_of_grom } } } }
+                if = { limit = { prev = { trade_goods = papyrus } } random_list = { 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_oratory } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_military } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_fineese } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_zeal } } } }
+                if = { limit = { prev = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } } omni_roll_rare_shop_item = yes }
+                
                 if = {
-                    limit = { var:omni_market_quality >= 45 }
+                    limit = { root.var:omni_market_quality >= 45 }
                     omni_roll_market_shop_item = yes
                 }
                 if = {
-                    limit = { var:omni_market_quality >= 75 }
+                    limit = { root.var:omni_market_quality >= 75 }
                     omni_roll_rare_shop_item = yes
                 }
                 if = {
-                    limit = { var:omni_market_quality >= 110 }
+                    limit = { root.var:omni_market_quality >= 110 }
                     omni_roll_unique_shop_item = yes
                 }
             }
@@ -424,7 +455,7 @@ omni_build_ai_country_item_shop_stock = {
 # Deducts the price from the character's wealth, gives them the item, and clears it
 # from that country's shop stock.
 omni_buy_character_item = {
-    add_wealth = { value = $price$ multiply = -1 }
+    add_gold = { value = $price$ multiply = -1 }
     give_character_an_item = { item_ID = $item_ID$ }
     if = {
         limit = { is_target_in_variable_list = { name = omni_item_shop_stock target = flag:$item_ID$ } }
