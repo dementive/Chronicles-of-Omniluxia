@@ -1,0 +1,57 @@
+﻿omni_battle_offensive_magic_button = {
+	scope = character
+	saved_scopes = {
+		player
+	}
+
+	# Shown on the battle popup for the ENEMY side. The root scope is the enemy
+	# commander leading the force the player is currently fighting. Mirrors
+	# omni_offensive_magic_unit_button (single_unit_window), which is unreachable
+	# once units are locked in combat - this button restores access to the
+	# offensive spell menus (me_zorgo_magic_focus.8 -> school menus) mid-battle.
+	is_shown = {
+		is_alive = yes
+		OR = {
+			is_general = yes
+			is_admiral = yes
+		}
+		NOT = { has_variable = is_the_revant }
+		exists = employer
+		employer = {
+			NOT = { tag = BAR }
+			NOT = { tag = REB }
+			NOT = { tag = PIR }
+			NOT = { this = scope:player }
+			scope:player = {
+				war_with = PREV
+			}
+		}
+		scope:player = {
+			is_ai = no
+			omni_player_has_eligible_mage = yes
+		}
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	# is_valid drives the ENABLED state. Greyed out when no eligible mage can
+	# afford even the cheapest offensive spell (15 MP scaled).
+	is_valid = {
+		custom_tooltip = {
+			text = omni_offensive_magic_unit_button_tooltip
+		}
+		custom_tooltip = {
+			text = omni_unit_magic_need_mana_tt
+			scope:player = { omni_player_has_affordable_mage = { BASE = 15 } }
+		}
+	}
+
+	effect = {
+		save_scope_as = target
+		scope:player = {
+			trigger_event = { id = me_zorgo_magic_focus.8 }
+		}
+	}
+}

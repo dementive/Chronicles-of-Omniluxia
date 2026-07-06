@@ -44,14 +44,29 @@ omni_annual_character_equipment_check = {
 # Build average market quality across the entire country
 # This scans all provinces owned by the character's employer and calculates
 # a weighted average of market quality based on infrastructure
+# PERF: the result is cached per COUNTRY with an auto-expiring freshness flag,
+# so the rebuild runs once per country per year instead of once per character
+# per year (every character in the same country shares the same market).
 omni_build_country_market_average = {
 	employer = {
-		# Initialize variable
-		set_variable = { name = omni_country_avg_market_quality value = 0 }
+		if = {
+			limit = { has_variable = omni_market_avg_fresh }
+			# Cached value from another character's check this year - skip rebuild.
+		}
+		else = {
+			set_variable = { name = omni_market_avg_fresh days = 300 }
+			omni_build_country_market_average_impl = yes
+		}
+	}
+}
 
-		# Evaluate buildings in the capital province (smooth O(1) check!)
-		# The capital represents the nation's best market, preventing large empires from dragging the average down.
-		capital_scope = {
+omni_build_country_market_average_impl = {
+	# Runs in COUNTRY scope (called from the employer block above).
+	set_variable = { name = omni_country_avg_market_quality value = 0 }
+
+	# Evaluate buildings in the capital province (smooth O(1) check!)
+	# The capital represents the nation's best market, preventing large empires from dragging the average down.
+	capital_scope = {
 			if = { limit = { num_of_commerce_building >= 1 } prev = { change_variable = { name = omni_country_avg_market_quality add = 20 } } }
 			if = { limit = { num_of_commerce_building >= 2 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
 			if = { limit = { num_of_commerce_building >= 3 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
@@ -71,7 +86,6 @@ omni_build_country_market_average = {
 			if = { limit = { civilization_value >= 75 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
 			if = { limit = { civilization_value >= 95 } prev = { change_variable = { name = omni_country_avg_market_quality add = 12 } } }
 		}
-	}
 }
 
 # Check if should buy better weapon
@@ -83,26 +97,15 @@ omni_check_and_buy_weapon = {
 			# If you don't have a weapon, consider common ones
 		}
 		# High-quality markets: look for rare/unique weapons (320+ gold)
+		# NOTE: only weapon-category items belong here. item_revenant_element
+		# (special) and item_robe_of_wielkopan (armour) were removed - they ate
+		# the weapon budget and blocked real weapon upgrades.
 		if = {
 			limit = {
 				wealth >= 320
 				NOT = { has_item = { item_ID = item_axe_of_thunder } }
 			}
 			omni_buy_character_item = { item_ID = item_axe_of_thunder price = 320 }
-		}
-		else_if = {
-			limit = {
-				wealth >= 300
-				NOT = { has_item = { item_ID = item_revenant_element } }
-			}
-			omni_buy_character_item = { item_ID = item_revenant_element price = 300 }
-		}
-		else_if = {
-			limit = {
-				wealth >= 290
-				NOT = { has_item = { item_ID = item_robe_of_wielkopan } }
-			}
-			omni_buy_character_item = { item_ID = item_robe_of_wielkopan price = 290 }
 		}
 	}
 
