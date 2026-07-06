@@ -1,0 +1,470 @@
+﻿generic_vampire_dominion = {
+	header = "generic_vampire_dominion_title"
+	icon = lotr_generic_army_mission_icon
+
+	repeatable = yes
+
+	chance = {}
+
+	ai_chance = {
+		factor = 0
+	}
+
+	potential = {
+		choo_generic_mission_blocker = yes
+		has_civil_war = no
+		current_ruler = { has_trait = vampire_trait }
+		NOT = { has_variable = generic_vampire_dominion_cooldown }
+	}
+
+	abort = {
+		OR = {
+			current_ruler = { NOT = { has_trait = vampire_trait } }
+			has_civil_war = yes
+			ai_mission_back_out_trigger = yes
+		}
+	}
+
+	on_abort = {
+		set_variable = {
+			name = generic_vampire_dominion_cooldown
+			days = 730
+		}
+		if = {
+			limit = { has_variable = generic_vampire_dominion_first_feeding }
+			remove_variable = generic_vampire_dominion_first_feeding
+		}
+		if = {
+			limit = { has_variable = generic_vampire_dominion_active }
+			remove_variable = generic_vampire_dominion_active
+		}
+	}
+
+	on_start = {
+		start_mission_ai_effect = yes
+		if = {
+			limit = { has_variable = generic_vampire_dominion_first_feeding }
+			remove_variable = generic_vampire_dominion_first_feeding
+		}
+		if = {
+			limit = { has_variable = generic_vampire_dominion_active }
+			remove_variable = generic_vampire_dominion_active
+		}
+	}
+
+	on_completion = {
+		complete_mission_effect = yes
+		set_variable = {
+			name = generic_vampire_dominion_cooldown
+			days = 3650
+		}
+		if = {
+			limit = { has_variable = generic_vampire_dominion_first_feeding }
+			remove_variable = generic_vampire_dominion_first_feeding
+		}
+		if = {
+			limit = { has_variable = generic_vampire_dominion_active }
+			remove_variable = generic_vampire_dominion_active
+		}
+	}
+
+	generic_vampire_dominion_first_thirst = {
+		icon = "task_political"
+		duration = 30
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_completion = {
+			set_variable = generic_vampire_dominion_active
+		}
+	}
+
+	generic_vampire_dominion_cull_skeptics = {
+		icon = "task_political"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			political_influence >= 5
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_political_influence = -5
+		}
+
+		on_completion = {
+			add_country_modifier = {
+				name = generic_vampire_dominion_culled_doubters_cmod
+				duration = 3650
+			}
+		}
+	}
+
+	generic_vampire_dominion_midnight_feeding = {
+		icon = "task_diplomatic"
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			has_variable = generic_vampire_dominion_first_feeding
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_bloodless_nights_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_thralls_in_silk = {
+		icon = "task_political"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			political_influence >= 5
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_political_influence = -5
+		}
+
+		on_completion = {
+			random_character = {
+				limit = {
+					NOT = { is_ruler = yes }
+					employer = ROOT
+				}
+				add_loyalty = loyalty_granted_stipends
+				add_popularity = 10
+			}
+		}
+	}
+
+	generic_vampire_dominion_sealed_crypt = {
+		icon = "task_economical"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			treasury >= 50
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_treasury = -50
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_sealed_crypt_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_taste_for_politics = {
+		icon = "task_diplomatic"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			political_influence >= 10
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_political_influence = -10
+		}
+
+		on_completion = {
+			add_country_modifier = {
+				name = generic_vampire_dominion_taste_for_politics_cmod
+				duration = 3650
+			}
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_guest_who_never_left_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_pale_retinue = {
+		icon = "task_political"
+		duration = 30
+
+		requires = { generic_vampire_dominion_thralls_in_silk }
+
+		allow = {
+			political_influence >= 10
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_political_influence = -10
+		}
+
+		on_completion = {
+			add_country_modifier = {
+				name = generic_vampire_dominion_pale_retinue_cmod
+				duration = 3650
+			}
+		}
+	}
+
+	generic_vampire_dominion_court_of_whispers = {
+		icon = "task_political"
+
+		requires = { generic_vampire_dominion_sealed_crypt generic_vampire_dominion_taste_for_politics generic_vampire_dominion_pale_retinue }
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_court_of_whispers_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_unnatural_mist = {
+		icon = "task_economical"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			treasury >= 30
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_treasury = -30
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_unnatural_mist_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_drained_herds = {
+		icon = "task_economical"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			treasury >= 30
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_treasury = -30
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_drained_herds_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_wolves_at_treeline = {
+		icon = "task_battle"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			military_experience >= 10
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_military_experience = -10
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_wolves_grown_bold_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_crows_never_leave = {
+		icon = "task_political"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			political_influence >= 5
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_political_influence = -5
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_where_crows_gather_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_candlelight_never_gutters = {
+		icon = "task_economical"
+		duration = 30
+
+		requires = { generic_vampire_dominion_first_thirst }
+
+		allow = {
+			treasury >= 30
+		}
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_start = {
+			add_treasury = -30
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_sleepless_village_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_silence_after_dusk = {
+		icon = "task_political"
+
+		requires = { generic_vampire_dominion_unnatural_mist generic_vampire_dominion_wolves_at_treeline }
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_completion = {
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_quiet_hours_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+
+	generic_vampire_dominion_undying_court = {
+		icon = "task_political"
+
+		requires = { generic_vampire_dominion_court_of_whispers generic_vampire_dominion_silence_after_dusk }
+
+		final = yes
+
+		bypass = {
+			is_ai = yes
+		}
+
+		on_completion = {
+			add_country_modifier = {
+				name = generic_vampire_dominion_realm_of_the_undying_cmod
+				duration = 3650
+			}
+			capital_scope = {
+				remove_province_modifier = generic_vampire_dominion_sealed_crypt_pmod
+				remove_province_modifier = generic_vampire_dominion_court_of_whispers_pmod
+				remove_province_modifier = generic_vampire_dominion_bloodless_nights_pmod
+				add_province_modifier = {
+					name = generic_vampire_dominion_seat_of_pale_court_pmod
+					duration = 3650
+				}
+			}
+		}
+
+		on_bypass = {
+			add_country_modifier = {
+				name = generic_vampire_dominion_realm_of_the_undying_cmod
+				duration = 3650
+			}
+			capital_scope = {
+				remove_province_modifier = generic_vampire_dominion_sealed_crypt_pmod
+				remove_province_modifier = generic_vampire_dominion_court_of_whispers_pmod
+				remove_province_modifier = generic_vampire_dominion_bloodless_nights_pmod
+				add_province_modifier = {
+					name = generic_vampire_dominion_seat_of_pale_court_pmod
+					duration = 3650
+				}
+			}
+		}
+	}
+}

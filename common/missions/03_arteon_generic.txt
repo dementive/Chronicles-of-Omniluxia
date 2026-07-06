@@ -331,7 +331,18 @@
             NOT = { religion = artheous_pantheon }
         }
 
+        highlight = {
+            scope:province = {
+                OR = {
+                    province_id = 410
+                    province_id = 425
+                }
+            }
+        }
+
         allow = {
+            owns_or_subject_owns = 410
+            owns_or_subject_owns = 425
             religion = artheous_pantheon
             political_influence >= 30
         }
@@ -431,10 +442,21 @@
         allow = {
             religion = transcendence_enlighten
             stability >= 50
+            custom_tooltip = {
+                text = perform_divine_sacrifice_please_stab_the_pig
+                has_country_modifier = stability_investment
+            }
+            custom_tooltip = {
+                text = ruler_needs_to_scheme_influence_tt
+                current_ruler = {
+                    has_ambition = scheme_influence
+                }
+            }
         }
 
         on_completion = {
             trigger_event = me_arteon_gen.6b
+            add_political_influence = 50
             add_country_modifier = {
                 name = exploit_arteon_feuds_mod
                 duration = 3650
@@ -451,6 +473,10 @@
         }
 
         allow = {
+            p:919 = {
+                is_holy_site = no
+                has_province_rank = settlement
+            }
             religion = transcendence_enlighten
             owns_or_subject_owns_region = arteon_eastern_region
         }
@@ -463,6 +489,7 @@
 
         on_completion = {
             trigger_event = me_arteon_gen.7b
+            add_stability = 15
             add_country_modifier = {
                 name = emra_abominations_purged_mod
                 duration = -1
@@ -622,12 +649,6 @@
         icon = "task_battle"
         requires = { 03_arteon_generic_task_8a 03_arteon_generic_task_8b 03_arteon_generic_task_8c }
 
-        bypass = {
-            current_ruler = {
-                has_trait = vampire_trait
-            }
-        }
-
         highlight = {
             scope:province = {
                 OR = {
@@ -640,14 +661,25 @@
 
         allow = {
             owns_or_subject_owns_region = arteon_north_region
-            c:AR7 = {
-                has_land = no
+            trigger_if = {
+                limit = {
+                    current_ruler = {
+                        has_trait = vampire_trait
+                    }
+                }
             }
-            c:MH3 = {
-                has_land = no
-            }
-            c:MH4 = {
-                has_land = no
+            trigger_else = {
+                AND = {
+                    c:AR7 = {
+                        has_land = no
+                    }
+                    c:MH3 = {
+                        has_land = no
+                    }
+                    c:MH4 = {
+                        has_land = no
+                    }
+                }
             }
         }
 
@@ -659,17 +691,39 @@
 
         on_completion = {
             trigger_event = me_arteon_gen.9
-            create_country_treasure = {
-                key = "arteon_vampire_slayer_blade"
-                icon = "treasure_it_sword_of_attila"
-                modifier = {
-                    discipline = 0.05
-                    land_morale = 0.1
+            if = {
+                limit = {
+                    current_ruler = {
+                        has_trait = vampire_trait
+                    }
+                }
+                create_country_treasure = {
+                    key = "arteon_blood_drinker_blade"
+                    icon = "treasure_it_sword_of_attila"
+                    modifier = {
+                        discipline = 0.05
+                        land_morale = 0.1
+                    }
+                }
+                current_ruler = {
+                    give_character_an_item = {
+                        item_ID = item_arteon_blood_drinker_blade
+                    }
                 }
             }
-            current_ruler = {
-                give_character_an_item = {
-                    item_ID = item_arteon_vampire_slayer_blade
+            else = {
+                create_country_treasure = {
+                    key = "arteon_vampire_slayer_blade"
+                    icon = "treasure_it_sword_of_attila"
+                    modifier = {
+                        discipline = 0.05
+                        land_morale = 0.1
+                    }
+                }
+                current_ruler = {
+                    give_character_an_item = {
+                        item_ID = item_arteon_vampire_slayer_blade
+                    }
                 }
             }
         }
@@ -694,27 +748,37 @@
 			}
 		}
 
+
+
         allow = {
             custom_tooltip = {
-				text = trigger_arteon_generic_task_10
-				any_owned_province = {
-					count >= 20
-					OR = {
-						has_city_status = yes
-						has_province_rank = city_metropolis
-					}
-					OR = {
-						is_in_region = arteon_shout_region
+                text = trigger_arteon_generic_task_10
+                any_owned_province = {
+                    count >= 10
+                    OR = {
+                        is_in_region = arteon_shout_region
                         is_in_region = arteon_eastern_region
                         is_in_region = arteon_north_region
                         is_in_region = arteon_western_region
-					}
-				}
-			}
+                    }
+                    OR = {
+                        has_city_status = yes
+                        has_province_rank = city_metropolis
+                    }
+                    OR = {
+                        AND = {
+                            num_of_military_building >= 2
+                            num_of_court_building >= 1
+                        }
+                        num_of_temple_building >= 1
+                    }
+                    total_population >= 15
+                }
+            }
         }
 
         on_completion = {
-            add_treasury = -300
+            add_treasury = 300
             trigger_event = me_arteon_gen.10
             add_country_modifier = {
                 name = arteon_rebuilt_cities_mod
@@ -747,6 +811,20 @@
         allow = {
             capital_scope = {
                 num_of_fortress_building >= 2
+                has_no_ongoing_construction = yes
+            }
+            capital_scope.state = {
+                calc_true_if = {
+                    amount >= 3
+                    state_improvement_military_trigger = yes 
+                    state_improvement_civic_trigger = yes
+                    state_improvement_oratory_trigger = yes
+                    state_improvement_religious_trigger = yes 
+                }
+            }
+            custom_tooltip = {
+                text = we_need_improved_fortification_tt
+                has_high_economic_policy = expense_fort
             }
             stability >= 60
         }
@@ -763,15 +841,26 @@
     03_arteon_generic_task_13 = {
         icon = "task_diplomatic"
         requires = { 03_arteon_generic_task_11 03_arteon_generic_task_12 }
+        duration = 90
 
         allow = {
-            stability >= 70
             political_influence >= 50
+            has_aggressive_expansion <= 15
+            num_of_ships >= 60
+            capital_scope = {
+                has_city_status = yes
+                num_of_fortress_building >= 2
+                civilization_value >= 60
+                total_population >= 70
+            }
         }
 
         on_completion = {
             add_political_influence = -50
             trigger_event = me_arteon_gen.13
+            capital_scope = {
+                set_city_status = city_metropolis
+            }
             add_country_modifier = {
                 name = arteon_lasting_peace_mod
                 duration = -1
@@ -785,10 +874,10 @@
         requires = { 03_arteon_generic_task_13 }
 
         allow = {
-            owns_or_subject_owns_region = arteon_shout_region
-            owns_or_subject_owns_region = arteon_eastern_region
-            owns_or_subject_owns_region = arteon_north_region
-            owns_or_subject_owns_region = arteon_western_region
+            custom_tooltip = {
+                text = you_need_to_form_arteon_tt
+                tag = ART
+            }
             war = no
         }
 
