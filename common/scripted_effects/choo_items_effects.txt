@@ -172,10 +172,32 @@ omni_add_item_to_shop_stock = {
                         target = flag:$item_ID$
                     }
                 }
+                OR = {
+                    AND = {
+                        var:omni_shop_max_items = 4
+                        var:omni_shop_item_count < 4
+                    }
+                    AND = {
+                        var:omni_shop_max_items = 6
+                        var:omni_shop_item_count < 6
+                    }
+                    AND = {
+                        var:omni_shop_max_items = 8
+                        var:omni_shop_item_count < 8
+                    }
+                    AND = {
+                        var:omni_shop_max_items = 10
+                        var:omni_shop_item_count < 10
+                    }
+                }
             }
             add_to_variable_list = {
                 name = omni_item_shop_stock
                 target = flag:$item_ID$
+            }
+            change_variable = {
+                name = omni_shop_item_count
+                add = 1
             }
         }
     }
@@ -183,7 +205,46 @@ omni_add_item_to_shop_stock = {
 
 omni_roll_common_shop_item = {
     random_list = {
-        2000 = { omni_roll_generated_common_shop_item = yes }
+        2000 = {
+            random_list = {
+                70 = { omni_roll_generated_common_shop_item = yes }
+                20 = {
+                    if = {
+                        limit = {
+                            any_country_culture = {
+                                is_integrated = no
+                            }
+                        }
+                        random_country_culture = {
+                            limit = {
+                                is_integrated = no
+                            }
+                            culture = {
+                                save_scope_as = target_minority_culture
+                            }
+                        }
+                        random_country = {
+                            limit = {
+                                exists = yes
+                                country_culture_group = scope:target_minority_culture.culture_group
+                            }
+                            omni_roll_generated_common_shop_item = yes
+                        }
+                    }
+                    else = {
+                        omni_roll_generated_common_shop_item = yes
+                    }
+                }
+                10 = {
+                    random_country = {
+                        limit = {
+                            exists = yes
+                        }
+                        omni_roll_generated_common_shop_item = yes
+                    }
+                }
+            }
+        }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_chainmail } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_chainmail_coif } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_light_armour } }
@@ -205,7 +266,46 @@ omni_roll_common_shop_item = {
 
 omni_roll_uncommon_shop_item = {
     random_list = {
-        2000 = { omni_roll_generated_uncommon_shop_item = yes }
+        2000 = {
+            random_list = {
+                70 = { omni_roll_generated_uncommon_shop_item = yes }
+                20 = {
+                    if = {
+                        limit = {
+                            any_country_culture = {
+                                is_integrated = no
+                            }
+                        }
+                        random_country_culture = {
+                            limit = {
+                                is_integrated = no
+                            }
+                            culture = {
+                                save_scope_as = target_minority_culture
+                            }
+                        }
+                        random_country = {
+                            limit = {
+                                exists = yes
+                                country_culture_group = scope:target_minority_culture.culture_group
+                            }
+                            omni_roll_generated_uncommon_shop_item = yes
+                        }
+                    }
+                    else = {
+                        omni_roll_generated_uncommon_shop_item = yes
+                    }
+                }
+                10 = {
+                    random_country = {
+                        limit = {
+                            exists = yes
+                        }
+                        omni_roll_generated_uncommon_shop_item = yes
+                    }
+                }
+            }
+        }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_plated_coat } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_grand_helmet } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_plate_armour } }
@@ -231,7 +331,46 @@ omni_roll_uncommon_shop_item = {
 
 omni_roll_rare_shop_item = {
     random_list = {
-        2000 = { omni_roll_generated_rare_shop_item = yes }
+        2000 = {
+            random_list = {
+                70 = { omni_roll_generated_rare_shop_item = yes }
+                20 = {
+                    if = {
+                        limit = {
+                            any_country_culture = {
+                                is_integrated = no
+                            }
+                        }
+                        random_country_culture = {
+                            limit = {
+                                is_integrated = no
+                            }
+                            culture = {
+                                save_scope_as = target_minority_culture
+                            }
+                        }
+                        random_country = {
+                            limit = {
+                                exists = yes
+                                country_culture_group = scope:target_minority_culture.culture_group
+                            }
+                            omni_roll_generated_rare_shop_item = yes
+                        }
+                    }
+                    else = {
+                        omni_roll_generated_rare_shop_item = yes
+                    }
+                }
+                10 = {
+                    random_country = {
+                        limit = {
+                            exists = yes
+                        }
+                        omni_roll_generated_rare_shop_item = yes
+                    }
+                }
+            }
+        }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_dark_arts_scripture } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_statue_of_grom } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_spirits_essence } }
@@ -291,7 +430,7 @@ omni_roll_unique_shop_item = {
 
 omni_roll_market_shop_item = {
     if = {
-        limit = { root.var:omni_market_quality < 30 }
+        limit = { root.var:omni_market_quality < 45 }
         random_list = {
             80 = { omni_roll_common_shop_item = yes }
             20 = { omni_roll_uncommon_shop_item = yes }
@@ -299,8 +438,8 @@ omni_roll_market_shop_item = {
     }
     else_if = {
         limit = {
-            root.var:omni_market_quality >= 30
-            root.var:omni_market_quality < 60
+            root.var:omni_market_quality >= 45
+            root.var:omni_market_quality < 75
         }
         random_list = {
             45 = { omni_roll_common_shop_item = yes }
@@ -310,8 +449,8 @@ omni_roll_market_shop_item = {
     }
     else_if = {
         limit = {
-            root.var:omni_market_quality >= 60
-            root.var:omni_market_quality < 90
+            root.var:omni_market_quality >= 75
+            root.var:omni_market_quality < 105
         }
         random_list = {
             20 = { omni_roll_common_shop_item = yes }
@@ -337,30 +476,68 @@ omni_build_item_shop_stock = {
         name = omni_market_quality
         value = 0
     }
+    set_variable = {
+        name = omni_shop_item_count
+        value = 0
+    }
+    set_variable = {
+        name = omni_shop_max_items
+        value = 4
+    }
     root.location = {
         save_scope_as = omni_item_market_province
-        if = { limit = { num_of_commerce_building >= 1 } root = { change_variable = { name = omni_market_quality add = 20 } } }
+        if = { limit = { num_of_commerce_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
         if = { limit = { num_of_commerce_building >= 2 } root = { change_variable = { name = omni_market_quality add = 10 } } }
         if = { limit = { num_of_commerce_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-        if = { limit = { num_of_port_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_port_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
         if = { limit = { num_of_port_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
         if = { limit = { num_of_workshop_building >= 1 } root = { change_variable = { name = omni_market_quality add = 8 } } }
         if = { limit = { num_of_foundry_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
         if = { limit = { num_of_library_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
         if = { limit = { num_of_academy_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
-        if = { limit = { num_of_used_building_slots >= 8 } root = { change_variable = { name = omni_market_quality add = 8 } } }
-        if = { limit = { num_of_used_building_slots >= 16 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-        if = { limit = { num_of_used_building_slots >= 30 } root = { change_variable = { name = omni_market_quality add = 12 } } }
-        if = { limit = { total_population >= 20 } root = { change_variable = { name = omni_market_quality add = 8 } } }
-        if = { limit = { total_population >= 50 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-        if = { limit = { total_population >= 100 } root = { change_variable = { name = omni_market_quality add = 15 } } }
-        if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_market_quality add = 8 } } }
-        if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-        if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_market_quality add = 12 } } }
-        if = { limit = { is_capital = yes } root = { change_variable = { name = omni_market_quality add = 15 } } }
-        if = { limit = { is_holy_site = yes } root = { change_variable = { name = omni_market_quality add = 20 } } }
+        
+        # Used Slots (Non-cumulative else_if)
+        if = { limit = { num_of_used_building_slots >= 30 } root = { change_variable = { name = omni_market_quality add = 15 } } }
+        else_if = { limit = { num_of_used_building_slots >= 16 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        else_if = { limit = { num_of_used_building_slots >= 8 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        
+        # Population (Non-cumulative else_if)
+        if = { limit = { total_population >= 100 } root = { change_variable = { name = omni_market_quality add = 20 } } }
+        else_if = { limit = { total_population >= 50 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        else_if = { limit = { total_population >= 20 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        
+        # Civilization Value (Non-cumulative else_if)
+        if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_market_quality add = 15 } } }
+        else_if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        else_if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        
+        if = { limit = { is_capital = yes } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        if = { limit = { is_holy_site = yes } root = { change_variable = { name = omni_market_quality add = 10 } } }
         if = { limit = { OR = { trade_goods = iron trade_goods = base_metals trade_goods = hardwood } } root = { change_variable = { name = omni_market_quality add = 15 } } }
         if = { limit = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } root = { change_variable = { name = omni_market_quality add = 20 } } }
+    }
+    
+    # Define max items based on quality
+    if = {
+        limit = { root.var:omni_market_quality < 45 }
+        set_variable = { name = omni_shop_max_items value = 4 }
+    }
+    else_if = {
+        limit = {
+            root.var:omni_market_quality >= 45
+            root.var:omni_market_quality < 75
+        }
+        set_variable = { name = omni_shop_max_items value = 6 }
+    }
+    else_if = {
+        limit = {
+            root.var:omni_market_quality >= 75
+            root.var:omni_market_quality < 105
+        }
+        set_variable = { name = omni_shop_max_items value = 8 }
+    }
+    else = {
+        set_variable = { name = omni_shop_max_items value = 10 }
     }
     employer = {
         omni_roll_common_shop_item = yes
@@ -377,15 +554,15 @@ omni_build_item_shop_stock = {
         if = { limit = { exists = scope:omni_item_merchant scope:omni_item_merchant = { OR = { has_trait = shrewd has_trait = crafty } } } root = { change_variable = { name = omni_market_quality add = 20 } } }
 
         if = {
-            limit = { root.var:omni_market_quality >= 45 }
+            limit = { root.var:omni_market_quality >= 55 }
             omni_roll_market_shop_item = yes
         }
         if = {
-            limit = { root.var:omni_market_quality >= 75 }
+            limit = { root.var:omni_market_quality >= 90 }
             omni_roll_rare_shop_item = yes
         }
         if = {
-            limit = { root.var:omni_market_quality >= 110 }
+            limit = { root.var:omni_market_quality >= 120 }
             omni_roll_unique_shop_item = yes
         }
     }
@@ -397,34 +574,75 @@ omni_build_ai_country_item_shop_stock = {
         save_scope_as = omni_shop_owner
         every_owned_province = {
             limit = { has_building = commerce_building }
+            save_scope_as = omni_item_market_province
             root = {
                 set_variable = {
-                    name = omni_market_quality
-                    value = 0
-                }
+                name = omni_market_quality
+                value = 0
             }
-            if = { limit = { num_of_commerce_building >= 1 } root = { change_variable = { name = omni_market_quality add = 20 } } }
-            if = { limit = { num_of_commerce_building >= 2 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-            if = { limit = { num_of_commerce_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-            if = { limit = { num_of_port_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-            if = { limit = { num_of_port_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-            if = { limit = { num_of_workshop_building >= 1 } root = { change_variable = { name = omni_market_quality add = 8 } } }
-            if = { limit = { num_of_foundry_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-            if = { limit = { num_of_library_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
-            if = { limit = { num_of_academy_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
-            if = { limit = { num_of_used_building_slots >= 8 } root = { change_variable = { name = omni_market_quality add = 8 } } }
-            if = { limit = { num_of_used_building_slots >= 16 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-            if = { limit = { num_of_used_building_slots >= 30 } root = { change_variable = { name = omni_market_quality add = 12 } } }
-            if = { limit = { total_population >= 20 } root = { change_variable = { name = omni_market_quality add = 8 } } }
-            if = { limit = { total_population >= 50 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-            if = { limit = { total_population >= 100 } root = { change_variable = { name = omni_market_quality add = 15 } } }
-            if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_market_quality add = 8 } } }
-            if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_market_quality add = 10 } } }
-            if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_market_quality add = 12 } } }
-            if = { limit = { is_capital = yes } root = { change_variable = { name = omni_market_quality add = 15 } } }
-            if = { limit = { is_holy_site = yes } root = { change_variable = { name = omni_market_quality add = 20 } } }
-            if = { limit = { OR = { trade_goods = iron trade_goods = base_metals trade_goods = hardwood } } root = { change_variable = { name = omni_market_quality add = 15 } } }
-            if = { limit = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } root = { change_variable = { name = omni_market_quality add = 20 } } }
+            set_variable = {
+                name = omni_shop_item_count
+                value = 0
+            }
+            set_variable = {
+                name = omni_shop_max_items
+                value = 4
+            }
+        }
+        if = { limit = { num_of_commerce_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_commerce_building >= 2 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_commerce_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_port_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        if = { limit = { num_of_port_building >= 3 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_workshop_building >= 1 } root = { change_variable = { name = omni_market_quality add = 8 } } }
+        if = { limit = { num_of_foundry_building >= 1 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { num_of_library_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        if = { limit = { num_of_academy_building >= 1 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        
+        # Used Slots (Non-cumulative else_if)
+        if = { limit = { num_of_used_building_slots >= 30 } root = { change_variable = { name = omni_market_quality add = 15 } } }
+        else_if = { limit = { num_of_used_building_slots >= 16 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        else_if = { limit = { num_of_used_building_slots >= 8 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        
+        # Population (Non-cumulative else_if)
+        if = { limit = { total_population >= 100 } root = { change_variable = { name = omni_market_quality add = 20 } } }
+        else_if = { limit = { total_population >= 50 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        else_if = { limit = { total_population >= 20 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        
+        # Civilization Value (Non-cumulative else_if)
+        if = { limit = { civilization_value >= 95 } root = { change_variable = { name = omni_market_quality add = 15 } } }
+        else_if = { limit = { civilization_value >= 75 } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        else_if = { limit = { civilization_value >= 50 } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        
+        if = { limit = { is_capital = yes } root = { change_variable = { name = omni_market_quality add = 5 } } }
+        if = { limit = { is_holy_site = yes } root = { change_variable = { name = omni_market_quality add = 10 } } }
+        if = { limit = { OR = { trade_goods = iron trade_goods = base_metals trade_goods = hardwood } } root = { change_variable = { name = omni_market_quality add = 15 } } }
+        if = { limit = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } root = { change_variable = { name = omni_market_quality add = 20 } } }
+        
+        # Define max items based on quality (for AI)
+        root = {
+            if = {
+                limit = { var:omni_market_quality < 45 }
+                set_variable = { name = omni_shop_max_items value = 4 }
+            }
+            else_if = {
+                limit = {
+                    var:omni_market_quality >= 45
+                    var:omni_market_quality < 75
+                }
+                set_variable = { name = omni_shop_max_items value = 6 }
+            }
+            else_if = {
+                limit = {
+                    var:omni_market_quality >= 75
+                    var:omni_market_quality < 105
+                }
+                set_variable = { name = omni_shop_max_items value = 8 }
+            }
+            else = {
+                set_variable = { name = omni_shop_max_items value = 10 }
+            }
+        }
             root = {
                 omni_roll_common_shop_item = yes
                 omni_roll_market_shop_item = yes
@@ -436,15 +654,15 @@ omni_build_ai_country_item_shop_stock = {
                 if = { limit = { prev = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } } omni_roll_rare_shop_item = yes }
                 
                 if = {
-                    limit = { root.var:omni_market_quality >= 45 }
+                    limit = { root.var:omni_market_quality >= 55 }
                     omni_roll_market_shop_item = yes
                 }
                 if = {
-                    limit = { root.var:omni_market_quality >= 75 }
+                    limit = { root.var:omni_market_quality >= 90 }
                     omni_roll_rare_shop_item = yes
                 }
                 if = {
-                    limit = { root.var:omni_market_quality >= 110 }
+                    limit = { root.var:omni_market_quality >= 120 }
                     omni_roll_unique_shop_item = yes
                 }
             }
