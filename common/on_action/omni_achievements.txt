@@ -1,0 +1,38 @@
+﻿### OMNILUXIA CUSTOM ACHIEVEMENTS - ON_ACTION HOOKS ###
+#
+# These definitions MERGE additively with the base-game / Omniluxia on_actions of
+# the same name (Imperator combines on_action blocks across files), so nothing
+# here overwrites existing behaviour - it only appends the achievement check.
+#
+# Design goal: auto-unlock like vanilla Steam achievements, with zero jank and no
+# performance cost. The polling check is gated to the human player only, so the AI
+# never runs it, and it piggybacks on the existing monthly country pulse.
+
+# Poll all state-based achievements once a month for the human player.
+monthly_country_pulse = {
+    effect = {
+        if = {
+            limit = { is_ai = no }
+            omni_check_achievements = yes
+        }
+    }
+}
+
+# Event-driven achievement: "Born to the Blade" - win a battle whose main winning
+# army is led by a commander no older than 15.
+# root = winning country, scope:actor = main unit on the winning side.
+on_battle_won_country = {
+    effect = {
+        if = {
+            limit = {
+                is_ai = no
+                NOT = { has_variable = omni_ach_boy_general }
+                scope:actor = {
+                    exists = commander
+                    commander = { age <= 15 }
+                }
+            }
+            omni_unlock_achievement = { ACH = omni_ach_boy_general EVENT = omni_ach.3 }
+        }
+    }
+}

@@ -1,0 +1,737 @@
+@windowwidth = 740
+@windowheight = 850
+
+# OMNILUXIA CUSTOM ACHIEVEMENTS WINDOW
+# Overrides the vanilla achievements window to list the mod's custom achievements.
+# Each entry is driven by a scripted_gui (common/scripted_guis/sguis_omni_achievements.txt):
+#   ScriptedGui.IsShown  = unlocked   ScriptedGui.IsValid = still possible this campaign
+# The "Show vanilla achievements" button (top-left) toggles back to the real Steam list.
+#
+# Changes vs. the original Invictus window:
+#   * No per-achievement "re-check" button - unlocking is automatic, so the button is gone.
+#   * No shimmer.dds dependency - the unlocked ornament uses only base-game sprites.
+
+types achievementsTypes {
+
+    type achievement = list_entry {
+        minimumsize = { 695 90 }
+        margin = { 1 0 }
+        block "visible_ach" {} # used to filter achievements per tab: unlocked / possible / impossible
+
+        widget = {
+            # optional per-achievement condition tooltip (unused by default, kept for extensibility)
+            size = { 100% 100% }
+            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).End )]"
+            block "conditions" {
+                visible = no
+            }
+        }
+
+        widget = {
+            # "impossible this campaign" tooltip
+            size = { 100% 100% }
+            tooltip = "ach_impossible"
+            visible = "[Not(ScriptedGui.IsValid(GuiScope.SetRoot(Player.MakeScope).End))]"
+        }
+
+        widget = { # gold ornament shown when the achievement is unlocked
+            size = { 100% 100% }
+            visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+            tooltip = "ACHIEVEMENT_UNLOCKED"
+
+            icon = {
+                using = flat_background_white
+                size = { 100% 100% }
+                alpha = 0.15
+                spriteType = Corneredtiled
+                tintcolor = { 1 0.9 0 1 }
+            }
+
+            icon = {
+                using = flat_background_white
+                size = { 100% 15 }
+                position = { 0 -5 }
+                spriteType = Corneredtiled
+                tintcolor = { 1 0.9 0 1 }
+
+                modify_texture = {
+                    using = header_s_pattern
+                    blend_mode = alphamultiply
+                    spriteType = Corneredtiled
+                }
+            }
+
+            icon = {
+                using = flat_background_white
+                parentanchor = bottom
+                size = { 100% 15 }
+                position = { 0 5 }
+                spriteType = Corneredtiled
+                tintcolor = { 1 0.9 0 1 }
+
+                modify_texture = {
+                    using = header_s_pattern
+                    blend_mode = alphamultiply
+                    spriteType = Corneredtiled
+                    translate_uv = { 0 0.55 }
+                }
+            }
+        }
+
+        container = { # achievement picture
+            position = { 5 9 }
+
+            icon = {
+                # unlocked - full colour
+                block "icon" {
+                    texture = "gfx/interface/icons/achievements/ach_a_new_home.dds"
+                }
+                position = { 5 4 }
+                size = { 64 64 }
+                tooltip = "ACHIEVEMENT_UNLOCKED"
+                visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+            }
+
+            icon = {
+                # locked but obtainable - greyed out
+                block "icon" {
+                    texture = "gfx/interface/icons/achievements/ach_a_new_home.dds"
+                }
+                tintcolor = { 0.3 0.3 0.3 1 }
+                position = { 5 4 }
+                size = { 64 64 }
+                tooltip = "ACHIEVEMENT_LOCKED"
+                visible = "[And(Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)), ScriptedGui.IsValid(GuiScope.SetRoot(Player.MakeScope).End))]"
+            }
+
+            icon = {
+                # impossible this campaign - greyed with a lock overlay
+                tooltip = "ach_impossible"
+                tintcolor = { 0.3 0.3 0.3 1 }
+                position = { 5 4 }
+                size = { 64 64 }
+                visible = "[Not(ScriptedGui.IsValid(GuiScope.SetRoot(Player.MakeScope).End))]"
+                block "icon" {
+                    texture = "gfx/interface/icons/achievements/ach_a_new_home.dds"
+                }
+
+                modify_texture = {
+                    name = "Locked"
+                    texture = "gfx/interface/achievement/achievement_not_possible.dds"
+                    blend_mode = alphamultiply
+                }
+            }
+        }
+
+        flowcontainer = {
+            resizeparent = yes
+            direction = vertical
+            position = { 85 0 }
+            margin_top = 15
+            margin_bottom = 15
+            spacing = 5
+
+            tag = {
+                block "name" {
+                    text = "omni_ach_court_mage"
+                }
+                default_format = "#bold"
+                size = { 500 28 }
+            }
+
+            textbox = {
+                autoresize = yes
+                max_width = 580
+                block "desc" {
+                    text = "omni_ach_court_mage_desc"
+                }
+                multiline = yes
+                using = BaseFontS
+                using = Black_FontColor
+                align = left
+            }
+        }
+    }
+
+    type achievements_list = flowcontainer { # all achievements are listed here, grouped by difficulty
+        direction = vertical
+        ignoreinvisible = yes
+        margin_top = 5
+
+        ## VERY EASY ##########################################################
+        flowcontainer = {
+            direction = vertical
+            ignoreinvisible = yes
+
+            category_drop = {
+                size = { 695 36 }
+                blockoverride "Text" { text = "ACHIEVEMENT_GROUP_very_easy" }
+                blockoverride "On_click" { onclick = "[GetVariableSystem.Toggle('very_easy_ach')]" }
+                blockoverride "Down" { visible = "[Not(GetVariableSystem.Exists('very_easy_ach'))]" }
+                blockoverride "Right" { visible = "[GetVariableSystem.Exists('very_easy_ach')]" }
+                blockoverride "RightArrowVisible" { visible = "[GetVariableSystem.Exists('very_easy_ach')]" }
+            }
+
+            flowcontainer = {
+                direction = vertical
+                ignoreinvisible = yes
+                visible = "[Not(GetVariableSystem.Exists('very_easy_ach'))]"
+                margin_top = 5
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_court_mage')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_gazophylax.dds" }
+                    blockoverride "name" { text = "omni_ach_court_mage" }
+                    blockoverride "desc" { text = "omni_ach_court_mage_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_awakening')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_a_new_home.dds" }
+                    blockoverride "name" { text = "omni_ach_awakening" }
+                    blockoverride "desc" { text = "omni_ach_awakening_desc" }
+                }
+            }
+        }
+
+        ## EASY ###############################################################
+        flowcontainer = {
+            direction = vertical
+            ignoreinvisible = yes
+
+            category_drop = {
+                size = { 695 36 }
+                blockoverride "Text" { text = "ACHIEVEMENT_GROUP_easy" }
+                blockoverride "On_click" { onclick = "[GetVariableSystem.Toggle('easy_ach')]" }
+                blockoverride "Down" { visible = "[Not(GetVariableSystem.Exists('easy_ach'))]" }
+                blockoverride "Right" { visible = "[GetVariableSystem.Exists('easy_ach')]" }
+                blockoverride "RightArrowVisible" { visible = "[GetVariableSystem.Exists('easy_ach')]" }
+            }
+
+            flowcontainer = {
+                direction = vertical
+                ignoreinvisible = yes
+                visible = "[Not(GetVariableSystem.Exists('easy_ach'))]"
+                margin_top = 5
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_boy_general')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_eumenes_footsteps.dds" }
+                    blockoverride "name" { text = "omni_ach_boy_general" }
+                    blockoverride "desc" { text = "omni_ach_boy_general_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_elven_realm')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_rednaxela.dds" }
+                    blockoverride "name" { text = "omni_ach_elven_realm" }
+                    blockoverride "desc" { text = "omni_ach_elven_realm_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_dwarven_hold')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_wonder_builder.dds" }
+                    blockoverride "name" { text = "omni_ach_dwarven_hold" }
+                    blockoverride "desc" { text = "omni_ach_dwarven_hold_desc" }
+                }
+            }
+        }
+
+        ## MEDIUM #############################################################
+        flowcontainer = {
+            direction = vertical
+            ignoreinvisible = yes
+
+            category_drop = {
+                size = { 695 36 }
+                blockoverride "Text" { text = "ACHIEVEMENT_GROUP_medium" }
+                blockoverride "On_click" { onclick = "[GetVariableSystem.Toggle('medium_ach')]" }
+                blockoverride "Down" { visible = "[Not(GetVariableSystem.Exists('medium_ach'))]" }
+                blockoverride "Right" { visible = "[GetVariableSystem.Exists('medium_ach')]" }
+                blockoverride "RightArrowVisible" { visible = "[GetVariableSystem.Exists('medium_ach')]" }
+            }
+
+            flowcontainer = {
+                direction = vertical
+                ignoreinvisible = yes
+                visible = "[Not(GetVariableSystem.Exists('medium_ach'))]"
+                margin_top = 5
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_archmage')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_gazophylax.dds" }
+                    blockoverride "name" { text = "omni_ach_archmage" }
+                    blockoverride "desc" { text = "omni_ach_archmage_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_font_of_power')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_pentecontaetia.dds" }
+                    blockoverride "name" { text = "omni_ach_font_of_power" }
+                    blockoverride "desc" { text = "omni_ach_font_of_power_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_serpent_empire')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_panem_et_circenses.dds" }
+                    blockoverride "name" { text = "omni_ach_serpent_empire" }
+                    blockoverride "desc" { text = "omni_ach_serpent_empire_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_iron_foothills')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_wonder_builder.dds" }
+                    blockoverride "name" { text = "omni_ach_iron_foothills" }
+                    blockoverride "desc" { text = "omni_ach_iron_foothills_desc" }
+                }
+            }
+        }
+
+        ## HARD ###############################################################
+        flowcontainer = {
+            direction = vertical
+            ignoreinvisible = yes
+
+            category_drop = {
+                size = { 695 36 }
+                blockoverride "Text" { text = "ACHIEVEMENT_GROUP_hard" }
+                blockoverride "On_click" { onclick = "[GetVariableSystem.Toggle('hard_ach')]" }
+                blockoverride "Down" { visible = "[Not(GetVariableSystem.Exists('hard_ach'))]" }
+                blockoverride "Right" { visible = "[GetVariableSystem.Exists('hard_ach')]" }
+                blockoverride "RightArrowVisible" { visible = "[GetVariableSystem.Exists('hard_ach')]" }
+            }
+
+            flowcontainer = {
+                direction = vertical
+                ignoreinvisible = yes
+                visible = "[Not(GetVariableSystem.Exists('hard_ach'))]"
+                margin_top = 5
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_orc_horde')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_the_great_destroyer.dds" }
+                    blockoverride "name" { text = "omni_ach_orc_horde" }
+                    blockoverride "desc" { text = "omni_ach_orc_horde_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_sorcerer_king')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_rednaxela.dds" }
+                    blockoverride "name" { text = "omni_ach_sorcerer_king" }
+                    blockoverride "desc" { text = "omni_ach_sorcerer_king_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_great_realm')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_pentecontaetia.dds" }
+                    blockoverride "name" { text = "omni_ach_great_realm" }
+                    blockoverride "desc" { text = "omni_ach_great_realm_desc" }
+                }
+            }
+        }
+
+        ## VERY HARD ##########################################################
+        flowcontainer = {
+            direction = vertical
+            ignoreinvisible = yes
+
+            category_drop = {
+                size = { 695 36 }
+                blockoverride "Text" { text = "ACHIEVEMENT_GROUP_very_hard" }
+                blockoverride "On_click" { onclick = "[GetVariableSystem.Toggle('very_hard_ach')]" }
+                blockoverride "Down" { visible = "[Not(GetVariableSystem.Exists('very_hard_ach'))]" }
+                blockoverride "Right" { visible = "[GetVariableSystem.Exists('very_hard_ach')]" }
+                blockoverride "RightArrowVisible" { visible = "[GetVariableSystem.Exists('very_hard_ach')]" }
+            }
+
+            flowcontainer = {
+                direction = vertical
+                ignoreinvisible = yes
+                visible = "[Not(GetVariableSystem.Exists('very_hard_ach'))]"
+                margin_top = 5
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_weave_unbound')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_a_new_home.dds" }
+                    blockoverride "name" { text = "omni_ach_weave_unbound" }
+                    blockoverride "desc" { text = "omni_ach_weave_unbound_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_arcane_academy')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_gazophylax.dds" }
+                    blockoverride "name" { text = "omni_ach_arcane_academy" }
+                    blockoverride "desc" { text = "omni_ach_arcane_academy_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_unifier')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_pentecontaetia.dds" }
+                    blockoverride "name" { text = "omni_ach_unifier" }
+                    blockoverride "desc" { text = "omni_ach_unifier_desc" }
+                }
+
+                achievement = {
+                    datacontext = "[GetScriptedGui('omni_ach_zani_empire')]"
+                    blockoverride "icon" { texture = "gfx/interface/icons/achievements/ach_wonder_builder.dds" }
+                    blockoverride "name" { text = "omni_ach_zani_empire" }
+                    blockoverride "desc" { text = "omni_ach_zani_empire_desc" }
+                }
+            }
+        }
+    }
+}
+
+base_window = {
+    name = "achievements_window"
+    gfxtype = windowgfx
+    parentanchor = hcenter|vcenter
+    position = { 0 0 }
+    movable = yes
+    size = { @windowwidth @windowheight }
+    blockoverride "WindowAlpha" { alpha = 1 }
+    minimumsize = { @windowwidth 300 }
+    max_width = @windowwidth
+    resizable = yes
+
+    vbox = {
+        menu_header = {
+            name = "uncolonized_header"
+            layoutpolicy_horizontal = expanding
+            size = { 0 40 }
+
+            blockoverride "Title_text" { text = "ACHIEVEMENTS" }
+
+            white_button_round = {
+                size = { 26 26 }
+                parentanchor = vcenter
+                position = { 5 0 }
+                blockoverride "Icon" { texture = "gfx/interface/base_parts/home.dds" }
+                blockoverride "On_click" { onclick = "[GetVariableSystem.Toggle('vanilla_ach')]" }
+                tooltip = "vanilla_ach"
+            }
+
+            # Game rule: achievements ENABLED -> click to turn OFF
+            white_button_round = {
+                size = { 26 26 }
+                parentanchor = vcenter
+                position = { 36 0 }
+                datacontext = "[GetScriptedGui('omni_achievements_toggle')]"
+                visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+                blockoverride "Icon" { texture = "gfx/interface/icons/shared_icons/change.dds" }
+                blockoverride "On_click" { onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]" }
+                tooltip = "omni_ach_toggle_on_tt"
+            }
+            # Game rule: achievements DISABLED -> click to turn ON
+            white_button_round = {
+                size = { 26 26 }
+                parentanchor = vcenter
+                position = { 36 0 }
+                datacontext = "[GetScriptedGui('omni_achievements_toggle')]"
+                visible = "[Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End))]"
+                blockoverride "Icon" { texture = "gfx/interface/icons/shared_icons/change.dds" }
+                blockoverride "On_click" { onclick = "[ScriptedGui.Execute(GuiScope.SetRoot(Player.MakeScope).End)]" }
+                tooltip = "omni_ach_toggle_off_tt"
+            }
+        }
+
+        blockoverride "White_buttons" {
+            button_close = {
+                onclick = "[AchievementWindow.Hide]"
+                tooltip = "CLOSE"
+                shortcut = "close_window"
+            }
+
+            widget = { size = { 10 10 } }
+        }
+
+        # ---- CUSTOM ACHIEVEMENTS VIEW ----
+        vbox = {
+            visible = "[Not(GetVariableSystem.Exists('vanilla_ach'))]"
+            layoutpolicy_horizontal = expanding
+            layoutpolicy_vertical = expanding
+
+            widget = { size = { 0 10 } }
+
+            hbox = { # filter tabs
+                margin = { 20 0 }
+                layoutpolicy_horizontal = expanding
+
+                tab_button = {
+                    layoutpolicy_horizontal = expanding
+                    blockoverride "Center_text" { text = "all_achievements" }
+                    blockoverride "On_click" { onclick = "[GetVariableSystem.Set('achievement_tabs', 'all')]" }
+                    enabled = "[And(GetVariableSystem.Exists('achievement_tabs'), Not(GetVariableSystem.HasValue('achievement_tabs', 'all')))]"
+                }
+                tab_button = {
+                    layoutpolicy_horizontal = expanding
+                    blockoverride "Center_text" { text = "possible_achievements" }
+                    blockoverride "On_click" { onclick = "[GetVariableSystem.Set('achievement_tabs', 'possible')]" }
+                    enabled = "[Not(GetVariableSystem.HasValue('achievement_tabs', 'possible'))]"
+                }
+                tab_button = {
+                    layoutpolicy_horizontal = expanding
+                    blockoverride "Center_text" { text = "unlocked_achievements" }
+                    blockoverride "On_click" { onclick = "[GetVariableSystem.Set('achievement_tabs', 'unlocked')]" }
+                    enabled = "[Not(GetVariableSystem.HasValue('achievement_tabs', 'unlocked'))]"
+                }
+                tab_button = {
+                    layoutpolicy_horizontal = expanding
+                    blockoverride "Center_text" { text = "impossible_achievements" }
+                    blockoverride "On_click" { onclick = "[GetVariableSystem.Set('achievement_tabs', 'impossible')]" }
+                    enabled = "[Not(GetVariableSystem.HasValue('achievement_tabs', 'impossible'))]"
+                }
+            }
+
+            margin_widget = {
+                size = { 0 0 }
+                layoutpolicy_horizontal = expanding
+                layoutpolicy_vertical = expanding
+                margin = { 18 5 }
+                margin_bottom = 20
+
+                scrollarea = {
+                    parentanchor = hcenter
+                    position = { 0 0 }
+                    size = { 710 100% }
+
+                    scrollbarpolicy_horizontal = always_off
+                    using = VerticalScrollAreaCutOff
+                    scrollbar_vertical = { using = VerticalScrollBar }
+
+                    scrollwidget = {
+                        flowcontainer = {
+                            ignoreinvisible = yes
+                            achievements_list = {
+                                visible = "[Or(Not(GetVariableSystem.Exists('achievement_tabs')), GetVariableSystem.HasValue('achievement_tabs', 'all'))]"
+                            }
+                            achievements_list = {
+                                visible = "[GetVariableSystem.HasValue('achievement_tabs', 'unlocked')]"
+                                blockoverride "visible_ach" {
+                                    visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)]"
+                                }
+                            }
+                            achievements_list = {
+                                visible = "[GetVariableSystem.HasValue('achievement_tabs', 'possible')]"
+                                blockoverride "visible_ach" {
+                                    visible = "[And(ScriptedGui.IsValid(GuiScope.SetRoot(Player.MakeScope).End), Not(ScriptedGui.IsShown(GuiScope.SetRoot(Player.MakeScope).End)))]"
+                                }
+                            }
+                            achievements_list = {
+                                visible = "[GetVariableSystem.HasValue('achievement_tabs', 'impossible')]"
+                                blockoverride "visible_ach" {
+                                    visible = "[Not(ScriptedGui.IsValid(GuiScope.SetRoot(Player.MakeScope).End))]"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            expand = {}
+        }
+
+        # ---- VANILLA ACHIEVEMENTS VIEW (unchanged fallback) ----
+        vbox = {
+            visible = "[GetVariableSystem.Exists('vanilla_ach')]"
+            layoutpolicy_horizontal = expanding
+            layoutpolicy_vertical = expanding
+
+            margin_widget = {
+                size = { 0 98 }
+                layoutpolicy_horizontal = expanding
+                layoutpolicy_vertical = fixed
+                margin = { 18 0 }
+
+                flowcontainer = {
+                    direction = vertical
+                    spacing = 6
+
+                    widget = {
+                        name = "show all"
+                        size = { 600 28 }
+
+                        button_radial = {
+                            layoutpolicy_horizontal = expanding
+                            blockoverride "On_click" { onclick = "[AchievementWindow.ShowAll]" }
+                            blockoverride "ShowDot" { trigger_when = "[AchievementWindow.ShouldShowAll]" }
+                            blockoverride "HideDot" { trigger_when = "[Not(AchievementWindow.ShouldShowAll)]" }
+                        }
+
+                        tag = {
+                            parentanchor = vcenter
+                            position = { 38 0 }
+                            size = { 100% 100% }
+                            text = "SHOW_ALL_ACHIEVEMENTS"
+                        }
+                    }
+
+                    widget = {
+                        name = "show remaining"
+                        size = { 600 28 }
+
+                        button_radial = {
+                            layoutpolicy_horizontal = expanding
+                            blockoverride "On_click" { onclick = "[AchievementWindow.ShowLocked]" }
+                            blockoverride "ShowDot" { trigger_when = "[AchievementWindow.ShouldShowLocked]" }
+                            blockoverride "HideDot" { trigger_when = "[Not(AchievementWindow.ShouldShowLocked)]" }
+                        }
+
+                        tag = {
+                            parentanchor = vcenter
+                            position = { 38 0 }
+                            size = { 100% 100% }
+                            text = "ACHIEVEMENT_FILTER_LOCKED"
+                        }
+                    }
+
+                    widget = {
+                        name = "show unlocked"
+                        size = { 600 28 }
+
+                        button_radial = {
+                            layoutpolicy_horizontal = expanding
+                            blockoverride "On_click" { onclick = "[AchievementWindow.ShowUnlocked]" }
+                            blockoverride "ShowDot" { trigger_when = "[AchievementWindow.ShouldShowUnlocked]" }
+                            blockoverride "HideDot" { trigger_when = "[Not(AchievementWindow.ShouldShowUnlocked)]" }
+                        }
+
+                        tag = {
+                            parentanchor = vcenter
+                            position = { 38 0 }
+                            size = { 100% 100% }
+                            text = "ACHIEVEMENT_FILTER_UNLOCKED"
+                        }
+                    }
+                }
+            }
+
+            margin_widget = {
+                size = { 0 660 }
+                layoutpolicy_horizontal = expanding
+                layoutpolicy_vertical = fixed
+                margin = { 18 0 }
+                margin_bottom = 18
+                scrollarea = {
+                    parentanchor = hcenter
+                    position = { 0 0 }
+                    size = { 710 100% }
+                    scrollbarpolicy_horizontal = always_off
+                    using = VerticalScrollAreaCutOff
+                    scrollbar_vertical = { using = VerticalScrollBar }
+
+                    scrollwidget = {
+                        dynamicgridbox = {
+                            datamodel = "[AchievementWindow.AccessGroups]"
+
+                            item = {
+                                flowcontainer = {
+                                    parentanchor = hcenter
+                                    direction = vertical
+                                    ignoreinvisible = yes
+                                    spacing = 4
+
+                                    flowcontainer = {
+                                        parentanchor = hcenter
+                                        direction = vertical
+                                        ignoreinvisible = yes
+                                        spacing = 0
+
+                                        category_drop = {
+                                            name = "collapsed_category"
+                                            size = { 676 36 }
+                                            blockoverride "Text" { text = "ACHIEVEMENT_GROUP_TITLE" }
+                                            blockoverride "On_click" { onclick = "[Group.ToggleCollapsed]" }
+                                            blockoverride "Down" { visible = no }
+                                            blockoverride "Right" { visible = yes }
+                                            blockoverride "RightArrowVisible" { visible = yes }
+                                            tooltip = "ACHIEVEMENT_GROUP_TOOLTIP"
+                                            visible = "[Group.IsCollapsed]"
+                                        }
+
+                                        category_drop = {
+                                            name = "expanded_category"
+                                            size = { 676 36 }
+                                            blockoverride "Text" { text = "ACHIEVEMENT_GROUP_TITLE" }
+                                            blockoverride "On_click" { onclick = "[Group.ToggleCollapsed]" }
+                                            blockoverride "Down" { visible = yes }
+                                            blockoverride "Right" { visible = no }
+                                            blockoverride "RightArrowVisible" { visible = no }
+                                            tooltip = "ACHIEVEMENT_GROUP_TOOLTIP"
+                                            visible = "[Not(Group.IsCollapsed)]"
+                                        }
+                                    }
+
+                                    dynamicgridbox = {
+                                        datamodel = "[Group.AccessVisibleAchievements]"
+                                        visible = "[Not(Group.IsCollapsed)]"
+
+                                        item = {
+                                            list_entry = {
+                                                parentanchor = hcenter
+                                                size = { 688 98 }
+                                                margin = { 6 0 }
+
+                                                container = {
+                                                    parentanchor = vcenter
+
+                                                    icon = {
+                                                        texture = "[GUIAchievement.AccessTexture]"
+                                                        position = { 5 4 }
+                                                        size = { 64 64 }
+                                                        tooltip = "ACHIEVEMENT_UNLOCKED"
+                                                        visible = "[GUIAchievement.GetAchievement.IsUnlocked]"
+                                                    }
+
+                                                    icon = {
+                                                        texture = "[GUIAchievement.AccessLockedTexture]"
+                                                        position = { 5 4 }
+                                                        size = { 64 64 }
+                                                        tooltip = "ACHIEVEMENT_LOCKED"
+                                                        visible = "[Not(GUIAchievement.GetAchievement.IsUnlocked)]"
+
+                                                        modify_texture = {
+                                                            name = "Locked"
+                                                            texture = "gfx/interface/achievement/achievement_not_possible.dds"
+                                                            blend_mode = alphamultiply
+                                                            visible = "[Not(GUIAchievement.IsPossible)]"
+                                                        }
+                                                    }
+                                                }
+
+                                                widget = {
+                                                    size = { 580 100% }
+                                                    position = { 82 4 }
+                                                    tag = {
+                                                        name = "achievement_name"
+                                                        size = { 100% 28 }
+                                                        text = "[GUIAchievement.GetName]"
+                                                        tooltip = "[GUIAchievement.GetHappenedDescription]"
+                                                    }
+
+                                                    textbox = {
+                                                        widgetanchor = vcenter
+                                                        parentanchor = vcenter
+                                                        position = { 0 0 }
+                                                        size = { 100% 80 }
+                                                        tooltip = "[GUIAchievement.GetHappenedDescription]"
+                                                        text = "[GUIAchievement.GetDescription]"
+                                                        multiline = yes
+                                                        using = BaseFontS
+                                                        using = Black_FontColor
+                                                        elide = right
+                                                        fontsize_min = 10
+                                                        align = left
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
