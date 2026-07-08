@@ -1,0 +1,217 @@
+﻿namespace = drow_invasion
+
+# DEBUG/CONSOLE ONLY: fire on the currently played drow tag with the `event drow_invasion.999`
+# console command to force-trigger both invasion fronts immediately, bypassing eligibility,
+# the decade-pulse roll, and the 25-50 year window. Useful for testing. Target selection still
+# requires two distinct realms bordering the played tag at the time this is called, otherwise
+# that front will silently not spawn a target.
+drow_invasion.999 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		drow_invasion_formation_effect = yes
+	}
+}
+
+# The dominant drow realm unleashes two massive hosts upon the surface.
+drow_invasion.1 = {
+	type = country_event
+	title = drow_invasion_1_title
+	desc = drow_invasion_1_desc
+	picture = city_siege
+
+	left_portrait = current_ruler
+
+	immediate = {
+		custom_tooltip = drow_invasion_1_tooltip
+	}
+
+	option = {
+		name = "drow_invasion_1.a"
+		add_war_enthusiasm = 25
+		add_stability = 15
+	}
+}
+
+# The northern (norrfalie) target is warned of the drow host bearing down on them.
+drow_invasion.2 = {
+	type = country_event
+	title = drow_invasion_2_title
+	desc = drow_invasion_2_desc
+	picture = city_siege
+
+	left_portrait = current_ruler
+	right_portrait = scope:drow_invasion_leader_scope.current_ruler
+
+	option = {
+		name = "drow_invasion_2.a"
+		add_stability = -10
+		add_war_exhaustion = 5
+	}
+}
+
+# The western (werhenlander) target is warned of the drow host bearing down on them.
+drow_invasion.3 = {
+	type = country_event
+	title = drow_invasion_3_title
+	desc = drow_invasion_3_desc
+	picture = city_siege
+
+	left_portrait = current_ruler
+	right_portrait = scope:drow_invasion_leader_scope.current_ruler
+
+	option = {
+		name = "drow_invasion_3.a"
+		add_stability = -10
+		add_war_exhaustion = 5
+	}
+}
+
+# Monitor: northern front. Reschedules itself while the war is ongoing.
+drow_invasion.4 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		has_variable = is_drow_invasion_leader
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = scope:drow_invasion_north_target
+				war_with = scope:drow_invasion_north_target
+			}
+			drow_invasion_north_reinforcement_effect = yes
+			trigger_event = {
+				id = drow_invasion.4
+				days = { 300 400 }
+			}
+		}
+		else = {
+			set_variable = {
+				name = drow_invasion_north_resolved
+				days = 3650
+			}
+			trigger_event = {
+				id = drow_invasion.6
+				days = 1
+			}
+		}
+	}
+}
+
+# Monitor: western front. Reschedules itself while the war is ongoing.
+drow_invasion.5 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		has_variable = is_drow_invasion_leader
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = scope:drow_invasion_west_target
+				war_with = scope:drow_invasion_west_target
+			}
+			drow_invasion_west_reinforcement_effect = yes
+			trigger_event = {
+				id = drow_invasion.5
+				days = { 300 400 }
+			}
+		}
+		else = {
+			set_variable = {
+				name = drow_invasion_west_resolved
+				days = 3650
+			}
+			trigger_event = {
+				id = drow_invasion.6
+				days = 1
+			}
+		}
+	}
+}
+
+# Gate: only proceeds to the final resolution once BOTH fronts have concluded.
+drow_invasion.6 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		has_variable = is_drow_invasion_leader
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				has_variable = drow_invasion_north_resolved
+				has_variable = drow_invasion_west_resolved
+			}
+			trigger_event = {
+				id = drow_invasion.7
+				days = 1
+			}
+		}
+	}
+}
+
+# Both invasion wars have ended - resolve the drow's fate and clean everything up.
+drow_invasion.7 = {
+	type = country_event
+	title = drow_invasion_7_title
+	picture = city_siege
+	hidden = no
+
+	left_portrait = current_ruler
+
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = scope:drow_invasion_north_target
+					exists = scope:drow_invasion_west_target
+					scope:drow_invasion_north_target = { capital_scope = { owner = root } }
+					scope:drow_invasion_west_target = { capital_scope = { owner = root } }
+				}
+				desc = drow_invasion_7_double_victory_desc
+			}
+			triggered_desc = {
+				trigger = {
+					OR = {
+						AND = {
+							exists = scope:drow_invasion_north_target
+							scope:drow_invasion_north_target = { capital_scope = { owner = root } }
+						}
+						AND = {
+							exists = scope:drow_invasion_west_target
+							scope:drow_invasion_west_target = { capital_scope = { owner = root } }
+						}
+					}
+				}
+				desc = drow_invasion_7_partial_victory_desc
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = drow_invasion_7_defeat_desc
+			}
+		}
+	}
+
+	immediate = {
+		drow_invasion_cleanup_effect = yes
+		clear_variable = is_drow_invasion_leader
+		clear_variable = drow_invasion_origin
+		clear_variable = drow_invasion_north_resolved
+		clear_variable = drow_invasion_west_resolved
+	}
+
+	option = {
+		name = "drow_invasion_7.a"
+		add_stability = 20
+		add_prestige = 75
+	}
+}

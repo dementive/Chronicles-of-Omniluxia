@@ -1,0 +1,31 @@
+﻿# The Drow Invasion of the Surface
+# Fires when the dominant AI-controlled drow tag rises to power, spawning two simultaneous
+# invasions against two different realms it directly borders (guaranteeing military access).
+# The strongest eligible drow realm (by zerywani_horde_power_score_svalue) is picked
+# dynamically off the on_action roll, then the two strongest bordering targets are picked
+# the same way.
+
+drow_invasion_eligible_trigger = {
+	country_culture_group = drow
+	is_ai = yes
+	is_subject = no
+	num_of_cities >= 1
+	NOT = { has_variable = is_drow_invasion_leader }
+}
+
+# Called on a candidate country scope (ROOT of ordered_country). $LEADER$ is the
+# invasion leader's country scope. Both fronts use this now - targets must actually
+# share a border with the leader so declared wars have military access and don't
+# just peter out against an unreachable realm.
+drow_invasion_valid_target_trigger = {
+	NOT = { this = $LEADER$ }
+	is_subject = no
+	num_of_cities >= 3
+	NOT = { country_culture_group = drow }
+	any_owned_province = {
+		any_neighbor_province = {
+			exists = owner
+			owner = $LEADER$
+		}
+	}
+}

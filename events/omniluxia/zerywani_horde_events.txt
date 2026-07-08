@@ -1,0 +1,183 @@
+﻿namespace = zerywani_horde
+
+# DEBUG/CONSOLE ONLY: fire on the currently played tag with the `event zerywani_horde.999`
+# console command to force-trigger the horde formation immediately, bypassing eligibility,
+# the decade-pulse roll and the 50-100 year window. Useful for testing.
+zerywani_horde.999 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		zerywani_horde_formation_effect = yes
+	}
+}
+
+# The horde has formed and marched out - narrated to the leader.
+zerywani_horde.1 = {
+	type = country_event
+	title = zerywani_horde_1_title
+	desc = zerywani_horde_1_desc
+	picture = city_siege
+
+	left_portrait = current_ruler
+	right_portrait = scope:zerywani_horde_target.current_ruler
+
+	trigger = {
+		exists = scope:zerywani_horde_target
+	}
+
+	immediate = {
+		custom_tooltip = zerywani_horde_1_tooltip
+	}
+
+	option = {
+		name = "zerywani_horde_1.a"
+		add_war_enthusiasm = 20
+		add_stability = 10
+	}
+}
+
+# The target realm hears the horde is coming for them.
+zerywani_horde.2 = {
+	type = country_event
+	title = zerywani_horde_2_title
+	desc = zerywani_horde_2_desc
+	picture = city_siege
+
+	left_portrait = current_ruler
+	right_portrait = scope:zerywani_horde_leader_scope.current_ruler
+
+	option = {
+		name = "zerywani_horde_2.a"
+		add_stability = -10
+		add_war_exhaustion = 5
+	}
+}
+
+# A fellow zerywani tribe answers the call and joins the horde.
+zerywani_horde.3 = {
+	type = country_event
+	title = zerywani_horde_3_title
+	desc = zerywani_horde_3_desc
+	picture = city_siege
+	hidden = yes
+
+	immediate = {
+		trigger_event = {
+			id = zerywani_horde.3b
+			days = 1
+		}
+	}
+}
+
+zerywani_horde.3b = {
+	type = country_event
+	title = zerywani_horde_3_title
+	desc = zerywani_horde_3_desc
+	picture = city_siege
+
+	left_portrait = current_ruler
+
+	trigger = {
+		has_variable = is_zerywani_horde_participant
+	}
+
+	option = {
+		name = "zerywani_horde_3.a"
+		add_manpower = {
+			value = max_manpower
+			multiply = -0.1
+		}
+	}
+}
+
+# Periodic monitor: checks whether the invasion war is still ongoing, reschedules
+# itself while it is, and resolves the horde's fate once it ends.
+zerywani_horde.4 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		has_variable = is_zerywani_horde_leader
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = scope:zerywani_horde_target
+				war_with = scope:zerywani_horde_target
+			}
+			zerywani_horde_reinforcement_effect = yes
+			trigger_event = {
+				id = zerywani_horde.4
+				days = { 300 400 }
+			}
+		}
+		else = {
+			trigger_event = {
+				id = zerywani_horde.5
+				days = 1
+			}
+		}
+	}
+}
+
+# The invasion war has ended - resolve victory or defeat and clean everything up.
+zerywani_horde.5 = {
+	type = country_event
+	title = zerywani_horde_5_title
+	picture = city_siege
+	hidden = no
+
+	left_portrait = current_ruler
+
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = scope:zerywani_horde_target
+					scope:zerywani_horde_target = {
+						capital_scope = { owner = root }
+					}
+				}
+				desc = zerywani_horde_5_victory_desc
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = zerywani_horde_5_defeat_desc
+			}
+		}
+	}
+
+	immediate = {
+		zerywani_horde_cleanup_effect = yes
+		clear_variable = is_zerywani_horde_leader
+		clear_variable = zerywani_horde_invasion_origin
+	}
+
+	option = {
+		name = "zerywani_horde_5.a"
+		trigger = {
+			exists = scope:zerywani_horde_target
+			scope:zerywani_horde_target = {
+				capital_scope = { owner = root }
+			}
+		}
+		add_stability = 15
+		add_prestige = 50
+	}
+	option = {
+		name = "zerywani_horde_5.b"
+		trigger = {
+			NOT = {
+				AND = {
+					exists = scope:zerywani_horde_target
+					scope:zerywani_horde_target = {
+						capital_scope = { owner = root }
+					}
+				}
+			}
+		}
+		add_stability = -10
+	}
+}

@@ -1,0 +1,222 @@
+﻿# The Zerywani Horde
+# Called on the country scope of the tribe chosen to lead the horde.
+zerywani_horde_formation_effect = {
+	save_scope_as = zerywani_horde_leader_scope
+
+	set_global_variable = {
+		name = zerywani_horde_formed
+	}
+	set_variable = {
+		name = is_zerywani_horde_leader
+		days = 7300 # 20 years - covers the whole campaign
+	}
+	set_variable = {
+		name = zerywani_horde_invasion_origin
+		days = 7300
+	}
+	add_country_modifier = {
+		name = zerywani_horde_on_the_march
+		duration = 3650
+	}
+
+	# Every other eligible tribe answers the call and throws in with the horde.
+	every_country = {
+		limit = { zerywani_horde_eligible_trigger = yes }
+		set_variable = {
+			name = is_zerywani_horde_participant
+			days = 7300
+		}
+		add_country_modifier = {
+			name = zerywani_horde_participant_modifier
+			duration = 3650
+		}
+		if = {
+			limit = { treasury > 0 }
+			scope:zerywani_horde_leader_scope = {
+				add_treasury = {
+					value = prev.treasury
+					multiply = 0.25
+				}
+			}
+		}
+		scope:zerywani_horde_leader_scope = {
+			add_manpower = {
+				value = prev.max_manpower
+				multiply = 0.15
+			}
+		}
+		trigger_event = {
+			id = zerywani_horde.3
+			days = { 2 10 }
+		}
+	}
+
+	# Raise the great horde army under a single warlord.
+	create_character = {
+		culture = root.culture
+		religion = root.religion
+		female = no
+		age = 15
+		save_scope_as = zerywani_horde_commander
+	}
+	create_unit = {
+		name = "The Zerywani Horde"
+		location = root.capital_scope
+		set_as_commander = scope:zerywani_horde_commander
+		save_scope_as = zerywani_horde_army_scope
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = light_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		add_subunit = heavy_cavalry
+		# Every tribe that joined the horde swells its ranks further.
+		while = {
+			count = zerywani_horde_tribe_count_svalue
+			add_subunit = light_cavalry
+			add_subunit = light_cavalry
+			add_subunit = light_cavalry
+			add_subunit = heavy_infantry
+			add_subunit = heavy_cavalry
+		}
+		add_food = 2000
+		add_morale = 3
+	}
+
+	# Find the richest, strongest realm on their landmass and set out to conquer it.
+	ordered_country = {
+		order_by = zerywani_horde_power_score_svalue
+		position = 0
+		limit = {
+			zerywani_horde_valid_target_trigger = { LEADER = scope:zerywani_horde_leader_scope }
+		}
+		save_scope_as = zerywani_horde_target
+	}
+
+	if = {
+		limit = { exists = scope:zerywani_horde_target }
+		scope:zerywani_horde_target = {
+			set_variable = {
+				name = zerywani_horde_target_of_invasion
+				days = 3650
+			}
+			add_country_modifier = {
+				name = zerywani_horde_under_invasion_modifier
+				duration = 3650
+			}
+		}
+		declare_war_with_wargoal = {
+			war_goal = zerywani_horde_conquest
+			target = scope:zerywani_horde_target
+		}
+		trigger_event = {
+			id = zerywani_horde.1
+			days = 1
+		}
+		scope:zerywani_horde_target = {
+			trigger_event = {
+				id = zerywani_horde.2
+				days = 2
+			}
+		}
+		trigger_event = {
+			id = zerywani_horde.4
+			days = { 300 400 }
+		}
+	}
+}
+
+# Called periodically on the leader scope while the invasion war is still ongoing.
+# Fresh waves keep pouring out of the homeland, so the horde grows rather than
+# grinding down - by the time the war drags on it should feel like an existential threat.
+zerywani_horde_reinforcement_effect = {
+	add_manpower = {
+		value = max_manpower
+		multiply = 0.25
+	}
+	add_treasury = {
+		value = treasury
+		multiply = 0.1
+		min = 50
+	}
+	if = {
+		limit = { exists = scope:zerywani_horde_army_scope }
+		scope:zerywani_horde_army_scope = {
+			add_subunit = light_cavalry
+			add_subunit = light_cavalry
+			add_subunit = light_cavalry
+			add_subunit = heavy_cavalry
+			add_subunit = heavy_cavalry
+		}
+	}
+	else = {
+		# The original host was wiped out - a second horde rises to replace it.
+		create_character = {
+			culture = root.culture
+			religion = root.religion
+			female = no
+			age = 20
+			save_scope_as = zerywani_horde_commander
+		}
+		create_unit = {
+			name = "The Zerywani Horde"
+			location = root.capital_scope
+			set_as_commander = scope:zerywani_horde_commander
+			save_scope_as = zerywani_horde_army_scope
+			add_subunit = light_cavalry
+			add_subunit = light_cavalry
+			add_subunit = light_cavalry
+			add_subunit = light_cavalry
+			add_subunit = light_cavalry
+			add_subunit = heavy_cavalry
+			add_subunit = heavy_cavalry
+			add_subunit = heavy_cavalry
+			add_food = 1000
+			add_morale = 3
+		}
+	}
+}
+
+# Cleanup once the invasion war has resolved (called on the leader scope).
+zerywani_horde_cleanup_effect = {
+	remove_country_modifier = zerywani_horde_on_the_march
+	every_country = {
+		limit = { has_variable = is_zerywani_horde_participant }
+		remove_country_modifier = zerywani_horde_participant_modifier
+	}
+	if = {
+		limit = { exists = scope:zerywani_horde_target }
+		scope:zerywani_horde_target = {
+			remove_country_modifier = zerywani_horde_under_invasion_modifier
+		}
+	}
+}

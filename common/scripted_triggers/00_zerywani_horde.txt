@@ -1,0 +1,34 @@
+﻿# The Zerywani Horde
+# Eligibility and bordering-target triggers for the western/eastern zerywani horde invasion.
+
+zerywani_horde_eligible_trigger = {
+	OR = {
+		country_culture_group = western_zerywani
+		country_culture_group = eastern_zerywani
+	}
+	is_subject = no
+	num_of_cities >= 1
+	NOT = { has_variable = is_zerywani_horde_leader }
+	NOT = { has_variable = is_zerywani_horde_participant }
+	NOT = { has_variable = zerywani_horde_target_of_invasion }
+}
+
+# Called on a candidate country scope (ROOT of ordered_country/every_country).
+# $LEADER$ is the horde leader's country scope. Targets must actually share a border
+# with the leader so declared wars have military access and don't just peter out
+# against an unreachable realm (mirrors the drow invasion's targeting).
+zerywani_horde_valid_target_trigger = {
+	NOT = { this = $LEADER$ }
+	is_subject = no
+	num_of_cities >= 3
+	NOR = {
+		country_culture_group = western_zerywani
+		country_culture_group = eastern_zerywani
+	}
+	any_owned_province = {
+		any_neighbor_province = {
+			exists = owner
+			owner = $LEADER$
+		}
+	}
+}

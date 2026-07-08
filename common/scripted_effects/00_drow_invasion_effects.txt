@@ -1,0 +1,324 @@
+﻿# The Drow Invasion of the Surface
+# Called on the country scope of the dominant drow tag chosen to lead the invasion.
+drow_invasion_formation_effect = {
+	save_scope_as = drow_invasion_leader_scope
+
+	set_global_variable = {
+		name = drow_invasion_fired
+	}
+	set_variable = {
+		name = is_drow_invasion_leader
+		days = 7300 # 20 years - covers both campaigns
+	}
+	set_variable = {
+		name = drow_invasion_origin
+		days = 7300
+	}
+	add_country_modifier = {
+		name = drow_invasion_on_the_march
+		duration = 3650
+	}
+
+	# Pick the richest, strongest bordering realm as the northern front's target ...
+	ordered_country = {
+		order_by = zerywani_horde_power_score_svalue
+		position = 0
+		limit = {
+			drow_invasion_valid_target_trigger = { LEADER = scope:drow_invasion_leader_scope }
+		}
+		save_scope_as = drow_invasion_north_target
+	}
+	# ... and a second, different bordering realm for the western front. Both are
+	# picked purely by adjacency to the leader now (not by region), so the war
+	# always has military access and doesn't stall out against an unreachable target.
+	ordered_country = {
+		order_by = zerywani_horde_power_score_svalue
+		position = 0
+		limit = {
+			drow_invasion_valid_target_trigger = { LEADER = scope:drow_invasion_leader_scope }
+			NOT = { this = scope:drow_invasion_north_target }
+		}
+		save_scope_as = drow_invasion_west_target
+	}
+
+	# Raise the northern horde.
+	create_character = {
+		culture = root.culture
+		religion = root.religion
+		female = no
+		age = 26
+		add_trait = archmage_trait
+		add_martial = 9
+		save_scope_as = drow_invasion_north_commander
+	}
+	create_unit = {
+		name = "The Northern Drow Host"
+		location = root.capital_scope
+		set_as_commander = scope:drow_invasion_north_commander
+		save_scope_as = drow_invasion_north_army_scope
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = chariots
+		add_subunit = chariots
+		add_subunit = chariots
+		add_food = 2000
+		add_morale = 3
+	}
+
+	# Raise the western horde.
+	create_character = {
+		culture = root.culture
+		religion = root.religion
+		female = yes
+		age = 33
+		add_trait = archmage_trait
+		save_scope_as = drow_invasion_west_commander
+	}
+	create_unit = {
+		name = "The Western Drow Host"
+		location = root.capital_scope
+		set_as_commander = scope:drow_invasion_west_commander
+		save_scope_as = drow_invasion_west_army_scope
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = light_infantry
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = archers
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = heavy_infantry
+		add_subunit = chariots
+		add_subunit = chariots
+		add_subunit = chariots
+		add_food = 2000
+		add_morale = 3
+	}
+
+	# Unleash the northern front.
+	if = {
+		limit = { exists = scope:drow_invasion_north_target }
+		scope:drow_invasion_north_target = {
+			set_variable = {
+				name = drow_invasion_target_of_invasion
+				days = 3650
+			}
+			add_country_modifier = {
+				name = drow_invasion_under_invasion_modifier
+				duration = 3650
+			}
+		}
+		declare_war_with_wargoal = {
+			war_goal = drow_invasion_conquest
+			target = scope:drow_invasion_north_target
+		}
+		scope:drow_invasion_north_target = {
+			trigger_event = {
+				id = drow_invasion.2
+				days = 2
+			}
+		}
+		trigger_event = {
+			id = drow_invasion.4
+			days = { 300 400 }
+		}
+	}
+
+	# Unleash the western front.
+	if = {
+		limit = { exists = scope:drow_invasion_west_target }
+		scope:drow_invasion_west_target = {
+			set_variable = {
+				name = drow_invasion_target_of_invasion
+				days = 3650
+			}
+			add_country_modifier = {
+				name = drow_invasion_under_invasion_modifier
+				duration = 3650
+			}
+		}
+		declare_war_with_wargoal = {
+			war_goal = drow_invasion_conquest
+			target = scope:drow_invasion_west_target
+		}
+		scope:drow_invasion_west_target = {
+			trigger_event = {
+				id = drow_invasion.3
+				days = 2
+			}
+		}
+		trigger_event = {
+			id = drow_invasion.5
+			days = { 300 400 }
+		}
+	}
+
+	trigger_event = {
+		id = drow_invasion.1
+		days = 1
+	}
+}
+
+# Called periodically on the leader scope while the northern war is still ongoing.
+# The underdark keeps disgorging fresh warbands, so this front only grows over time.
+drow_invasion_north_reinforcement_effect = {
+	add_manpower = {
+		value = max_manpower
+		multiply = 0.3
+	}
+	add_treasury = {
+		value = treasury
+		multiply = 0.1
+		min = 75
+	}
+	if = {
+		limit = { exists = scope:drow_invasion_north_army_scope }
+		scope:drow_invasion_north_army_scope = {
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = archers
+			add_subunit = archers
+			add_subunit = heavy_infantry
+		}
+	}
+	else = {
+		create_character = {
+			culture = root.culture
+			religion = root.religion
+			female = no
+			age = 46
+			add_martial = 8
+			save_scope_as = drow_invasion_north_commander
+		}
+		create_unit = {
+			name = "The Northern Drow Host"
+			location = root.capital_scope
+			set_as_commander = scope:drow_invasion_north_commander
+			save_scope_as = drow_invasion_north_army_scope
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = archers
+			add_subunit = archers
+			add_subunit = heavy_infantry
+			add_subunit = heavy_infantry
+			add_subunit = chariots
+			add_food = 1500
+			add_morale = 3
+		}
+	}
+}
+
+# Called periodically on the leader scope while the western war is still ongoing.
+drow_invasion_west_reinforcement_effect = {
+	add_manpower = {
+		value = max_manpower
+		multiply = 0.3
+	}
+	add_treasury = {
+		value = treasury
+		multiply = 0.1
+		min = 75
+	}
+	if = {
+		limit = { exists = scope:drow_invasion_west_army_scope }
+		scope:drow_invasion_west_army_scope = {
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = archers
+			add_subunit = archers
+			add_subunit = heavy_infantry
+		}
+	}
+	else = {
+		create_character = {
+			culture = root.culture
+			religion = root.religion
+			female = no
+			age = 20
+			save_scope_as = drow_invasion_west_commander
+		}
+		create_unit = {
+			name = "The Western Drow Host"
+			location = root.capital_scope
+			set_as_commander = scope:drow_invasion_west_commander
+			save_scope_as = drow_invasion_west_army_scope
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = archers
+			add_subunit = archers
+			add_subunit = heavy_infantry
+			add_subunit = heavy_infantry
+			add_subunit = chariots
+			add_food = 1500
+			add_morale = 3
+		}
+	}
+}
+
+# Cleanup once both invasion wars have resolved (called on the leader scope).
+drow_invasion_cleanup_effect = {
+	remove_country_modifier = drow_invasion_on_the_march
+	if = {
+		limit = { exists = scope:drow_invasion_north_target }
+		scope:drow_invasion_north_target = {
+			remove_country_modifier = drow_invasion_under_invasion_modifier
+		}
+	}
+	if = {
+		limit = { exists = scope:drow_invasion_west_target }
+		scope:drow_invasion_west_target = {
+			remove_country_modifier = drow_invasion_under_invasion_modifier
+		}
+	}
+}
