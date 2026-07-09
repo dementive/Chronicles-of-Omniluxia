@@ -22,6 +22,7 @@ me_nazani.1 = {
 				scope:orcish_captain = {
 					add_martial = 8
 					add_trait = ambitious
+					set_variable = grommash_the_orc
 				}
 			}
 		}
@@ -187,6 +188,16 @@ me_nazani.3 = {
                 target = p:2187.owner
             }
         }
+
+		# Grommash was promised the governorship of the Borderlands once the war ends.
+		# Begin watching for the war's conclusion so his reward (or revolt) can play out.
+		hidden_effect = {
+			set_variable = nazani_grommash_governor_promise
+			trigger_event = {
+				id = me_nazani.6
+				days = 90
+			}
+		}
 	}
 
 	option = {
@@ -237,6 +248,432 @@ me_nazani.5 = {
 	}
 }
 
+# ==============================================================================
+# GROMMASH'S REWARD OR REVOLT
+# Follow-up on Grommash's demand to be made Governor of the Borderlands.
+# me_nazani.6 : hidden watcher - waits for the scripted war to end
+# me_nazani.7 : hidden reckoning - fires ~6 months after the war, checks his status
+# me_nazani.8 : Grommash is NOT governor -> he leads a revolt
+# me_nazani.9 : Grommash IS governor -> he is content
+# ==============================================================================
+
+# Event 6: Hidden watcher. Re-checks until the Borderlands war is over.
+me_nazani.6 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		# Count how long we have been waiting, so we never loop forever.
+		if = {
+			limit = { NOT = { has_variable = nazani_grommash_watch_count } }
+			set_variable = {
+				name = nazani_grommash_watch_count
+				value = 0
+			}
+		}
+		change_variable = {
+			name = nazani_grommash_watch_count
+			add = 1
+		}
+
+		if = {
+			# Grommash is dead or gone - nothing to reward, nothing to fear.
+			limit = {
+				NOT = {
+					any_character = {
+						is_alive = yes
+						OR = {
+							has_variable = grommash_the_orc
+							name = "Grommash"
+						}
+					}
+				}
+			}
+			remove_variable = nazani_grommash_governor_promise
+			remove_variable = nazani_grommash_watch_count
+		}
+		else_if = {
+			# Give up quietly after ~5 years of waiting on the war.
+			limit = { var:nazani_grommash_watch_count >= 60 }
+			remove_variable = nazani_grommash_governor_promise
+			remove_variable = nazani_grommash_watch_count
+		}
+		else_if = {
+			# The Borderlands war is still going - keep waiting.
+			# The scripted war is fought over the stronghold at province 2187,
+			# so "won and at peace" is the signal that the war has concluded.
+			limit = {
+				OR = {
+					war = yes
+					NOT = { owns = 2187 }
+				}
+			}
+			trigger_event = {
+				id = me_nazani.6
+				days = 30
+			}
+		}
+		else = {
+			# The war is over and the Borderlands stronghold is held. Grommash
+			# expects his governorship. Give the player ~six months to grant it.
+			remove_variable = nazani_grommash_watch_count
+			trigger_event = {
+				id = me_nazani.7
+				days = 180
+			}
+		}
+	}
+}
+
+# Event 7: Hidden reckoning. Six months on, is Grommash the governor?
+me_nazani.7 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		remove_variable = nazani_grommash_governor_promise
+
+		if = {
+			# Grommash died in the interim - the matter is closed.
+			limit = {
+				NOT = {
+					any_character = {
+						is_alive = yes
+						OR = {
+							has_variable = grommash_the_orc
+							name = "Grommash"
+						}
+					}
+				}
+			}
+		}
+		else = {
+			random_character = {
+				limit = {
+					is_alive = yes
+					OR = {
+						has_variable = grommash_the_orc
+						name = "Grommash"
+					}
+				}
+				save_scope_as = orcish_captain
+			}
+			if = {
+				limit = {
+					# Is Grommash the governor of any Borderlands state we own?
+					region:border_lands_morrigon = {
+						any_region_province = {
+							owner = ROOT
+							state = {
+								governor = scope:orcish_captain
+							}
+						}
+					}
+				}
+				trigger_event = { id = me_nazani.9 }
+			}
+			else = {
+				trigger_event = { id = me_nazani.8 }
+			}
+		}
+	}
+}
+
+# Event 8: The promise broken - Grommash rises in revolt.
+me_nazani.8 = {
+	type = country_event
+	title = "me_nazani.8.t"
+	desc = "me_nazani.8.desc"
+	picture = event_orcs_orcs
+
+	left_portrait = root.current_ruler
+	right_portrait = scope:orcish_captain
+
+	immediate = {
+		random_character = {
+			limit = {
+				is_alive = yes
+				OR = {
+					has_variable = grommash_the_orc
+					name = "Grommash"
+				}
+			}
+			save_scope_as = orcish_captain
+		}
+	}
+
+	option = {
+		name = "me_nazani.8.a"
+		ai_chance = { factor = 100 }
+		custom_tooltip = me_nazani.8.a_tt
+		add_stability = -5
+		add_legitimacy = -5
+		hidden_effect = {
+			region:border_lands_morrigon = {
+				every_region_province = {
+					limit = { owner = ROOT }
+					set_as_governor = scope:orcish_captain
+				}
+			}
+			scope:orcish_captain = {
+				add_loyalty = loyalty_picked_other_side
+			}
+			start_civil_war = scope:orcish_captain
+			if = {
+				limit = { exists = scope:orcish_captain.employer }
+				scope:orcish_captain.employer = {
+					change_country_name = "GROMMASH_REVOLT_NAME"
+					add_treasury = 100
+				}
+			}
+		}
+	}
+}
+
+me_nazani.9 = {
+	type = country_event
+	title = "me_nazani.9.t"
+	desc = "me_nazani.9.desc"
+	picture = event_orcs_talking
+
+	left_portrait = root.current_ruler
+	right_portrait = scope:orcish_captain
+
+	immediate = {
+		random_character = {
+			limit = {
+				is_alive = yes
+				OR = {
+					has_variable = grommash_the_orc
+					name = "Grommash"
+				}
+			}
+			save_scope_as = orcish_captain
+		}
+	}
+
+	option = {
+		name = "me_nazani.9.a"
+
+		scope:orcish_captain = {
+			add_loyalty = triumph_l
+		}
+		add_stability = 5
+	}
+}
+
+me_nazani.20 = {
+	type = country_event
+	title = "me_nazani.20.t"
+	desc = "me_nazani.20.desc"
+	picture = event_octopus
+	left_portrait = current_ruler
+
+	immediate = {
+		set_variable = porphyros_active
+		hidden_effect = {
+			random_owned_province = {
+				limit = { num_of_port_building >= 1 }
+				save_scope_as = porphyros_target
+			}
+			if = {
+				limit = { NOT = { exists = scope:porphyros_target } }
+				capital_scope = {
+					save_scope_as = porphyros_target
+				}
+			}
+			# Begin the cycle of attacks, and set the beast's doom ~30 years hence.
+			trigger_event = {
+				id = me_nazani.21
+				days = { 1825 2555 }
+			}
+			trigger_event = {
+				id = me_nazani.25
+				days = 10950
+			}
+		}
+	}
+
+	option = { # Do nothing - the panic spreads and men are lost.
+		name = "me_nazani.20.a"
+		ai_chance = { factor = 40 }
+		if = {
+			limit = { exists = scope:porphyros_target }
+			scope:porphyros_target = {
+				# Smash the harbour to splinters - strip every level of the port.
+				while = {
+					limit = { has_building = port_building }
+					remove_building_level = port_building
+				}
+			}
+		}
+		add_stability = -5
+		if = {
+			limit = { exists = scope:porphyros_target }
+			scope:porphyros_target = {
+				while = {
+					count = 2
+					random_pops_in_province = { kill_pop = yes }
+				}
+			}
+		}
+	}
+	option = { # Pay to rally the harbor and salvage what we can.
+		name = "me_nazani.20.b"
+		ai_chance = { factor = 60 }
+		add_treasury = -150
+	}
+}
+
+# Event 21: Hidden picker. Keeps the attacks coming until the whale dies.
+me_nazani.21 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		if = {
+			# Only while the beast still lives.
+			limit = { has_variable = porphyros_active }
+			random_list = {
+				34 = { trigger_event = { id = me_nazani.22 } }
+				33 = { trigger_event = { id = me_nazani.23 } }
+				33 = { trigger_event = { id = me_nazani.24 } }
+			}
+			trigger_event = {
+				id = me_nazani.21
+				days = { 1825 2555 }
+			}
+		}
+	}
+}
+
+# Event 22: Porphyros devours sailors and dockhands.
+me_nazani.22 = {
+	type = country_event
+	title = "me_nazani.22.t"
+	desc = "me_nazani.22.desc"
+	picture = event_octopus
+	left_portrait = current_ruler
+
+	immediate = {
+		random_owned_province = {
+			limit = { num_of_port_building >= 1 }
+			save_scope_as = porphyros_target
+		}
+	}
+
+	option = { # Do nothing - the beast feasts unchallenged.
+		name = "me_nazani.22.a"
+		ai_chance = { factor = 40 }
+		add_stability = -2
+		if = {
+			limit = { exists = scope:porphyros_target }
+			scope:porphyros_target = {
+				while = {
+					count = 4
+					random_pops_in_province = { kill_pop = yes }
+				}
+			}
+		}
+	}
+	option = { # Pay for armed escorts - fewer lives lost.
+		name = "me_nazani.22.b"
+		ai_chance = { factor = 60 }
+		add_treasury = -100
+		if = {
+			limit = { exists = scope:porphyros_target }
+			scope:porphyros_target = {
+				random_pops_in_province = { kill_pop = yes }
+			}
+		}
+	}
+}
+
+# Event 23: The sight of the beast throws the ports into panic.
+me_nazani.23 = {
+	type = country_event
+	title = "me_nazani.23.t"
+	desc = "me_nazani.23.desc"
+	picture = event_octopus
+	left_portrait = current_ruler
+
+	immediate = {
+		random_owned_province = {
+			limit = { num_of_port_building >= 1 }
+			save_scope_as = porphyros_target
+		}
+	}
+
+	option = { # Do nothing - fear grips the coast.
+		name = "me_nazani.23.a"
+		ai_chance = { factor = 40 }
+		add_stability = -6
+	}
+	option = { # Pay for patrols and public reassurance.
+		name = "me_nazani.23.b"
+		ai_chance = { factor = 60 }
+		add_treasury = -120
+		add_stability = -1
+	}
+}
+
+# Event 24: A treasure convoy is dragged beneath the waves.
+me_nazani.24 = {
+	type = country_event
+	title = "me_nazani.24.t"
+	desc = "me_nazani.24.desc"
+	picture = event_octopus
+	left_portrait = current_ruler
+
+	immediate = {
+		random_owned_province = {
+			limit = { num_of_port_building >= 1 }
+			save_scope_as = porphyros_target
+		}
+	}
+
+	option = { # Do nothing - the whole convoy is lost.
+		name = "me_nazani.24.a"
+		ai_chance = { factor = 40 }
+		add_treasury = -250
+		add_stability = -1
+	}
+	option = { # Spend influence to reorganize the sea lanes.
+		name = "me_nazani.24.b"
+		ai_chance = { factor = 60 }
+		add_political_influence = -40
+		add_treasury = -50
+	}
+}
+
+# Event 25: After ~30 years, the great whale dies at last.
+me_nazani.25 = {
+	type = country_event
+	title = "me_nazani.25.t"
+	desc = "me_nazani.25.desc"
+	picture = event_octopus
+	left_portrait = current_ruler
+
+	immediate = {
+		remove_variable = porphyros_active
+		random_owned_province = {
+			limit = { num_of_port_building >= 1 }
+			save_scope_as = porphyros_target
+		}
+	}
+
+	option = { # Harvest the carcass for oil, bone, and baleen.
+		name = "me_nazani.25.a"
+		add_treasury = 300
+		add_stability = 5
+	}
+	option = { # Give thanks to the gods for our deliverance.
+		name = "me_nazani.25.b"
+		add_stability = 10
+		add_legitimacy = 10
+	}
+}
+
 me_nazani.14 = {
 	type = country_event
 	title = "me_nazani.14.t"
@@ -260,8 +697,6 @@ me_nazani.15 = {
 	picture = war_council
 
 	left_portrait = root.current_ruler
-
-	
 
 	option = {
 		name = "me_nazani.15.a"
