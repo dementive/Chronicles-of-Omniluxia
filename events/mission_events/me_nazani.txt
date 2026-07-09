@@ -1,0 +1,299 @@
+﻿namespace = me_nazani
+
+me_nazani.1 = {
+	type = country_event
+	title = "me_nazani.1.t"
+	desc = "me_nazani.1.desc"
+	picture = greek_court
+	left_portrait = root.current_ruler
+	right_portrait = scope:orcish_captain
+
+	immediate = {
+		hidden_effect = {
+			ROOT = {
+				create_character = {
+					first_name = "Grommash"
+					culture = ipelocure
+					religion = orcish_colony_faith
+					age = 35
+					female = no
+					save_scope_as = orcish_captain
+				}
+				scope:orcish_captain = {
+					add_martial = 8
+					add_trait = ambitious
+				}
+			}
+		}
+	}
+
+	option = {
+		name = "me_nazani.1.a"
+		ai_chance = { factor = 85 }
+
+		custom_tooltip = "me_nazani.1.a.tt"
+
+		hidden_effect = {
+            region:border_lands_morrigon = {
+                every_region_province = { add_claim = root }
+            }
+        }
+
+		add_country_modifier = {
+			name = nazani_secret_correspondence_mod
+			duration = 730
+		}
+
+		trigger_event = { 
+			id = me_nazani.2
+			days = 7
+		}
+	}
+
+	option = {
+		custom_tooltip = end_event_chain_tt
+		name = "me_nazani.1.b"
+		ai_chance = { factor = 15 }
+
+		hidden_effect = {
+			scope:orcish_captain = {
+				death = {
+					death_reason = death_suicide
+				}
+			}
+		}
+	}
+}
+
+# Event 2: The Green Tide Gathers - Army Spawns
+me_nazani.2 = {
+	type = country_event
+	title = "me_nazani.2.t"
+	desc = "me_nazani.2.desc"
+	picture = event_marching_army
+
+	left_portrait = root.current_ruler
+	right_portrait = scope:orcish_captain
+
+	immediate = {
+		scope:orcish_captain = {
+			save_scope_as = orcish_captain
+		}
+	}
+
+	option = {
+		name = "me_nazani.2.a"
+		ai_chance = { factor = 90 }
+
+		create_unit = {
+                navy = no
+                name = "Green Tide"
+                save_scope_as = green_tide_army_scope
+                location = p:2347
+                hidden_effect = {
+                    add_subunit = light_infantry
+                	add_subunit = light_infantry
+                	add_subunit = light_infantry
+                	add_subunit = light_infantry
+					add_subunit = light_infantry
+                	add_subunit = light_infantry
+                	add_subunit = light_infantry
+                	add_subunit = light_infantry
+					add_subunit = light_cavalry    
+					add_subunit = light_cavalry 
+					add_subunit = light_cavalry    
+					add_subunit = light_cavalry 
+                    add_food = 100
+                    add_morale = 2
+                }
+            }
+            hidden_effect = {
+                scope:green_tide_army_scope = {
+                    set_as_commander = scope:orcish_captain
+                } 
+            }
+
+		if = {
+			limit = {
+				NOT = { owns = 2187 }
+			}
+			p:2187 = {
+				owner = {
+					ROOT = {
+						declare_war_with_casus_belli = {
+							casus_belli = conquest
+							target = PREV
+							apply_ticking_cassus_belli = yes
+						}
+					}
+				}
+			}
+		}
+
+		add_military_experience = 5
+		custom_tooltip = me_nazani.2.a_tt
+		
+		trigger_event = {
+			id = me_nazani.3
+			days = 16
+		}
+	}
+
+	option = {
+		name = "me_nazani.2.b"
+		ai_chance = { factor = 10 }
+
+		add_legitimacy = -5
+
+		hidden_effect = {
+			scope:orcish_captain = {
+				death = {
+					death_reason = death_suicide
+				}
+			}
+		}
+	}
+}
+
+# Event 3: The Point of No Return - Final Decision
+me_nazani.3 = {
+	type = country_event
+	title = "me_nazani.3.t"
+	desc = "me_nazani.3.desc"
+	picture = event_city_skyline
+
+	left_portrait = root.current_ruler
+	right_portrait = scope:orcish_captain
+
+	immediate = {
+		every_character = {
+			limit = {
+				name = "Grommash"
+				culture = culture:orcish
+			}
+			save_scope_as = orcish_captain
+		}
+	}
+
+	option = {
+		name = "me_nazani.3.a"
+		ai_chance = { factor = 85 }
+		custom_tooltip = me_nazani.3.a_tt
+
+		root = {
+            declare_war_with_wargoal = {
+                war_goal = conquer_wargoal
+                province = 2187
+                target = p:2187.owner
+            }
+        }
+	}
+
+	option = {
+		name = "me_nazani.3.b"
+		ai_chance = { factor = 15 }
+
+		add_legitimacy = -10
+
+		hidden_effect = {
+			every_unit = {
+				limit = {
+					is_commanded_by = scope:orcish_captain
+				}
+				remove_unit = yes
+			}
+			scope:orcish_captain = {
+				death = {
+					death_reason = death_suicide
+				}
+			}
+		}
+	}
+}
+
+# Event 4: Invasion from the East - War Notification
+me_nazani.4 = {
+	type = country_event
+	title = "me_nazani.4.t"
+	desc = "me_nazani.4.desc"
+	picture = war_council
+
+	
+
+	option = {
+		name = "me_nazani.4.a"
+
+		ROOT = {
+			declare_war_with_casus_belli = {
+				casus_belli = conquest
+				target = this
+				apply_ticking_cassus_belli = yes
+			}
+		}
+	}
+}
+
+# Event 5: The Borderlands Conquered - Narrative Conclusion
+me_nazani.5 = {
+	type = country_event
+	title = "me_nazani.5.t"
+	desc = "me_nazani.5.desc"
+	picture = war_council
+
+	left_portrait = root.current_ruler
+
+	
+
+	option = {
+		name = "me_nazani.5.a"
+
+	}
+}
+
+
+# ==============================================================================
+# TASK 14: MARSHLANDS RECLAIMED
+# ==============================================================================
+
+me_nazani.14 = {
+	type = country_event
+	title = "me_nazani.14.t"
+	desc = "me_nazani.14.desc"
+	picture = event_swamp_city
+	left_portrait = root.current_ruler
+	right_portrait = c.WGA.current_ruler
+
+	option = {
+		name = "me_nazani.14.a"
+
+		custom_tooltip = me_nazani.14.a_tt
+		
+	}
+}
+
+# ==============================================================================
+# TASK 15: KAINAXARTHOS AVENGED
+# ==============================================================================
+
+me_nazani.15 = {
+	type = country_event
+	title = "me_nazani.15.t"
+	desc = "me_nazani.15.desc"
+	picture = war_council
+
+	left_portrait = root.current_ruler
+
+	
+
+	option = {
+		name = "me_nazani.15.a"
+
+		ROOT = {
+			declare_war_with_casus_belli = {
+				casus_belli = conquest
+				target = this
+				apply_ticking_cassus_belli = yes
+			}
+		}
+	}
+}

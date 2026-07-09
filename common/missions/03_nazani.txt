@@ -3,7 +3,7 @@
     icon = "seleukid_2"
 
     repeatable = no
-    chance = { base = 1000 }
+    chance = { factor = 100 }
 
     potential = {
         NOT = { has_variable = mission_cooldown_var }
@@ -354,7 +354,7 @@
 
     03_nazani_task_8 = {
         icon = "task_economical"
-        requires = { 03_nazani_task_3 }
+        requires = { 03_nazani_task_6_pdeso 03_nazani_task_6_esenzeu }
         highlight = {
             scope:province = {
                 OR = {
@@ -683,7 +683,6 @@
     03_nazani_task_12 = {
         icon = "task_political"
         requires = { 03_nazani_task_10 }
-        final = yes
         duration = 120
 
         highlight = {
@@ -745,6 +744,173 @@
                     has_completed_mission_task = 03_nazani_task_11_tall
                 }
                 add_innovation = 2
+            }
+        }
+    }
+
+    03_nazani_task_13 = {
+        icon = "task_apollo"
+        duration = 60
+        bypass = {
+            owns = 2187
+        }
+
+        allow = {
+            treasury >= 50
+            political_influence >= 25
+            manpower >= 10
+        }
+
+        on_completion = {
+            if = {
+                limit = {
+                    owns = 2187
+                }
+                custom_tooltip = nazani_task_13_orcish_base_owned_tt
+            }
+            else = {
+                add_treasury = -50
+                add_political_influence = -25
+                add_manpower = -10
+                trigger_event = {
+                    id = me_nazani.1
+                    days = 1
+                }
+                set_variable = {
+                    name = nazani_orcish_invasion_started
+                    value = yes
+                }
+            }
+        }
+    }
+
+    03_nazani_task_14 = {
+        icon = "task_battle"
+        duration = 120
+        requires = { 03_nazani_task_13 }
+
+        bypass = {
+            owns_or_subject_owns_region = marshland_region
+        }
+
+        highlight = {
+            scope:province = {
+                is_in_region = border_lands_morrigon
+            }
+        }
+
+        on_start = {
+            if = {
+				limit = {
+					has_country_modifier = nazani_borderland_spies_mod
+				}
+				remove_country_modifier = nazani_borderland_spies_mod
+			}
+        }
+
+        allow = {
+            owns_percent_of_region = {
+                PROVINCE = "p:2187" 
+                PERCENT = "0.5"
+            }
+            war = no
+        }
+
+        on_completion = {
+            add_country_modifier = {
+                name = nazani_marshland_conquest_mod
+                duration = -1
+            }
+            add_military_experience = 10
+            current_ruler = {
+                force_add_trait = conqueror
+            }
+            every_country = {
+                limit = {
+                    NOT = { THIS = ROOT }
+                    NOT = { is_subject_of = ROOT }
+                    any_owned_province = {
+                        is_in_region = marshland_region
+                    }
+                }
+                random_owned_province = {
+                    limit = {
+                        is_in_region = marshland_region
+                    }
+                    save_scope_as = marshland_war_province
+                }
+                ROOT = {
+                    declare_war_with_wargoal = {
+                        war_goal = conquer_wargoal
+                        target = PREV
+                        province = scope:marshland_war_province
+                    }
+                }
+                trigger_event = {
+                    id = me_nazani.14
+                    days = 1
+                }
+            }
+        }
+    }
+
+    03_nazani_task_15 = {
+        icon = "task_expansion"
+        duration = 150
+        requires = { 03_nazani_task_14 }
+
+        highlight = {
+            scope:province = {
+                is_in_region = marshland_region
+            }
+        }
+
+        allow = {
+            owns_or_subject_owns_region = marshland_region
+            war = no
+        }
+
+        on_completion = {
+            add_country_modifier = {
+                name = nazani_kainaxarthos_reclaimed_mod
+                duration = -1
+            }
+            add_legitimacy = 20
+            every_country = {
+                limit = {
+                    NOT = { is_subject_of = ROOT }
+                    any_owned_province = {
+                        is_in_region = dragon_lands_west
+                    }
+                }
+                ROOT = {
+                    declare_war_with_wargoal = {
+                        war_goal = conquer_wargoal
+                        target = PREV
+                        province = PREV.capital_scope
+                    }
+                }
+                trigger_event = {
+                    id = me_nazani.15
+                    days = 1
+                }
+            }
+        }
+    }
+
+    03_nazani_task_16 = {
+        icon = "task_atlas"
+        requires = { 03_nazani_task_15 }
+
+        allow = {
+            owns_or_subject_owns_region = dragon_lands_west
+            owns_or_subject_owns_region = dragon_lands_east
+        }
+
+        on_completion = {
+            current_ruler = {
+                add_martial = 3
+                add_nickname = NICKNAME_THE_DRAGON_SLAYER
             }
         }
     }
