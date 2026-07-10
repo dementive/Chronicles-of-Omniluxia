@@ -3219,8 +3219,8 @@ omni_character_items_button = {
 	}
 
 	# Shown on the player's own characters (court members, rulers, generals,
-	# governors). Always visible even with an empty inventory. On click the GUI
-	# button runs this effect, which opens the event-based item menu.
+	# governors). Always visible even with an empty inventory so you can hover
+	# non-rulers and inspect their gear, but only the ruler can click it.
 	is_shown = {
 		is_alive = yes
 		OR = {
@@ -3230,8 +3230,7 @@ omni_character_items_button = {
 	}
 
 	is_valid = {
-		# Empty to avoid checkmark
-		always = yes
+		is_ruler = yes
 	}
 
 	effect = {
@@ -3249,5 +3248,39 @@ omni_character_items_button = {
 				if = { limit = { country = { has_variable = omni_army_slot_shield } } custom_tooltip = omni_equipped_slot_shield show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_shield } } } }
 			}
 			else = { custom_tooltip = omni_equipped_none }
+	}
+}
+
+omni_character_city_button = {
+	scope = character
+	saved_scopes = {
+		player
+	}
+
+	# Shows a city interaction button when the viewed character is standing in a
+	# city with at least one supported interaction building they can actually access.
+	is_shown = {
+		is_alive = yes
+		is_ruler = yes
+		OR = {
+			country = scope:player
+			employer = scope:player
+		}
+		OR = {
+			omni_character_has_local_market = yes
+			omni_character_has_local_adventurer_guild = yes
+			omni_character_has_local_brewery = yes
+			omni_character_has_local_circus = yes
+		}
+	}
+
+	is_valid = {
+		always = yes
+	}
+
+	effect = {
+		hidden_effect = {
+			trigger_event = { id = omni_items.7 }
+		}
 	}
 }
