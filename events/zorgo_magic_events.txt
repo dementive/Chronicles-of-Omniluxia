@@ -4190,29 +4190,106 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                     has_trait = goblin_trait
                     has_variable = on_orc_adventure
                 }
-                omni_can_afford_spell = { BASE = 25 }
+                omni_can_afford_spell = { BASE = 15 }
             }
             save_scope_as = selected_mage
         }
     }
 
-    option = { # Gale Step - movement speed
+    option = { # Fast Travel - fold space and return the army to the capital
+        trigger = {
+            scope:selected_mage = { omni_can_afford_spell = { BASE = 15 } }
+            scope:selected_mage = { omni_caster_tier_1_any_school = yes }
+            scope:target = {
+                any_character_unit = {
+                    is_army = yes
+                    in_combat = no
+                }
+            }
+        }
+        hidden_effect = {
+            scope:target = {
+                random_character_unit = {
+                    limit = {
+                        is_army = yes
+                        in_combat = no
+                    }
+                    unit_location = { save_scope_as = teleport_origin }
+                }
+            }
+        }
+        scope:selected_mage = {
+            if = {
+                limit = { scope:target.employer.capital_scope = { is_in_area = scope:teleport_origin } }
+                omni_spell_mana_cost_effect = { BASE = 15 }
+            }
+            else_if = {
+                limit = { scope:teleport_origin = { is_on_neighboring_or_same_continent = { PROVINCE = scope:target.employer.capital_scope } } }
+                omni_spell_mana_cost_effect = { BASE = 50 }
+            }
+            else_if = {
+                limit = { scope:teleport_origin = { is_on_neighboring_continent = { PROVINCE = scope:target.employer.capital_scope } } }
+                omni_spell_mana_cost_effect = { BASE = 100 }
+            }
+            else = {
+                omni_spell_mana_cost_effect = { BASE = 200 }
+            }
+        }
+        scope:target = {
+            every_character_unit = {
+                limit = { is_army = yes }
+                if = {
+                    limit = { scope:target.employer.capital_scope = { is_in_area = scope:teleport_origin } }
+                    add_unit_modifier = {
+                        name = omni_teleport_spell_mod
+                        duration = 7
+                    }
+                    add_morale = -1
+                }
+                else_if = {
+                    limit = { scope:teleport_origin = { is_on_neighboring_or_same_continent = { PROVINCE = scope:target.employer.capital_scope } } }
+                    add_unit_modifier = {
+                        name = omni_teleport_spell_mod
+                        duration = 7
+                    }
+                    add_morale = -4
+                }
+                else_if = {
+                    limit = { scope:teleport_origin = { is_on_neighboring_continent = { PROVINCE = scope:target.employer.capital_scope } } }
+                    add_unit_modifier = {
+                        name = omni_teleport_spell_mod
+                        duration = 7
+                    }
+                    add_morale = -8
+                }
+                else = {
+                    add_unit_modifier = {
+                        name = omni_teleport_spell_mod
+                        duration = 7
+                    }
+                    add_morale = 0.5
+                }
+            }
+        }
+        custom_tooltip = me_zorgo_magic_focus.36_tooltip
+        custom_tooltip = omniluxia_magic_teleport_desc
+        trigger_event = { id = omniluxia_teleport.1 }
+        name = "omniluxia_magic_teleport"
+    }
+
+    option = { # Battle Surge - +25% morale in live combat
         trigger = {
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = { omni_caster_tier_1_any_school = yes }
+            exists = scope:battle_spell_context
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 25 }
         }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
             }
         }
         scope:target = {
@@ -4222,6 +4299,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         is_army = yes
                         is_navy = yes
                     }
+                    in_combat = yes
                 }
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_spell_mod }
@@ -4229,7 +4307,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
                 add_unit_modifier = {
                     name = omni_battle_haste_spell_mod
-                    duration = 1825
+                    duration = 30
                 }
             }
         }
@@ -4238,32 +4316,30 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         custom_tooltip = 25_mana_tt
         name = "me_zorgo_magic_focus.29.a"
     }
-    option = { # Gale Step 2 - stronger movement speed
+    option = { # Dread Omen - -25% morale to the opposing force in live combat
         trigger = {
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = { omni_caster_any_school_t2 = yes }
+            exists = scope:battle_spell_context
+            exists = scope:battle_enemy_target
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
             }
         }
-        scope:target = {
+        scope:battle_enemy_target = {
             every_character_unit = {
                 limit = {
                     OR = {
                         is_army = yes
                         is_navy = yes
                     }
+                    in_combat = yes
                 }
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_2_spell_mod }
@@ -4271,7 +4347,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
                 add_unit_modifier = {
                     name = omni_battle_haste_2_spell_mod
-                    duration = 1825
+                    duration = 30
                 }
             }
         }
@@ -4280,23 +4356,19 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.29.e"
     }
-    option = { # Gale Step 3 - 75% movement speed
+    option = { # Heroic Resonance - +50% morale in live combat
         trigger = {
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = { omni_caster_any_school_t3 = yes }
+            exists = scope:battle_spell_context
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
             }
         }
         scope:target = {
@@ -4306,6 +4378,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         is_army = yes
                         is_navy = yes
                     }
+                    in_combat = yes
                 }
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_3_spell_mod }
@@ -4313,7 +4386,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
                 add_unit_modifier = {
                     name = omni_battle_haste_3_spell_mod
-                    duration = 1825
+                    duration = 30
                 }
             }
         }
@@ -4322,34 +4395,32 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         custom_tooltip = 75_mana_tt
         name = "me_zorgo_magic_focus.29.f"
     }
-    option = { # Gale Step 4 - 100% movement speed (archmage only)
+    option = { # Crushing Terror - -50% morale to the opposing force in live combat
         trigger = {
             scope:selected_mage = { omni_can_afford_spell = { BASE = 100 } }
             scope:selected_mage = {
                 has_trait = archmage_trait
             }
+            exists = scope:battle_spell_context
+            exists = scope:battle_enemy_target
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 100 }
         }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
             }
         }
-        scope:target = {
+        scope:battle_enemy_target = {
             every_character_unit = {
                 limit = {
                     OR = {
                         is_army = yes
                         is_navy = yes
                     }
+                    in_combat = yes
                 }
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_4_spell_mod }
@@ -4357,7 +4428,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
                 add_unit_modifier = {
                     name = omni_battle_haste_4_spell_mod
-                    duration = 1825
+                    duration = 30
                 }
             }
         }
@@ -5372,104 +5443,6 @@ me_zorgo_magic_focus.37 = { # AI: battle mages auto-cast from live combat
             save_scope_as = caster_country
         }
         omni_ai_battlecast_effect = yes
-    }
-}
-me_zorgo_magic_focus.36 = { # Teleport Army (unit button)
-    type = country_event
-
-    title = me_zorgo_magic_focus.36_title
-    desc = me_zorgo_magic_focus.36_desc
-    picture = ascetic
-    left_portrait = scope:target
-
-    # scope:target = the commander of the selected army (passed by
-    # omni_teleport_unit_button). The general casts the teleport themselves.
-    immediate = {
-        scope:target = {
-            random_character_unit = {
-                limit = { is_army = yes }
-                unit_location = { save_scope_as = teleport_origin }
-            }
-        }
-    }
-
-    # Teleport to Capital
-    option = {
-        trigger = {
-            scope:target = { omni_can_afford_spell = { BASE = 15 } }
-        }
-        scope:target = {
-            if = {
-                limit = { scope:target.employer.capital_scope = { is_in_area = scope:teleport_origin } }
-                omni_spell_mana_cost_effect = { BASE = 15 }
-            }
-            else_if = {
-                limit = { scope:teleport_origin = { is_on_neighboring_or_same_continent = { PROVINCE = scope:target.employer.capital_scope } } }
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            else_if = {
-                limit = { scope:teleport_origin = { is_on_neighboring_continent = { PROVINCE = scope:target.employer.capital_scope } } }
-                omni_spell_mana_cost_effect = { BASE = 100 }
-            }
-            else = {
-                omni_spell_mana_cost_effect = { BASE = 200 }
-            }
-        }
-        scope:target = {
-            if = {
-                limit = { scope:target.employer.capital_scope = { is_in_area = scope:teleport_origin } }
-                every_character_unit = {
-                    limit = { is_army = yes }
-                    add_unit_modifier = {
-                        name = omni_teleport_spell_mod
-                        duration = 7
-                    }
-                    add_morale = -1
-                }
-            }
-            else_if = {
-                limit = { scope:teleport_origin = { is_on_neighboring_or_same_continent = { PROVINCE = scope:target.employer.capital_scope } } }
-                every_character_unit = {
-                    limit = { is_army = yes }
-                    add_unit_modifier = {
-                        name = omni_teleport_spell_mod
-                        duration = 7
-                    }
-                    add_morale = -4
-                }
-            }
-            else_if = {
-                limit = { scope:teleport_origin = { is_on_neighboring_continent = { PROVINCE = scope:target.employer.capital_scope } } }
-                every_character_unit = {
-                    limit = { is_army = yes }
-                    add_unit_modifier = {
-                        name = omni_teleport_spell_mod
-                        duration = 7
-                    }
-                    add_morale = -8
-                }
-            }
-            else = {
-                every_character_unit = {
-                    limit = { is_army = yes }
-                    add_unit_modifier = {
-                        name = omni_teleport_spell_mod
-                        duration = 7
-                    }
-                    add_morale = 0.5
-                }
-            }
-        }
-        custom_tooltip = me_zorgo_magic_focus.36_tooltip
-        trigger_event = { id = omniluxia_teleport.1 }
-        name = "me_zorgo_magic_focus.36.a"
-    }
-
-    # Cancel
-
-    option = {
-        name = "me_zorgo_magic_focus.2.z.2"
-        custom_tooltip = me_zorgo_magic_focus.2_tooltip
     }
 }
 me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the gods

@@ -933,25 +933,27 @@ me_nazani.201 = {
 	type = country_event
 	title = "me_nazani.201.t"
 	desc = "me_nazani.201.desc"
-	picture = greek_court
+	picture = event_umbar_units
 
 	left_portrait = root.current_ruler
-	right_portrait = scope:renos_nazani
+	right_portrait = char:185
 
 	option = {
 		name = "me_nazani.201.a"
 		ai_chance = { factor = 25 }
-
 		custom_tooltip = "me_nazani.201.a.tt"
 
 		hidden_effect = {
-			scope:renos_nazani = {
-				set_as_ruler = yes
+			# Renos ascends. set_as_ruler is a country-scoped effect that takes
+			# the new ruler as its target, so it must be called on ROOT.
+			root = {
+				set_as_ruler = char:185
 			}
-			trigger_event = {
-				id = me_nazani.202
-				days = 180
-			}
+		}
+
+		trigger_event = {
+			id = me_nazani.202
+			days = 180
 		}
 	}
 
@@ -963,7 +965,7 @@ me_nazani.201 = {
 
 		hidden_effect = {
 			# Renos refuses to accept the refusal and starts a civil war
-			scope:renos_nazani = {
+			char:185 = {
 				set_variable = renos_civil_war_active
 			}
 
@@ -974,37 +976,30 @@ me_nazani.201 = {
 					save_scope_as = emperor_martios
 				}
 				root = {
-					start_civil_war = scope:renos_nazani
+					start_civil_war = char:185
 				}
 			}
 		}
 	}
 }
 
-# me_nazani.202: Imperial Blinding - The grim sequel
-# Fires 6 months after Renos becomes ruler
 me_nazani.202 = {
 	type = country_event
 	title = "me_nazani.202.t"
 	desc = "me_nazani.202.desc"
-	picture = greek_court
+	picture = event_boat_storm
 
 	left_portrait = root.current_ruler
+	right_portrait = char:18
 
 	immediate = {
-		# Find the retired emperor (Martios) among the characters
-		every_character = {
-			limit = {
-				is_alive = yes
-				first_name = "Martios"
-				OR = {
-					employer = root
-					employer = { is_subject_of = root }
-					NOT = { exists = employer }
-				}
-			}
+		# Martios is a fixed historical character in this chain.
+		char:18 = {
 			save_scope_as = former_emperor_martios
 		}
+		# Remember the Nazani Empire itself so the exile country can later be
+		# granted a claim on its capital (see me_nazani.203).
+		save_scope_as = nazani_empire
 	}
 
 	option = {
@@ -1014,26 +1009,99 @@ me_nazani.202 = {
 
 		hidden_effect = {
 			if = {
-				limit = { exists = scope:former_emperor_martios }
-
-				# Imprison Martios in the middle of the night
-				scope:former_emperor_martios = {
-					imprison = root
-					add_trait = blinded
+				limit = {
+					exists = scope:former_emperor_martios
+					scope:former_emperor_martios = { is_alive = yes }
 				}
 
-				# Send Martios to the exile location (owner of province 2478)
+				# Put out his eyes. The vanilla trait is "blind", not "blinded".
+				scope:former_emperor_martios = {
+					add_trait = blind
+				}
+
 				if = {
 					limit = { exists = p:2478.owner }
 					p:2478.owner = {
 						save_scope_as = exile_destination_owner
+					}
+					scope:former_emperor_martios = {
+						remove_all_positions = yes
+						set_home_country = scope:exile_destination_owner
+						set_as_minor_character = THIS
+					}
 
-						# Move Martios to the exile country
-						scope:former_emperor_martios = {
-							move_to_country = scope:exile_destination_owner
-							set_character_location = p:2478
+					# A week later, the court that received him must decide his fate.
+					scope:exile_destination_owner = {
+						trigger_event = {
+							id = me_nazani.203
+							days = 7
 						}
 					}
+				}
+			}
+		}
+		current_ruler = {
+			force_add_trait = cruel
+			add_nickname = NICKNAME_THE_CRUEL
+		}
+	}
+}
+
+
+me_nazani.203 = {
+	type = country_event
+	title = "me_nazani.203.t"
+	desc = "me_nazani.203.desc"
+	picture = greek_court
+
+	left_portrait = root.current_ruler
+	right_portrait = char:18
+
+	trigger = {
+		char:18 = {
+			is_alive = yes
+		}
+	}
+
+	option = {
+		name = "me_nazani.203.a"
+		ai_chance = { factor = 40 }
+		char:18 = {
+			death = {
+				death_reason = death_murder
+			}
+		}
+		current_ruler = {
+			add_popularity = 15
+		}
+	}
+
+	option = {
+		name = "me_nazani.203.b"
+		ai_chance = { factor = 40 }
+
+		add_treasury = -25
+		current_ruler = {
+			add_popularity = 10
+		}
+		add_legitimacy = 10
+	}
+
+	option = {
+		name = "me_nazani.203.c"
+		ai_chance = { factor = 20 }
+
+		custom_tooltip = "me_nazani.203.c.tt"
+
+		hidden_effect = {
+			char:18 = {
+				set_home_country = ROOT
+				add_loyalty = loyalty_offered_refuge
+			}
+			if = {
+				limit = { exists = scope:nazani_empire }
+				scope:nazani_empire.capital_scope = {
+					add_claim = ROOT
 				}
 			}
 		}

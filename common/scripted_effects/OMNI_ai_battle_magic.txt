@@ -2,7 +2,7 @@
 # Omniluxia - AI battle-magic auto-cast
 #
 # Lets AI mage-generals cast the same friendly army/fleet buffs a player can
-# (Gale Step tiers, Battle Hymn, Blessing of War, plus the new arcane support
+# (battle morale swings, Battle Hymn, Blessing of War, plus the new arcane support
 # spells) when their forces are in danger or in a fight.
 # Driven monthly from me_zorgo_magic_focus.35. All effects run in the CASTER
 # (general / character) scope and pay mana through omni_spell_mana_cost_effect, so
@@ -11,6 +11,7 @@
 
 # Apply (or refresh) a single unit modifier on every army this general leads.
 #   $MOD$ = the unit modifier name to apply.
+#   $DAYS$ = how long the modifier should last.
 omni_apply_unit_buff_effect = {
 	every_character_unit = {
 		limit = {
@@ -25,14 +26,14 @@ omni_apply_unit_buff_effect = {
 		}
 		add_unit_modifier = {
 			name = $MOD$
-			duration = 1825
+			duration = $DAYS$
 		}
 	}
 }
 
-# MOBILITY cast: best affordable Gale Step (archmages prefer Blessing of War, which
-# also grants speed). Used to flee a stack-wipe or reposition. Skips entirely if the
-# army already carries any speed buff, so the AI never wastes mana refreshing it.
+# MORALE cast: best affordable positive battle morale spell on the general's own
+# force. Used when danger is near but battle has not yet started or as a fallback
+# in combat if stronger support options are unavailable.
 omni_ai_cast_mobility_buff_effect = {
 	if = {
 		limit = {
@@ -44,30 +45,17 @@ omni_ai_cast_mobility_buff_effect = {
 					}
 					OR = {
 						has_unit_modifier = omni_battle_haste_spell_mod
-						has_unit_modifier = omni_battle_haste_2_spell_mod
 						has_unit_modifier = omni_battle_haste_3_spell_mod
-						has_unit_modifier = omni_battle_haste_4_spell_mod
 						has_unit_modifier = omni_battle_blessing_spell_mod
+						has_unit_modifier = omni_battle_rally_spell_mod
 					}
 				}
 			}
 		}
 		if = {
-			limit = {
-				has_trait = archmage_trait
-				omni_can_afford_spell = { BASE = 100 }
-			}
-			omni_spell_mana_cost_effect = { BASE = 100 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_4_spell_mod }
-			set_variable = {
-				name = omni_battle_spell_cooldown
-				days = 1
-			}
-		}
-		else_if = {
 			limit = { omni_can_afford_spell = { BASE = 75 } }
 			omni_spell_mana_cost_effect = { BASE = 75 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_3_spell_mod }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -76,16 +64,7 @@ omni_ai_cast_mobility_buff_effect = {
 		else_if = {
 			limit = { omni_can_afford_spell = { BASE = 50 } }
 			omni_spell_mana_cost_effect = { BASE = 50 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_2_spell_mod }
-			set_variable = {
-				name = omni_battle_spell_cooldown
-				days = 1
-			}
-		}
-		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 25 } }
-			omni_spell_mana_cost_effect = { BASE = 25 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_spell_mod }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_rally_spell_mod DAYS = 1825 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -95,10 +74,8 @@ omni_ai_cast_mobility_buff_effect = {
 }
 
 # COMBAT cast: best affordable survival buff for an army already locked in battle.
-# Archmages cast Blessing of War (morale + discipline + speed); everyone else casts
-# Blessing of War (morale + discipline + speed) to keep the stack from routing and
-# being wiped. Naval forces can also get Spectral Boarders, while Arcane Aegis
-# helps regular battle lines and Battle Clarity is used as a safe reinforcement buff.
+# Battle morale swings are prioritized first, then broader buffs like Blessing of
+# War, Spectral Boarders, Arcane Aegis, and Battle Clarity.
 omni_ai_cast_combat_buff_effect = {
 	if = {
 		limit = {
@@ -110,6 +87,8 @@ omni_ai_cast_combat_buff_effect = {
 					}
 					OR = {
 						has_unit_modifier = omni_battle_blessing_spell_mod
+						has_unit_modifier = omni_battle_haste_spell_mod
+						has_unit_modifier = omni_battle_haste_3_spell_mod
 						has_unit_modifier = omni_battle_rally_spell_mod
 						has_unit_modifier = omni_arcane_aegis_spell_mod
 						has_unit_modifier = omni_battle_clarity_spell_mod
@@ -119,6 +98,15 @@ omni_ai_cast_combat_buff_effect = {
 			}
 		}
 		if = {
+			limit = { omni_can_afford_spell = { BASE = 75 } }
+			omni_spell_mana_cost_effect = { BASE = 75 }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 }
+			set_variable = {
+				name = omni_battle_spell_cooldown
+				days = 1
+			}
+		}
+		else_if = {
 			limit = {
 				any_character_unit = {
 					is_navy = yes
@@ -126,7 +114,16 @@ omni_ai_cast_combat_buff_effect = {
 				omni_can_afford_spell = { BASE = 50 }
 			}
 			omni_spell_mana_cost_effect = { BASE = 50 }
-			omni_apply_unit_buff_effect = { MOD = omni_spectral_boarders_spell_mod }
+			omni_apply_unit_buff_effect = { MOD = omni_spectral_boarders_spell_mod DAYS = 1825 }
+			set_variable = {
+				name = omni_battle_spell_cooldown
+				days = 1
+			}
+		}
+		else_if = {
+			limit = { omni_can_afford_spell = { BASE = 25 } }
+			omni_spell_mana_cost_effect = { BASE = 25 }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_spell_mod DAYS = 30 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -138,7 +135,7 @@ omni_ai_cast_combat_buff_effect = {
 				omni_can_afford_spell = { BASE = 75 }
 			}
 			omni_spell_mana_cost_effect = { BASE = 75 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_blessing_spell_mod }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_blessing_spell_mod DAYS = 1825 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -147,7 +144,7 @@ omni_ai_cast_combat_buff_effect = {
 		else_if = {
 			limit = { omni_can_afford_spell = { BASE = 25 } }
 			omni_spell_mana_cost_effect = { BASE = 25 }
-			omni_apply_unit_buff_effect = { MOD = omni_arcane_aegis_spell_mod }
+			omni_apply_unit_buff_effect = { MOD = omni_arcane_aegis_spell_mod DAYS = 1825 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -156,7 +153,7 @@ omni_ai_cast_combat_buff_effect = {
 		else_if = {
 			limit = { omni_can_afford_spell = { BASE = 25 } }
 			omni_spell_mana_cost_effect = { BASE = 25 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod DAYS = 1825 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -165,7 +162,7 @@ omni_ai_cast_combat_buff_effect = {
 		else_if = {
 			limit = { omni_can_afford_spell = { BASE = 25 } }
 			omni_spell_mana_cost_effect = { BASE = 25 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_rally_spell_mod }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_rally_spell_mod DAYS = 1825 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -219,7 +216,7 @@ omni_ai_cast_support_buff_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 25 }
-		omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod }
+		omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod DAYS = 1825 }
 		set_variable = {
 			name = omni_battle_spell_cooldown
 			days = 1
