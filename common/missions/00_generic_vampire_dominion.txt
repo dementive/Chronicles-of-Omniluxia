@@ -15,56 +15,110 @@
 		has_civil_war = no
 		current_ruler = { has_trait = vampire_trait }
 		NOT = { has_variable = generic_vampire_dominion_cooldown }
+		any_owned_province = {
+			is_capital = no
+			total_population >= 10
+			NOT = { has_province_modifier = generic_vampire_dominion_bloodless_nights_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_culled_doubters_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_night_tithe_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_thrall_levies_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_sealed_crypt_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_guest_who_never_left_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_pale_retinue_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_court_of_whispers_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_unnatural_mist_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_drained_herds_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_wolves_grown_bold_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_where_crows_gather_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_sleepless_village_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_quiet_hours_pmod }
+			NOT = { has_province_modifier = generic_vampire_dominion_seat_of_pale_court_pmod }
+		}
 	}
 
 	abort = {
 		OR = {
+			NOT = { exists = scope:generic_vampire_dominion_target }
+			scope:generic_vampire_dominion_target = {
+				NOT = { owner = ROOT }
+			}
 			current_ruler = { NOT = { has_trait = vampire_trait } }
 			has_civil_war = yes
 			ai_mission_back_out_trigger = yes
 		}
 	}
 
+	on_potential = {
+		random_owned_province = {
+			limit = {
+				is_capital = no
+				total_population >= 10
+				NOT = { has_province_modifier = generic_vampire_dominion_bloodless_nights_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_culled_doubters_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_night_tithe_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_thrall_levies_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_sealed_crypt_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_guest_who_never_left_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_pale_retinue_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_court_of_whispers_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_unnatural_mist_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_drained_herds_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_wolves_grown_bold_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_where_crows_gather_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_sleepless_village_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_quiet_hours_pmod }
+				NOT = { has_province_modifier = generic_vampire_dominion_seat_of_pale_court_pmod }
+			}
+			save_scope_as = generic_vampire_dominion_target
+		}
+	}
+
 	on_abort = {
-		set_variable = {
-			name = generic_vampire_dominion_cooldown
-			days = 730
-		}
-		if = {
-			limit = { has_variable = generic_vampire_dominion_first_feeding }
-			remove_variable = generic_vampire_dominion_first_feeding
-		}
-		if = {
-			limit = { has_variable = generic_vampire_dominion_active }
-			remove_variable = generic_vampire_dominion_active
+		ROOT = {
+			set_variable = {
+				name = generic_vampire_dominion_cooldown
+				days = 365
+			}
+			if = {
+				limit = { has_variable = generic_vampire_dominion_row_picks }
+				remove_variable = generic_vampire_dominion_row_picks
+			}
+			if = {
+				limit = { has_variable = generic_vampire_dominion_active }
+				remove_variable = generic_vampire_dominion_active
+			}
 		}
 	}
 
 	on_start = {
 		start_mission_ai_effect = yes
-		if = {
-			limit = { has_variable = generic_vampire_dominion_first_feeding }
-			remove_variable = generic_vampire_dominion_first_feeding
-		}
-		if = {
-			limit = { has_variable = generic_vampire_dominion_active }
-			remove_variable = generic_vampire_dominion_active
+		ROOT = {
+			set_variable = {
+				name = generic_vampire_dominion_row_picks
+				value = 0
+			}
+			if = {
+				limit = { has_variable = generic_vampire_dominion_active }
+				remove_variable = generic_vampire_dominion_active
+			}
 		}
 	}
 
 	on_completion = {
 		complete_mission_effect = yes
-		set_variable = {
-			name = generic_vampire_dominion_cooldown
-			days = 3650
-		}
-		if = {
-			limit = { has_variable = generic_vampire_dominion_first_feeding }
-			remove_variable = generic_vampire_dominion_first_feeding
-		}
-		if = {
-			limit = { has_variable = generic_vampire_dominion_active }
-			remove_variable = generic_vampire_dominion_active
+		ROOT = {
+			set_variable = {
+				name = generic_vampire_dominion_cooldown
+				days = 365
+			}
+			if = {
+				limit = { has_variable = generic_vampire_dominion_row_picks }
+				remove_variable = generic_vampire_dominion_row_picks
+			}
+			if = {
+				limit = { has_variable = generic_vampire_dominion_active }
+				remove_variable = generic_vampire_dominion_active
+			}
 		}
 	}
 
@@ -77,7 +131,21 @@
 		}
 
 		on_completion = {
-			set_variable = generic_vampire_dominion_active
+			ROOT = {
+				set_variable = generic_vampire_dominion_active
+			}
+			scope:generic_vampire_dominion_target = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_bloodless_nights_pmod
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_vigor_of_the_drained_charmod
+					duration = 1825
+				}
+			}
 		}
 	}
 
@@ -92,7 +160,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -100,31 +171,57 @@
 		}
 
 		on_completion = {
-			add_country_modifier = {
-				name = generic_vampire_dominion_culled_doubters_cmod
-				duration = 3650
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_culled_doubters_pmod
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_scent_of_obedience_charmod
+					duration = 1825
+				}
 			}
 		}
 	}
 
 	generic_vampire_dominion_midnight_feeding = {
 		icon = "task_diplomatic"
+		duration = 30
 
 		requires = { generic_vampire_dominion_first_thirst }
 
-		allow = {
-			has_variable = generic_vampire_dominion_first_feeding
-		}
-
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_completion = {
-			capital_scope = {
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
-					name = generic_vampire_dominion_bloodless_nights_pmod
-					duration = 3650
+					name = generic_vampire_dominion_night_tithe_pmod
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_warm_blood_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -141,7 +238,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -149,13 +249,68 @@
 		}
 
 		on_completion = {
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target.region = {
+				while = {
+					count = 5
+					random_region_province = {
+						limit = {
+							has_owner = yes
+							total_population > 0
+						}
+						random_pops_in_province = {
+							kill_pop = yes
+						}
+					}
+				}
+			}
+			create_character = {
+				female = no
+				age = 35
+				culture = undead
+				religion = scope:generic_vampire_dominion_target.religion
+				add_trait = wraith_trait
+				save_scope_as = generic_vampire_dominion_undead_wraith_commander
+			}
+			create_unit = {
+				navy = no
+				name = "Undead Wraiths"
+				save_scope_as = generic_vampire_dominion_undead_wraiths_army_scope
+				location = scope:generic_vampire_dominion_target
+				set_as_commander = scope:generic_vampire_dominion_undead_wraith_commander
+				hidden_effect = {
+					while = {
+						count = 5
+						add_subunit = light_infantry
+					}
+					add_food = 100
+					add_morale = 2
+				}
+			}
+			scope:generic_vampire_dominion_target = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_thrall_levies_pmod
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_silken_thralls_charmod
+					duration = 1825
+				}
+			}
 			random_character = {
 				limit = {
 					NOT = { is_ruler = yes }
 					employer = ROOT
 				}
 				add_loyalty = loyalty_granted_stipends
-				add_popularity = 10
+				add_popularity = 5
 			}
 		}
 	}
@@ -171,7 +326,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -179,10 +337,22 @@
 		}
 
 		on_completion = {
-			capital_scope = {
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_sealed_crypt_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_deathless_repose_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -199,7 +369,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -207,27 +380,35 @@
 		}
 
 		on_completion = {
-			add_country_modifier = {
-				name = generic_vampire_dominion_taste_for_politics_cmod
-				duration = 3650
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
 			}
-			capital_scope = {
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_guest_who_never_left_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_sweetened_tongue_charmod
+					duration = 1825
 				}
 			}
 		}
 	}
 
 	generic_vampire_dominion_pale_retinue = {
-		icon = "task_political"
+		icon = "task_battle"
 		duration = 30
 
 		requires = { generic_vampire_dominion_thralls_in_silk }
 
 		allow = {
-			political_influence >= 10
+			military_experience >= 10
 		}
 
 		bypass = {
@@ -235,19 +416,28 @@
 		}
 
 		on_start = {
-			add_political_influence = -10
+			add_military_experience = -10
 		}
 
 		on_completion = {
-			add_country_modifier = {
-				name = generic_vampire_dominion_pale_retinue_cmod
-				duration = 3650
+			scope:generic_vampire_dominion_target = {
+				add_province_modifier = {
+					name = generic_vampire_dominion_pale_retinue_pmod
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_pale_captain_charmod
+					duration = 1825
+				}
 			}
 		}
 	}
 
 	generic_vampire_dominion_court_of_whispers = {
 		icon = "task_political"
+		duration = 30
 
 		requires = { generic_vampire_dominion_sealed_crypt generic_vampire_dominion_taste_for_politics generic_vampire_dominion_pale_retinue }
 
@@ -256,10 +446,16 @@
 		}
 
 		on_completion = {
-			capital_scope = {
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_court_of_whispers_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_whisper_drinker_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -276,7 +472,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -284,10 +483,22 @@
 		}
 
 		on_completion = {
-			capital_scope = {
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_unnatural_mist_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_mist_walker_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -304,7 +515,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -312,10 +526,22 @@
 		}
 
 		on_completion = {
-			capital_scope = {
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_drained_herds_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_beast_blood_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -332,7 +558,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -340,10 +569,22 @@
 		}
 
 		on_completion = {
-			capital_scope = {
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_wolves_grown_bold_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_lord_of_hungers_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -360,7 +601,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -368,10 +612,22 @@
 		}
 
 		on_completion = {
-			capital_scope = {
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_where_crows_gather_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_carrion_sight_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -388,7 +644,10 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				root.var:generic_vampire_dominion_row_picks >= 3
+			}
 		}
 
 		on_start = {
@@ -396,10 +655,22 @@
 		}
 
 		on_completion = {
-			capital_scope = {
+			ROOT = {
+				change_variable = {
+					name = generic_vampire_dominion_row_picks
+					add = 1
+				}
+			}
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_sleepless_village_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_sleepless_mind_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -407,18 +678,25 @@
 
 	generic_vampire_dominion_silence_after_dusk = {
 		icon = "task_political"
+		duration = 30
 
-		requires = { generic_vampire_dominion_unnatural_mist generic_vampire_dominion_wolves_at_treeline }
+		requires = { generic_vampire_dominion_unnatural_mist generic_vampire_dominion_wolves_at_treeline generic_vampire_dominion_crows_never_leave }
 
 		bypass = {
 			is_ai = yes
 		}
 
 		on_completion = {
-			capital_scope = {
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_quiet_hours_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_dusk_command_charmod
+					duration = 1825
 				}
 			}
 		}
@@ -426,8 +704,9 @@
 
 	generic_vampire_dominion_undying_court = {
 		icon = "task_political"
+		duration = 30
 
-		requires = { generic_vampire_dominion_court_of_whispers generic_vampire_dominion_silence_after_dusk }
+		requires = { generic_vampire_dominion_court_of_whispers generic_vampire_dominion_silence_after_dusk generic_vampire_dominion_drained_herds generic_vampire_dominion_candlelight_never_gutters }
 
 		final = yes
 
@@ -436,33 +715,31 @@
 		}
 
 		on_completion = {
-			add_country_modifier = {
-				name = generic_vampire_dominion_realm_of_the_undying_cmod
-				duration = 3650
-			}
-			capital_scope = {
-				remove_province_modifier = generic_vampire_dominion_sealed_crypt_pmod
-				remove_province_modifier = generic_vampire_dominion_court_of_whispers_pmod
-				remove_province_modifier = generic_vampire_dominion_bloodless_nights_pmod
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_seat_of_pale_court_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_lord_of_the_sapped_domain_charmod
+					duration = 1825
 				}
 			}
 		}
 
 		on_bypass = {
-			add_country_modifier = {
-				name = generic_vampire_dominion_realm_of_the_undying_cmod
-				duration = 3650
-			}
-			capital_scope = {
-				remove_province_modifier = generic_vampire_dominion_sealed_crypt_pmod
-				remove_province_modifier = generic_vampire_dominion_court_of_whispers_pmod
-				remove_province_modifier = generic_vampire_dominion_bloodless_nights_pmod
+			scope:generic_vampire_dominion_target = {
 				add_province_modifier = {
 					name = generic_vampire_dominion_seat_of_pale_court_pmod
-					duration = 3650
+					duration = 1825
+				}
+			}
+			current_ruler = {
+				add_character_modifier = {
+					name = generic_vampire_dominion_lord_of_the_sapped_domain_charmod
+					duration = 1825
 				}
 			}
 		}

@@ -1,0 +1,118 @@
+﻿# National army loadout: 4 country slots (weapon / ranged / armour / shield).
+# Buying an item outfits the realm: personal layer -> ruler, army layer -> country.
+# One item per slot; a new purchase replaces the old one. Costs are paid from the
+# NATIONAL TREASURY (not the ruler's personal wealth).
+# Emblem/trinket generated items are personal-only (no slot, no army layer).
+
+# Called from the shop (ROOT = buying ruler). Pays from the treasury by rarity,
+# then routes the item into the country and (re)equips the matching slot.
+omni_army_buy_slot_item = {
+	if = { limit = { is_target_in_global_variable_list = { name = item_common_rarity target = var:omni_shop_slot_$SLOT$ } } country = { add_treasury = -150 } }
+	else_if = { limit = { is_target_in_global_variable_list = { name = item_uncommon_rarity target = var:omni_shop_slot_$SLOT$ } } country = { add_treasury = -400 } }
+	else = { country = { add_treasury = -1000 } }
+
+	save_scope_as = omni_army_buyer
+	country = {
+		set_variable = { name = omni_gen_fx_item value = scope:omni_army_buyer.var:omni_shop_slot_$SLOT$ }
+		omni_army_equip_current = yes
+		remove_variable = omni_gen_fx_item
+	}
+
+	remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
+	remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
+	remove_variable = omni_shop_slot_$SLOT$
+	set_variable = { name = omni_recent_purchase_cooldown days = 30 }
+}
+
+# Fixed / hand-made GEAR purchase (literal item_ID). Pays from the treasury and
+# routes into the national loadout slot $SLOTVAR$ just like generated gear.
+omni_army_buy_fixed = {
+	country = { add_treasury = -$PRICE$ }
+	save_scope_as = omni_army_buyer
+	country = {
+		set_variable = { name = omni_gen_fx_item value = flag:$item_ID$ }
+		omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
+		remove_variable = omni_gen_fx_item
+	}
+	remove_list_variable = { name = omni_item_shop_stock target = flag:$item_ID$ }
+	set_variable = { name = omni_recent_purchase_cooldown days = 30 }
+}
+
+# COUNTRY scope. var:omni_gen_fx_item = the item being equipped. Picks the slot.
+omni_army_equip_current = {
+	if = {
+		limit = { is_target_in_global_variable_list = { name = item_weapon target = var:omni_gen_fx_item } }
+		omni_army_replace_slot = { SLOTVAR = omni_army_slot_weapon }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_weapon_ranged target = var:omni_gen_fx_item } }
+		omni_army_replace_slot = { SLOTVAR = omni_army_slot_ranged }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_armour target = var:omni_gen_fx_item } }
+		omni_army_replace_slot = { SLOTVAR = omni_army_slot_armour }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_shield target = var:omni_gen_fx_item } }
+		omni_army_replace_slot = { SLOTVAR = omni_army_slot_shield }
+	}
+	else = {
+		# emblem / trinket: personal-only, no national slot
+		omni_gen_apply_item_layers = yes
+	}
+}
+
+# COUNTRY scope. Replaces $SLOTVAR$: strips the old item's layers (if any),
+# applies the new item's layers, and records the new item in the slot.
+# On entry var:omni_gen_fx_item = NEW item.
+omni_army_replace_slot = {
+	if = {
+		limit = { has_variable = $SLOTVAR$ }
+		set_variable = { name = omni_gen_fx_new value = var:omni_gen_fx_item }
+		set_variable = { name = omni_gen_fx_item value = var:$SLOTVAR$ }
+		omni_gen_remove_item_layers = yes
+		set_variable = { name = omni_gen_fx_item value = var:omni_gen_fx_new }
+		remove_variable = omni_gen_fx_new
+	}
+	omni_gen_apply_item_layers = yes
+	set_variable = { name = $SLOTVAR$ value = var:omni_gen_fx_item }
+}
+
+# COUNTRY scope. Clears the whole loadout and strips the army modifiers.
+# Used on ruler death/succession (the dead ruler's personal modifiers vanish
+# with them; the new ruler starts empty).
+omni_army_clear_all = {
+	if = { limit = { has_variable = omni_army_slot_weapon } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_weapon } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_weapon }
+	if = { limit = { has_variable = omni_army_slot_ranged } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_ranged } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_ranged }
+	if = { limit = { has_variable = omni_army_slot_armour } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_armour } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_armour }
+	if = { limit = { has_variable = omni_army_slot_shield } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_shield } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_shield }
+	if = { limit = { has_variable = omni_gen_fx_item } remove_variable = omni_gen_fx_item }
+}
+
+# COUNTRY scope. AI army-supply purchasing, called from the yearly pulse. Buys
+# one item per year straight from the treasury, gold-gated so the AI never
+# overspends. Fills and upgrades its four slots over time.
+omni_army_ai_purchase = {
+	if = {
+		limit = {
+			is_ai = yes
+			exists = current_ruler
+			treasury >= 400
+		}
+		if = {
+			limit = { treasury >= 1200 }
+			random_in_global_list = { variable = item_uncommon_rarity save_scope_as = omni_ai_item_pick }
+			if = { limit = { exists = scope:omni_ai_item_pick } add_treasury = -400 }
+		}
+		else = {
+			random_in_global_list = { variable = item_common_rarity save_scope_as = omni_ai_item_pick }
+			if = { limit = { exists = scope:omni_ai_item_pick } add_treasury = -150 }
+		}
+		if = {
+			limit = { exists = scope:omni_ai_item_pick }
+			set_variable = { name = omni_gen_fx_item value = scope:omni_ai_item_pick }
+			omni_army_equip_current = yes
+			remove_variable = omni_gen_fx_item
+		}
+	}
+}
