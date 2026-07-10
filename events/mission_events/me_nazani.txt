@@ -909,3 +909,164 @@ me_nazani.115 = {
 		name = "me_nazani.115.a"
 	}
 }
+
+me_nazani.200 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		exists = root.current_ruler
+		is_gaesatae = no
+		any_character = {
+			is_alive = yes
+			first_name = "Renos"
+			last_name = "Nazani"
+			employer = root
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				is_alive = yes
+				first_name = "Renos"
+				last_name = "Nazani"
+				employer = root
+			}
+			save_scope_as = renos_nazani
+		}
+		trigger_event = { id = me_nazani.201 }
+	}
+}
+
+# me_nazani.201: The Heir's Ultimatum - Main decision event
+me_nazani.201 = {
+	type = country_event
+	title = "me_nazani.201.t"
+	desc = "me_nazani.201.desc"
+	picture = greek_court
+
+	left_portrait = root.current_ruler
+	right_portrait = scope:renos_nazani
+
+	immediate = {
+		random_character = {
+			limit = {
+				is_alive = yes
+				first_name = "Renos"
+				last_name = "Nazani"
+				employer = root
+			}
+			save_scope_as = renos_nazani
+		}
+	}
+
+	option = {
+		name = "me_nazani.201.a"
+		ai_chance = { factor = 25 }
+
+		custom_tooltip = "me_nazani.201.a.tt"
+
+		hidden_effect = {
+			# Martios steps down; Renos becomes the new ruler
+			root.current_ruler = {
+				death = {
+					death_reason = death_retired
+				}
+			}
+			scope:renos_nazani = {
+				set_as_ruler = yes
+			}
+
+			# Schedule the follow-up event: Imperial Blinding and exile
+			trigger_event = {
+				id = me_nazani.202
+				days = 180
+			}
+		}
+	}
+
+	option = {
+		name = "me_nazani.201.b"
+		ai_chance = { factor = 75 }
+
+		custom_tooltip = "me_nazani.201.b.tt"
+
+		hidden_effect = {
+			# Renos refuses to accept the refusal and starts a civil war
+			scope:renos_nazani = {
+				set_variable = renos_civil_war_active
+			}
+
+			# Find Martios (the current emperor) to start the war against
+			if = {
+				limit = { exists = root.current_ruler }
+				root.current_ruler = {
+					save_scope_as = emperor_martios
+				}
+				root = {
+					start_civil_war = scope:renos_nazani
+				}
+			}
+		}
+	}
+}
+
+# me_nazani.202: Imperial Blinding - The grim sequel
+# Fires 6 months after Renos becomes ruler
+me_nazani.202 = {
+	type = country_event
+	title = "me_nazani.202.t"
+	desc = "me_nazani.202.desc"
+	picture = greek_court
+
+	left_portrait = root.current_ruler
+
+	immediate = {
+		# Find the retired emperor (Martios) among the characters
+		every_character = {
+			limit = {
+				is_alive = yes
+				first_name = "Martios"
+				OR = {
+					employer = root
+					employer = { is_subject_of = root }
+					NOT = { exists = employer }
+				}
+			}
+			save_scope_as = former_emperor_martios
+		}
+	}
+
+	option = {
+		name = "me_nazani.202.a"
+
+		custom_tooltip = "me_nazani.202.a.tt"
+
+		hidden_effect = {
+			if = {
+				limit = { exists = scope:former_emperor_martios }
+
+				# Imprison Martios in the middle of the night
+				scope:former_emperor_martios = {
+					imprison = root
+					add_trait = blinded
+				}
+
+				# Send Martios to the exile location (owner of province 2478)
+				if = {
+					limit = { exists = p:2478.owner }
+					p:2478.owner = {
+						save_scope_as = exile_destination_owner
+
+						# Move Martios to the exile country
+						scope:former_emperor_martios = {
+							move_to_country = scope:exile_destination_owner
+							set_character_location = p:2478
+						}
+					}
+				}
+			}
+		}
+	}
+}
