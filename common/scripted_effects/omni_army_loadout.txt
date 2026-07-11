@@ -2,14 +2,13 @@
 # Buying an item outfits the realm: personal layer -> ruler, army layer -> country.
 # One item per slot; a new purchase replaces the old one. Costs are paid from the
 # NATIONAL TREASURY. Generated items are priced per-item by power (8 tiers):
-# omni_price_tier_1..8 = 80 / 130 / 200 / 300 / 440 / 640 / 920 / 1300.
+# omni_price_tier_2..7 = 130 / 200 / 300 / 440 / 640 / 920.
 # Emblem/trinket generated items are personal-only (no slot, no army layer).
 
 # Called from the shop (ROOT = buying ruler). Pays the item's tier price from the
 # treasury, then routes the item into the country and (re)equips the matching slot.
 omni_army_buy_slot_item = {
-	if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_1 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 80 } country = { add_treasury = -80 } }
-	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 130 } country = { add_treasury = -130 } }
+	if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 130 } country = { add_treasury = -130 } }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 200 } country = { add_treasury = -200 } }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 300 } country = { add_treasury = -300 } }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 440 } country = { add_treasury = -440 } }
@@ -122,14 +121,12 @@ omni_army_ai_purchase = {
 # COUNTRY scope. scope:omni_ai_item_pick set. Pays the pick's tier price if
 # affordable, then equips it. Otherwise does nothing.
 omni_army_ai_try_buy = {
-	if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_1 target = scope:omni_ai_item_pick } treasury >= 80 } add_treasury = -80 omni_army_ai_equip_pick = yes }
-	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = scope:omni_ai_item_pick } treasury >= 130 } add_treasury = -130 omni_army_ai_equip_pick = yes }
+	if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = scope:omni_ai_item_pick } treasury >= 130 } add_treasury = -130 omni_army_ai_equip_pick = yes }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = scope:omni_ai_item_pick } treasury >= 200 } add_treasury = -200 omni_army_ai_equip_pick = yes }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = scope:omni_ai_item_pick } treasury >= 300 } add_treasury = -300 omni_army_ai_equip_pick = yes }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = scope:omni_ai_item_pick } treasury >= 440 } add_treasury = -440 omni_army_ai_equip_pick = yes }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_6 target = scope:omni_ai_item_pick } treasury >= 640 } add_treasury = -640 omni_army_ai_equip_pick = yes }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_7 target = scope:omni_ai_item_pick } treasury >= 920 } add_treasury = -920 omni_army_ai_equip_pick = yes }
-	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_8 target = scope:omni_ai_item_pick } treasury >= 1300 } add_treasury = -1300 omni_army_ai_equip_pick = yes }
 }
 
 # COUNTRY scope. Equips scope:omni_ai_item_pick into the correct slot.
@@ -164,14 +161,12 @@ omni_character_equip_carried_slot = {
 
 # COUNTRY scope. Sells var:omni_gen_fx_item for half its shop tier.
 omni_sell_current_generated_gear = {
-	if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_1 target = var:omni_gen_fx_item } } add_treasury = 40 }
-	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_gen_fx_item } } add_treasury = 65 }
+	if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_gen_fx_item } } add_treasury = 65 }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_gen_fx_item } } add_treasury = 100 }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_gen_fx_item } } add_treasury = 150 }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_gen_fx_item } } add_treasury = 220 }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_gen_fx_item } } add_treasury = 320 }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_gen_fx_item } } add_treasury = 460 }
-	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_8 target = var:omni_gen_fx_item } } add_treasury = 650 }
 	else = { add_treasury = 30 }
 }
 
