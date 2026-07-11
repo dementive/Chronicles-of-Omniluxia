@@ -226,6 +226,7 @@ write(HELPERS, helpers)
 
 # ------------------------------------------------------------- 4. menu event
 menu = read(MENU).split('\n')
+
 start = next(i for i, l in enumerate(menu) if l.startswith('omni_items.6 = {'))
 end = next(i for i, l in enumerate(menu[start+1:], start+1) if re.match(r'omni_items\.\d+ = \{', l))
 

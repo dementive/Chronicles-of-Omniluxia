@@ -21,6 +21,88 @@ me_zorgo_magic_focus.1 = { # Main Menu
     }
 }
 
+me_zorgo_magic_focus.40 = { # Character magic hub
+    type = country_event
+
+    title = me_zorgo_magic_focus.40_title
+    desc = me_zorgo_magic_focus.40_desc
+    picture = ascetic
+    left_portrait = scope:target
+
+    option = {
+        trigger = {
+            scope:target = {
+                omni_character_is_eligible_caster = yes
+                OR = {
+                    omni_can_afford_spell = { BASE = 15 }
+                    AND = {
+                        has_trait = vampire_trait
+                        NOT = { has_variable = omni_vampiric_feeding_cooldown }
+                    }
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.40.a"
+        scope:target = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.2 }
+    }
+
+    option = {
+        trigger = {
+            scope:target = {
+                is_adult = yes
+                is_mercenary = no
+            }
+            root = { omni_player_has_character_magic_ready = yes }
+        }
+        name = "me_zorgo_magic_focus.40.b"
+        trigger_event = { id = me_zorgo_magic_focus.15 }
+    }
+
+    option = {
+        trigger = {
+            scope:target = {
+                OR = {
+                    is_general = yes
+                    is_admiral = yes
+                }
+                any_character_unit = {
+                    OR = {
+                        is_army = yes
+                        is_navy = yes
+                    }
+                    unit_owner = { this = root }
+                }
+            }
+            root = { omni_player_has_character_magic_ready = yes }
+        }
+        name = "me_zorgo_magic_focus.40.c"
+        trigger_event = { id = me_zorgo_magic_focus.29 }
+    }
+
+    option = {
+        trigger = {
+            scope:target = {
+                is_general = yes
+                omni_character_is_eligible_caster = yes
+                omni_can_afford_spell = { BASE = 25 }
+                any_character_unit = {
+                    is_army = yes
+                    unit_owner = { this = root }
+                    unit_location = { has_siege = yes }
+                }
+            }
+        }
+        name = "me_zorgo_magic_focus.40.d"
+        trigger_event = { id = me_zorgo_magic_focus.30 }
+    }
+
+    option = {
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
 me_zorgo_magic_focus.2 = { # Choose Magic Type
     type = country_event
 
@@ -2989,8 +3071,13 @@ me_zorgo_magic_focus.15 = { # Who is Casting?
                     has_office = office_apothecary
                 }
                 omni_character_is_eligible_caster = yes
-                # Only list mages with enough mana to cast the cheapest spell (25).
-                omni_can_afford_spell = { BASE = 25 }
+                OR = {
+                    omni_can_afford_spell = { BASE = 15 }
+                    AND = {
+                        has_trait = vampire_trait
+                        NOT = { has_variable = omni_vampiric_feeding_cooldown }
+                    }
+                }
             }
             order_by = omni_spell_affordable_budget
             check_range_bounds = no
@@ -3868,6 +3955,32 @@ me_zorgo_magic_focus.21 = { # Folk Magic
         custom_tooltip = folk_spell_tt
         custom_tooltip = 15_mana_tt
         name = "me_zorgo_magic_focus.21.c"
+    }
+    option = { # Vampiric Feeding
+        trigger = {
+            scope:selected_mage = {
+                has_trait = vampire_trait
+                NOT = { has_variable = omni_vampiric_feeding_cooldown }
+            }
+            scope:target = {
+                is_adult = yes
+                is_ruler = yes
+                employer = root
+            }
+        }
+        scope:selected_mage = {
+            add_health = 2
+            set_variable = {
+                name = omni_vampiric_feeding_cooldown
+                days = 365
+            }
+        }
+        scope:target = {
+            add_health = -3
+        }
+        custom_tooltip = omni_vampiric_feeding_spell_tt
+        custom_tooltip = folk_spell_tt
+        name = "me_zorgo_magic_focus.21.d"
     }
     option = {
         name = "me_zorgo_magic_focus.2.z.1"

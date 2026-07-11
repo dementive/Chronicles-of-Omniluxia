@@ -1,13 +1,6 @@
-﻿# Character-window "Cast Spell On" button.
-# Replaces the old domestic_magic character interaction ("Cast Spell On").
-# Root scope = the character currently shown in the character window. This
-# character is always the RECIPIENT of the spell.
-# scope:player = the player country.
-#
-# On click the button opens me_zorgo_magic_focus.15 ("Who is Casting?"), which
-# lists every eligible mage in the player's court (with their available mana) so
-# the player chooses who casts. The chosen caster pays the mana and their own
-# spellbook is used (.16 -> .17-.21), casting on the viewed character.
+﻿# Character-window magic button.
+# Main magic entry point for the viewed character: self-casting, spells cast on
+# the character, empowering their commanded force, and siege magic when relevant.
 omni_cast_spell_character_button = {
 	scope = character
 	saved_scopes = {
@@ -16,7 +9,6 @@ omni_cast_spell_character_button = {
 
 	is_shown = {
 		is_alive = yes
-		is_mercenary = no
 		employer = scope:player
 		employer = {
 			NOT = { tag = MER }
@@ -26,9 +18,41 @@ omni_cast_spell_character_button = {
 		}
 		scope:player = {
 			is_ai = no
-			# Show the button when the player has a caster; affordability controls
-			# whether it is clickable.
 			omni_player_has_eligible_mage = yes
+		}
+		OR = {
+			AND = {
+				omni_character_is_eligible_caster = yes
+				OR = {
+					omni_can_afford_spell = { BASE = 15 }
+					AND = {
+						has_trait = vampire_trait
+						NOT = { has_variable = omni_vampiric_feeding_cooldown }
+					}
+				}
+			}
+			AND = {
+				is_adult = yes
+				is_mercenary = no
+				scope:player = {
+					omni_player_has_character_magic_ready = yes
+				}
+			}
+			AND = {
+				OR = {
+					is_general = yes
+					is_admiral = yes
+				}
+				any_character_unit = {
+					OR = {
+						is_army = yes
+						is_navy = yes
+					}
+					unit_owner = {
+						this = scope:player
+					}
+				}
+			}
 		}
 	}
 
@@ -36,19 +60,57 @@ omni_cast_spell_character_button = {
 		always = no
 	}
 
-	# is_valid drives the CLICKABLE (enabled) state and the tooltip.
 	is_valid = {
 		custom_tooltip = {
 			text = omni_cast_spell_character_button_tooltip
-			scope:player = {
-				omni_player_has_affordable_mage = { BASE = 25 }
-			}
 		}
 		trigger_if = {
 			limit = {
 				NOT = {
-					scope:player = {
-						omni_player_has_affordable_mage = { BASE = 25 }
+					OR = {
+						AND = {
+							omni_character_is_eligible_caster = yes
+							OR = {
+								omni_can_afford_spell = { BASE = 15 }
+								AND = {
+									has_trait = vampire_trait
+									NOT = { has_variable = omni_vampiric_feeding_cooldown }
+								}
+							}
+						}
+						AND = {
+							is_adult = yes
+							is_mercenary = no
+							scope:player = {
+								omni_player_has_character_magic_ready = yes
+							}
+						}
+						AND = {
+							OR = {
+								is_general = yes
+								is_admiral = yes
+							}
+							any_character_unit = {
+								OR = {
+									is_army = yes
+									is_navy = yes
+								}
+								unit_owner = { this = scope:player }
+							}
+							scope:player = {
+								omni_player_has_character_magic_ready = yes
+							}
+						}
+						AND = {
+							is_general = yes
+							omni_character_is_eligible_caster = yes
+							omni_can_afford_spell = { BASE = 25 }
+							any_character_unit = {
+								is_army = yes
+								unit_owner = { this = scope:player }
+								unit_location = { has_siege = yes }
+							}
+						}
 					}
 				}
 			}
@@ -62,7 +124,7 @@ omni_cast_spell_character_button = {
 	effect = {
 		save_scope_as = target
 		scope:player = {
-			trigger_event = { id = me_zorgo_magic_focus.15 }
+			trigger_event = { id = me_zorgo_magic_focus.40 }
 		}
 	}
 }

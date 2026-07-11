@@ -18,11 +18,11 @@ omni_army_buy_slot_item = {
 	else = { country = { add_treasury = -1300 } }
 
 	save_scope_as = omni_army_buyer
-	country = {
-		set_variable = { name = omni_gen_fx_item value = scope:omni_army_buyer.var:omni_shop_slot_$SLOT$ }
-		omni_army_equip_current = yes
-		remove_variable = omni_gen_fx_item
-	}
+	if = { limit = { is_target_in_global_variable_list = { name = item_weapon target = var:omni_shop_slot_$SLOT$ } } country = { set_variable = { name = omni_carried_slot_weapon value = scope:omni_army_buyer.var:omni_shop_slot_$SLOT$ } } }
+	else_if = { limit = { is_target_in_global_variable_list = { name = item_weapon_ranged target = var:omni_shop_slot_$SLOT$ } } country = { set_variable = { name = omni_carried_slot_ranged value = scope:omni_army_buyer.var:omni_shop_slot_$SLOT$ } } }
+	else_if = { limit = { is_target_in_global_variable_list = { name = item_armour target = var:omni_shop_slot_$SLOT$ } } country = { set_variable = { name = omni_carried_slot_armour value = scope:omni_army_buyer.var:omni_shop_slot_$SLOT$ } } }
+	else_if = { limit = { is_target_in_global_variable_list = { name = item_shield target = var:omni_shop_slot_$SLOT$ } } country = { set_variable = { name = omni_carried_slot_shield value = scope:omni_army_buyer.var:omni_shop_slot_$SLOT$ } } }
+	else = { add_to_variable_list = { name = item_list target = var:omni_shop_slot_$SLOT$ } }
 
 	remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
 	remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
@@ -33,12 +33,7 @@ omni_army_buy_slot_item = {
 # treasury and routes into the national loadout slot $SLOTVAR$.
 omni_army_buy_fixed = {
 	country = { add_treasury = -$PRICE$ }
-	save_scope_as = omni_army_buyer
-	country = {
-		set_variable = { name = omni_gen_fx_item value = flag:$item_ID$ }
-		omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
-		remove_variable = omni_gen_fx_item
-	}
+	give_character_an_item = { item_ID = $item_ID$ }
 	remove_list_variable = { name = omni_item_shop_stock target = flag:$item_ID$ }
 }
 
@@ -127,4 +122,65 @@ omni_army_ai_equip_pick = {
 	set_variable = { name = omni_gen_fx_item value = scope:omni_ai_item_pick }
 	omni_army_equip_current = yes
 	remove_variable = omni_gen_fx_item
+}
+
+# Character-facing generated gear controls. These use four fixed category
+# variables, keeping the menus compact regardless of the generated item count.
+omni_character_unequip_army_slot = {
+	country = {
+		set_variable = { name = omni_gen_fx_item value = var:$SLOTVAR$ }
+		omni_gen_remove_item_layers = yes
+		set_variable = { name = $CARRYVAR$ value = var:$SLOTVAR$ }
+		remove_variable = $SLOTVAR$
+		remove_variable = omni_gen_fx_item
+	}
+}
+
+omni_character_equip_carried_slot = {
+	country = {
+		set_variable = { name = omni_gen_fx_item value = var:$CARRYVAR$ }
+		omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
+		remove_variable = omni_gen_fx_item
+		remove_variable = $CARRYVAR$
+	}
+}
+
+# COUNTRY scope. Sells var:omni_gen_fx_item for half its shop tier.
+omni_sell_current_generated_gear = {
+	if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_1 target = var:omni_gen_fx_item } } add_treasury = 40 }
+	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_gen_fx_item } } add_treasury = 65 }
+	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_gen_fx_item } } add_treasury = 100 }
+	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_gen_fx_item } } add_treasury = 150 }
+	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_gen_fx_item } } add_treasury = 220 }
+	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_gen_fx_item } } add_treasury = 320 }
+	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_gen_fx_item } } add_treasury = 460 }
+	else = { add_treasury = 650 }
+}
+
+omni_character_sell_equipped_army_slot = {
+	country = {
+		set_variable = { name = omni_gen_fx_item value = var:$SLOTVAR$ }
+		omni_gen_remove_item_layers = yes
+		omni_sell_current_generated_gear = yes
+		remove_variable = $SLOTVAR$
+		remove_variable = omni_gen_fx_item
+	}
+}
+
+omni_character_sell_carried_slot = {
+	country = {
+		set_variable = { name = omni_gen_fx_item value = var:$CARRYVAR$ }
+		omni_sell_current_generated_gear = yes
+		remove_variable = omni_gen_fx_item
+		remove_variable = $CARRYVAR$
+	}
+}
+
+# One-time compatibility for saves made while carried slots were character-scoped.
+omni_migrate_character_carried_gear = {
+	save_scope_as = omni_gear_character
+	if = { limit = { has_variable = omni_carried_slot_weapon } country = { set_variable = { name = omni_carried_slot_weapon value = scope:omni_gear_character.var:omni_carried_slot_weapon } } remove_variable = omni_carried_slot_weapon }
+	if = { limit = { has_variable = omni_carried_slot_ranged } country = { set_variable = { name = omni_carried_slot_ranged value = scope:omni_gear_character.var:omni_carried_slot_ranged } } remove_variable = omni_carried_slot_ranged }
+	if = { limit = { has_variable = omni_carried_slot_armour } country = { set_variable = { name = omni_carried_slot_armour value = scope:omni_gear_character.var:omni_carried_slot_armour } } remove_variable = omni_carried_slot_armour }
+	if = { limit = { has_variable = omni_carried_slot_shield } country = { set_variable = { name = omni_carried_slot_shield value = scope:omni_gear_character.var:omni_carried_slot_shield } } remove_variable = omni_carried_slot_shield }
 }

@@ -12,23 +12,26 @@ omni_items.1 = {
 	title = omni_items.1.t
 	desc = omni_items.1.desc
 	left_portrait = root
+	immediate = { omni_migrate_character_carried_gear = yes }
 
 	option = {
 		name = omni_items.1.equip
-		trigger = { has_any_item = yes }
+		trigger = {
+			OR = {
+				has_any_item = yes
+				country = { OR = { has_variable = omni_carried_slot_weapon has_variable = omni_carried_slot_ranged has_variable = omni_carried_slot_armour has_variable = omni_carried_slot_shield } }
+			}
+		}
 		trigger_event = { id = omni_items.2 }
 	}
 	option = {
 		name = omni_items.1.unequip
-		trigger = {
-			has_variable_list = equiped_item_list
-			any_in_list = { variable = equiped_item_list count >= 1 }
-		}
+		trigger = { OR = { AND = { has_variable_list = equiped_item_list any_in_list = { variable = equiped_item_list count >= 1 } } country = { OR = { has_variable = omni_army_slot_weapon has_variable = omni_army_slot_ranged has_variable = omni_army_slot_armour has_variable = omni_army_slot_shield } } } }
 		trigger_event = { id = omni_items.3 }
 	}
 	option = {
 		name = omni_items.1.discard
-		trigger = { has_any_item = yes }
+		trigger = { OR = { has_any_item = yes country = { OR = { has_variable = omni_carried_slot_weapon has_variable = omni_carried_slot_ranged has_variable = omni_carried_slot_armour has_variable = omni_carried_slot_shield } } } }
 		trigger_event = { id = omni_items.4 }
 	}
 	option = {
@@ -448,6 +451,11 @@ omni_items.2 = {
 	title = omni_items.2.t
 	desc = omni_items.2.desc
 	left_portrait = root
+
+	option = { name = omni_items.equip_generated_weapon trigger = { country = { has_variable = omni_carried_slot_weapon } } custom_tooltip = omni_items.carried_weapon_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_carried_slot_weapon } } } omni_character_equip_carried_slot = { CARRYVAR = omni_carried_slot_weapon SLOTVAR = omni_army_slot_weapon } trigger_event = { id = omni_items.2 } }
+	option = { name = omni_items.equip_generated_ranged trigger = { country = { has_variable = omni_carried_slot_ranged } } custom_tooltip = omni_items.carried_ranged_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_carried_slot_ranged } } } omni_character_equip_carried_slot = { CARRYVAR = omni_carried_slot_ranged SLOTVAR = omni_army_slot_ranged } trigger_event = { id = omni_items.2 } }
+	option = { name = omni_items.equip_generated_armour trigger = { country = { has_variable = omni_carried_slot_armour } } custom_tooltip = omni_items.carried_armour_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_carried_slot_armour } } } omni_character_equip_carried_slot = { CARRYVAR = omni_carried_slot_armour SLOTVAR = omni_army_slot_armour } trigger_event = { id = omni_items.2 } }
+	option = { name = omni_items.equip_generated_shield trigger = { country = { has_variable = omni_carried_slot_shield } } custom_tooltip = omni_items.carried_shield_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_carried_slot_shield } } } omni_character_equip_carried_slot = { CARRYVAR = omni_carried_slot_shield SLOTVAR = omni_army_slot_shield } trigger_event = { id = omni_items.2 } }
 
 	option = {
 		name = item_chainmail
@@ -1586,6 +1594,11 @@ omni_items.3 = {
 	desc = omni_items.3.desc
 	left_portrait = root
 
+	option = { name = omni_items.unequip_generated_weapon trigger = { country = { has_variable = omni_army_slot_weapon } } custom_tooltip = omni_items.equipped_weapon_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_weapon } } } omni_character_unequip_army_slot = { SLOTVAR = omni_army_slot_weapon CARRYVAR = omni_carried_slot_weapon } trigger_event = { id = omni_items.3 } }
+	option = { name = omni_items.unequip_generated_ranged trigger = { country = { has_variable = omni_army_slot_ranged } } custom_tooltip = omni_items.equipped_ranged_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_ranged } } } omni_character_unequip_army_slot = { SLOTVAR = omni_army_slot_ranged CARRYVAR = omni_carried_slot_ranged } trigger_event = { id = omni_items.3 } }
+	option = { name = omni_items.unequip_generated_armour trigger = { country = { has_variable = omni_army_slot_armour } } custom_tooltip = omni_items.equipped_armour_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_armour } } } omni_character_unequip_army_slot = { SLOTVAR = omni_army_slot_armour CARRYVAR = omni_carried_slot_armour } trigger_event = { id = omni_items.3 } }
+	option = { name = omni_items.unequip_generated_shield trigger = { country = { has_variable = omni_army_slot_shield } } custom_tooltip = omni_items.equipped_shield_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_shield } } } omni_character_unequip_army_slot = { SLOTVAR = omni_army_slot_shield CARRYVAR = omni_carried_slot_shield } trigger_event = { id = omni_items.3 } }
+
 	option = {
 		name = item_chainmail
 		trigger = {
@@ -2364,6 +2377,11 @@ omni_items.4 = {
 	title = omni_items.4.t
 	desc = omni_items.4.desc
 	left_portrait = root
+
+	option = { name = omni_items.discard_carried_weapon trigger = { country = { has_variable = omni_carried_slot_weapon } } country = { remove_variable = omni_carried_slot_weapon } trigger_event = { id = omni_items.4 } }
+	option = { name = omni_items.discard_carried_ranged trigger = { country = { has_variable = omni_carried_slot_ranged } } country = { remove_variable = omni_carried_slot_ranged } trigger_event = { id = omni_items.4 } }
+	option = { name = omni_items.discard_carried_armour trigger = { country = { has_variable = omni_carried_slot_armour } } country = { remove_variable = omni_carried_slot_armour } trigger_event = { id = omni_items.4 } }
+	option = { name = omni_items.discard_carried_shield trigger = { country = { has_variable = omni_carried_slot_shield } } country = { remove_variable = omni_carried_slot_shield } trigger_event = { id = omni_items.4 } }
 
 	option = {
 		name = item_chainmail
@@ -3144,6 +3162,15 @@ omni_items.5 = {
 	desc = omni_items.5.desc
 	left_portrait = root
 
+	option = { name = omni_items.sell_generated_weapon trigger = { country = { has_variable = omni_army_slot_weapon } } custom_tooltip = omni_items.equipped_weapon_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_weapon } } } omni_character_sell_equipped_army_slot = { SLOTVAR = omni_army_slot_weapon } trigger_event = { id = omni_items.5 } }
+	option = { name = omni_items.sell_generated_ranged trigger = { country = { has_variable = omni_army_slot_ranged } } custom_tooltip = omni_items.equipped_ranged_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_ranged } } } omni_character_sell_equipped_army_slot = { SLOTVAR = omni_army_slot_ranged } trigger_event = { id = omni_items.5 } }
+	option = { name = omni_items.sell_generated_armour trigger = { country = { has_variable = omni_army_slot_armour } } custom_tooltip = omni_items.equipped_armour_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_armour } } } omni_character_sell_equipped_army_slot = { SLOTVAR = omni_army_slot_armour } trigger_event = { id = omni_items.5 } }
+	option = { name = omni_items.sell_generated_shield trigger = { country = { has_variable = omni_army_slot_shield } } custom_tooltip = omni_items.equipped_shield_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_army_slot_shield } } } omni_character_sell_equipped_army_slot = { SLOTVAR = omni_army_slot_shield } trigger_event = { id = omni_items.5 } }
+	option = { name = omni_items.sell_carried_weapon trigger = { country = { has_variable = omni_carried_slot_weapon } } custom_tooltip = omni_items.carried_weapon_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_carried_slot_weapon } } } omni_character_sell_carried_slot = { CARRYVAR = omni_carried_slot_weapon } trigger_event = { id = omni_items.5 } }
+	option = { name = omni_items.sell_carried_ranged trigger = { country = { has_variable = omni_carried_slot_ranged } } custom_tooltip = omni_items.carried_ranged_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_carried_slot_ranged } } } omni_character_sell_carried_slot = { CARRYVAR = omni_carried_slot_ranged } trigger_event = { id = omni_items.5 } }
+	option = { name = omni_items.sell_carried_armour trigger = { country = { has_variable = omni_carried_slot_armour } } custom_tooltip = omni_items.carried_armour_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_carried_slot_armour } } } omni_character_sell_carried_slot = { CARRYVAR = omni_carried_slot_armour } trigger_event = { id = omni_items.5 } }
+	option = { name = omni_items.sell_carried_shield trigger = { country = { has_variable = omni_carried_slot_shield } } custom_tooltip = omni_items.carried_shield_desc show_as_tooltip = { country = { omni_army_show_equipped = { SLOTVAR = omni_carried_slot_shield } } } omni_character_sell_carried_slot = { CARRYVAR = omni_carried_slot_shield } trigger_event = { id = omni_items.5 } }
+
 	option = {
 		name = item_chainmail
 		trigger = {
@@ -3799,6 +3826,114 @@ omni_items.5 = {
 		}
 		custom_tooltip = item_euryalean_regalia_desc
 		omni_sell_character_item = { item_ID = item_euryalean_regalia base_price = 730 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_ancestral_records
+		trigger = {
+			has_item = { item_ID = item_ancestral_records }
+		}
+		custom_tooltip = item_ancestral_records_desc
+		omni_sell_character_item = { item_ID = item_ancestral_records base_price = 850 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_black_pearl_atheus
+		trigger = {
+			has_item = { item_ID = item_black_pearl_atheus }
+		}
+		custom_tooltip = item_black_pearl_atheus_desc
+		omni_sell_character_item = { item_ID = item_black_pearl_atheus base_price = 620 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_crown_of_oaths
+		trigger = {
+			has_item = { item_ID = item_crown_of_oaths }
+		}
+		custom_tooltip = item_crown_of_oaths_desc
+		omni_sell_character_item = { item_ID = item_crown_of_oaths base_price = 640 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_dragon_head
+		trigger = {
+			has_item = { item_ID = item_dragon_head }
+		}
+		custom_tooltip = item_dragon_head_desc
+		omni_sell_character_item = { item_ID = item_dragon_head base_price = 770 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_dragon_tooth
+		trigger = {
+			has_item = { item_ID = item_dragon_tooth }
+		}
+		custom_tooltip = item_dragon_tooth_desc
+		omni_sell_character_item = { item_ID = item_dragon_tooth base_price = 670 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_flameshield_of_qoes
+		trigger = {
+			has_item = { item_ID = item_flameshield_of_qoes }
+		}
+		custom_tooltip = item_flameshield_of_qoes_desc
+		omni_sell_character_item = { item_ID = item_flameshield_of_qoes base_price = 720 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_grand_maul_seeker
+		trigger = {
+			has_item = { item_ID = item_grand_maul_seeker }
+		}
+		custom_tooltip = item_grand_maul_seeker_desc
+		omni_sell_character_item = { item_ID = item_grand_maul_seeker base_price = 840 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_helluvian_bible
+		trigger = {
+			has_item = { item_ID = item_helluvian_bible }
+		}
+		custom_tooltip = item_helluvian_bible_desc
+		omni_sell_character_item = { item_ID = item_helluvian_bible base_price = 620 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_mythril_drill
+		trigger = {
+			has_item = { item_ID = item_mythril_drill }
+		}
+		custom_tooltip = item_mythril_drill_desc
+		omni_sell_character_item = { item_ID = item_mythril_drill base_price = 620 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_rooftile
+		trigger = {
+			has_item = { item_ID = item_rooftile }
+		}
+		custom_tooltip = item_rooftile_desc
+		omni_sell_character_item = { item_ID = item_rooftile base_price = 350 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_staff_of_enslavement
+		trigger = {
+			has_item = { item_ID = item_staff_of_enslavement }
+		}
+		custom_tooltip = item_staff_of_enslavement_desc
+		omni_sell_character_item = { item_ID = item_staff_of_enslavement base_price = 770 }
+		trigger_event = { id = omni_items.5 }
+	}
+	option = {
+		name = item_stellaric_urn
+		trigger = {
+			has_item = { item_ID = item_stellaric_urn }
+		}
+		custom_tooltip = item_stellaric_urn_desc
+		omni_sell_character_item = { item_ID = item_stellaric_urn base_price = 610 }
 		trigger_event = { id = omni_items.5 }
 	}
 	option = {
