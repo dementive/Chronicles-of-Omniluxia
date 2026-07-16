@@ -1,0 +1,62 @@
+﻿namespace = omni_vampire_spread
+
+###########################################################################
+# The turning completes.
+#
+# Fired ~1 month after a character was bitten (given vampiric_fever) by the
+# spread system. Silent/hidden: this runs for AI courts across the whole
+# map, so it must never spam popups. The victim simply becomes a vampire.
+###########################################################################
+omni_vampire_spread.1 = {
+	type = character_event
+	hidden = yes
+
+	# Guard: only turn if the fever actually took hold and is still present.
+	trigger = {
+		has_trait = vampiric_fever
+	}
+
+	immediate = {
+		remove_trait = vampiric_fever
+		if = {
+			limit = { has_trait = wounded }
+			remove_trait = wounded
+		}
+		force_add_trait = vampire_trait
+
+		# Announce ONLY if the one who turned is a player-country's ruler.
+		# Ordinary courtiers turn silently.
+		if = {
+			limit = {
+				is_ruler = yes
+				employer = { is_ai = no }
+			}
+			employer = {
+				trigger_event = {
+					id = omni_vampire_spread.2
+					days = { 1 3 }
+				}
+			}
+		}
+	}
+}
+
+###########################################################################
+# Announcement: the player's own ruler has become a vampire.
+# Shown event, fired only from omni_vampire_spread.1 above.
+###########################################################################
+omni_vampire_spread.2 = {
+	type = country_event
+
+	title = omni_vampire_spread.2_title
+	desc = omni_vampire_spread.2_desc
+	picture = event_barrow_white
+	left_portrait = current_ruler
+
+	option = {
+		name = omni_vampire_spread.2.a
+		current_ruler = {
+			force_add_trait = vampire_trait
+		}
+	}
+}

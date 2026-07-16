@@ -263,3 +263,59 @@ me_arteon_gen.14 = {
 		name = me_arteon_gen.14.a
 	}
 }
+
+me_arteon_gen.27 = {
+	type = country_event
+	title = me_arteon_gen.27.t
+	desc = me_arteon_gen.27.desc
+	picture = event_nazgul
+	left_portrait = current_ruler
+
+	option = {
+		name = me_arteon_gen.27.a
+		custom_tooltip = me_arteon_gen.27_tt
+		hidden_effect = {
+			every_country = {
+				limit = {
+					NOT = { this = root }
+					has_land = yes
+					capital_scope = {
+						OR = {
+							is_in_region = arteon_shout_region
+							is_in_region = arteon_eastern_region
+							is_in_region = arteon_north_region
+							is_in_region = arteon_western_region
+						}
+					}
+					current_ruler = {
+						has_trait = vampire_trait
+						is_alive = yes
+					}
+				}
+				current_ruler = {
+					save_scope_as = arteon_vampire_lord_target
+				}
+				every_country_treasure = {
+					transfer_treasure_to_country = ROOT
+				}
+				every_owned_province = {
+					set_owned_by = ROOT
+				}
+				if = {
+					limit = {
+						exists = scope:arteon_vampire_lord_target
+						scope:arteon_vampire_lord_target = {
+							is_alive = yes
+						}
+					}
+					scope:arteon_vampire_lord_target = {
+						death = {
+							killer = root.current_ruler
+							death_reason = death_execution
+						}
+					}
+				}
+			}
+		}
+	}
+}

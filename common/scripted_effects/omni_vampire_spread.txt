@@ -1,0 +1,92 @@
+﻿###########################################################################
+# OMNI - Vampirism spread (performance-conscious)
+#
+# Called once per year per country from omni_yearly_country_effect.
+# Design goals: no monthly scans, no nested world loops, no runaway cost.
+#
+# Cost profile per country-year:
+#   - always: 1 cheap has_variable check (cooldown gate)
+#   - 20% of off-cooldown years: 1 early-exit any_character scan
+#   - only realms that actually contain a vampire, and only when that
+#     20% roll passes: 1 random_character pick, plus at most ONE
+#     random_neighbour_country pick. A 4-year cooldown then suppresses
+#     all further scans for that realm.
+#
+# Turning is delayed: victim gets vampiric_fever now, and
+# omni_vampire_spread.1 converts them to vampire_trait ~1 month later.
+###########################################################################
+
+omni_vampire_spread_effect = {
+	# Cooldown gate first (cheapest possible check). A realm that recently
+	# spread the curse is skipped entirely - no scan, no work.
+	if = {
+		limit = { NOT = { has_variable = omni_vampire_spread_cd } }
+
+		# Probability gate BEFORE any character scan: 80% of eligible
+		# realm-years do nothing and never touch the character list.
+		random_list = {
+			80 = { }
+			20 = {
+				# Only now do we look at characters, and this scan
+				# short-circuits on the first vampire found.
+				if = {
+					limit = {
+						any_character = { has_trait = vampire_trait }
+					}
+
+					# ---- INTRA-REALM INFECTION: one new victim in court ----
+					random_character = {
+						limit = {
+							age >= 10
+							NOT = { has_trait = vampire_trait }
+							NOT = { has_trait = vampiric_fever }
+						}
+						force_add_trait = vampiric_fever
+						force_add_trait = wounded
+						trigger_event = {
+							id = omni_vampire_spread.1
+							days = { 25 30 }
+						}
+					}
+
+					# Set the per-realm cooldown regardless of whether a
+					# valid victim existed, so we don't re-scan next year.
+					set_variable = {
+						name = omni_vampire_spread_cd
+						years = 4
+					}
+
+					# ---- CROSS-BORDER HOP: rare, one neighbour, one victim ----
+					# Event-driven single pick, never a nested character loop.
+					random_list = {
+						65 = { }
+						35 = {
+							random_neighbour_country = {
+								limit = {
+									NOT = { has_variable = omni_vampire_spread_cd }
+								}
+								random_character = {
+									limit = {
+										age >= 10
+										NOT = { has_trait = vampire_trait }
+										NOT = { has_trait = vampiric_fever }
+									}
+									force_add_trait = vampiric_fever
+									force_add_trait = wounded
+									trigger_event = {
+										id = omni_vampire_spread.1
+										days = { 25 40 }
+									}
+								}
+								set_variable = {
+									name = omni_vampire_spread_cd
+									years = 4
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
