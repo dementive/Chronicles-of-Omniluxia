@@ -1,0 +1,61 @@
+﻿# Omniluxia override of the vanilla interaction: adds a gate so a ruler who is
+# away on an adventure cannot start the Scheme: Influence ambition.
+pick_influence_ambition = {
+
+	on_other_nation = no
+	on_own_nation = yes
+
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_scholar"
+
+	potential_trigger = {
+		hidden:scope:target = {
+			employer = scope:actor
+			is_alive = yes
+			is_ruler = yes
+			is_mercenary = no
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+		}
+
+	}
+
+	allowed_trigger = {
+		scope:target = {
+			omni_char_available_for_court_action_trigger = yes
+			trigger_if = {
+				limit = { is_adult = no }
+				is_adult = yes
+			}
+			popularity >= 30
+			trigger_if = {
+				limit = {
+					has_ambition = scheme_influence
+				}
+				custom_tooltip = {
+					text = "scheme_influence_has_tt"
+					NOT = {
+						has_ambition = scheme_influence
+					}
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:target = {
+			clear_ambition_effect_ci = yes
+			set_ambition = scheme_influence
+		}
+		custom_tooltip = until_scheme_ends_tt
+		custom_tooltip = "influence_potential_rewards_tt"
+		show_as_tooltip = {
+			scope:actor = {
+				add_country_modifier = {
+					name = influence_mod
+					duration = 7300
+				}
+			}
+		}
+	}
+
+}

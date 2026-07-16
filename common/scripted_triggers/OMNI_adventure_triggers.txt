@@ -35,3 +35,36 @@ omni_adventure_can_start_trigger = {
 	}
 	omni_adventure_has_valid_companion_trigger = yes
 }
+
+# True when this country's ruler is currently away on an adventure.
+# Evaluated in COUNTRY scope.
+omni_ruler_on_adventure_trigger = {
+	exists = current_ruler
+	current_ruler = { has_variable = on_omni_adventure }
+}
+
+# Court-action availability gate. While the acting country's ruler is away on an
+# adventure this blocks the interaction and shows a red "ruler is away" line in
+# the tooltip; when the ruler is home it adds nothing to the tooltip.
+# Put inside an allowed_trigger, in COUNTRY (scope:actor) scope.
+omni_ruler_available_for_court_action_trigger = {
+	trigger_if = {
+		limit = { omni_ruler_on_adventure_trigger = yes }
+		custom_tooltip = {
+			text = omni_ruler_on_adventure_block_tt
+			always = no
+		}
+	}
+}
+
+# Character-scope variant: blocks (with the same tooltip) when THIS character is
+# the one away on an adventure. Use on the acting/target character as appropriate.
+omni_char_available_for_court_action_trigger = {
+	trigger_if = {
+		limit = { has_variable = on_omni_adventure }
+		custom_tooltip = {
+			text = omni_ruler_on_adventure_block_tt
+			always = no
+		}
+	}
+}
