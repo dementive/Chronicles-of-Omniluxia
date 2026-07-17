@@ -1,26 +1,32 @@
 ﻿omni_battle_magic_unit_button = {
-	scope = character
+	scope = unit
 	saved_scopes = {
 		player
-		battle_enemy
+		battle_enemy_unit
 	}
 
-	# Shown on the battle popup for the player's side. The root scope is the
-	# commander leading the force that is currently fighting.
+	# Root is the force in battle. Using the unit as root avoids combat-window
+	# refreshes passing an invalid placeholder character into ScriptedGui.
 	is_shown = {
-		is_alive = yes
 		OR = {
-			is_general = yes
-			is_admiral = yes
+			is_army = yes
+			is_navy = yes
 		}
-		OR = {
-			country = scope:player
-			employer = scope:player
+		unit_owner = {
+			this = scope:player
 		}
-		NOT = { has_variable = is_the_revant }
+		exists = commander
+		commander = {
+			is_alive = yes
+			OR = {
+				is_general = yes
+				is_admiral = yes
+			}
+			NOT = { has_variable = is_the_revant }
+			omni_character_is_eligible_caster = yes
+		}
 		scope:player = {
 			is_ai = no
-			omni_player_has_eligible_mage = yes
 		}
 	}
 
@@ -28,9 +34,6 @@
 		always = no
 	}
 
-	# is_valid drives the ENABLED state. Keep the button visible for the battle
-	# commander, then grey it out when no eligible mage can afford even the
-	# cheapest battle spell.
 	is_valid = {
 		custom_tooltip = {
 			text = omni_battle_magic_unit_button_tooltip
@@ -49,17 +52,73 @@
 			}
 		}
 		custom_tooltip = {
-			text = omni_unit_magic_need_mana_tt
-			scope:player = {
-				omni_player_has_affordable_mage = { BASE = 25 }
+			text = omni_battle_magic_need_spell_tt
+			commander = {
+				OR = {
+					AND = {
+						omni_can_afford_spell = { BASE = 10 }
+						omni_caster_melodian_t1 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 25 }
+						OR = {
+							omni_caster_aldic_t1 = yes
+							has_variable = folk_unlocked_var
+						}
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 30 }
+						omni_caster_melodian_t2 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 50 }
+						omni_caster_any_school_t2 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 60 }
+						omni_caster_aldic_t2 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 75 }
+						omni_caster_melodian_t3 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 90 }
+						omni_caster_melodian_t3 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 100 }
+						omni_caster_any_school_t3 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 165 }
+						has_trait = archmage_trait
+						omni_caster_melodian_t3 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 175 }
+						has_trait = archmage_trait
+					}
+				}
 			}
 		}
 	}
 
 	effect = {
-		save_scope_as = target
-		scope:battle_enemy = {
-			save_scope_as = battle_enemy_target
+		commander = {
+			save_scope_as = target
+		}
+		if = {
+			limit = { exists = scope:battle_enemy_unit }
+			scope:battle_enemy_unit = {
+				save_scope_as = battle_enemy_force
+				if = {
+					limit = { exists = commander }
+					commander = {
+						save_scope_as = battle_enemy_target
+					}
+				}
+			}
 		}
 		scope:player = {
 			save_scope_as = battle_spell_context

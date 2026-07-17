@@ -3,7 +3,7 @@
 This mod ships a self-contained custom achievement system. It exists because
 Imperator's real Steam achievements can't be modified by mods, so we fake them
 in-game: each achievement is a saved variable, a scripted check, a window entry,
-and a pop-up. The whole thing auto-unlocks like real Steam achievements — no
+and a side-window notice. The whole thing auto-unlocks like real Steam achievements — no
 buttons to press — and can be turned off with an in-game toggle.
 
 This guide explains the architecture, then walks through adding a new achievement
@@ -20,13 +20,13 @@ around that idea:
 | File | Role |
 |------|------|
 | `common/scripted_triggers/omni_achievement_triggers.txt` | The **unlock condition** for each achievement, written once. Shared by the check loop and the window. |
-| `common/scripted_effects/00_achievement_effects.txt` | `omni_unlock_achievement` (grants + toasts, the single choke-point) and `omni_check_achievements` (polls every state-based achievement). |
+| `common/scripted_effects/00_achievement_effects.txt` | `omni_unlock_achievement` (grants + queues the side-window notice, the single choke-point) and `omni_check_achievements` (polls every state-based achievement). |
 | `common/on_action/omni_achievements.txt` | Runs the poll monthly **for the human player only**, and hooks battle-won for the event-driven one. |
-| `events/omni_achievements_events.txt` | One lightweight toast event per achievement (`omni_ach.1`, `.2`, …). |
+| `events/omni_achievements_events.txt` | One lightweight minor event per achievement (`omni_ach.1`, `.2`, …), queued one day after unlock for the side window. |
 | `common/scripted_guis/sguis_omni_achievements.txt` | One `scripted_gui` per achievement: `is_shown` = unlocked, `is_valid` = still possible. Plus the on/off game-rule toggle. |
 | `gui/achievements/jomini_achievements_window.gui` | Overrides the vanilla achievements window to list our achievements in difficulty groups. |
-| `gui/shared/ach_font_icons.gui` | The `@ach_<key>!` inline picture used in the toast. |
-| `gui/custom_textformatting.gui` | Defines the `#huge` text tag the toast uses. |
+| `gui/shared/ach_font_icons.gui` | The `@ach_<key>!` inline picture used in the minor event. |
+| `gui/custom_textformatting.gui` | Defines the `#huge` text tag the minor event uses. |
 | `localization/english/omni_achievements_l_english.yml` | All player-facing text. |
 
 ### How an unlock actually happens
@@ -37,7 +37,8 @@ around that idea:
    shared trigger is true*, it calls `omni_unlock_achievement`.
 3. `omni_unlock_achievement` is the **only** thing that ever grants an
    achievement. It checks the achievement isn't already owned, checks the game
-   rule isn't disabled, sets the variable, and fires the toast event.
+   rule isn't disabled, sets the variable, and queues the minor event with a
+   one-day delay so the side-window notice appears outside the check pulse.
 4. The window reads the variable through the achievement's `scripted_gui`
    (`ScriptedGui.IsShown`) and shows the gold "unlocked" ornament.
 
@@ -112,7 +113,10 @@ Add one block inside `omni_check_achievements`, before its closing brace:
 
 *(Skip this step only if the achievement is purely event-driven — see §4.)*
 
-### Step 3 — Toast event (`events/omni_achievements_events.txt`)
+### Step 3 — Minor event (`events/omni_achievements_events.txt`)
+
+This is the side-window achievement notice. `omni_unlock_achievement` queues it
+with a one-day delay instead of firing it inline.
 
 ```
 omni_ach.17 = {
@@ -198,7 +202,7 @@ on_battle_won_country = {
 }
 ```
 
-You still do Steps 1 (optional), 3, 4, 5, 6, 7. The game-rule guard inside
+You still do Steps 1 (optional), 3, 4, 5, 6, and 7. The game-rule guard inside
 `omni_unlock_achievement` covers these automatically.
 
 To hook a mission instead, add the `omni_unlock_achievement` call to that
@@ -228,9 +232,7 @@ The window and the toast use the same texture, so keep the two in sync.
   `set_variable omni_ach_dragons_hoard` on your country, then open the
   achievements window — it should show as unlocked. Remove it with
   `remove_variable omni_ach_dragons_hoard`.
-- **Toast test:** `event omni_ach.17` fires the pop-up so you can check the text
-  and icon.
-- **Reference count sanity:** the seven files must all agree on the key. A quick
+- **Reference count sanity:** the achievement files must all agree on the key. A quick
   check that everything is wired:
   `grep -rl "omni_ach_dragons_hoard" common events gui localization` should list
   all the files you edited.

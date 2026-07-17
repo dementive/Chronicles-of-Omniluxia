@@ -133,34 +133,8 @@ change_province_magic = {
 
 clamp_character_magic_to_max = {
 	recalculate_character_magic_vars = yes
-	# Some callers can reach this effect before a character's magic variable has
-	# been initialized (notably old saves and newly-created event characters).
-	# Initialize it in this scope before using it to build the clamp value.
 	if = {
-		limit = { NOT = { has_variable = magic } }
-		set_variable = {
-			name = magic
-			value = 0
-		}
-	}
-	set_variable = {
-		name = magic_clamp_check
-		value = 0
-	}
-	change_variable = {
-		name = magic_clamp_check
-		add = var:magic
-	}
-	change_variable = {
-		name = magic_clamp_check
-		subtract = 100
-	}
-	change_variable = {
-		name = magic_clamp_check
-		subtract = modifier:great_work_freemen_workrate_character_modifier
-	}
-	if = {
-		limit = { var:magic_clamp_check > 0 }
+		limit = { var:magic > omni_character_magic_max_value }
 		set_variable = {
 			name = magic
 			value = 100
@@ -170,7 +144,6 @@ clamp_character_magic_to_max = {
 			add = modifier:great_work_freemen_workrate_character_modifier
 		}
 	}
-	remove_variable = magic_clamp_check
 }
 
 change_character_magic = {

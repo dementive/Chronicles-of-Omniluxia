@@ -64,17 +64,47 @@
 		always = no
 	}
 
-	# is_valid drives the ENABLED state. is_shown keeps the button visible whenever
-	# the player has a mage; this greys it out - like the siege spell button - when
-	# no eligible mage can afford even the cheapest friendly unit spell, including
-	# Fast Travel at 15 MP scaled.
+	# is_valid drives the ENABLED state. In combat this button is only for friendly
+	# heat-of-battle buffs, not travel or hostile spellcraft.
 	is_valid = {
 		custom_tooltip = {
 			text = omni_friendly_magic_unit_button_tooltip
 		}
+		trigger_if = {
+			limit = {
+				scope:player = {
+					has_variable = omni_battle_spell_cooldown
+				}
+			}
+			custom_tooltip = {
+				text = omni_battle_spell_cooldown_tt
+				scope:player = {
+					NOT = { has_variable = omni_battle_spell_cooldown }
+				}
+			}
+		}
 		custom_tooltip = {
-			text = omni_unit_magic_need_mana_tt
-			scope:player = { omni_player_has_affordable_mage = { BASE = 15 } }
+			text = omni_battle_friendly_need_spell_tt
+			commander = {
+				OR = {
+					AND = {
+						omni_can_afford_spell = { BASE = 15 }
+						omni_caster_tier_1_any_school = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 25 }
+						omni_caster_any_school_t2 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 50 }
+						omni_caster_any_school_t2 = yes
+					}
+					AND = {
+						omni_can_afford_spell = { BASE = 75 }
+						has_trait = archmage_trait
+					}
+				}
+			}
 		}
 	}
 
@@ -83,7 +113,8 @@
 			save_scope_as = target
 		}
 		scope:player = {
-			trigger_event = { id = me_zorgo_magic_focus.29 }
+			save_scope_as = battle_spell_context
+			trigger_event = { id = me_zorgo_magic_focus.130 }
 		}
 	}
 }

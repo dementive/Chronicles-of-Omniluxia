@@ -1606,6 +1606,7 @@ me_zorgo_magic_focus.8 = { # Main Menu (Who is Casting?)
     option = { # Mage
         trigger = {
             scope:selected_mage = {
+                NOT = { this = root.current_ruler }
                 OR = {
                     has_office = office_physician
                     has_office = office_republic_physician
@@ -2684,129 +2685,6 @@ me_zorgo_magic_focus.13 = { # Melodian School
         trigger_event = { id = me_zorgo_magic_focus.9 }
     }
 
-    option = { # Igniting Spark
-        trigger = {
-            scope:selected_mage = {
-                omni_can_afford_spell = { BASE = 10 }
-                omni_caster_melodian_t1 = yes
-                any_character_unit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                    unit_owner = { this = root }
-                    in_combat = yes
-                }
-            }
-            NOT = { root = { has_variable = omni_battle_spell_cooldown } }
-        }
-        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 10 } }
-        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
-        scope:target = {
-            every_character_unit = {
-                limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_igniting_spark_mod } remove_unit_modifier = omni_igniting_spark_mod }
-                add_unit_modifier = { name = omni_igniting_spark_mod duration = 30 }
-            }
-        }
-        custom_tooltip = tier_one_spell_tt
-        custom_tooltip = 10_mana_tt
-        name = "me_zorgo_magic_focus.new.melodian1"
-    }
-    option = { # Fireball
-        trigger = {
-            scope:selected_mage = {
-                omni_can_afford_spell = { BASE = 30 }
-                omni_caster_melodian_t2 = yes
-                any_character_unit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                    unit_owner = { this = root }
-                    in_combat = yes
-                }
-            }
-            NOT = { root = { has_variable = omni_battle_spell_cooldown } }
-        }
-        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 30 } }
-        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
-        scope:target = {
-            random_character_unit = {
-                damage_unit_percent = 0.05
-            }
-            every_character_unit = {
-                limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_fireball_mod } remove_unit_modifier = omni_fireball_mod }
-                add_unit_modifier = { name = omni_fireball_mod duration = 30 }
-            }
-        }
-        custom_tooltip = tier_two_spell_tt
-        custom_tooltip = 30_mana_tt
-        name = "me_zorgo_magic_focus.new.melodian2"
-    }
-    option = { # Plague Miasma
-        trigger = {
-            scope:selected_mage = {
-                omni_can_afford_spell = { BASE = 75 }
-                omni_caster_melodian_t3 = yes
-                any_character_unit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                    unit_owner = { this = root }
-                    in_combat = yes
-                }
-            }
-            NOT = { root = { has_variable = omni_battle_spell_cooldown } }
-        }
-        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 75 } }
-        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
-        scope:target = {
-            every_character_unit = {
-                limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_plague_miasma_mod } remove_unit_modifier = omni_plague_miasma_mod }
-                add_unit_modifier = { name = omni_plague_miasma_mod duration = 30 }
-            }
-        }
-        custom_tooltip = tier_three_spell_tt
-        custom_tooltip = 75_mana_tt
-        name = "me_zorgo_magic_focus.new.melodian3"
-    }
-    option = { # Cataclysmic Eruption
-        trigger = {
-            scope:selected_mage = { 
-                has_trait = archmage_trait
-                omni_can_afford_spell = { BASE = 165 }
-                omni_caster_melodian_t3 = yes
-                any_character_unit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                    unit_owner = { this = root }
-                    in_combat = yes
-                }
-            }
-            NOT = { root = { has_variable = omni_battle_spell_cooldown } }
-        }
-        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 165 } }
-        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
-        scope:target = {
-            random_character_unit = {
-                damage_unit_percent = 0.30
-            }
-            every_character_unit = {
-                limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_cataclysmic_eruption_mod } remove_unit_modifier = omni_cataclysmic_eruption_mod }
-                add_unit_modifier = { name = omni_cataclysmic_eruption_mod duration = 30 }
-            }
-        }
-        custom_tooltip = tier_four_spell_tt
-        custom_tooltip = 165_mana_tt
-        name = "me_zorgo_magic_focus.new.melodian4"
-    }
     option = {
         name = "me_zorgo_magic_focus.2.z.2"
         custom_tooltip = me_zorgo_magic_focus.2_tooltip
@@ -4272,40 +4150,50 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     # the omni_friendly_magic_unit_button scripted gui). Auto-select the best
     # available caster, matching the offensive/domestic menus.
     immediate = {
-        random_character = {
+        if = {
             limit = {
-                OR = {
-                    is_ruler = yes
-                    is_general = yes
-                    is_admiral = yes
-                    has_office = office_physician
-                    has_office = office_republic_physician
-                    has_office = office_apothecary
-                }
-                OR = {
-                    has_trait = mage_trait
-                    has_trait = archmage_trait
-                    has_trait = warlock_trait
-                    has_trait = cleric_trait
-                    has_trait = necromancer_trait
-                    has_trait = lich_trait
-                    has_trait = druid_trait
-                    has_trait = elementalist_trait
-                    has_trait = diviner_trait
-                    has_trait = hierophant_trait
-                    has_trait = illusionist_trait
-                    has_trait = vampire_trait
-                    has_trait = blood_angel_curse_trait
-                    has_variable = folk_unlocked_var
-                }
-                NOR = {
-                    has_trait = brain_damaged
-                    has_trait = goblin_trait
-                    has_variable = on_orc_adventure
-                }
-                omni_can_afford_spell = { BASE = 15 }
+                exists = scope:battle_spell_context
+                exists = scope:target
+                scope:target = { omni_character_is_eligible_caster = yes }
             }
-            save_scope_as = selected_mage
+            scope:target = { save_scope_as = selected_mage }
+        }
+        else = {
+            random_character = {
+                limit = {
+                    OR = {
+                        is_ruler = yes
+                        is_general = yes
+                        is_admiral = yes
+                        has_office = office_physician
+                        has_office = office_republic_physician
+                        has_office = office_apothecary
+                    }
+                    OR = {
+                        has_trait = mage_trait
+                        has_trait = archmage_trait
+                        has_trait = warlock_trait
+                        has_trait = cleric_trait
+                        has_trait = necromancer_trait
+                        has_trait = lich_trait
+                        has_trait = druid_trait
+                        has_trait = elementalist_trait
+                        has_trait = diviner_trait
+                        has_trait = hierophant_trait
+                        has_trait = illusionist_trait
+                        has_trait = vampire_trait
+                        has_trait = blood_angel_curse_trait
+                        has_variable = folk_unlocked_var
+                    }
+                    NOR = {
+                        has_trait = brain_damaged
+                        has_trait = goblin_trait
+                        has_variable = on_orc_adventure
+                    }
+                    omni_can_afford_spell = { BASE = 15 }
+                }
+                save_scope_as = selected_mage
+            }
         }
     }
 
@@ -4390,51 +4278,15 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         name = "omniluxia_magic_teleport"
     }
 
-    option = { # Battle Surge - +25% morale in live combat
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
-            scope:selected_mage = { omni_caster_tier_1_any_school = yes }
-            exists = scope:battle_spell_context
-        }
-        scope:selected_mage = {
-            omni_spell_mana_cost_effect = { BASE = 25 }
-        }
-        root = {
-            set_variable = {
-                name = omni_battle_spell_cooldown
-                days = 30
-            }
-        }
-        scope:target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                    in_combat = yes
-                }
-                if = {
-                    limit = { has_unit_modifier = omni_battle_haste_spell_mod }
-                    remove_unit_modifier = omni_battle_haste_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_battle_haste_spell_mod
-                    duration = 30
-                }
-            }
-        }
-        custom_tooltip = tier_one_spell_tt
-        custom_tooltip = omni_battle_haste_tt
-        custom_tooltip = 25_mana_tt
-        name = "me_zorgo_magic_focus.29.a"
-    }
     option = { # Dread Omen - -25% morale to the opposing force in live combat
         trigger = {
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = { omni_caster_any_school_t2 = yes }
             exists = scope:battle_spell_context
-            exists = scope:battle_enemy_target
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
@@ -4445,15 +4297,32 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 days = 30
             }
         }
-        scope:battle_enemy_target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
                     }
-                    in_combat = yes
+                    if = {
+                        limit = { has_unit_modifier = omni_battle_haste_2_spell_mod }
+                        remove_unit_modifier = omni_battle_haste_2_spell_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_battle_haste_2_spell_mod
+                        duration = 30
+                    }
+                    add_morale = -0.75
                 }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_2_spell_mod }
                     remove_unit_modifier = omni_battle_haste_2_spell_mod
@@ -4462,6 +4331,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                     name = omni_battle_haste_2_spell_mod
                     duration = 30
                 }
+                add_morale = -0.75
             }
         }
         custom_tooltip = tier_two_spell_tt
@@ -4469,53 +4339,15 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.29.e"
     }
-    option = { # Heroic Resonance - +50% morale in live combat
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
-            scope:selected_mage = { omni_caster_any_school_t3 = yes }
-            exists = scope:battle_spell_context
-        }
-        scope:selected_mage = {
-            omni_spell_mana_cost_effect = { BASE = 75 }
-        }
-        root = {
-            set_variable = {
-                name = omni_battle_spell_cooldown
-                days = 30
-            }
-        }
-        scope:target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                    in_combat = yes
-                }
-                if = {
-                    limit = { has_unit_modifier = omni_battle_haste_3_spell_mod }
-                    remove_unit_modifier = omni_battle_haste_3_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_battle_haste_3_spell_mod
-                    duration = 30
-                }
-            }
-        }
-        custom_tooltip = tier_three_spell_tt
-        custom_tooltip = omni_battle_haste_3_tt
-        custom_tooltip = 75_mana_tt
-        name = "me_zorgo_magic_focus.29.f"
-    }
     option = { # Crushing Terror - -50% morale to the opposing force in live combat
         trigger = {
             scope:selected_mage = { omni_can_afford_spell = { BASE = 100 } }
-            scope:selected_mage = {
-                has_trait = archmage_trait
-            }
+            scope:selected_mage = { omni_caster_any_school_t3 = yes }
             exists = scope:battle_spell_context
-            exists = scope:battle_enemy_target
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 100 }
@@ -4526,15 +4358,32 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 days = 30
             }
         }
-        scope:battle_enemy_target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
                     }
-                    in_combat = yes
+                    if = {
+                        limit = { has_unit_modifier = omni_battle_haste_4_spell_mod }
+                        remove_unit_modifier = omni_battle_haste_4_spell_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_battle_haste_4_spell_mod
+                        duration = 30
+                    }
+                    add_morale = -1.5
                 }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
                 if = {
                     limit = { has_unit_modifier = omni_battle_haste_4_spell_mod }
                     remove_unit_modifier = omni_battle_haste_4_spell_mod
@@ -4543,6 +4392,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                     name = omni_battle_haste_4_spell_mod
                     duration = 30
                 }
+                add_morale = -1.5
             }
         }
         custom_tooltip = tier_four_spell_tt
@@ -4550,290 +4400,841 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         custom_tooltip = 100_mana_tt
         name = "me_zorgo_magic_focus.29.g"
     }
-    option = { # Arcane Aegis - protective battle wards
+    option = { # Death Hex - 75% chance to kill the enemy commander in live combat
         trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
-            scope:selected_mage = { omni_caster_tier_1_any_school = yes }
-        }
-        scope:selected_mage = {
-            omni_spell_mana_cost_effect = { BASE = 25 }
-        }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
-            }
-        }
-        scope:target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                }
-                if = {
-                    limit = { has_unit_modifier = omni_arcane_aegis_spell_mod }
-                    remove_unit_modifier = omni_arcane_aegis_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_arcane_aegis_spell_mod
-                    duration = 1825
-                }
-            }
-        }
-        custom_tooltip = tier_one_spell_tt
-        custom_tooltip = omni_arcane_aegis_tt
-        custom_tooltip = 25_mana_tt
-        name = "me_zorgo_magic_focus.29.h"
-    }
-    option = { # Battle Clarity - recover faster and hold formation
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
-            scope:selected_mage = { omni_caster_tier_1_any_school = yes }
-        }
-        scope:selected_mage = {
-            omni_spell_mana_cost_effect = { BASE = 25 }
-        }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
-            }
-        }
-        scope:target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                }
-                if = {
-                    limit = { has_unit_modifier = omni_battle_clarity_spell_mod }
-                    remove_unit_modifier = omni_battle_clarity_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_battle_clarity_spell_mod
-                    duration = 1825
-                }
-            }
-        }
-        custom_tooltip = tier_one_spell_tt
-        custom_tooltip = omni_battle_clarity_tt
-        custom_tooltip = 25_mana_tt
-        name = "me_zorgo_magic_focus.29.i"
-    }
-    option = { # Conjured Supply - keep the army fed and supplied
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
-            scope:selected_mage = { omni_caster_any_school_t2 = yes }
-        }
-        scope:selected_mage = {
-            omni_spell_mana_cost_effect = { BASE = 50 }
-        }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
-            }
-        }
-        scope:target.employer = {
-            if = {
-                limit = { has_country_modifier = omni_conjured_supply_spell_mod }
-                remove_country_modifier = omni_conjured_supply_spell_mod
-            }
-            add_country_modifier = {
-                name = omni_conjured_supply_spell_mod
-                duration = 365
-            }
-        }
-        custom_tooltip = tier_two_spell_tt
-        custom_tooltip = omni_conjured_supply_tt
-        custom_tooltip = 50_mana_tt
-        name = "me_zorgo_magic_focus.29.j"
-    }
-    option = { # Spectral Boarders - ghostly marines for the fleet
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
-            scope:selected_mage = { omni_caster_any_school_t2 = yes }
-        }
-        scope:selected_mage = {
-            omni_spell_mana_cost_effect = { BASE = 50 }
-        }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
-            }
-        }
-        scope:target = {
-            every_character_unit = {
-                limit = { is_navy = yes }
-                if = {
-                    limit = { has_unit_modifier = omni_spectral_boarders_spell_mod }
-                    remove_unit_modifier = omni_spectral_boarders_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_spectral_boarders_spell_mod
-                    duration = 1825
-                }
-            }
-        }
-        custom_tooltip = tier_two_spell_tt
-        custom_tooltip = omni_spectral_boarders_tt
-        custom_tooltip = 50_mana_tt
-        name = "me_zorgo_magic_focus.29.k"
-    }
-    option = { # Battle Hymn - morale
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
-            scope:selected_mage = { omni_caster_tier_1_any_school = yes }
-        }
-        scope:selected_mage = {
-            omni_spell_mana_cost_effect = { BASE = 25 }
-        }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
-            }
-        }
-        scope:target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                }
-                if = {
-                    limit = { has_unit_modifier = omni_battle_rally_spell_mod }
-                    remove_unit_modifier = omni_battle_rally_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_battle_rally_spell_mod
-                    duration = 1825
-                }
-            }
-        }
-        custom_tooltip = tier_one_spell_tt
-        custom_tooltip = omni_battle_rally_tt
-        custom_tooltip = 25_mana_tt
-        name = "me_zorgo_magic_focus.29.b"
-    }
-    option = { # Iron Resolve - discipline
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
-            scope:selected_mage = { omni_caster_tier_1_any_school = yes }
-        }
-        scope:selected_mage = {
-            omni_spell_mana_cost_effect = { BASE = 25 }
-        }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
-            }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
-                }
-            }
-        }
-        scope:target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                }
-                if = {
-                    limit = { has_unit_modifier = omni_battle_discipline_spell_mod }
-                    remove_unit_modifier = omni_battle_discipline_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_battle_discipline_spell_mod
-                    duration = 1825
-                }
-            }
-        }
-        custom_tooltip = tier_one_spell_tt
-        custom_tooltip = omni_battle_discipline_tt
-        custom_tooltip = 25_mana_tt
-        name = "me_zorgo_magic_focus.29.c"
-    }
-    option = { # Blessing of War - all three (archmage only)
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
+            scope:selected_mage = { omni_can_afford_spell = { BASE = 175 } }
             scope:selected_mage = {
                 has_trait = archmage_trait
+            }
+            exists = scope:battle_spell_context
+            exists = scope:battle_enemy_target
+            scope:battle_enemy_target = {
+                is_alive = yes
+                NOT = { has_variable = is_the_revant }
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 175 }
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        scope:battle_enemy_target = {
+            random_list = {
+                75 = {
+                    death = {
+                        killer = scope:selected_mage
+                        death_reason = death_magic
+                    }
+                }
+                25 = {
+                }
+            }
+        }
+        custom_tooltip = tier_four_spell_tt
+        custom_tooltip = omni_battle_death_hex_tt
+        custom_tooltip = 175_mana_tt
+        name = "me_zorgo_magic_focus.29.l"
+    }
+    option = { # Igniting Spark - Melodian battle damage over the opposing force
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 10 }
+                omni_caster_melodian_t1 = yes
+            }
+            exists = scope:battle_spell_context
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 10 }
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                add_health = -0.5
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    if = {
+                        limit = { has_unit_modifier = omni_igniting_spark_mod }
+                        remove_unit_modifier = omni_igniting_spark_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_igniting_spark_mod
+                        duration = 30
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                if = {
+                    limit = { has_unit_modifier = omni_igniting_spark_mod }
+                    remove_unit_modifier = omni_igniting_spark_mod
+                }
+                add_unit_modifier = {
+                    name = omni_igniting_spark_mod
+                    duration = 30
+                }
+            }
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = 10_mana_tt
+        name = "me_zorgo_magic_focus.new.melodian1"
+    }
+    option = { # Fireball - Melodian battle damage over the opposing force
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 30 }
+                omni_caster_melodian_t2 = yes
+            }
+            exists = scope:battle_spell_context
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 30 }
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                add_health = -1
+                random_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    damage_unit_percent = 0.05
+                }
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    if = {
+                        limit = { has_unit_modifier = omni_fireball_mod }
+                        remove_unit_modifier = omni_fireball_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_fireball_mod
+                        duration = 30
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                damage_unit_percent = 0.05
+                if = {
+                    limit = { has_unit_modifier = omni_fireball_mod }
+                    remove_unit_modifier = omni_fireball_mod
+                }
+                add_unit_modifier = {
+                    name = omni_fireball_mod
+                    duration = 30
+                }
+            }
+        }
+        custom_tooltip = tier_two_spell_tt
+        custom_tooltip = 30_mana_tt
+        name = "me_zorgo_magic_focus.new.melodian2"
+    }
+    option = { # Plague Miasma - Melodian battle damage over the opposing force
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 75 }
+                omni_caster_melodian_t3 = yes
+            }
+            exists = scope:battle_spell_context
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
             }
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
-        if = {
-            limit = {
-                exists = scope:battle_spell_context
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
             }
-            root = {
-                set_variable = {
-                    name = omni_battle_spell_cooldown
-                    days = 30
+        }
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                add_health = -2
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    if = {
+                        limit = { has_unit_modifier = omni_plague_miasma_mod }
+                        remove_unit_modifier = omni_plague_miasma_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_plague_miasma_mod
+                        duration = 30
+                    }
                 }
             }
         }
-        scope:target = {
-            every_character_unit = {
-                limit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
                 if = {
-                    limit = { has_unit_modifier = omni_battle_blessing_spell_mod }
-                    remove_unit_modifier = omni_battle_blessing_spell_mod
+                    limit = { has_unit_modifier = omni_plague_miasma_mod }
+                    remove_unit_modifier = omni_plague_miasma_mod
                 }
                 add_unit_modifier = {
-                    name = omni_battle_blessing_spell_mod
-                    duration = 1825
+                    name = omni_plague_miasma_mod
+                    duration = 30
+                }
+            }
+        }
+        custom_tooltip = tier_three_spell_tt
+        custom_tooltip = 75_mana_tt
+        name = "me_zorgo_magic_focus.new.melodian3"
+    }
+    option = { # Cataclysmic Eruption - Melodian battle damage over the opposing force
+        trigger = {
+            scope:selected_mage = {
+                has_trait = archmage_trait
+                omni_can_afford_spell = { BASE = 165 }
+                omni_caster_melodian_t3 = yes
+            }
+            exists = scope:battle_spell_context
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 165 }
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                add_health = -4
+                random_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    damage_unit_percent = 0.30
+                }
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    if = {
+                        limit = { has_unit_modifier = omni_cataclysmic_eruption_mod }
+                        remove_unit_modifier = omni_cataclysmic_eruption_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_cataclysmic_eruption_mod
+                        duration = 30
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                damage_unit_percent = 0.30
+                if = {
+                    limit = { has_unit_modifier = omni_cataclysmic_eruption_mod }
+                    remove_unit_modifier = omni_cataclysmic_eruption_mod
+                }
+                add_unit_modifier = {
+                    name = omni_cataclysmic_eruption_mod
+                    duration = 30
+                }
+            }
+        }
+        custom_tooltip = tier_four_spell_tt
+        custom_tooltip = 165_mana_tt
+        name = "me_zorgo_magic_focus.new.melodian4"
+    }
+    option = { # Panic Rout - break the opposing force's nerve
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 60 }
+                omni_caster_aldic_t2 = yes
+            }
+            exists = scope:battle_spell_context
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 60 }
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                add_health = -0.5
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    add_morale = -10
+                    if = {
+                        limit = { has_unit_modifier = omni_panic_rout_spell_mod }
+                        remove_unit_modifier = omni_panic_rout_spell_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_panic_rout_spell_mod
+                        duration = 30
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                add_morale = -10
+                if = {
+                    limit = { has_unit_modifier = omni_panic_rout_spell_mod }
+                    remove_unit_modifier = omni_panic_rout_spell_mod
+                }
+                add_unit_modifier = {
+                    name = omni_panic_rout_spell_mod
+                    duration = 30
                 }
             }
         }
         custom_tooltip = tier_two_spell_tt
-        custom_tooltip = omni_battle_blessing_tt
-        custom_tooltip = 75_mana_tt
-        name = "me_zorgo_magic_focus.29.d"
+        custom_tooltip = omni_panic_rout_tt
+        custom_tooltip = 60_mana_tt
+        name = "me_zorgo_magic_focus.29.m"
+    }
+    option = { # Duel of Wills - personal battle-magic contest between commanders
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 50 }
+                omni_caster_any_school_t2 = yes
+            }
+            exists = scope:battle_spell_context
+            exists = scope:battle_enemy_target
+            scope:battle_enemy_target = {
+                is_alive = yes
+                NOT = { has_variable = is_the_revant }
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 50 }
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        random_list = {
+            55 = {
+                scope:battle_enemy_target = {
+                    add_health = -2
+                    every_character_unit = {
+                        limit = {
+                            OR = {
+                                is_army = yes
+                                is_navy = yes
+                            }
+                            in_combat = yes
+                        }
+                        add_morale = -1
+                    }
+                }
+            }
+            35 = {
+                scope:battle_enemy_target = {
+                    add_health = -1
+                    every_character_unit = {
+                        limit = {
+                            OR = {
+                                is_army = yes
+                                is_navy = yes
+                            }
+                            in_combat = yes
+                        }
+                        add_morale = -0.5
+                    }
+                }
+                scope:selected_mage = {
+                    add_health = -0.5
+                }
+            }
+            10 = {
+                scope:selected_mage = {
+                    add_health = -1
+                }
+            }
+        }
+        custom_tooltip = tier_two_spell_tt
+        custom_tooltip = omni_duel_of_wills_tt
+        custom_tooltip = 50_mana_tt
+        name = "me_zorgo_magic_focus.29.n"
+    }
+    option = { # Command Confusion - scramble enemy orders
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 50 }
+                omni_caster_any_school_t2 = yes
+            }
+            exists = scope:battle_spell_context
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 50 }
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                add_health = -0.5
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    add_morale = -1
+                    if = {
+                        limit = { has_unit_modifier = omni_command_confusion_spell_mod }
+                        remove_unit_modifier = omni_command_confusion_spell_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_command_confusion_spell_mod
+                        duration = 60
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                add_morale = -1
+                if = {
+                    limit = { has_unit_modifier = omni_command_confusion_spell_mod }
+                    remove_unit_modifier = omni_command_confusion_spell_mod
+                }
+                add_unit_modifier = {
+                    name = omni_command_confusion_spell_mod
+                    duration = 60
+                }
+            }
+        }
+        custom_tooltip = tier_two_spell_tt
+        custom_tooltip = omni_command_confusion_tt
+        custom_tooltip = 50_mana_tt
+        name = "me_zorgo_magic_focus.29.o"
+    }
+    option = { # Blood Price - costly Melodian battle curse
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 90 }
+                omni_caster_melodian_t3 = yes
+            }
+            exists = scope:battle_spell_context
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 90 }
+            add_health = -1.5
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                add_health = -3
+                random_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    damage_unit_percent = 0.15
+                }
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    if = {
+                        limit = { has_unit_modifier = omni_blood_price_spell_mod }
+                        remove_unit_modifier = omni_blood_price_spell_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_blood_price_spell_mod
+                        duration = 30
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                damage_unit_percent = 0.15
+                if = {
+                    limit = { has_unit_modifier = omni_blood_price_spell_mod }
+                    remove_unit_modifier = omni_blood_price_spell_mod
+                }
+                add_unit_modifier = {
+                    name = omni_blood_price_spell_mod
+                    duration = 30
+                }
+            }
+        }
+        custom_tooltip = tier_three_spell_tt
+        custom_tooltip = omni_blood_price_tt
+        custom_tooltip = 90_mana_tt
+        name = "me_zorgo_magic_focus.29.p"
+    }
+    option = { # Turn Feet to Mud - absurd battlefield sabotage
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 25 }
+                OR = {
+                    omni_caster_aldic_t1 = yes
+                    has_variable = folk_unlocked_var
+                }
+            }
+            exists = scope:battle_spell_context
+            OR = {
+                exists = scope:battle_enemy_target
+                exists = scope:battle_enemy_force
+            }
+        }
+        scope:selected_mage = {
+            omni_spell_mana_cost_effect = { BASE = 25 }
+        }
+        root = {
+            set_variable = {
+                name = omni_battle_spell_cooldown
+                days = 30
+            }
+        }
+        if = {
+            limit = { exists = scope:battle_enemy_target }
+            scope:battle_enemy_target = {
+                every_character_unit = {
+                    limit = {
+                        OR = {
+                            is_army = yes
+                            is_navy = yes
+                        }
+                        in_combat = yes
+                    }
+                    add_morale = -0.5
+                    if = {
+                        limit = { has_unit_modifier = omni_boots_to_soup_spell_mod }
+                        remove_unit_modifier = omni_boots_to_soup_spell_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_boots_to_soup_spell_mod
+                        duration = 60
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                add_morale = -0.5
+                if = {
+                    limit = { has_unit_modifier = omni_boots_to_soup_spell_mod }
+                    remove_unit_modifier = omni_boots_to_soup_spell_mod
+                }
+                add_unit_modifier = {
+                    name = omni_boots_to_soup_spell_mod
+                    duration = 60
+                }
+            }
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = omni_boots_to_soup_tt
+        custom_tooltip = 25_mana_tt
+        name = "me_zorgo_magic_focus.29.q"
     }
     option = { # Cancel
+        name = "me_zorgo_magic_focus.2.z.2"
+        custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+}
+
+me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on your own army or navy unit
+    type = country_event
+
+    title = me_zorgo_magic_focus.130_title
+    desc = me_zorgo_magic_focus.130_desc
+    picture = ascetic
+    left_portrait = scope:selected_mage
+    right_portrait = scope:target
+
+    immediate = {
+        if = {
+            limit = {
+                exists = scope:battle_spell_context
+                exists = scope:target
+                scope:target = { omni_character_is_eligible_caster = yes }
+            }
+            scope:target = { save_scope_as = selected_mage }
+        }
+        else = {
+            random_character = {
+                limit = {
+                    omni_character_is_eligible_caster = yes
+                    omni_can_afford_spell = { BASE = 15 }
+                }
+                save_scope_as = selected_mage
+            }
+        }
+    }
+
+    option = { # Battle Surge
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 15 }
+                omni_caster_tier_1_any_school = yes
+            }
+            exists = scope:battle_spell_context
+            scope:target = {
+                any_character_unit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 15 } }
+        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
+        scope:target = {
+            every_character_unit = {
+                limit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+                if = { limit = { has_unit_modifier = omni_battle_haste_spell_mod } remove_unit_modifier = omni_battle_haste_spell_mod }
+                add_unit_modifier = { name = omni_battle_haste_spell_mod duration = 30 }
+            }
+        }
+        custom_tooltip = tier_one_spell_tt
+        custom_tooltip = omni_battle_haste_tt
+        custom_tooltip = 15_mana_tt
+        name = "me_zorgo_magic_focus.130.a"
+    }
+    option = { # Battle Hymn
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 25 }
+                omni_caster_any_school_t2 = yes
+            }
+            exists = scope:battle_spell_context
+            scope:target = {
+                any_character_unit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 25 } }
+        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
+        scope:target = {
+            every_character_unit = {
+                limit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+                if = { limit = { has_unit_modifier = omni_battle_rally_spell_mod } remove_unit_modifier = omni_battle_rally_spell_mod }
+                add_unit_modifier = { name = omni_battle_rally_spell_mod duration = 30 }
+                add_morale = 0.75
+            }
+        }
+        custom_tooltip = tier_two_spell_tt
+        custom_tooltip = omni_battle_rally_tt
+        custom_tooltip = 25_mana_tt
+        name = "me_zorgo_magic_focus.130.b"
+    }
+    option = { # Iron Resolve
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 50 }
+                omni_caster_any_school_t2 = yes
+            }
+            exists = scope:battle_spell_context
+            scope:target = {
+                any_character_unit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
+        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
+        scope:target = {
+            every_character_unit = {
+                limit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+                if = { limit = { has_unit_modifier = omni_battle_discipline_spell_mod } remove_unit_modifier = omni_battle_discipline_spell_mod }
+                add_unit_modifier = { name = omni_battle_discipline_spell_mod duration = 30 }
+            }
+        }
+        custom_tooltip = tier_two_spell_tt
+        custom_tooltip = omni_battle_discipline_tt
+        custom_tooltip = 50_mana_tt
+        name = "me_zorgo_magic_focus.130.c"
+    }
+    option = { # Heroic Resonance
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 50 }
+                omni_caster_any_school_t2 = yes
+            }
+            exists = scope:battle_spell_context
+            scope:target = {
+                any_character_unit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
+        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
+        scope:target = {
+            every_character_unit = {
+                limit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+                if = { limit = { has_unit_modifier = omni_battle_haste_3_spell_mod } remove_unit_modifier = omni_battle_haste_3_spell_mod }
+                add_unit_modifier = { name = omni_battle_haste_3_spell_mod duration = 30 }
+                add_morale = 1.5
+            }
+        }
+        custom_tooltip = tier_three_spell_tt
+        custom_tooltip = omni_battle_haste_3_tt
+        custom_tooltip = 50_mana_tt
+        name = "me_zorgo_magic_focus.130.d"
+    }
+    option = { # Blessing of War
+        trigger = {
+            scope:selected_mage = {
+                omni_can_afford_spell = { BASE = 75 }
+                has_trait = archmage_trait
+            }
+            exists = scope:battle_spell_context
+            scope:target = {
+                any_character_unit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 75 } }
+        root = { set_variable = { name = omni_battle_spell_cooldown days = 30 } }
+        scope:target = {
+            every_character_unit = {
+                limit = {
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+                if = { limit = { has_unit_modifier = omni_battle_blessing_spell_mod } remove_unit_modifier = omni_battle_blessing_spell_mod }
+                add_unit_modifier = { name = omni_battle_blessing_spell_mod duration = 30 }
+                add_morale = 1
+            }
+        }
+        custom_tooltip = tier_four_spell_tt
+        custom_tooltip = omni_battle_blessing_tt
+        custom_tooltip = 75_mana_tt
+        name = "me_zorgo_magic_focus.130.e"
+    }
+    option = {
         name = "me_zorgo_magic_focus.2.z.2"
         custom_tooltip = me_zorgo_magic_focus.2_tooltip
     }

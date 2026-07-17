@@ -2,7 +2,8 @@
 #
 # omni_unlock_achievement : the ONE way an achievement is ever granted.
 #   - Sets the tracking variable (used by the window's "unlocked" state).
-#   - Fires a single, consistent toast notification (player only).
+#   - Queues the minor unlock event one day later, so the player still gets the
+#     side-window notice without firing a popup inline during the check pulse.
 #   - Idempotent: safe to call every tick, only acts the first time.
 #
 # omni_check_achievements : evaluates every "state based" achievement for the
@@ -21,7 +22,7 @@ omni_unlock_achievement = {
             NOT = { has_variable = $ACH$ }
         }
         set_variable = $ACH$
-        trigger_event = { id = $EVENT$ }
+        trigger_event = { id = $EVENT$ days = 1 }
     }
 }
 
