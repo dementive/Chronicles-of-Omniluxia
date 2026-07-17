@@ -133,9 +133,23 @@ change_province_magic = {
 
 clamp_character_magic_to_max = {
 	recalculate_character_magic_vars = yes
+	# Some callers can reach this effect before a character's magic variable has
+	# been initialized (notably old saves and newly-created event characters).
+	# Initialize it in this scope before using it to build the clamp value.
+	if = {
+		limit = { NOT = { has_variable = magic } }
+		set_variable = {
+			name = magic
+			value = 0
+		}
+	}
 	set_variable = {
 		name = magic_clamp_check
-		value = var:magic
+		value = 0
+	}
+	change_variable = {
+		name = magic_clamp_check
+		add = var:magic
 	}
 	change_variable = {
 		name = magic_clamp_check

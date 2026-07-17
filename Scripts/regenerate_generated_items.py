@@ -200,7 +200,6 @@ omni_buy_generated_slot_item = {{
 \tremove_list_variable = {{ name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }}
 \tremove_list_variable = {{ name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }}
 \tremove_variable = omni_shop_slot_$SLOT$
-\tset_variable = {{ name = omni_recent_purchase_cooldown days = 30 }}
 }}
 
 # Adventure loot: pick from a pool and hand straight to ROOT (the adventurer).

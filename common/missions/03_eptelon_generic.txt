@@ -1,0 +1,1229 @@
+03_eptelon_generic = {
+    header = "lotr_generic_mission_city_headers"
+    icon = "lotr_tribal_reform_mission_icon"
+
+    repeatable = no
+    chance = { factor = 1000 }
+
+    potential = {
+        NOT = { has_variable = mission_cooldown_var }
+        capital_scope = {
+            OR = {
+                is_in_region = eptelon_north_region
+                is_in_region = eptelon_shout_region
+            }
+        }
+    }
+
+    abort = {}
+    on_start = {
+        start_mission_ai_effect = yes
+    }
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = {
+            name = mission_cooldown_var
+            days = 7300
+        }
+    }
+    on_completion = {
+        capital_scope = {
+            capital_formable_large_effect = yes
+        }
+    }
+
+    # -------------------------------
+    # SHARED EARLY GAME — Tasks 1–4
+    # -------------------------------
+
+    03_eptelon_generic_task_1 = {
+        icon = "task_battle"
+        duration = 30
+
+        allow = {
+            manpower >= 10
+            military_experience >= 5
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.1
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_tested_shore_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_tested_shore_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_2 = {
+        icon = "task_atlas"
+        requires = { 03_eptelon_generic_task_1 }
+
+        allow = {
+            num_of_ships >= 10
+            custom_tooltip = {
+                text = we_need_port_building_tt
+                any_owned_province = {
+                    has_building = port_building
+                }
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.2
+            show_as_tooltip = {
+                add_military_experience = 10
+                add_country_modifier = {
+                    name = eptelon_slaver_watch_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_military_experience = 10
+                add_country_modifier = {
+                    name = eptelon_slaver_watch_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    # Task 3 — Standard (bypassed for Heptelonian primary culture)
+    03_eptelon_generic_task_3 = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_1 }
+
+        bypass = {
+            primary_culture = heptelonians
+        }
+
+        allow = {
+            NOT = { primary_culture = heptelonians }
+            treasury >= 50
+            trigger_if = {
+                limit = { is_tribal = yes }
+                has_law = coin_minting_law
+            }
+            trigger_else = {
+                capital_scope = {
+                    has_building = commerce_building
+                }
+            }
+        }
+
+        highlight = {
+            scope:province = {
+                owner = root
+                is_capital = yes
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.3
+            show_as_tooltip = {
+                add_treasury = 100
+                add_country_modifier = {
+                    name = eptelon_fractured_trade_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_treasury = 100
+                add_country_modifier = {
+                    name = eptelon_fractured_trade_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    # Task 3_hept — Heptelonian maritime trade variant (bypassed for all others)
+    03_eptelon_generic_task_3_hept = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_1 }
+
+        bypass = {
+            NOT = { primary_culture = heptelonians }
+        }
+
+        allow = {
+            primary_culture = heptelonians
+            treasury >= 75
+            custom_tooltip = {
+                text = we_need_port_building_tt
+                any_owned_province = {
+                    has_building = port_building
+                    has_building = commerce_building
+                }
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.4
+            show_as_tooltip = {
+                add_treasury = 150
+                add_country_modifier = {
+                    name = eptelon_maritime_ledgers_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_treasury = 150
+                add_country_modifier = {
+                    name = eptelon_maritime_ledgers_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_4 = {
+        icon = "task_conquest"
+        requires = { 03_eptelon_generic_task_2 03_eptelon_generic_task_3 03_eptelon_generic_task_3_hept }
+
+        highlight = {
+            scope:province = {
+                region = root.capital_scope.region
+            }
+        }
+
+        allow = {
+            owns_percent_of_region = {
+                PROVINCE = capital_scope
+                PERCENT = "0.25"
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.5
+            show_as_tooltip = {
+                add_1_free_province_investments = yes
+                add_military_experience = 10
+            }
+            hidden_effect = {
+                add_1_free_province_investments = yes
+                add_military_experience = 10
+            }
+        }
+    }
+
+    # -----------------------------------------------------------
+    # OPTIONAL — THE CITY OF THIEVES (Sum Khaya side-adventure)
+    # Available to any branch after securing the heartland
+    # -----------------------------------------------------------
+
+    03_eptelon_generic_task_sum_khaya = {
+        icon = "task_political"
+        requires = { 03_eptelon_generic_task_4 }
+
+        highlight = {
+            scope:province = {
+                province_id = 653
+            }
+        }
+
+        allow = {
+            owns_or_subject_owns = 653
+            war = no
+            current_ruler = {
+                NOT = { has_trait = incapable }
+            }
+        }
+
+        on_completion = {
+            trigger_event = sum_khaya_adv.1
+        }
+    }
+
+    # -------------------------------------------
+    # BRANCH A — NATIVE EPTELONIANS
+    # Trigger: country_culture_group = eptelon
+    # Endpoint: Form Eptelon (EPT, tier 3)
+    # -------------------------------------------
+
+    03_eptelon_generic_task_5a = {
+        icon = "task_diplomatic"
+        requires = { 03_eptelon_generic_task_4 }
+
+        bypass = {
+            NOT = { country_culture_group = eptelon }
+        }
+
+        allow = {
+            country_culture_group = eptelon
+            political_influence >= 20
+            stability >= 35
+        }
+
+        on_completion = {
+            add_political_influence = -20
+            trigger_event = me_eptelon_gen.10
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_warchief_covenant_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_warchief_covenant_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_6a = {
+        icon = "task_conquest"
+        requires = { 03_eptelon_generic_task_5a }
+
+        bypass = {
+            NOT = { country_culture_group = eptelon }
+        }
+
+        highlight = {
+            scope:province = {
+                is_in_region = eptelon_north_region
+            }
+        }
+
+        allow = {
+            country_culture_group = eptelon
+            owns_or_subject_owns_region = eptelon_north_region
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.11
+            show_as_tooltip = {
+                area:eptelon_shout_area_1 = {
+                    add_provincial_claim_effect = yes
+                }
+            }
+            hidden_effect = {
+                area:eptelon_shout_area_1 = {
+                    add_provincial_claim_effect = yes
+                }
+            }
+        }
+    }
+
+    # Parallel Task: The Elder's Mark (relic/shrine quest — grants unique item)
+    03_eptelon_generic_task_elder_mark = {
+        icon = "task_religion"
+        requires = { 03_eptelon_generic_task_6a }
+
+        bypass = {
+            NOT = { country_culture_group = eptelon }
+        }
+
+        allow = {
+            country_culture_group = eptelon
+            capital_scope = {
+                has_building = temple_building
+            }
+            treasury >= 150
+        }
+
+        on_completion = {
+            add_treasury = -150
+            trigger_event = me_eptelon_gen.12
+            show_as_tooltip = {
+                create_country_treasure = {
+                    key = "elder_mark_eptelon_treasure"
+                    icon = "cr_treasure_golden_lion_rhyton_01"
+                    modifier = {
+                        global_population_happiness = 0.03
+                        global_monthly_state_loyalty = 0.02
+                    }
+                }
+                current_ruler = {
+                    give_character_an_item = {
+                        item_ID = item_eptelon_elder_mark
+                    }
+                    add_popularity = 15
+                }
+            }
+            hidden_effect = {
+                create_country_treasure = {
+                    key = "elder_mark_eptelon_treasure"
+                    icon = "cr_treasure_golden_lion_rhyton_01"
+                    modifier = {
+                        global_population_happiness = 0.03
+                        global_monthly_state_loyalty = 0.02
+                    }
+                }
+                current_ruler = {
+                    give_character_an_item = {
+                        item_ID = item_eptelon_elder_mark
+                    }
+                    add_popularity = 15
+                }
+            }
+        }
+    }
+
+    # Parallel Task: The Tribal Council (diplomatic consolidation of tribes)
+    03_eptelon_generic_task_tribal_council = {
+        icon = "task_diplomatic"
+        requires = { 03_eptelon_generic_task_6a }
+
+        bypass = {
+            NOT = { country_culture_group = eptelon }
+        }
+
+        allow = {
+            country_culture_group = eptelon
+            political_influence >= 30
+            stability >= 45
+        }
+
+        on_completion = {
+            add_political_influence = -30
+            trigger_event = me_eptelon_gen.13
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_tribal_council_mod
+                    duration = -1
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_tribal_council_mod
+                    duration = -1
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_7a = {
+        icon = "task_battle"
+        requires = { 03_eptelon_generic_task_elder_mark 03_eptelon_generic_task_tribal_council }
+
+        bypass = {
+            NOT = { country_culture_group = eptelon }
+        }
+
+        highlight = {
+            scope:province = {
+                is_in_region = eptelon_shout_region
+            }
+        }
+
+        allow = {
+            country_culture_group = eptelon
+            custom_tooltip = {
+                text = eptelon_need_shout_provinces_tt
+                any_owned_province = {
+                    count >= 3
+                    is_in_region = eptelon_shout_region
+                }
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.14
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_sacred_mission_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_sacred_mission_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_8a = {
+        icon = "task_conquest"
+        requires = { 03_eptelon_generic_task_7a }
+
+        bypass = {
+            NOT = { country_culture_group = eptelon }
+        }
+
+        highlight = {
+            scope:province = {
+                is_in_region = eptelon_shout_region
+            }
+        }
+
+        allow = {
+            country_culture_group = eptelon
+            owns_or_subject_owns_region = eptelon_shout_region
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.15
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_final_expulsion_mod
+                    duration = -1
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_final_expulsion_mod
+                    duration = -1
+                }
+            }
+        }
+    }
+
+    # ---------------------------------------------------
+    # BRANCH B — HIGH ELVEN COLONISTS (ASCENDIC)
+    # Trigger: country_culture_group = high_elves
+    # Endpoint: Form Ascendic Eptelon (ASE, tier 2)
+    # ---------------------------------------------------
+
+    03_eptelon_generic_task_5b = {
+        icon = "task_calm"
+        requires = { 03_eptelon_generic_task_4 }
+
+        bypass = {
+            NOT = { country_culture_group = high_elves }
+        }
+
+        allow = {
+            country_culture_group = high_elves
+            stability >= 50
+            capital_scope = {
+                has_building = military_building
+            }
+        }
+
+        highlight = {
+            scope:province = {
+                owner = root
+                is_capital = yes
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.20
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_ascendic_order_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_ascendic_order_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_6b = {
+        icon = "task_diplomatic"
+        requires = { 03_eptelon_generic_task_5b }
+
+        bypass = {
+            NOT = { country_culture_group = high_elves }
+        }
+
+        allow = {
+            country_culture_group = high_elves
+            political_influence >= 30
+            current_ruler = {
+                has_ambition = scheme_influence
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.21
+            show_as_tooltip = {
+                add_political_influence = 40
+                add_country_modifier = {
+                    name = eptelon_fracture_tribes_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_political_influence = 40
+                add_country_modifier = {
+                    name = eptelon_fracture_tribes_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    # Citadels of the Shore — grants the Black Pearl of Atheus (unique item)
+    03_eptelon_generic_task_7b = {
+        icon = "task_expansion"
+        requires = { 03_eptelon_generic_task_6b }
+
+        bypass = {
+            NOT = { country_culture_group = high_elves }
+        }
+
+        allow = {
+            country_culture_group = high_elves
+            treasury >= 200
+            custom_tooltip = {
+                text = eptelon_need_citadels_tt
+                any_owned_province = {
+                    count >= 3
+                    OR = {
+                        is_in_region = eptelon_north_region
+                        is_in_region = eptelon_shout_region
+                    }
+                    has_building = fortress_building
+                }
+            }
+        }
+
+        on_completion = {
+            add_treasury = -200
+            trigger_event = me_eptelon_gen.22
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_citadels_shore_mod
+                    duration = -1
+                }
+                current_ruler = {
+                    give_character_an_item = {
+                        item_ID = item_black_pearl_atheus
+                    }
+                    add_popularity = 10
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_citadels_shore_mod
+                    duration = -1
+                }
+                current_ruler = {
+                    give_character_an_item = {
+                        item_ID = item_black_pearl_atheus
+                    }
+                    add_popularity = 10
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_8b = {
+        icon = "task_conquest"
+        requires = { 03_eptelon_generic_task_7b }
+
+        bypass = {
+            NOT = { country_culture_group = high_elves }
+        }
+
+        highlight = {
+            scope:province = {
+                is_in_region = eptelon_shout_region
+            }
+        }
+
+        allow = {
+            country_culture_group = high_elves
+            owns_or_subject_owns_region = eptelon_shout_region
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.23
+            show_as_tooltip = {
+                capital_scope = {
+                    create_state_pop = citizen
+                    create_state_pop = citizen
+                    create_state_pop = freemen
+                    create_state_pop = freemen
+                }
+                add_country_modifier = {
+                    name = eptelon_ascendic_dominion_mod
+                    duration = -1
+                }
+            }
+            hidden_effect = {
+                capital_scope = {
+                    create_state_pop = citizen
+                    create_state_pop = citizen
+                    create_state_pop = freemen
+                    create_state_pop = freemen
+                }
+                add_country_modifier = {
+                    name = eptelon_ascendic_dominion_mod
+                    duration = -1
+                }
+            }
+        }
+    }
+
+    # ----------------------------------------------------
+    # BRANCH C — HEPTELONIAN HUMAN COLONISTS
+    # Trigger: primary_culture = heptelonians
+    # Endpoint: Form Heptelon (HPT, tier 3)
+    # ----------------------------------------------------
+
+    03_eptelon_generic_task_5c = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_4 }
+
+        bypass = {
+            NOT = { primary_culture = heptelonians }
+        }
+
+        highlight = {
+            scope:province = {
+                owner = root
+                is_capital = yes
+            }
+        }
+
+        allow = {
+            primary_culture = heptelonians
+            capital_scope = {
+                has_building = port_building
+                has_building = commerce_building
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.30
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_port_towns_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_port_towns_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_6c = {
+        icon = "task_atlas"
+        requires = { 03_eptelon_generic_task_5c }
+        duration = 365
+
+        bypass = {
+            NOT = { primary_culture = heptelonians }
+        }
+
+        allow = {
+            primary_culture = heptelonians
+            capital_scope = {
+                has_building = forum_building
+                has_building = commerce_building
+                has_no_ongoing_construction = yes
+            }
+        }
+
+        highlight = {
+            scope:province = {
+                owner = root
+                is_capital = yes
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.31
+            show_as_tooltip = {
+                add_treasury = 200
+                add_innovation = 1
+                add_country_modifier = {
+                    name = eptelon_inner_sea_merchants_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_treasury = 200
+                add_innovation = 1
+                add_country_modifier = {
+                    name = eptelon_inner_sea_merchants_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_7c = {
+        icon = "task_battle"
+        requires = { 03_eptelon_generic_task_6c }
+
+        bypass = {
+            NOT = { primary_culture = heptelonians }
+        }
+
+        allow = {
+            primary_culture = heptelonians
+            manpower >= 15
+            military_experience >= 10
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.32
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_colonial_levy_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_colonial_levy_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    # A Colony No Longer — grants the Harbor Charter (unique item)
+    03_eptelon_generic_task_8c = {
+        icon = "task_political"
+        requires = { 03_eptelon_generic_task_7c }
+
+        bypass = {
+            NOT = { primary_culture = heptelonians }
+        }
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = eptelon_north_region
+                    is_in_region = eptelon_shout_region
+                }
+            }
+        }
+
+        allow = {
+            primary_culture = heptelonians
+            owns_or_subject_owns_region = eptelon_north_region
+            owns_or_subject_owns_region = eptelon_shout_region
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.33
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_colony_no_more_mod
+                    duration = -1
+                }
+                current_ruler = {
+                    give_character_an_item = {
+                        item_ID = item_eptelon_harbor_charter
+                    }
+                    add_popularity = 10
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_colony_no_more_mod
+                    duration = -1
+                }
+                current_ruler = {
+                    give_character_an_item = {
+                        item_ID = item_eptelon_harbor_charter
+                    }
+                    add_popularity = 10
+                }
+            }
+        }
+    }
+
+    # -----------------------------------
+    # SHARED LATE GAME — Tasks 9–14
+    # -----------------------------------
+
+    03_eptelon_generic_task_9 = {
+        icon = "task_battle"
+        requires = { 03_eptelon_generic_task_8a 03_eptelon_generic_task_8b 03_eptelon_generic_task_8c }
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = eptelon_north_region
+                    is_in_region = eptelon_shout_region
+                }
+            }
+        }
+
+        allow = {
+            owns_or_subject_owns_region = eptelon_north_region
+            owns_or_subject_owns_region = eptelon_shout_region
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.40
+        }
+    }
+
+    # Parallel Task: The Settlers' Compact (integration path)
+    03_eptelon_generic_task_9_open_hand = {
+        icon = "task_diplomatic"
+        requires = { 03_eptelon_generic_task_9 }
+
+        allow = {
+            stability >= 55
+            political_influence >= 40
+        }
+
+        on_completion = {
+            add_political_influence = -40
+            trigger_event = me_eptelon_gen.41
+            show_as_tooltip = {
+                add_stability = 10
+                add_country_modifier = {
+                    name = eptelon_settlers_compact_mod
+                    duration = -1
+                }
+            }
+            hidden_effect = {
+                add_stability = 10
+                add_country_modifier = {
+                    name = eptelon_settlers_compact_mod
+                    duration = -1
+                }
+            }
+        }
+    }
+
+    # Parallel Task: The Price of Victory (subjugation path)
+    03_eptelon_generic_task_9_iron_brand = {
+        icon = "task_conquest"
+        requires = { 03_eptelon_generic_task_9 }
+
+        allow = {
+            military_experience >= 10
+            treasury >= 200
+        }
+
+        on_completion = {
+            add_military_experience = -10
+            add_treasury = -200
+            trigger_event = me_eptelon_gen.42
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_price_of_victory_mod
+                    duration = -1
+                }
+                capital_scope = {
+                    create_state_pop = slaves
+                    create_state_pop = slaves
+                    create_state_pop = slaves
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_price_of_victory_mod
+                    duration = -1
+                }
+                capital_scope = {
+                    create_state_pop = slaves
+                    create_state_pop = slaves
+                    create_state_pop = slaves
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_10 = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_9_open_hand 03_eptelon_generic_task_9_iron_brand }
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = eptelon_north_region
+                    is_in_region = eptelon_shout_region
+                }
+                OR = {
+                    has_city_status = yes
+                    has_province_rank = city_metropolis
+                }
+            }
+        }
+
+        allow = {
+            custom_tooltip = {
+                text = eptelon_generic_task_10_rebuild_tt
+                any_owned_province = {
+                    count >= 10
+                    OR = {
+                        is_in_region = eptelon_north_region
+                        is_in_region = eptelon_shout_region
+                    }
+                    OR = {
+                        has_city_status = yes
+                        has_province_rank = city_metropolis
+                    }
+                    OR = {
+                        AND = {
+                            num_of_military_building >= 2
+                            num_of_court_building >= 1
+            }
+                        num_of_temple_building >= 1
+                    }
+                    total_population >= 15
+                }
+            }
+        }
+
+        on_completion = {
+            add_treasury = 300
+            trigger_event = me_eptelon_gen.43
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_rebuilt_shore_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_rebuilt_shore_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_11 = {
+        icon = "task_political"
+        requires = { 03_eptelon_generic_task_10 }
+
+        allow = {
+            num_of_ships >= 40
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.44
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_grand_fleet_mod
+                    duration = -1
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_grand_fleet_mod
+                    duration = -1
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_12 = {
+        icon = "task_calm"
+        requires = { 03_eptelon_generic_task_10 }
+
+        allow = {
+            capital_scope = {
+                num_of_fortress_building >= 2
+                has_no_ongoing_construction = yes
+            }
+            capital_scope = {
+                state = {
+                    calc_true_if = {
+                        amount >= 3
+                        state_improvement_military_trigger = yes
+                        state_improvement_civic_trigger = yes
+                        state_improvement_oratory_trigger = yes
+                        state_improvement_religious_trigger = yes
+                    }
+                }
+            }
+            custom_tooltip = {
+                text = we_need_improved_fortification_tt
+                has_high_economic_policy = expense_fort
+            }
+            stability >= 60
+        }
+
+        highlight = {
+            scope:province = {
+                owner = root
+                is_capital = yes
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.45
+            show_as_tooltip = {
+                add_country_modifier = {
+                    name = eptelon_fortified_capital_mod
+                    duration = 3650
+                }
+            }
+            hidden_effect = {
+                add_country_modifier = {
+                    name = eptelon_fortified_capital_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_13 = {
+        icon = "task_diplomatic"
+        requires = { 03_eptelon_generic_task_11 03_eptelon_generic_task_12 }
+        duration = 90
+
+        allow = {
+            political_influence >= 50
+            has_aggressive_expansion <= 15
+            num_of_ships >= 60
+            capital_scope = {
+                has_city_status = yes
+                num_of_fortress_building >= 2
+                civilization_value >= 60
+                total_population >= 70
+            }
+        }
+
+        highlight = {
+            scope:province = {
+                owner = root
+                is_capital = yes
+            }
+        }
+
+        on_completion = {
+            add_political_influence = -50
+            trigger_event = me_eptelon_gen.46
+            show_as_tooltip = {
+                capital_scope = {
+                    set_city_status = city_metropolis
+                }
+                add_country_modifier = {
+                    name = eptelon_island_at_peace_mod
+                    duration = -1
+                }
+            }
+            hidden_effect = {
+                capital_scope = {
+                    set_city_status = city_metropolis
+                }
+                add_country_modifier = {
+                    name = eptelon_island_at_peace_mod
+                    duration = -1
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_14 = {
+        icon = "task_atlas"
+        final = yes
+        requires = { 03_eptelon_generic_task_13 }
+
+        allow = {
+            custom_tooltip = {
+                text = eptelon_need_to_form_tt
+                OR = {
+                    tag = EPT
+                    tag = ASE
+                    tag = HPT
+                }
+            }
+            war = no
+        }
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = eptelon_north_region
+                    is_in_region = eptelon_shout_region
+                }
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.47
+            show_as_tooltip = {
+                add_5_free_province_investments = yes
+                if = {
+                    limit = {
+                        OR = {
+                            has_completed_mission_task = 03_eptelon_generic_task_8a
+                            tag = EPT
+                            country_culture_group = eptelon
+                        }
+                    }
+                    current_ruler = {
+                        add_trait = blood_of_the_eptelonian_chiefs
+                    }
+                }
+                else_if = {
+                    limit = {
+                        OR = {
+                            has_completed_mission_task = 03_eptelon_generic_task_8b
+                            tag = ASE
+                            country_culture_group = high_elves
+                        }
+                    }
+                    current_ruler = {
+                        add_trait = blood_of_atheusian_shores
+                    }
+                }
+                else = {
+                    current_ruler = {
+                        add_trait = blood_of_the_harbor_founders
+                    }
+                }
+                current_ruler = {
+                    add_popularity = 25
+                    family = {
+                        add_prestige = 200
+                    }
+                }
+            }
+            hidden_effect = {
+                add_5_free_province_investments = yes
+                if = {
+                    limit = {
+                        OR = {
+                            has_completed_mission_task = 03_eptelon_generic_task_8a
+                            tag = EPT
+                            country_culture_group = eptelon
+                        }
+                    }
+                    current_ruler = {
+                        add_trait = blood_of_the_eptelonian_chiefs
+                    }
+                }
+                else_if = {
+                    limit = {
+                        OR = {
+                            has_completed_mission_task = 03_eptelon_generic_task_8b
+                            tag = ASE
+                            country_culture_group = high_elves
+                        }
+                    }
+                    current_ruler = {
+                        add_trait = blood_of_atheusian_shores
+                    }
+                }
+                else = {
+                    current_ruler = {
+                        add_trait = blood_of_the_harbor_founders
+                    }
+                }
+                current_ruler = {
+                    add_popularity = 25
+                    family = {
+                        add_prestige = 200
+                    }
+                }
+            }
+        }
+    }
+}
