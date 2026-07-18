@@ -1,54 +1,73 @@
 ﻿omni_character_can_visit_city = {
 	is_alive = yes
 	exists = employer
-	location = {
-		has_owner = yes
-		OR = {
-			owner = prev.employer
-			controller = prev.employer
-			prev.employer = { has_military_access = prev.owner }
+	OR = {
+		location = {
+			has_owner = yes
+			OR = {
+				owner = root.employer
+				controller = root.employer
+				root.employer = { has_military_access = prev.owner }
+			}
+		}
+		any_character_unit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+			unit_location = {
+				has_owner = yes
+				OR = {
+					owner = root.employer
+					controller = root.employer
+					root.employer = { has_military_access = prev.owner }
+				}
+			}
+		}
+	}
+}
+
+omni_character_local_city_has_building = {
+	omni_character_can_visit_city = yes
+	OR = {
+		location = {
+			has_building = $BUILDING$
+		}
+		any_character_unit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+			unit_location = {
+				has_building = $BUILDING$
+			}
 		}
 	}
 }
 
 omni_character_has_local_market = {
-	omni_character_can_visit_city = yes
-	location = {
-		has_building = commerce_building
-	}
+	omni_character_local_city_has_building = { BUILDING = commerce_building }
 }
 
 omni_character_has_local_adventurer_guild = {
-	omni_character_can_visit_city = yes
-	location = {
-		has_building = adventurer_guild_building
-	}
+	omni_character_local_city_has_building = { BUILDING = adventurer_guild_building }
 }
 
 omni_character_has_local_brewery = {
-	omni_character_can_visit_city = yes
-	location = {
-		has_building = brewery_building
-	}
+	omni_character_local_city_has_building = { BUILDING = brewery_building }
 }
 
 omni_character_has_local_circus = {
-	omni_character_can_visit_city = yes
-	location = {
-		has_building = circus_building
-	}
+	omni_character_local_city_has_building = { BUILDING = circus_building }
 }
 
 omni_character_has_local_magic_academy = {
-	omni_character_can_visit_city = yes
-	location = {
-		has_building = magic_academy_building
-	}
+	omni_character_local_city_has_building = { BUILDING = magic_academy_building }
 }
 
 # A character may enter a city they do NOT own, control, or hold military
 # access to - provided it is a valid, owned settlement and the character (or
-# a leading general/ruler) is physically standing there. This covers both a
+# a leading commander/ruler) is physically standing there. This covers both a
 # city occupied by the character's own side after a siege, and a city merely
 # being passed through/besieged by a hostile army that has not taken it.
 # Unlike omni_character_can_visit_city, no traditional buildings are required
@@ -59,9 +78,21 @@ omni_character_can_visit_hostile_city = {
 	OR = {
 		is_ruler = yes
 		is_general = yes
+		is_governor = yes
 	}
-	location = {
-		has_owner = yes
+	OR = {
+		location = {
+			has_owner = yes
+		}
+		any_character_unit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+			unit_location = {
+				has_owner = yes
+			}
+		}
 	}
 	NOT = { omni_character_can_visit_city = yes }
 }
