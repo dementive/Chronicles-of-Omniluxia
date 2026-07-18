@@ -8,6 +8,26 @@
 # Called from the shop (ROOT = buying ruler). Pays the item's tier price from the
 # treasury, then routes the item into the country and (re)equips the matching slot.
 omni_army_buy_slot_item = {
+	if = {
+		limit = { NOT = { is_ruler = yes } }
+		if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_shop_slot_$SLOT$ } } add_gold = -130 }
+		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_shop_slot_$SLOT$ } } add_gold = -200 }
+		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_shop_slot_$SLOT$ } } add_gold = -300 }
+		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_shop_slot_$SLOT$ } } add_gold = -440 }
+		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_shop_slot_$SLOT$ } } add_gold = -640 }
+		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_shop_slot_$SLOT$ } } add_gold = -920 }
+		else = { add_gold = -1300 }
+		give_character_an_item_from_variable = { ITEM_VAR = omni_shop_slot_$SLOT$ }
+		remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
+		remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
+		remove_variable = omni_shop_slot_$SLOT$
+	}
+	else = {
+		omni_army_buy_slot_item_national = { SLOT = $SLOT$ }
+	}
+}
+
+omni_army_buy_slot_item_national = {
 	if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 130 } country = { add_treasury = -130 } }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 200 } country = { add_treasury = -200 } }
 	else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_shop_slot_$SLOT$ } } set_variable = { name = omni_last_purchase_price value = 300 } country = { add_treasury = -300 } }
@@ -30,15 +50,23 @@ omni_army_buy_slot_item = {
 	remove_variable = omni_last_purchase_price
 }
 
-# Fixed / hand-made GEAR purchase (literal item_ID, explicit price). Pays from the
-# treasury and routes into the national loadout slot $SLOTVAR$.
+# Fixed / hand-made GEAR purchase (literal item_ID, explicit price).
+# Rulers and AI use the national loadout; player-controlled non-rulers buy
+# personally and receive only their own character item.
 omni_army_buy_fixed = {
-	country = { add_treasury = -$PRICE$ }
-	give_character_an_item = { item_ID = $item_ID$ }
-	country = {
-		set_variable = { name = omni_gen_fx_item value = flag:$item_ID$ }
-		omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
-		remove_variable = omni_gen_fx_item
+	if = {
+		limit = { is_ruler = yes OR = { employer = { is_ai = yes } country = { is_ai = yes } } }
+		country = { add_treasury = -$PRICE$ }
+		give_character_an_item = { item_ID = $item_ID$ }
+		country = {
+			set_variable = { name = omni_gen_fx_item value = flag:$item_ID$ }
+			omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
+			remove_variable = omni_gen_fx_item
+		}
+	}
+	else = {
+		add_gold = { value = $PRICE$ multiply = -1 }
+		give_character_an_item = { item_ID = $item_ID$ }
 	}
 	remove_list_variable = { name = omni_item_shop_stock target = flag:$item_ID$ }
 }

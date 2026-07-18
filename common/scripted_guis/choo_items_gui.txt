@@ -3258,12 +3258,11 @@ omni_character_city_button = {
 		player
 	}
 
-	# Shows a city interaction button when the viewed character is standing in a
-	# city with at least one supported interaction building they can actually access.
+	# Shows a city interaction button when one of the player's characters is standing
+	# in a city with at least one supported interaction building they can access.
 	is_shown = {
 		exists = root
 		is_alive = yes
-		is_ruler = yes
 		OR = {
 			country = scope:player
 			employer = scope:player
@@ -3273,6 +3272,11 @@ omni_character_city_button = {
 			omni_character_has_local_adventurer_guild = yes
 			omni_character_has_local_brewery = yes
 			omni_character_has_local_circus = yes
+			omni_character_has_local_magic_academy = yes
+			# A hostile/occupied city has no traditional buildings open to a
+			# visiting ruler or general, but the Black Market and Requisition
+			# Food options should always be reachable there.
+			omni_character_can_visit_hostile_city = yes
 		}
 	}
 
@@ -3282,6 +3286,9 @@ omni_character_city_button = {
 
 	effect = {
 		hidden_effect = {
+			# Open the city interaction event on the character shown in the window.
+			# GUI event launches need to be hidden so the character scope is
+			# preserved for non-ruler characters such as army generals.
 			trigger_event = { id = omni_items.7 }
 		}
 	}
