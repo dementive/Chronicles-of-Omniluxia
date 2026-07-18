@@ -1,0 +1,60 @@
+﻿# Shared spell-learning primitives. Keep these effects O(1) at cast time.
+omni_learn_spell = {
+	set_variable = { name = $SPELL$_known_var value = 1 }
+}
+
+omni_grant_random_spell = {
+	# School/tier-specific pools are emitted in OMNI_spell_pools_generated.txt.
+	# This compatibility entry intentionally resolves to the beginner pool.
+	omni_grant_random_beginner_spell = yes
+}
+
+omni_grant_random_beginner_spell = {
+	random_list = {
+		10 = { trigger = { NOT = { omni_knows_spell = { SPELL = fireball } } } omni_learn_spell = { SPELL = fireball } }
+		10 = { trigger = { NOT = { omni_knows_spell = { SPELL = light_shields } } } omni_learn_spell = { SPELL = light_shields } }
+		10 = { trigger = { NOT = { omni_knows_spell = { SPELL = restoration } } } omni_learn_spell = { SPELL = restoration } }
+		10 = { trigger = { NOT = { omni_knows_spell = { SPELL = plant_growth } } } omni_learn_spell = { SPELL = plant_growth } }
+		10 = { trigger = { NOT = { omni_knows_spell = { SPELL = summon_warborn } } } omni_learn_spell = { SPELL = summon_warborn } }
+		1 = { }
+	}
+}
+
+omni_grant_two_beginner_spells = {
+	omni_grant_random_beginner_spell = yes
+	omni_grant_random_beginner_spell = yes
+}
+
+omni_buy_catchup_beginner_spell = {
+	omni_grant_random_beginner_spell = yes
+	omni_apply_cramming_fatigue = yes
+}
+
+omni_apply_cramming_fatigue = {
+	add_trait = cramming_fatigue_trait
+	change_variable = { name = magic_monthly subtract = 0.5 }
+	set_variable = { name = cramming_fatigue_timer days = 180 }
+}
+
+# Compatibility bridge for existing saves. Legacy unlocks remain untouched;
+# this only adds the equivalent spell flags, so loading a save cannot remove
+# previously available magic.
+omni_migrate_legacy_magic = {
+	if = { limit = { has_variable = diviner_t2_unlocked_var } omni_learn_spell = { SPELL = light_shields } }
+	if = { limit = { has_variable = diviner_t3_unlocked_var } omni_learn_spell = { SPELL = light_rays } }
+	if = { limit = { has_variable = diviner_t4_unlocked_var } omni_learn_spell = { SPELL = gravity_well } }
+	if = { limit = { has_variable = hierophant_t2_unlocked_var } omni_learn_spell = { SPELL = exorcism } }
+	if = { limit = { has_variable = cleric_t2_unlocked_var } omni_learn_spell = { SPELL = restoration } }
+	if = { limit = { has_variable = illusionist_t2_unlocked_var } omni_learn_spell = { SPELL = altered_inspiration } }
+	if = { limit = { has_variable = elementalist_t2_unlocked_var } omni_learn_spell = { SPELL = detect_minerals } }
+	if = { limit = { has_variable = druid_t2_unlocked_var } omni_learn_spell = { SPELL = plant_growth } }
+	if = { limit = { has_variable = necromancer_t2_unlocked_var } omni_learn_spell = { SPELL = summon_warborn } }
+	if = { limit = { has_variable = warlock_t2_unlocked_var } omni_learn_spell = { SPELL = rage } }
+	if = {
+		limit = { has_trait = archmage_trait }
+		set_variable = { name = diviner_mastered_var value = 1 }
+		set_variable = { name = cleric_mastered_var value = 1 }
+		set_variable = { name = elementalist_mastered_var value = 1 }
+		set_variable = { name = necromancer_mastered_var value = 1 }
+	}
+}

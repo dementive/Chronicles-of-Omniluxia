@@ -2,6 +2,31 @@
 
 file_path = r'c:\Users\Joshua\Documents\Paradox Interactive\Imperator\mod\Omniluxia\events\zorgo_magic_events.txt'
 
+# Canonical spell registry used by the learning code generator.
+SPELL_REGISTRY = [
+    ('omnic', 'diviner', 't1', 'light_shields'), ('omnic', 'diviner', 't1', 'light_rays'),
+    ('omnic', 'diviner', 't2', 'light_rays_ii'), ('omnic', 'diviner', 't2', 'light_walls'),
+    ('omnic', 'diviner', 't3', 'spirit_bomb'), ('omnic', 'diviner', 't4', 'chronostasis_field'),
+    ('omnic', 'hierophant', 't1', 'exorcism'), ('omnic', 'hierophant', 't1', 'revelation'),
+    ('omnic', 'hierophant', 't2', 'blessing'), ('omnic', 'hierophant', 't2', 'exorcism_ii'),
+    ('omnic', 'hierophant', 't3', 'revelation_ii'),
+    ('aldic', 'cleric', 't1', 'restoration'), ('aldic', 'cleric', 't1', 'healing_light'),
+    ('aldic', 'cleric', 't2', 'healing_light_ii'), ('aldic', 'cleric', 't2', 'vitality'),
+    ('aldic', 'cleric', 't3', 'pestilence'), ('aldic', 'illusionist', 't1', 'altered_inspiration'),
+    ('aldic', 'illusionist', 't1', 'inspired_thoughts'), ('aldic', 'illusionist', 't2', 'mind_break'),
+    ('aldic', 'illusionist', 't2', 'warped_flesh'), ('aldic', 'illusionist', 't3', 'warped_flesh_ii'),
+    ('amten', 'elementalist', 't1', 'detect_minerals'), ('amten', 'elementalist', 't2', 'detect_minerals_ii'),
+    ('amten', 'elementalist', 't2', 'rock_slide'), ('amten', 'elementalist', 't3', 'summon_earthworks'),
+    ('amten', 'druid', 't1', 'plant_growth'), ('amten', 'druid', 't1', 'summon_dryads'),
+    ('amten', 'druid', 't2', 'plant_growth_ii'), ('amten', 'druid', 't2', 'nature_bounty'),
+    ('amten', 'druid', 't3', 'nature_bounty_ii'),
+    ('melodian', 'necromancer', 't1', 'summon_warborn'), ('melodian', 'necromancer', 't1', 'curse'),
+    ('melodian', 'necromancer', 't2', 'hex'), ('melodian', 'necromancer', 't2', 'curse_ii'),
+    ('melodian', 'necromancer', 't3', 'raise_workers'), ('melodian', 'warlock', 't1', 'rage'),
+    ('melodian', 'warlock', 't1', 'dark_offering'), ('melodian', 'warlock', 't2', 'death_ray'),
+    ('melodian', 'warlock', 't2', 'dark_visions'), ('melodian', 'warlock', 't3', 'dark_offering_ii'),
+]
+
 with open(file_path, 'r', encoding='utf-8') as f:
     content = f.read()
 
@@ -637,6 +662,28 @@ def insert_spells(event_name, spells, text):
     if insert_point == -1: return text
     
     return text[:insert_point] + spells + text[insert_point:]
+
+def add_known_gate(option_text):
+    """Add the cheap per-spell gate to generated options.
+
+    Spell ids are kept in the option comments, making this safe to run again:
+    an existing gate is never duplicated.
+    """
+    import re
+    def replace(match):
+        spell_id = re.sub(r'[^a-z0-9]+', '_', match.group(1).lower()).strip('_')
+        block = match.group(0)
+        if 'omni_knows_spell' in block:
+            return block
+        return block.replace('trigger = {', 'trigger = {\n            scope:selected_mage = { omni_knows_spell = { SPELL = ' + spell_id + ' } }', 1)
+    return re.sub(r'    option = \{ # ([^\n]+).*?\n    \}', replace, option_text, flags=re.S)
+
+# New generated content always receives a per-spell gate.
+omnic_spells = add_known_gate(omnic_spells)
+aldic_spells = add_known_gate(aldic_spells)
+amten_spells = add_known_gate(amten_spells)
+melodian_spells = add_known_gate(melodian_spells)
+siege_spells = add_known_gate(siege_spells)
 
 content = insert_spells('me_zorgo_magic_focus.10', omnic_spells, content)
 content = insert_spells('me_zorgo_magic_focus.11', aldic_spells, content)

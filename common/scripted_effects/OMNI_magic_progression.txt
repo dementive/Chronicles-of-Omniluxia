@@ -1,0 +1,47 @@
+﻿# Deterministic study progression and prestige ladder.
+omni_add_study_progress = {
+	if = { limit = { NOT = { has_variable = magic_study_progress } } set_variable = { name = magic_study_progress value = 0 } }
+	change_variable = { name = magic_study_progress add = 8 }
+}
+
+omni_resolve_magic_study_state = {
+	if = { limit = { NOT = { has_variable = magic_study_progress } } set_variable = { name = magic_study_progress value = 0 } }
+	if = { limit = { NOT = { has_variable = omnic_affinity_var } } set_variable = { name = omnic_affinity_var value = 0 } }
+	if = { limit = { NOT = { has_variable = aldic_affinity_var } } set_variable = { name = aldic_affinity_var value = 0 } }
+	if = { limit = { NOT = { has_variable = amten_affinity_var } } set_variable = { name = amten_affinity_var value = 0 } }
+	if = { limit = { NOT = { has_variable = melodian_affinity_var } } set_variable = { name = melodian_affinity_var value = 0 } }
+	change_variable = { name = magic_study_progress add = 8 }
+	if = { limit = { has_variable = omni_studying_diviner_var } change_variable = { name = omnic_affinity_var add = 1 } }
+	if = { limit = { has_variable = omni_studying_hierophant_var } change_variable = { name = omnic_affinity_var add = 1 } }
+	if = { limit = { has_variable = omni_studying_cleric_var } change_variable = { name = aldic_affinity_var add = 1 } }
+	if = { limit = { has_variable = omni_studying_illusionist_var } change_variable = { name = aldic_affinity_var add = 1 } }
+	if = { limit = { has_variable = omni_studying_elementalist_var } change_variable = { name = amten_affinity_var add = 1 } }
+	if = { limit = { has_variable = omni_studying_druid_var } change_variable = { name = amten_affinity_var add = 1 } }
+	if = { limit = { has_variable = omni_studying_necromancer_var } change_variable = { name = melodian_affinity_var add = 1 } }
+	if = { limit = { has_variable = omni_studying_warlock_var } change_variable = { name = melodian_affinity_var add = 1 } }
+	if = { limit = { has_variable = diviner_t4_unlocked_var } set_variable = diviner_mastered_var }
+	if = { limit = { has_variable = hierophant_t4_unlocked_var } set_variable = hierophant_mastered_var }
+	if = { limit = { has_variable = cleric_t4_unlocked_var } set_variable = cleric_mastered_var }
+	if = { limit = { has_variable = illusionist_t4_unlocked_var } set_variable = illusionist_mastered_var }
+	if = { limit = { has_variable = elementalist_t4_unlocked_var } set_variable = elementalist_mastered_var }
+	if = { limit = { has_variable = druid_t4_unlocked_var } set_variable = druid_mastered_var }
+	if = { limit = { has_variable = necromancer_t4_unlocked_var } set_variable = necromancer_mastered_var }
+	if = { limit = { has_variable = warlock_t4_unlocked_var } set_variable = warlock_mastered_var }
+	omni_check_magic_prestige = yes
+}
+
+omni_check_magic_prestige = {
+	# Mastery flags are intentionally additive; no discipline traits are stripped.
+	if = { limit = { has_variable = diviner_mastered_var has_variable = hierophant_mastered_var } add_trait = omnic_master_trait }
+	if = { limit = { has_variable = cleric_mastered_var has_variable = illusionist_mastered_var } add_trait = aldic_master_trait }
+	if = { limit = { has_variable = elementalist_mastered_var has_variable = druid_mastered_var } add_trait = amten_master_trait }
+	if = { limit = { has_variable = necromancer_mastered_var has_variable = warlock_mastered_var } add_trait = melodian_master_trait }
+	if = { limit = { OR = {
+		AND = { has_variable = diviner_mastered_var has_variable = hierophant_mastered_var }
+		AND = { has_variable = cleric_mastered_var has_variable = illusionist_mastered_var }
+		AND = { has_variable = elementalist_mastered_var has_variable = druid_mastered_var }
+		AND = { has_variable = necromancer_mastered_var has_variable = warlock_mastered_var }
+	} } add_trait = archmage_trait }
+	if = { limit = { has_variable = diviner_mastered_var has_variable = hierophant_mastered_var has_variable = cleric_mastered_var has_variable = illusionist_mastered_var has_variable = elementalist_mastered_var has_variable = druid_mastered_var } add_trait = grand_archmage_trait }
+	if = { limit = { has_variable = diviner_mastered_var has_variable = hierophant_mastered_var has_variable = cleric_mastered_var has_variable = illusionist_mastered_var has_variable = elementalist_mastered_var has_variable = druid_mastered_var has_variable = necromancer_mastered_var has_variable = warlock_mastered_var } add_trait = magus_supreme_trait }
+}
