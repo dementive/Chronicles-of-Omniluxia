@@ -16,7 +16,9 @@ omni_annual_character_equipment_check = {
 		limit = {
 			wealth >= 40
 			exists = employer
+			NOT = { has_variable = omni_equipment_checked_recently }
 		}
+		set_variable = { name = omni_equipment_checked_recently days = 30 }
 		# Initialize the country's average market quality variable if not already set
 		employer = {
 			if = {
@@ -38,6 +40,28 @@ omni_annual_character_equipment_check = {
 		omni_check_and_buy_helmet = yes
 		omni_check_and_buy_shield = yes
 		omni_check_and_buy_trinket = yes
+	}
+}
+
+omni_disloyal_character_equipment_check = {
+	if = {
+		limit = {
+			loyalty <= 33
+			NOT = { has_variable = omni_disloyal_equipment_checked }
+			wealth >= 40
+			exists = employer
+			omni_character_has_local_market = yes
+		}
+		set_variable = omni_disloyal_equipment_checked
+		omni_annual_character_equipment_check = yes
+		omni_ai_auto_equip_items = yes
+	}
+	else_if = {
+		limit = {
+			loyalty > 33
+			has_variable = omni_disloyal_equipment_checked
+		}
+		remove_variable = omni_disloyal_equipment_checked
 	}
 }
 

@@ -1,37 +1,231 @@
-﻿# Effects backing the "Black Market" and "Requisition Food" options available
-# to a ruler or general (root) standing in a hostile/occupied city via
-# omni_character_can_visit_hostile_city. Both options track a food reserve on
-# the character's commanded unit (root.unit) rather than the state, since that
-# reserve belongs to the visiting army, not the city itself.
-#
-# omni_unit_food_reserve is a simple 0-100 abstraction of "how well supplied
-# is this army right now" - it does not hook into vanilla attrition directly,
-# but is available for other scripted content (events, on_actions) to read.
+﻿# Effects backing the "Black Market", "Requisition Food", and "Forage
+# Carefully" options available to a ruler or general standing near a
+# hostile/occupied city via omni_character_can_visit_hostile_city.
+
+omni_hostile_city_add_full_food_to_units = {
+	every_character_unit = {
+		limit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+			unit_location = { has_owner = yes }
+		}
+		add_food = { value = omni_hostile_city_full_food_svalue }
+	}
+}
+
+omni_hostile_city_add_forage_food_to_units = {
+	every_character_unit = {
+		limit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+			unit_location = { has_owner = yes }
+		}
+		add_food = { value = omni_hostile_city_forage_food_svalue }
+	}
+}
+
+omni_hostile_city_mark_provisioned_location = {
+	add_province_modifier = { name = omni_hostile_city_provisioned_recently duration = 90 }
+}
+
+omni_hostile_city_requisition_location_effect = {
+	state = { add_state_food = -50 }
+	add_province_modifier = { name = omni_food_requisitioned duration = 365 }
+	omni_hostile_city_mark_provisioned_location = yes
+	random = {
+		chance = 25
+		random_pops_in_province = {
+			limit = { always = yes }
+			kill_pop = yes
+		}
+	}
+}
+
+omni_hostile_city_forage_location_effect = {
+	state = { add_state_food = -15 }
+	add_province_modifier = { name = omni_food_foraged duration = 180 }
+	omni_hostile_city_mark_provisioned_location = yes
+}
 
 omni_hostile_city_buy_food_effect = {
 	if = {
 		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
-		scope:omni_city_visitor = { add_gold = -150 }
+		scope:omni_city_visitor = {
+			add_gold = { value = omni_hostile_city_black_market_price_svalue multiply = -1 }
+			omni_hostile_city_add_full_food_to_units = yes
+			if = {
+				limit = {
+					any_character_unit = {
+						OR = {
+							is_army = yes
+							is_navy = yes
+						}
+						unit_location = { has_owner = yes }
+					}
+				}
+				every_character_unit = {
+					limit = {
+						OR = {
+							is_army = yes
+							is_navy = yes
+						}
+						unit_location = { has_owner = yes }
+					}
+					unit_location = { omni_hostile_city_mark_provisioned_location = yes }
+				}
+			}
+			else = {
+				location = { omni_hostile_city_mark_provisioned_location = yes }
+			}
+		}
 	}
-	else = { root.employer = { add_treasury = -150 } }
+	else = {
+		root.employer = { add_treasury = { value = root.omni_hostile_city_black_market_price_svalue multiply = -1 } }
+		root = {
+			omni_hostile_city_add_full_food_to_units = yes
+			if = {
+				limit = {
+					any_character_unit = {
+						OR = {
+							is_army = yes
+							is_navy = yes
+						}
+						unit_location = { has_owner = yes }
+					}
+				}
+				every_character_unit = {
+					limit = {
+						OR = {
+							is_army = yes
+							is_navy = yes
+						}
+						unit_location = { has_owner = yes }
+					}
+					unit_location = { omni_hostile_city_mark_provisioned_location = yes }
+				}
+			}
+			else = {
+				location = { omni_hostile_city_mark_provisioned_location = yes }
+			}
+		}
+	}
 	custom_tooltip = omni_hostile_city_buy_food_effect_tt
+}
+
+omni_hostile_city_steal_food_actor_effect = {
+	omni_hostile_city_add_full_food_to_units = yes
+	if = {
+		limit = {
+			OR = {
+				has_trait = just
+				has_trait = merciful
+			}
+		}
+		add_popularity = -5
+		add_loyalty = loyalty_hostile_city_requisition_shame
+	}
+	else_if = {
+		limit = {
+			OR = {
+				has_trait = cruel
+				has_trait = miserly
+			}
+		}
+		add_popularity = 2
+	}
+	else = {
+		add_popularity = -2
+	}
+	employer = {
+		add_tyranny = 2
+		add_aggressive_expansion = 1
+	}
+	if = {
+		limit = {
+			any_character_unit = {
+				OR = {
+					is_army = yes
+					is_navy = yes
+				}
+				unit_location = {
+					state = { has_state_food >= 50 }
+					NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+				}
+			}
+		}
+		every_character_unit = {
+			limit = {
+				OR = {
+					is_army = yes
+					is_navy = yes
+				}
+				unit_location = {
+					state = { has_state_food >= 50 }
+					NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+				}
+			}
+			unit_location = { omni_hostile_city_requisition_location_effect = yes }
+		}
+	}
+	else = {
+		location = { omni_hostile_city_requisition_location_effect = yes }
+	}
 }
 
 omni_hostile_city_steal_food_effect = {
 	if = {
 		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
-		scope:omni_city_visitor = {
-			location = {
-				state = { add_state_food = -50 }
-				add_province_modifier = { name = omni_food_requisitioned duration = 365 }
+		scope:omni_city_visitor = { omni_hostile_city_steal_food_actor_effect = yes }
+	}
+	else = {
+		root = { omni_hostile_city_steal_food_actor_effect = yes }
+	}
+	custom_tooltip = omni_hostile_city_steal_food_effect_tt
+}
+
+omni_hostile_city_forage_food_actor_effect = {
+	omni_hostile_city_add_forage_food_to_units = yes
+	if = {
+		limit = {
+			any_character_unit = {
+				OR = {
+					is_army = yes
+					is_navy = yes
+				}
+				unit_location = {
+					NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+				}
 			}
+		}
+		every_character_unit = {
+			limit = {
+				OR = {
+					is_army = yes
+					is_navy = yes
+				}
+				unit_location = {
+					NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+				}
+			}
+			unit_location = { omni_hostile_city_forage_location_effect = yes }
 		}
 	}
 	else = {
-		root.location = {
-			state = { add_state_food = -50 }
-			add_province_modifier = { name = omni_food_requisitioned duration = 365 }
-		}
+		location = { omni_hostile_city_forage_location_effect = yes }
 	}
-	custom_tooltip = omni_hostile_city_steal_food_effect_tt
+}
+
+omni_hostile_city_forage_food_effect = {
+	if = {
+		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
+		scope:omni_city_visitor = { omni_hostile_city_forage_food_actor_effect = yes }
+	}
+	else = {
+		root = { omni_hostile_city_forage_food_actor_effect = yes }
+	}
+	custom_tooltip = omni_hostile_city_forage_food_effect_tt
 }

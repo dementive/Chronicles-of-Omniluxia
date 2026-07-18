@@ -1,8 +1,22 @@
-﻿monthly_job_pulse =
-{
-	random_events =
-	{
+﻿monthly_job_pulse = {
+	on_actions = { omni_loyal_character_equipment_pulse }
+	random_events = {
 		500 = 0
 		1 = office_gain.3
+	}
+}
+
+omni_loyal_character_equipment_pulse = {
+	effect = {
+		if = {
+			limit = { loyalty <= 33 NOT = { has_variable = omni_was_disloyal_for_equipment } }
+			set_variable = omni_was_disloyal_for_equipment
+		}
+		else_if = {
+			limit = { loyalty > 33 has_variable = omni_was_disloyal_for_equipment NOT = { has_variable = omni_loyal_equipment_pending } exists = employer wealth >= 40 }
+			set_variable = { name = omni_loyal_equipment_pending days = 60 }
+			remove_variable = omni_was_disloyal_for_equipment
+			trigger_event = { id = omni_annual_purchase.2 days = 30 }
+		}
 	}
 }

@@ -1,12 +1,59 @@
 ﻿omni_character_can_afford_black_market_food = {
 	OR = {
-		AND = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } scope:omni_city_visitor = { wealth >= 150 } }
-		AND = { OR = { NOT = { exists = scope:omni_city_visitor } this = scope:omni_city_visitor } exists = root.employer root.employer = { treasury >= 150 } }
+		AND = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } scope:omni_city_visitor = { wealth >= omni_hostile_city_black_market_price_svalue } }
+		AND = { OR = { NOT = { exists = scope:omni_city_visitor } this = scope:omni_city_visitor } exists = root.employer root.employer = { treasury >= root.omni_hostile_city_black_market_price_svalue } }
+	}
+}
+
+omni_character_hostile_city_not_recently_provisioned = {
+	OR = {
+		location = {
+			NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+		}
+		any_character_unit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+			unit_location = {
+				NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+			}
+		}
 	}
 }
 
 omni_character_can_steal_food = {
-	root.location = {
-		state = { has_state_food >= 50 }
+	OR = {
+		location = {
+			NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+			state = { has_state_food >= 50 }
+		}
+		any_character_unit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+			unit_location = {
+				NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+				state = { has_state_food >= 50 }
+			}
+		}
+	}
+}
+
+omni_character_can_forage_food = {
+	OR = {
+		location = {
+			NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+		}
+		any_character_unit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+			unit_location = {
+				NOT = { has_province_modifier = omni_hostile_city_provisioned_recently }
+			}
+		}
 	}
 }
