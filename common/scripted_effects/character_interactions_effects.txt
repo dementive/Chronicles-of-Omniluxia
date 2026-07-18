@@ -12,7 +12,10 @@
     hidden_effect = {
         scope:target = { # Update TT if changing this!
             add_gold = 100
-            add_loyalty = ci_bribe
+            if = {
+                limit = { is_alive = yes is_ruler = no exists = employer }
+                add_loyalty = ci_bribe
+            }
             add_corruption = 5
             hidden_effect = {
                 set_variable = {
@@ -31,7 +34,10 @@ orator_bribe_character_effect = {
         pay_price = bribe_pi
     }
     scope:target = {
-        add_loyalty = ci_bribe
+        if = {
+            limit = { is_alive = yes is_ruler = no exists = employer }
+            add_loyalty = ci_bribe
+        }
         hidden_effect = {
             set_variable = {
                 name = ca_character_bribed
@@ -43,15 +49,18 @@ orator_bribe_character_effect = {
 
 free_hands_effect = {
     scope:target = {
-        add_loyalty = given_free_hands
-        add_triggered_character_modifier = {
-            name = free_hands_cmod
-            duration = -1
+        if = {
+            limit = { is_alive = yes is_ruler = no exists = employer }
+            add_loyalty = given_free_hands
+            add_triggered_character_modifier = {
+                name = free_hands_cmod
+                duration = -1
+            }
         }
         set_variable = {
             name = free_hands_cooldown
             days = 730
-        }			
+        }
     }
     custom_tooltip = free_hands_tooltip
 }
@@ -60,8 +69,14 @@ tie_hands_effect = {
     custom_tooltip = tie_hands_tooltip
     scope:target = {
         remove_triggered_character_modifier = free_hands_cmod
-        remove_loyalty = given_free_hands
-        add_loyalty = free_hands_revoked
+        if = {
+            limit = { is_alive = yes is_ruler = no exists = employer has_loyalty = given_free_hands }
+            remove_loyalty = given_free_hands
+        }
+        if = {
+            limit = { is_alive = yes is_ruler = no exists = employer }
+            add_loyalty = free_hands_revoked
+        }
     }
 }
 

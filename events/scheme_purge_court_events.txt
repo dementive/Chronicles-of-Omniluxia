@@ -1,0 +1,41 @@
+﻿namespace = scheme_purge_court
+
+scheme_purge_court.1 = {
+	type = character_event
+	title = scheme_purge_court.1_title
+	desc = scheme_purge_court.desc
+	left_portrait = scope:purge_target
+	trigger = { is_ruler = yes has_ambition = scheme_purge_court }
+	immediate = {
+		root.employer = {
+			random_character = {
+			limit = {
+				employer = this is_alive = yes is_ruler = no is_co_ruler = no prisoner = no
+				OR = {
+					has_trait = vampire_trait
+					has_trait = corrupt
+					loyalty < 33
+					has_trait = lunatic
+					has_trait = reckless
+					has_trait = arrogant
+					has_trait = gluttonous
+					has_trait = deceitful
+					has_trait = cruel
+				}
+			}
+			save_scope_as = purge_target
+			}
+			random_country = {
+				limit = {
+					in_diplomatic_range = root.employer
+					NOT = { this = root.employer }
+				}
+				save_scope_as = purge_destination
+			}
+		}
+	}
+	option = { name = scheme_purge_court.banish scope:purge_target = { banish = scope:purge_destination set_home_country = scope:purge_destination } root = { employer = { add_tyranny = 2 } add_corruption = 1 } }
+	option = { name = scheme_purge_court.imprison scope:purge_target = { imprison = { target = root } } root = { employer = { add_tyranny = 2 } add_corruption = 1 } }
+	option = { name = scheme_purge_court.execute scope:purge_target = { death = { death_reason = death_execution killer = root } } root = { employer = { add_tyranny = 5 } add_corruption = 2 } }
+	option = { name = scheme_purge_court.torture scope:purge_target = { add_health = -10 } root = { employer = { add_tyranny = 1 } add_corruption = 1 } }
+}

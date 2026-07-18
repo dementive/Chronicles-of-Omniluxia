@@ -18,3 +18,19 @@ omni_city_actor_change_gold = {
 	}
 	else = { add_gold = { value = $VALUE$ multiply = $MULTIPLY$ } }
 }
+
+# CHARACTER scope. Uses treasury for a ruler visiting as themselves, otherwise
+# charges the visiting character's personal wealth.
+omni_city_actor_pay_magic_store_cost = {
+	if = {
+		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
+		scope:omni_city_visitor = { add_gold = { value = $PRICE$ multiply = -1 } }
+	}
+	else_if = {
+		limit = { is_ruler = yes }
+		country = { add_treasury = -$PRICE$ }
+	}
+	else = {
+		add_gold = { value = $PRICE$ multiply = -1 }
+	}
+}

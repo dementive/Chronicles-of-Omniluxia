@@ -1,0 +1,98 @@
+﻿# Court Arcana: bounded magical support tied to country rank.
+# This is intentionally called from the yearly country pulse only.
+
+omni_court_arcana_yearly = {
+	if = {
+		limit = {
+			has_land = yes
+			exists = current_ruler
+		}
+
+		# Regional powers receive one court mage once, including on old saves.
+		if = {
+			limit = {
+				rank >= regional_power
+				NOT = { has_variable = omni_arcana_regional_reward }
+				NOT = { any_character = { has_trait = mage_trait } }
+			}
+			create_character = {
+				age = 28
+				hidden_effect = {
+					add_trait = mage_trait
+					set_variable = omni_court_mage
+					omni_grant_random_beginner_spell = yes
+				}
+			}
+			set_variable = omni_arcana_regional_reward
+		}
+
+		# Major powers get one additional magical court specialist.
+		if = {
+			limit = {
+				rank >= major_power
+				NOT = { has_variable = omni_arcana_major_reward }
+			}
+			create_character = {
+				age = 30
+				hidden_effect = {
+					add_trait = mage_trait
+					set_variable = omni_court_mage
+					omni_grant_random_beginner_spell = yes
+				}
+			}
+			set_variable = omni_arcana_major_reward
+		}
+
+		# Great powers receive a second specialist, but never more than this one-time pair.
+		if = {
+			limit = {
+				rank >= great_power
+				NOT = { has_variable = omni_arcana_great_reward }
+			}
+			create_character = {
+				age = 32
+				hidden_effect = {
+					add_trait = mage_trait
+					set_variable = omni_court_mage
+					omni_grant_random_beginner_spell = yes
+				}
+			}
+			set_variable = omni_arcana_great_reward
+		}
+
+		# Give important AI courts a low-cost, capped magical education pipeline.
+		if = {
+			limit = {
+				is_ai = yes
+				rank >= regional_power
+				NOT = { has_variable = omni_arcana_education_cooldown }
+				any_owned_province = { has_building = magic_academy_building }
+			}
+			set_variable = { name = omni_arcana_education_cooldown days = 730 }
+			if = {
+				limit = { rank >= major_power }
+				if = {
+					limit = { has_primary_heir = yes }
+					random_character = {
+						limit = { is_primary_heir = yes }
+						set_variable = omni_magic_education_pending
+					}
+				}
+				current_ruler = {
+					if = {
+						limit = { NOT = { has_trait = mage_trait } }
+						set_variable = first_time_mage_var
+					}
+				}
+			}
+			else = {
+				current_ruler = {
+					if = {
+						limit = { NOT = { has_trait = mage_trait } }
+						set_variable = first_time_mage_var
+					}
+				}
+			}
+		}
+	}
+}
