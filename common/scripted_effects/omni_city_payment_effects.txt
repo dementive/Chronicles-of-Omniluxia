@@ -9,21 +9,21 @@ omni_pay_magic_study_cost = {
 	}
 }
 
-# CHARACTER scope. During a commander city visit, the visible event is hosted
-# by the ruler, while scope:omni_city_visitor remains the actual payer/payee.
+# Event-host scope. During a commander city visit, scope:omni_city_visitor is
+# always the actual payer/payee, including country-hosted circus events.
 omni_city_actor_change_gold = {
 	if = {
-		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
+		limit = { exists = scope:omni_city_visitor }
 		scope:omni_city_visitor = { add_gold = { value = $VALUE$ multiply = $MULTIPLY$ } }
 	}
 	else = { add_gold = { value = $VALUE$ multiply = $MULTIPLY$ } }
 }
 
-# CHARACTER scope. Uses treasury for a ruler visiting as themselves, otherwise
-# charges the visiting character's personal wealth.
+# Uses treasury when a ruler has no separately saved visitor; otherwise charges
+# the visiting character's personal wealth.
 omni_city_actor_pay_magic_store_cost = {
 	if = {
-		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
+		limit = { exists = scope:omni_city_visitor }
 		scope:omni_city_visitor = { add_gold = { value = $PRICE$ multiply = -1 } }
 	}
 	else_if = {
