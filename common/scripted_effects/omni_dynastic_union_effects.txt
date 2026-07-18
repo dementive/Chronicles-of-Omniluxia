@@ -1,0 +1,301 @@
+﻿omni_dynastic_union_new_colour_effect = {
+	if = {
+		limit = {
+			OR = {
+				has_variable = omni_dynastic_union_1_color
+				has_variable = omni_dynastic_union_2_color
+				has_variable = omni_dynastic_union_3_color
+				has_variable = omni_dynastic_union_4_color
+				has_variable = omni_dynastic_union_5_color
+				has_variable = omni_dynastic_union_6_color
+			}
+		}
+		remove_variable = omni_dynastic_union_1_color
+		remove_variable = omni_dynastic_union_2_color
+		remove_variable = omni_dynastic_union_3_color
+		remove_variable = omni_dynastic_union_4_color
+		remove_variable = omni_dynastic_union_5_color
+		remove_variable = omni_dynastic_union_6_color
+	}
+	random_list = {
+		1 = {
+			trigger = {
+				NOT = {
+					any_neighbour_country = {
+						has_variable = omni_dynastic_union_1_color
+					}
+				}
+			}
+			change_country_color = omni_dynastic_union_1
+			set_variable = omni_dynastic_union_1_color
+		}
+		1 = {
+			trigger = {
+				NOT = {
+					any_neighbour_country = {
+						has_variable = omni_dynastic_union_2_color
+					}
+				}
+			}
+			change_country_color = omni_dynastic_union_2
+			set_variable = omni_dynastic_union_2_color
+		}
+		1 = {
+			trigger = {
+				NOT = {
+					any_neighbour_country = {
+						has_variable = omni_dynastic_union_3_color
+					}
+				}
+			}
+			change_country_color = omni_dynastic_union_3
+			set_variable = omni_dynastic_union_3_color
+		}
+		1 = {
+			trigger = {
+				NOT = {
+					any_neighbour_country = {
+						has_variable = omni_dynastic_union_4_color
+					}
+				}
+			}
+			change_country_color = omni_dynastic_union_4
+			set_variable = omni_dynastic_union_4_color
+		}
+		1 = {
+			trigger = {
+				NOT = {
+					any_neighbour_country = {
+						has_variable = omni_dynastic_union_5_color
+					}
+				}
+			}
+			change_country_color = omni_dynastic_union_5
+			set_variable = omni_dynastic_union_5_color
+		}
+		1 = {
+			trigger = {
+				NOT = {
+					any_neighbour_country = {
+						has_variable = omni_dynastic_union_6_color
+					}
+				}
+			}
+			change_country_color = omni_dynastic_union_6
+			set_variable = omni_dynastic_union_6_color
+		}
+	}
+}
+
+omni_dynastic_union_former_colour_effect = {
+	if = {
+		limit = {
+			OR = {
+				has_variable = omni_dynastic_union_1_color
+				has_variable = omni_dynastic_union_2_color
+				has_variable = omni_dynastic_union_3_color
+				has_variable = omni_dynastic_union_4_color
+				has_variable = omni_dynastic_union_5_color
+				has_variable = omni_dynastic_union_6_color
+			}
+		}
+		remove_variable = omni_dynastic_union_1_color
+		remove_variable = omni_dynastic_union_2_color
+		remove_variable = omni_dynastic_union_3_color
+		remove_variable = omni_dynastic_union_4_color
+		remove_variable = omni_dynastic_union_5_color
+		remove_variable = omni_dynastic_union_6_color
+	}
+}
+
+omni_dynastic_union_integrate_subject_effect = {
+	save_scope_as = actor
+	scope:dynastic_union_subject = {
+		every_country_treasure = {
+			add_to_list = annexed_treasures
+		}
+		on_diplo_annexation_event_effect = yes
+	}
+}
+
+omni_dynastic_union_renew_subject_effect = {
+	add_country_modifier = {
+		name = dynastic_union_renewed_oaths
+		duration = 1825
+	}
+	set_variable = {
+		name = dynastic_union_integration_cooldown
+		days = 1825
+	}
+	if = {
+		limit = { exists = current_ruler }
+		set_variable = {
+			name = dynastic_union_junior_spouse
+			value = current_ruler
+		}
+	}
+	if = {
+		limit = {
+			exists = overlord
+			overlord = { exists = current_ruler }
+		}
+		set_variable = {
+			name = dynastic_union_senior_country
+			value = overlord
+		}
+		set_variable = {
+			name = dynastic_union_senior_spouse
+			value = overlord.current_ruler
+		}
+		overlord = {
+			add_country_modifier = {
+				name = dynastic_union_renewed_senior_oaths
+				duration = 1825
+			}
+		}
+	}
+}
+
+omni_dynastic_union_shared_heir_effect = {
+	add_country_modifier = {
+		name = dynastic_union_shared_heir
+		duration = 3650
+	}
+	set_variable = {
+		name = dynastic_union_integration_cooldown
+		days = 1095
+	}
+	if = {
+		limit = {
+			exists = overlord
+			overlord = { exists = current_ruler }
+		}
+		set_variable = {
+			name = dynastic_union_senior_country
+			value = overlord
+		}
+		set_variable = {
+			name = dynastic_union_senior_spouse
+			value = overlord.current_ruler
+		}
+		overlord = {
+			add_country_modifier = {
+				name = dynastic_union_shared_heir_senior
+				duration = 3650
+			}
+		}
+	}
+	if = {
+		limit = { exists = current_ruler }
+		set_variable = {
+			name = dynastic_union_junior_spouse
+			value = current_ruler
+		}
+		current_ruler = {
+			add_popularity = popularity_medium
+		}
+	}
+}
+
+omni_dynastic_union_pretender_agitation_effect = {
+	add_country_modifier = {
+		name = dynastic_union_contested_heir
+		duration = 1825
+	}
+	add_stability = -10
+	every_successor = {
+		limit = {
+			is_adult = yes
+			is_pretender = yes
+			NOT = { is_primary_heir = yes }
+		}
+		add_character_modifier = {
+			name = dynastic_union_pretender_agitation
+			duration = 1825
+		}
+		add_gold = 150
+		remove_loyalty = loyalty_office_gained
+	}
+}
+
+omni_dynastic_union_clear_variables_effect = {
+	if = { limit = { has_variable = dynastic_union_subject_started } remove_variable = dynastic_union_subject_started }
+	if = { limit = { has_variable = dynastic_union_integration_cooldown } remove_variable = dynastic_union_integration_cooldown }
+	if = { limit = { has_variable = dynastic_union_senior_country } remove_variable = dynastic_union_senior_country }
+	if = { limit = { has_variable = dynastic_union_senior_spouse } remove_variable = dynastic_union_senior_spouse }
+	if = { limit = { has_variable = dynastic_union_junior_spouse } remove_variable = dynastic_union_junior_spouse }
+}
+
+omni_dynastic_union_dissolve_subject_effect = {
+	save_scope_as = dynastic_union_subject
+	overlord = {
+		save_scope_as = dynastic_senior_country
+		release_subject = scope:dynastic_union_subject
+		add_country_modifier = {
+			name = dynastic_union_broken_compact
+			duration = 1825
+		}
+		add_opinion = {
+			modifier = opinion_dynastic_union_dissolved
+			target = scope:dynastic_union_subject
+		}
+	}
+	add_country_modifier = {
+		name = dynastic_union_broken_compact
+		duration = 1825
+	}
+	add_opinion = {
+		modifier = opinion_dynastic_union_dissolved
+		target = scope:dynastic_senior_country
+	}
+	omni_dynastic_union_former_colour_effect = yes
+	omni_dynastic_union_clear_variables_effect = yes
+}
+
+omni_dynastic_union_independence_war_effect = {
+	save_scope_as = dynastic_union_subject
+	overlord = {
+		save_scope_as = dynastic_senior_country
+		release_subject = scope:dynastic_union_subject
+		add_opinion = {
+			modifier = opinion_dynastic_union_disputed
+			target = scope:dynastic_union_subject
+		}
+	}
+	add_opinion = {
+		modifier = opinion_dynastic_union_disputed
+		target = scope:dynastic_senior_country
+	}
+	capital_scope = {
+		add_claim = scope:dynastic_senior_country
+	}
+	declare_war_with_wargoal = {
+		war_goal = independence_wargoal
+		province = capital_scope
+		target = scope:dynastic_senior_country
+	}
+	omni_dynastic_union_former_colour_effect = yes
+	omni_dynastic_union_clear_variables_effect = yes
+}
+
+omni_dynastic_union_reverse_claim_war_effect = {
+	save_scope_as = dynastic_union_subject
+	overlord = {
+		save_scope_as = dynastic_senior_country
+		release_subject = scope:dynastic_union_subject
+	}
+	scope:dynastic_senior_country.capital_scope = {
+		add_claim = scope:dynastic_union_subject
+	}
+	declare_war_with_wargoal = {
+		war_goal = independence_wargoal
+		province = scope:dynastic_senior_country.capital_scope
+		target = scope:dynastic_senior_country
+	}
+	add_country_modifier = {
+		name = dynastic_union_reverse_claim
+		duration = 1825
+	}
+	omni_dynastic_union_former_colour_effect = yes
+	omni_dynastic_union_clear_variables_effect = yes
+}

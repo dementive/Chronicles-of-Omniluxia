@@ -1,0 +1,199 @@
+﻿propose_dynastic_marriage = {
+	on_other_nation = yes
+	on_own_nation = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_diplomacy"
+	message = yes
+	
+	potential_trigger = {
+		exists = scope:actor
+		exists = scope:target
+		scope:actor = {
+			is_monarchy = yes
+			is_subject = no
+			exists = current_ruler
+			current_ruler = {
+				is_adult = yes
+				is_married = no
+				prisoner = no
+				is_mercenary = no
+			}
+		}
+		scope:target = {
+			is_ruler = yes
+			is_adult = yes
+			is_married = no
+			prisoner = no
+			is_mercenary = no
+			employer = {
+				is_monarchy = yes
+				is_subject = no
+				has_land = yes
+				NOR = {
+					this = scope:actor
+					tag = REB
+					tag = BAR
+				}
+			}
+		}
+	}
+	
+	allowed_trigger = {
+		scope:actor = {
+			omni_ruler_available_for_court_action_trigger = yes
+			war = no
+			has_civil_war = no
+			NOT = { has_variable = dynastic_marriage_proposal_ongoing }
+			current_ruler = {
+				NOT = { is_same_gender = scope:target }
+			}
+		}
+		scope:target = {
+			employer = {
+				war = no
+				has_civil_war = no
+				NOT = { has_variable = dynastic_marriage_proposal_ongoing }
+				NOT = { is_subject_of = scope:actor }
+				NOT = {
+					any_subject = {
+						is_subject_type = dynastic_union_subject
+					}
+				}
+				opinion = {
+					target = scope:actor
+					value >= 80
+				}
+				num_of_cities <= scope:actor.num_of_cities
+				rank <= scope:actor.rank
+			}
+		}
+	}
+	
+	effect = {
+		scope:actor = {
+			save_scope_as = dynastic_senior_country
+			current_ruler = {
+				save_scope_as = dynastic_senior_ruler
+			}
+			set_variable = {
+				name = dynastic_marriage_proposal_ongoing
+				days = 120
+			}
+		}
+		scope:target = {
+			save_scope_as = dynastic_junior_ruler
+			employer = {
+				save_scope_as = dynastic_junior_country
+				set_variable = {
+					name = dynastic_marriage_proposal_ongoing
+					days = 120
+				}
+			}
+		}
+		scope:actor = {
+			trigger_event = { id = omni_dynastic_union.8 }
+		}
+	}
+	
+	ai_will_do = {
+		factor = 0.25
+
+		# Warm relations make a dynastic compact politically credible.
+		modifier = {
+			add = 2
+			trigger = {
+				scope:target.employer = {
+					opinion = {
+						target = scope:actor
+						value >= 100
+					}
+				}
+			}
+		}
+		modifier = {
+			add = 3
+			trigger = {
+				scope:target.employer = {
+					opinion = {
+						target = scope:actor
+						value >= 140
+					}
+				}
+			}
+		}
+
+		# A clearly stronger senior crown has more to offer and less to fear.
+		modifier = {
+			add = 2
+			trigger = {
+				scope:actor.num_of_cities > scope:target.employer.num_of_cities
+			}
+		}
+		modifier = {
+			add = 2
+			trigger = {
+				scope:actor.rank > scope:target.employer.rank
+			}
+		}
+
+		# An unmarried ruler without a settled heir has a pressing dynastic reason.
+		modifier = {
+			add = 4
+			trigger = {
+				scope:actor = {
+					has_primary_heir = no
+				}
+			}
+		}
+		modifier = {
+			add = 1
+			trigger = {
+				scope:actor = {
+					legitimacy >= 60
+					stability >= 50
+				}
+				scope:target.employer = {
+					stability >= 45
+				}
+			}
+		}
+
+		# Ruler temperament shapes willingness to pursue an unusual union.
+		modifier = {
+			add = 3
+			trigger = {
+				scope:actor.current_ruler = { has_trait = ambitious }
+			}
+		}
+		modifier = {
+			add = 1
+			trigger = {
+				scope:actor.current_ruler = { has_trait = lustful }
+			}
+		}
+		modifier = {
+			add = 1
+			trigger = {
+				scope:target = { has_trait = content }
+			}
+		}
+		modifier = {
+			factor = 0.4
+			trigger = {
+				scope:actor.current_ruler = { has_trait = cautious }
+			}
+		}
+		modifier = {
+			factor = 0.4
+			trigger = {
+				scope:actor.current_ruler = { has_trait = content }
+			}
+		}
+		modifier = {
+			factor = 0.65
+			trigger = {
+				scope:target = { has_trait = proud }
+			}
+		}
+	}
+}

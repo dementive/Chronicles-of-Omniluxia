@@ -1,0 +1,567 @@
+﻿namespace = omni_dynastic_union
+
+omni_dynastic_union.1 = {
+	type = country_event
+	title = omni_dynastic_union.1.t
+	desc = omni_dynastic_union.1.desc
+	picture = throneroom
+	
+	left_portrait = scope:dynastic_junior_ruler
+	right_portrait = scope:dynastic_senior_ruler
+	goto_location = capital_scope
+	
+	trigger = {
+		scope:dynastic_senior_country = {
+			has_land = yes
+			is_monarchy = yes
+			is_subject = no
+			current_ruler = {
+				is_adult = yes
+				is_married = no
+				NOT = { is_same_gender = scope:dynastic_junior_ruler }
+			}
+		}
+		scope:dynastic_junior_ruler = {
+			is_ruler = yes
+			is_adult = yes
+			is_married = no
+			employer = root
+		}
+		is_monarchy = yes
+		is_subject = no
+		war = no
+		has_civil_war = no
+	}
+	
+	option = {
+		name = omni_dynastic_union.1.a
+		ai_chance = {
+			factor = 90
+		}
+		scope:dynastic_senior_ruler = {
+			marry_character = scope:dynastic_junior_ruler
+		}
+		add_opinion = {
+			target = scope:dynastic_senior_country
+			modifier = opinion_dynastic_marriage
+		}
+		scope:dynastic_senior_country = {
+			add_opinion = {
+				target = root
+				modifier = opinion_dynastic_marriage
+			}
+			set_variable = {
+				name = dynastic_union_senior_spouse
+				value = scope:dynastic_senior_ruler
+			}
+			make_subject = {
+				target = root
+				type = dynastic_union_subject
+			}
+		}
+		set_variable = {
+			name = dynastic_union_senior_country
+			value = scope:dynastic_senior_country
+		}
+		set_variable = {
+			name = dynastic_union_senior_spouse
+			value = scope:dynastic_senior_ruler
+		}
+		set_variable = {
+			name = dynastic_union_junior_spouse
+			value = scope:dynastic_junior_ruler
+		}
+		omni_dynastic_union_new_colour_effect = yes
+		add_stability_effect = yes
+		current_ruler = {
+			add_popularity = popularity_medium
+		}
+		scope:dynastic_senior_country = {
+			current_ruler = {
+				add_popularity = popularity_medium
+			}
+		}
+		scope:dynastic_senior_country = {
+			trigger_event = {
+				id = omni_dynastic_union.2
+				days = 3
+			}
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.1.b
+		ai_chance = {
+			factor = 10
+		}
+		add_opinion = {
+			target = scope:dynastic_senior_country
+			modifier = opinion_dynastic_marriage_refused
+		}
+		scope:dynastic_senior_country = {
+			add_opinion = {
+				target = root
+				modifier = opinion_dynastic_marriage_refused
+			}
+			trigger_event = { id = omni_dynastic_union.9 }
+		}
+	}
+}
+
+omni_dynastic_union.8 = {
+	type = country_event
+	title = omni_dynastic_union.8.t
+	desc = omni_dynastic_union.8.desc
+	picture = throneroom
+
+	left_portrait = scope:dynastic_senior_ruler
+	right_portrait = scope:dynastic_junior_ruler
+	goto_location = scope:dynastic_junior_country.capital_scope
+
+	trigger = {
+		this = scope:dynastic_senior_country
+		scope:dynastic_junior_country = {
+			has_land = yes
+			is_monarchy = yes
+			is_subject = no
+		}
+		scope:dynastic_senior_ruler = {
+			is_alive = yes
+			is_married = no
+		}
+		scope:dynastic_junior_ruler = {
+			is_alive = yes
+			is_ruler = yes
+			is_married = no
+		}
+	}
+
+	option = {
+		name = omni_dynastic_union.8.a
+		ai_chance = {
+			factor = 100
+		}
+		scope:dynastic_junior_country = {
+			trigger_event = { id = omni_dynastic_union.1 days = 1 }
+		}
+	}
+
+	option = {
+		name = omni_dynastic_union.8.b
+		ai_chance = {
+			factor = 0
+		}
+		remove_variable = dynastic_marriage_proposal_ongoing
+		scope:dynastic_junior_country = {
+			remove_variable = dynastic_marriage_proposal_ongoing
+		}
+	}
+}
+
+omni_dynastic_union.9 = {
+	type = country_event
+	title = omni_dynastic_union.9.t
+	desc = omni_dynastic_union.9.desc
+	picture = throneroom
+
+	left_portrait = scope:dynastic_senior_ruler
+	right_portrait = scope:dynastic_junior_ruler
+	goto_location = scope:dynastic_junior_country.capital_scope
+
+	option = {
+		name = omni_dynastic_union.9.a
+	}
+}
+
+omni_dynastic_union.4 = {
+	type = country_event
+	title = omni_dynastic_union.4.t
+	desc = omni_dynastic_union.4.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:former_ruler
+	goto_location = capital_scope
+	
+	trigger = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		exists = scope:former_ruler
+		has_variable = dynastic_union_junior_spouse
+		var:dynastic_union_junior_spouse = scope:former_ruler
+		overlord = {
+			has_land = yes
+			is_monarchy = yes
+		}
+	}
+	
+	immediate = {
+		overlord = { save_scope_as = dynastic_senior_country }
+		save_scope_as = dynastic_union_subject
+	}
+	
+	option = {
+		name = omni_dynastic_union.4.a
+		trigger = {
+			has_subject_loyalty >= 85
+			overlord = {
+				stability >= 50
+				war = no
+				has_civil_war = no
+			}
+			war = no
+			has_civil_war = no
+		}
+		ai_chance = {
+			factor = 20
+		}
+		scope:dynastic_senior_country = {
+			omni_dynastic_union_integrate_subject_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.4.b
+		ai_chance = {
+			factor = 70
+		}
+		omni_dynastic_union_renew_subject_effect = yes
+	}
+	
+	option = {
+		name = omni_dynastic_union.4.c
+		trigger = {
+			OR = {
+				has_subject_loyalty < 50
+				overlord = { stability < 35 }
+			}
+			war = no
+			overlord = { war = no }
+		}
+		ai_chance = {
+			factor = 10
+		}
+		omni_dynastic_union_independence_war_effect = yes
+	}
+	
+	option = {
+		name = omni_dynastic_union.4.d
+		trigger = {
+			is_ai = no
+		}
+		ai_chance = {
+			factor = 0
+		}
+		omni_dynastic_union_dissolve_subject_effect = yes
+	}
+}
+
+omni_dynastic_union.5 = {
+	type = country_event
+	title = omni_dynastic_union.5.t
+	desc = omni_dynastic_union.5.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+	
+	trigger = {
+		is_monarchy = yes
+		has_land = yes
+		exists = scope:former_ruler
+		any_subject = {
+			is_subject_type = dynastic_union_subject
+			has_land = yes
+			has_variable = dynastic_union_senior_spouse
+			var:dynastic_union_senior_spouse = scope:former_ruler
+		}
+	}
+	
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:former_ruler
+			}
+			save_scope_as = dynastic_union_subject
+		}
+		save_scope_as = dynastic_senior_country
+	}
+	
+	option = {
+		name = omni_dynastic_union.5.a
+		ai_chance = {
+			factor = 70
+		}
+		scope:dynastic_union_subject = {
+			omni_dynastic_union_renew_subject_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.5.b
+		trigger = {
+			OR = {
+				stability < 35
+				scope:dynastic_union_subject = { has_subject_loyalty < 50 }
+			}
+			war = no
+			scope:dynastic_union_subject = { war = no }
+		}
+		ai_chance = {
+			factor = 20
+		}
+		scope:dynastic_union_subject = {
+			omni_dynastic_union_dissolve_subject_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.5.c
+		trigger = {
+			war = no
+			scope:dynastic_union_subject = {
+				war = no
+				num_of_cohorts >= root.num_of_cohorts
+			}
+		}
+		ai_chance = {
+			factor = 10
+		}
+		scope:dynastic_union_subject = {
+			omni_dynastic_union_reverse_claim_war_effect = yes
+		}
+	}
+}
+
+omni_dynastic_union.6 = {
+	type = country_event
+	title = omni_dynastic_union.6.t
+	desc = omni_dynastic_union.6.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = overlord.current_ruler
+	goto_location = capital_scope
+	
+	trigger = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		has_variable = dynastic_union_senior_spouse
+		has_variable = dynastic_union_junior_spouse
+		current_ruler = {
+			is_child_of = var:dynastic_union_senior_spouse
+			is_child_of = var:dynastic_union_junior_spouse
+		}
+		overlord = {
+			has_land = yes
+			is_monarchy = yes
+		}
+	}
+	
+	immediate = {
+		save_scope_as = dynastic_union_subject
+		overlord = { save_scope_as = dynastic_senior_country }
+	}
+	
+	option = {
+		name = omni_dynastic_union.6.a
+		trigger = {
+			has_subject_loyalty >= 80
+			war = no
+			has_civil_war = no
+			overlord = {
+				stability >= 45
+				war = no
+				has_civil_war = no
+			}
+		}
+		ai_chance = {
+			factor = 35
+		}
+		scope:dynastic_senior_country = {
+			omni_dynastic_union_integrate_subject_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.6.b
+		ai_chance = {
+			factor = 55
+		}
+		omni_dynastic_union_shared_heir_effect = yes
+	}
+	
+	option = {
+		name = omni_dynastic_union.6.c
+		trigger = {
+			any_successor = {
+				is_adult = yes
+				is_pretender = yes
+				NOT = { is_primary_heir = yes }
+			}
+		}
+		ai_chance = {
+			factor = 10
+		}
+		omni_dynastic_union_pretender_agitation_effect = yes
+	}
+}
+
+omni_dynastic_union.7 = {
+	type = country_event
+	title = omni_dynastic_union.7.t
+	desc = omni_dynastic_union.7.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+	
+	trigger = {
+		is_monarchy = yes
+		has_land = yes
+		any_subject = {
+			is_subject_type = dynastic_union_subject
+			has_land = yes
+			has_variable = dynastic_union_senior_spouse
+			has_variable = dynastic_union_junior_spouse
+			root.current_ruler = {
+				is_child_of = prev.var:dynastic_union_senior_spouse
+				is_child_of = prev.var:dynastic_union_junior_spouse
+			}
+		}
+	}
+	
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				has_variable = dynastic_union_junior_spouse
+				root.current_ruler = {
+					is_child_of = prev.var:dynastic_union_senior_spouse
+					is_child_of = prev.var:dynastic_union_junior_spouse
+				}
+			}
+			save_scope_as = dynastic_union_subject
+		}
+		save_scope_as = dynastic_senior_country
+	}
+	
+	option = {
+		name = omni_dynastic_union.7.a
+		trigger = {
+			stability >= 45
+			war = no
+			has_civil_war = no
+			scope:dynastic_union_subject = {
+				has_subject_loyalty >= 80
+				war = no
+				has_civil_war = no
+			}
+		}
+		ai_chance = {
+			factor = 35
+		}
+		omni_dynastic_union_integrate_subject_effect = yes
+	}
+	
+	option = {
+		name = omni_dynastic_union.7.b
+		ai_chance = {
+			factor = 55
+		}
+		scope:dynastic_union_subject = {
+			omni_dynastic_union_shared_heir_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.7.c
+		trigger = {
+			any_successor = {
+				is_adult = yes
+				is_pretender = yes
+				NOT = { is_primary_heir = yes }
+			}
+		}
+		ai_chance = {
+			factor = 10
+		}
+		omni_dynastic_union_pretender_agitation_effect = yes
+		scope:dynastic_union_subject = {
+			add_country_modifier = {
+				name = dynastic_union_contested_heir
+				duration = 1825
+			}
+		}
+	}
+}
+
+omni_dynastic_union.2 = {
+	type = country_event
+	title = omni_dynastic_union.2.t
+	desc = omni_dynastic_union.2.desc
+	picture = throneroom
+	left_portrait = current_ruler
+	right_portrait = root.current_ruler.spouse
+	right_portrait = scope:dynastic_junior_country.current_ruler
+	goto_location = capital_scope
+	
+	option = {
+		name = omni_dynastic_union.2.a
+	}
+}
+
+omni_dynastic_union.3 = {
+	type = country_event
+	title = omni_dynastic_union.3.t
+	desc = omni_dynastic_union.3.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+	
+	trigger = {
+		is_monarchy = yes
+		has_land = yes
+		any_subject = {
+			is_subject_type = dynastic_union_subject
+			has_subject_loyalty >= 90
+			NOT = { has_variable = dynastic_union_integration_cooldown }
+		}
+	}
+	
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_subject_loyalty >= 90
+				NOT = { has_variable = dynastic_union_integration_cooldown }
+			}
+			save_scope_as = dynastic_union_subject
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.3.a
+		omni_dynastic_union_integrate_subject_effect = yes
+	}
+	
+	option = {
+		name = omni_dynastic_union.3.b
+		scope:dynastic_union_subject = {
+			set_variable = {
+				name = dynastic_union_integration_cooldown
+				days = 1825
+			}
+		}
+		add_stability_effect = yes
+	}
+}
