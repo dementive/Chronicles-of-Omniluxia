@@ -3286,10 +3286,17 @@ omni_character_city_button = {
 
 	effect = {
 		hidden_effect = {
-			# Open the city interaction event on the character shown in the window.
-			# GUI event launches need to be hidden so the character scope is
-			# preserved for non-ruler characters such as army generals.
-			trigger_event = { id = omni_items.7 }
+			if = {
+				limit = { is_ruler = yes }
+				save_scope_as = omni_city_visitor
+				trigger_event = { id = omni_items.7 }
+			}
+			else = {
+				# Non-ruler character events are auto-resolved by the engine. Keep the
+				# commander as the city actor, but display the event on the player ruler.
+				save_scope_as = omni_city_visitor
+				scope:player.current_ruler = { trigger_event = { id = omni_items.7 } }
+			}
 		}
 	}
 }

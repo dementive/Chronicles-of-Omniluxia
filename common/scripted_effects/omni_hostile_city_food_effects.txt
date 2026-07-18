@@ -9,20 +9,28 @@
 # but is available for other scripted content (events, on_actions) to read.
 
 omni_hostile_city_buy_food_effect = {
-	root.employer = {
-		add_treasury = -150
+	if = {
+		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
+		scope:omni_city_visitor = { add_gold = -150 }
 	}
+	else = { root.employer = { add_treasury = -150 } }
 	custom_tooltip = omni_hostile_city_buy_food_effect_tt
 }
 
 omni_hostile_city_steal_food_effect = {
-	root.location = {
-		state = {
-			add_state_food = -50
+	if = {
+		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
+		scope:omni_city_visitor = {
+			location = {
+				state = { add_state_food = -50 }
+				add_province_modifier = { name = omni_food_requisitioned duration = 365 }
+			}
 		}
-		add_province_modifier = {
-			name = omni_food_requisitioned
-			duration = 365
+	}
+	else = {
+		root.location = {
+			state = { add_state_food = -50 }
+			add_province_modifier = { name = omni_food_requisitioned duration = 365 }
 		}
 	}
 	custom_tooltip = omni_hostile_city_steal_food_effect_tt

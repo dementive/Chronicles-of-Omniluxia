@@ -54,7 +54,20 @@ omni_army_buy_slot_item_national = {
 # Rulers and AI use the national loadout; player-controlled non-rulers buy
 # personally and receive only their own character item.
 omni_army_buy_fixed = {
+	save_scope_as = omni_fixed_purchase_host
+	remove_variable = omni_fixed_purchase_succeeded
 	if = {
+		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
+		scope:omni_city_visitor = {
+			if = {
+				limit = { wealth >= $PRICE$ }
+				add_gold = { value = $PRICE$ multiply = -1 }
+				give_character_an_item = { item_ID = $item_ID$ }
+				scope:omni_fixed_purchase_host = { set_variable = omni_fixed_purchase_succeeded }
+			}
+		}
+	}
+	else_if = {
 		limit = { is_ruler = yes OR = { employer = { is_ai = yes } country = { is_ai = yes } } }
 		country = { add_treasury = -$PRICE$ }
 		give_character_an_item = { item_ID = $item_ID$ }
@@ -63,12 +76,18 @@ omni_army_buy_fixed = {
 			omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
 			remove_variable = omni_gen_fx_item
 		}
+		set_variable = omni_fixed_purchase_succeeded
 	}
 	else = {
 		add_gold = { value = $PRICE$ multiply = -1 }
 		give_character_an_item = { item_ID = $item_ID$ }
+		set_variable = omni_fixed_purchase_succeeded
 	}
-	remove_list_variable = { name = omni_item_shop_stock target = flag:$item_ID$ }
+	if = {
+		limit = { has_variable = omni_fixed_purchase_succeeded }
+		remove_list_variable = { name = omni_item_shop_stock target = flag:$item_ID$ }
+	}
+	remove_variable = omni_fixed_purchase_succeeded
 }
 
 # COUNTRY scope. var:omni_gen_fx_item = the item being equipped. Picks the slot.

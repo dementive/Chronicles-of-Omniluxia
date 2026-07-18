@@ -697,12 +697,29 @@ omni_build_ai_country_item_shop_stock = {
 # Deducts the price from the character's wealth, gives them the item, and clears it
 # from that country's shop stock.
 omni_buy_character_item = {
-    add_gold = { value = $price$ multiply = -1 }
-    give_character_an_item = { item_ID = $item_ID$ }
+	save_scope_as = omni_purchase_host
+	remove_variable = omni_purchase_succeeded
+	if = {
+		limit = { exists = scope:omni_city_visitor NOT = { this = scope:omni_city_visitor } }
+		scope:omni_city_visitor = {
+			if = {
+				limit = { wealth >= $price$ }
+				add_gold = { value = $price$ multiply = -1 }
+				give_character_an_item = { item_ID = $item_ID$ }
+				scope:omni_purchase_host = { set_variable = omni_purchase_succeeded }
+			}
+		}
+	}
+	else = {
+		add_gold = { value = $price$ multiply = -1 }
+		give_character_an_item = { item_ID = $item_ID$ }
+		set_variable = omni_purchase_succeeded
+	}
     if = {
-        limit = { is_target_in_variable_list = { name = omni_item_shop_stock target = flag:$item_ID$ } }
+		limit = { has_variable = omni_purchase_succeeded is_target_in_variable_list = { name = omni_item_shop_stock target = flag:$item_ID$ } }
         remove_list_variable = { name = omni_item_shop_stock target = flag:$item_ID$ }
     }
+	remove_variable = omni_purchase_succeeded
 }
 
 ##############################################################################
