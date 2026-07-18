@@ -1,0 +1,29 @@
+﻿omni_circus_clear_bet = {
+	remove_variable = omni_circus_bet_won
+	remove_variable = omni_circus_bet_stake
+	remove_variable = omni_circus_bet_pick
+}
+
+# CHARACTER event host scope. scope:omni_city_visitor is the commander whose
+# private purse pays the stake and receives the winnings.
+omni_circus_resolve_bet = {
+	omni_circus_clear_bet = yes
+	set_variable = { name = omni_circus_bet_stake value = $STAKE$ }
+	set_variable = { name = omni_circus_bet_pick value = $PICK$ }
+	omni_city_actor_change_gold = { VALUE = $STAKE$ MULTIPLY = -1 }
+	random_list = {
+		50 = { scope:omni_circus_contestant_1 = { save_scope_as = omni_circus_winner } }
+		50 = { scope:omni_circus_contestant_2 = { save_scope_as = omni_circus_winner } }
+	}
+	if = {
+		limit = {
+			OR = {
+				AND = { var:omni_circus_bet_pick = 1 scope:omni_circus_winner = scope:omni_circus_contestant_1 }
+				AND = { var:omni_circus_bet_pick = 2 scope:omni_circus_winner = scope:omni_circus_contestant_2 }
+			}
+		}
+		set_variable = omni_circus_bet_won
+		omni_city_actor_change_gold = { VALUE = $STAKE$ MULTIPLY = 2 }
+	}
+	trigger_event = { id = omni_items.15 }
+}

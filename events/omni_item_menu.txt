@@ -489,10 +489,25 @@ omni_items.12 = {
 	option = {
 		name = omni_items.12.tournament
 		trigger = {
-			omni_character_has_local_circus = yes
+			scope:omni_city_visitor = { omni_character_has_local_circus = yes }
+			this = scope:omni_city_visitor
 			omni_city_actor_has_wealth = { PRICE = 100 }
 		}
 		trigger_event = { id = me_zorgoomni.43 }
+	}
+	option = {
+		name = omni_items.12.spectate
+		trigger = {
+			scope:omni_city_visitor = { omni_character_has_local_circus = yes }
+			NOT = { this = scope:omni_city_visitor }
+			omni_city_actor_has_wealth = { PRICE = 25 }
+		}
+		hidden_effect = {
+			scope:omni_city_visitor = {
+				save_scope_as = target
+				employer = { trigger_event = { id = omni_items.14 } }
+			}
+		}
 	}
 	option = {
 		name = omni_items.back
@@ -500,6 +515,77 @@ omni_items.12 = {
 	}
 	option = {
 		name = omni_items.1.close
+	}
+}
+
+### omni_items.14 - commander spectator betting
+omni_items.14 = {
+	type = country_event
+	picture = gladiators
+	title = omni_items.14.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { scope:target.location = { total_population >= 100 } } desc = omni_items.14.desc.big }
+			triggered_desc = { trigger = { scope:target.location = { total_population >= 50 } } desc = omni_items.14.desc.mid }
+			triggered_desc = { desc = omni_items.14.desc.small }
+		}
+	}
+	left_portrait = scope:target
+	right_portrait = scope:omni_circus_contestant_1
+	right_portrait = scope:omni_circus_contestant_2
+
+	immediate = {
+		random_character = {
+			limit = { is_alive = yes is_adult = yes NOT = { this = scope:target } }
+			save_scope_as = omni_circus_contestant_1
+		}
+		random_character = {
+			limit = {
+				is_alive = yes
+				is_adult = yes
+				NOT = { this = scope:target }
+				NOT = { this = scope:omni_circus_contestant_1 }
+			}
+			save_scope_as = omni_circus_contestant_2
+		}
+	}
+
+	option = { name = omni_items.14.c1_25 trigger = { omni_city_actor_has_wealth = { PRICE = 25 } } omni_circus_resolve_bet = { STAKE = 25 PICK = 1 } }
+	option = { name = omni_items.14.c1_50 trigger = { omni_city_actor_has_wealth = { PRICE = 50 } } omni_circus_resolve_bet = { STAKE = 50 PICK = 1 } }
+	option = { name = omni_items.14.c1_100 trigger = { omni_city_actor_has_wealth = { PRICE = 100 } } omni_circus_resolve_bet = { STAKE = 100 PICK = 1 } }
+	option = { name = omni_items.14.c2_25 trigger = { omni_city_actor_has_wealth = { PRICE = 25 } } omni_circus_resolve_bet = { STAKE = 25 PICK = 2 } }
+	option = { name = omni_items.14.c2_50 trigger = { omni_city_actor_has_wealth = { PRICE = 50 } } omni_circus_resolve_bet = { STAKE = 50 PICK = 2 } }
+	option = { name = omni_items.14.c2_100 trigger = { omni_city_actor_has_wealth = { PRICE = 100 } } omni_circus_resolve_bet = { STAKE = 100 PICK = 2 } }
+	option = { name = omni_items.back trigger_event = { id = omni_items.12 } }
+	option = { name = omni_items.1.close }
+}
+
+### omni_items.15 - betting result
+omni_items.15 = {
+	type = country_event
+	picture = gladiators
+	title = omni_items.15.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = omni_circus_bet_won } desc = omni_items.15.win_desc }
+			triggered_desc = { desc = omni_items.15.lose_desc }
+		}
+	}
+	left_portrait = scope:target
+	right_portrait = scope:omni_circus_winner
+
+	option = {
+		name = omni_items.15.continue
+		hidden_effect = {
+			omni_circus_clear_bet = yes
+			scope:target = {
+				employer = { trigger_event = { id = omni_items.14 } }
+			}
+		}
+	}
+	option = {
+		name = omni_items.1.close
+		hidden_effect = { omni_circus_clear_bet = yes }
 	}
 }
 
