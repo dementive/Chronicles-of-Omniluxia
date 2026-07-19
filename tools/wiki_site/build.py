@@ -21,6 +21,7 @@ import argparse
 import datetime as _dt
 import glob
 import html
+import json
 import os
 import re
 import shutil
@@ -40,6 +41,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 MOD_ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 # By default look for the wiki cloned as a sibling of the mod repo.
 WIKI_ROOT = os.path.join(os.path.dirname(MOD_ROOT), "Chronicles-of-Omniluxia.wiki")
+REGISTRY_PATH = os.path.join(HERE, "article_registry.json")
 
 WIKI_URL_RE = re.compile(
     r"https?://github\.com/[^/]+/Chronicles-of-Omniluxia/wiki/([^)\s\"'#]+)(#[^)\s\"']*)?"
@@ -252,6 +254,8 @@ class Page:
         self.html = ""
         self.toc = []
         self.summary = ""
+        self.aliases = []
+        self.auto_links = set()
         self.words = len(re.findall(r"\w+", self.raw))
         self.mtime = os.path.getmtime(path)
 
@@ -310,6 +314,9 @@ class Site:
         self.pages = []
         self.by_key = {}
         self.by_category = defaultdict(list)
+        self.alias_targets = {}
+        self.ambiguous_aliases = set()
+        self.excluded_aliases = set()
 
     # -- load ---------------------------------------------------------------
     def load(self):
@@ -333,6 +340,42 @@ class Site:
                     p.title = titleize(p.name)
 
         print(f"  loaded {len(self.pages)} pages")
+        self.load_registry()
+
+    def load_registry(self):
+        """Build the canonical title/alias -> article lookup.
+
+        Titles and filenames work automatically. article_registry.json only
+        needs to contain adjectival, plural, historical, or otherwise unusual
+        forms, plus exclusions for names that are too ambiguous to auto-link.
+        """
+        config = {"aliases": {}, "exclude": []}
+        if os.path.isfile(REGISTRY_PATH):
+            with open(REGISTRY_PATH, encoding="utf-8") as f:
+                config = json.load(f)
+        self.excluded_aliases = {a.casefold() for a in config.get("exclude", [])}
+
+        candidates = defaultdict(set)
+        for p in self.pages:
+            for alias in {p.title, titleize(p.name)}:
+                if len(alias.strip()) >= 3:
+                    candidates[alias.strip().casefold()].add(p.key)
+        for target_name, aliases in config.get("aliases", {}).items():
+            target = self.by_key.get(normalize_key(target_name))
+            if not target:
+                raise ValueError(f"Registry alias target does not exist: {target_name}")
+            for alias in aliases:
+                candidates[alias.strip().casefold()].add(target.key)
+
+        self.ambiguous_aliases = {a for a, keys in candidates.items() if len(keys) > 1}
+        for alias, keys in candidates.items():
+            if alias not in self.excluded_aliases and len(keys) == 1:
+                self.alias_targets[alias] = self.by_key[next(iter(keys))]
+        for alias, target in self.alias_targets.items():
+            target.aliases.append(alias)
+        print(f"  registry: {len(self.alias_targets)} aliases, "
+              f"{len(self.ambiguous_aliases)} ambiguous, "
+              f"{len(self.excluded_aliases)} excluded")
 
     def resolve(self, key):
         return self.by_key.get(key)
@@ -445,6 +488,10 @@ class Site:
         body = self.promote_era_markers(body)
         out = md.convert(body)
 
+        # Add contextual links after Markdown conversion so existing Markdown
+        # links, headings, code, and other structural elements remain untouched.
+        out = self.autolink_html(out, p)
+
         # External links open in a new tab and get a marker.
         out = re.sub(r'<a href="(https?://[^"]+)"',
                      r'<a href="\1" target="_blank" rel="noopener" class="ext"',
@@ -462,6 +509,56 @@ class Site:
             p.summary = p.epigraph
         return out
 
+    AUTOLINK_BLOCKED = {"a", "code", "pre", "script", "style",
+                        "h1", "h2", "h3", "h4", "h5", "h6"}
+
+    def autolink_html(self, rendered, page):
+        """Link the first meaningful occurrence of every known article alias."""
+        aliases = [(alias, target) for alias, target in self.alias_targets.items()
+                   if target.key != page.key]
+        aliases.sort(key=lambda item: (-len(item[0]), item[0]))
+        if not aliases:
+            return rendered
+        pattern = re.compile(
+            r"(?<![\w])(" + "|".join(re.escape(a) for a, _ in aliases) + r")(?![\w])",
+            re.I,
+        )
+        targets = {a: t for a, t in aliases}
+        linked_targets = set()
+        blocked = []
+        parts = re.split(r"(<[^>]+>)", rendered)
+        output = []
+
+        for part in parts:
+            if part.startswith("<"):
+                close = re.match(r"</\s*([a-z0-9]+)", part, re.I)
+                opening = re.match(r"<\s*([a-z0-9]+)(?:\s|>|/)", part, re.I)
+                if close:
+                    tag = close.group(1).lower()
+                    if blocked and blocked[-1] == tag:
+                        blocked.pop()
+                elif opening and not part.rstrip().endswith("/>"):
+                    tag = opening.group(1).lower()
+                    if tag in self.AUTOLINK_BLOCKED:
+                        blocked.append(tag)
+                output.append(part)
+                continue
+            if blocked or not part.strip():
+                output.append(part)
+                continue
+
+            def replace(match):
+                alias = match.group(0).casefold()
+                target = targets.get(alias)
+                if not target or target.key in linked_targets:
+                    return match.group(0)
+                linked_targets.add(target.key)
+                page.auto_links.add(target.key)
+                return f'<a href="{target.out}" class="autolink">{match.group(0)}</a>'
+
+            output.append(pattern.sub(replace, part))
+        return "".join(output)
+
     def plate_for(self, p):
         cat = p.category or "lore"
         plates = CATEGORY_PLATES.get(cat, CATEGORY_PLATES["lore"])
@@ -474,6 +571,7 @@ class Site:
         for ckey, _hub, label, _b in CATEGORIES:
             cls = ' class="on"' if ckey == active else ""
             items.append(f'<a href="c-{ckey}.html"{cls}>{label}</a>')
+        items.append('<a href="all.html#search">Search</a>')
         return "\n        ".join(items)
 
     def shell(self, *, title, desc, body, active=None, page_class="",
@@ -500,6 +598,7 @@ class Site:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
+<script src="assets/site.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -566,7 +665,8 @@ class Site:
 
     # -- page types ---------------------------------------------------------
     def render_page(self, p):
-        self.render_markdown(p)
+        if not p.html:
+            self.render_markdown(p)
         plate = self.plate_for(p)
         cat = p.category or "lore"
         catlabel = CATEGORY_LABEL.get(cat, "Lore")
@@ -593,25 +693,32 @@ class Site:
             toc_html = (f'<nav class="toc"><h4>On this page</h4>'
                         f'<ol>{items}</ol></nav>')
 
-        # Related (backlinks + outgoing), capped.
-        rel = []
-        seen = set()
-        for k in sorted(p.links | p.backlinks):
-            t = self.by_key.get(k)
-            if t and not t.is_home and t.key not in seen:
-                seen.add(t.key)
-                rel.append(t)
-        rel.sort(key=lambda x: (x.key not in p.backlinks, x.title))
-        rel = rel[:12]
-        rel_html = ""
-        if rel:
+        # Explain relationships instead of presenting one opaque mixed list.
+        def relation_group(title, keys, limit=10):
+            targets = [self.by_key[k] for k in keys
+                       if k in self.by_key and not self.by_key[k].is_home]
+            targets.sort(key=lambda x: (x.category != p.category, x.title.casefold()))
+            targets = targets[:limit]
+            if not targets:
+                return ""
             chips = "".join(
                 f'<a class="chip" href="{t.out}"><span class="chip-c">'
                 f'{CATEGORY_LABEL.get(t.category,"Lore")}</span>{html.escape(t.title)}</a>'
-                for t in rel)
+                for t in targets)
+            return f'<div class="relation-group"><h4>{title}</h4><div class="chips">{chips}</div></div>'
+
+        outgoing = (p.links | p.auto_links) - p.backlinks
+        reciprocal = (p.links | p.auto_links) & p.backlinks
+        incoming = p.backlinks - (p.links | p.auto_links)
+        relation_html = (
+            relation_group("Closely related", reciprocal) +
+            relation_group("People, places, and ideas in this article", outgoing) +
+            relation_group("Mentioned in", incoming)
+        )
+        rel_html = ""
+        if relation_html:
             rel_html = (f'<section class="related">{self.RULE}'
-                        f'<h3>Threads leading elsewhere</h3>'
-                        f'<div class="chips">{chips}</div></section>')
+                        f'<h3>Connections across the chronicle</h3>{relation_html}</section>')
 
         # Sibling navigation within the category.
         sibs = [s for s in self.by_category.get(cat, []) if s is not p]
@@ -629,6 +736,17 @@ class Site:
                          f'<strong>{html.escape(q.title)}</strong></a>')
 
         rt = reading_time(p.raw)
+        connection_count = len((p.links | p.auto_links) - {p.key})
+        facts = f"""
+      <aside class="article-facts" aria-label="Article summary">
+        <h2>At a glance</h2>
+        <dl>
+          <div><dt>Subject</dt><dd>{catlabel}</dd></div>
+          <div><dt>Reading time</dt><dd>{rt} min</dd></div>
+          <div><dt>Linked topics</dt><dd>{connection_count}</dd></div>
+          <div><dt>Mentioned by</dt><dd>{len(p.backlinks)}</dd></div>
+        </dl>
+      </aside>"""
         body = f"""
 <article class="page">
   <div class="hero{' has-toc-hero' if toc_html else ''}" style="--plate:url('img/hero-{plate:02d}-1280.jpg');--plate-sm:url('img/hero-{plate:02d}-800.jpg')">
@@ -645,6 +763,10 @@ class Site:
   <div class="wrap{' has-toc' if toc_html else ''}" id="main">
     {toc_html}
     <div class="prose">
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="index.html">Home</a>
+      <span aria-hidden="true">&rsaquo;</span><a href="c-{cat}.html">{catlabel}</a>
+      <span aria-hidden="true">&rsaquo;</span><span>{html.escape(p.title)}</span></nav>
+      {facts}
       {p.html}
     </div>
   </div>
@@ -653,7 +775,7 @@ class Site:
 </article>
 """
         return self.shell(title=p.title, desc=p.summary or p.epigraph or "",
-                          body=body, active=cat, page_class="article")
+                          body=body, active=cat, page_class=f"article category-{cat}")
 
     def render_category(self, ckey):
         pages = self.by_category[ckey]
@@ -807,10 +929,11 @@ class Site:
             if not pages:
                 continue
             links = "".join(
-                f'<li><a href="{p.out}">{html.escape(p.title)}</a>'
+                f'<li data-title="{html.escape(p.title.casefold(), quote=True)}" '
+                f'data-category="{ckey}"><a href="{p.out}">{html.escape(p.title)}</a>'
                 f'<span>{p.words:,}w</span></li>' for p in pages)
             groups.append(f"""
-      <section class="idx-group">
+      <section class="idx-group" data-category-group="{ckey}">
         <h2 id="{ckey}">{label} <span class="idx-n">{len(pages)}</span></h2>
         <ul class="idx-list">{links}</ul>
       </section>""")
@@ -826,7 +949,17 @@ class Site:
     </div>
     <div class="hero-fade" aria-hidden="true"></div>
   </div>
-  <div class="wrap wide" id="main">{"".join(groups)}
+  <div class="wrap wide" id="main">
+    <section class="wiki-search" id="search" aria-labelledby="search-title">
+      <label id="search-title" for="wiki-search">Search the chronicle</label>
+      <input id="wiki-search" type="search" placeholder="Try Helluvian, Zani, Luxterra&hellip;" autocomplete="off">
+      <div class="category-filters" role="group" aria-label="Filter by subject">
+        <button type="button" class="on" data-filter="all">All</button>
+        {''.join(f'<button type="button" data-filter="{key}">{label}</button>' for key, _hub, label, _blurb in CATEGORIES)}
+      </div>
+      <p class="search-status" aria-live="polite"></p>
+    </section>
+    {"".join(groups)}
   </div>
 </div>
 """
@@ -984,6 +1117,18 @@ class Site:
         for f in os.listdir(src_assets):
             shutil.copy2(os.path.join(src_assets, f), os.path.join(dst_assets, f))
 
+        # Render every article first. Auto-links then become part of the graph,
+        # allowing later pages to display complete generated backlinks.
+        for p in self.pages:
+            if not p.is_home:
+                self.render_markdown(p)
+                p.links.update(p.auto_links)
+        for p in self.pages:
+            for key in p.auto_links:
+                target = self.by_key.get(key)
+                if target:
+                    target.backlinks.add(p.key)
+
         n = 0
         for p in self.pages:
             if p.is_home:
@@ -1013,6 +1158,15 @@ class Site:
 
         # Tell GitHub Pages not to run Jekyll over this.
         open(os.path.join(self.out, ".nojekyll"), "w").close()
+
+        search_index = [
+            {"title": p.title, "url": p.out,
+             "category": p.category or FALLBACK_CATEGORY,
+             "summary": p.summary, "aliases": sorted(set(p.aliases))}
+            for p in self.pages if not p.is_home
+        ]
+        with open(os.path.join(self.out, "search-index.json"), "w", encoding="utf-8") as f:
+            json.dump(search_index, f, ensure_ascii=False, separators=(",", ":"))
 
         # Sitemap
         if self.base:

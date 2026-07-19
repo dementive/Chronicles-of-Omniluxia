@@ -88,9 +88,10 @@ The generator adapts to how this wiki is actually written:
 - Each category draws plates from a terrain-appropriate subset
   (`CATEGORY_PLATES`), so a category looks coherent without every page being
   identical.
-- **No JavaScript at all.** Scroll reveals use `animation-timeline: view()` behind
-  an `@supports` guard, so browsers without it simply show the content. The mobile
-  menu is a checkbox. `prefers-reduced-motion` is respected.
+- The only JavaScript is progressive enhancement for the All Pages search and
+  category filters. Article reading, navigation, and the mobile menu still work
+  without it. Scroll reveals use `animation-timeline: view()` behind an
+  `@supports` guard and `prefers-reduced-motion` is respected.
 - About 1.2 MB of art for the whole site, shared across every page and cached
   after first load. Only sizes the site actually loads are generated: 1280 for
   desktop hero plates, 800 for narrow viewports and the social preview image.
@@ -108,3 +109,25 @@ that appear nowhere on the site is worse than no credits page.
 One gotcha: `url()` inside a CSS custom property resolves relative to the
 **stylesheet**, not the HTML document. The generator emits `--plate:url('img/...')`,
 not `assets/img/...`.
+
+## Article links and aliases
+
+The generator links the first meaningful mention of another article in each
+page. It never changes headings, existing links, code, or the article's own
+name. Every page title and filename is recognized automatically.
+
+Put adjectival, plural, historical, or alternate names in
+`article_registry.json`. Ambiguous generic words belong in its `exclude` list;
+the generator deliberately refuses to guess when an alias resolves to multiple
+articles. For example, `Helluvian`, `Helluvians`, `Helluvian faith`, and
+`Helluvian Heresy` all resolve to `Helluvianism`.
+
+The generated graph is checked with:
+
+```bash
+python3 tools/wiki_site/audit.py --site docs
+```
+
+It produces JSON and Markdown reports covering broken links, orphan articles,
+articles without outgoing links, reciprocal relationships, and weakly connected
+pages. CI fails on broken targets and uploads both reports for editorial review.

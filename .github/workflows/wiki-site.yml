@@ -50,6 +50,9 @@ jobs:
       - name: Grade artwork
         run: python tools/wiki_site/build_art.py
 
+      - name: Test wiki generator
+        run: python -m unittest tools/wiki_site/test_wiki_site.py -v
+
       - name: Build the site
         run: |
           python tools/wiki_site/build.py \
@@ -58,27 +61,15 @@ jobs:
             --base "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
       - name: Check every internal link resolves
-        run: |
-          python - <<'EOF'
-          import glob, os, re, sys
-          os.chdir('docs')
-          pages = {os.path.basename(f) for f in glob.glob('*.html')}
-          broken = []
-          for f in glob.glob('*.html'):
-              html = open(f, encoding='utf-8').read()
-              for href in re.findall(r'href="([^"]+)"', html):
-                  if href.startswith(('http', 'mailto:', '#', '//')):
-                      continue
-                  if href.endswith(('.css', '.xml', '.png')):
-                      continue
-                  target = href.split('#')[0]
-                  if target and target not in pages:
-                      broken.append(f'{f} -> {href}')
-          if broken:
-              print('Broken internal links:', *broken[:20], sep='\n  ')
-              sys.exit(1)
-          print(f'{len(pages)} pages, all internal links resolve.')
-          EOF
+        run: python tools/wiki_site/audit.py --site docs --report wiki-audit.json --markdown-report wiki-audit.md
+
+      - name: Upload link graph audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: wiki-link-audit
+          path: |
+            wiki-audit.json
+            wiki-audit.md
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
