@@ -1,0 +1,987 @@
+namespace = omni_seduction
+
+omni_seduction.1 = {
+	type = country_event
+	title = omni_seduction.1.t
+	desc = omni_seduction.1.desc
+	picture = greek_court
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+
+	trigger = {
+		exists = scope:omni_seducer
+		exists = scope:omni_seduction_target
+		scope:omni_seducer = { is_alive = yes is_ruler = yes }
+		scope:omni_seduction_target = { is_alive = yes prisoner = no }
+	}
+
+	option = {
+		name = omni_seduction.1.a
+		trigger = { scope:omni_seducer = { wealth >= 25 } }
+		scope:omni_seducer = { add_gold = -25 }
+		scope:omni_seducer = { set_variable = { name = omni_seduction_gift days = 300 } }
+		custom_tooltip = omni_seduction_gift_tt
+	}
+	option = {
+		name = omni_seduction.1.b
+		scope:omni_seducer = { add_popularity = -2 }
+		scope:omni_seducer = { set_variable = { name = omni_seduction_flattery days = 300 } }
+		custom_tooltip = omni_seduction_flattery_tt
+	}
+	option = {
+		name = omni_seduction.1.c
+		scope:omni_seducer = { add_corruption = 1 }
+		scope:omni_seducer = { set_variable = { name = omni_seduction_bold days = 300 } }
+		custom_tooltip = omni_seduction_bold_tt
+	}
+	option = {
+		name = omni_seduction.1.d
+		scope:omni_seducer = { remove_variable = omni_seduction_active }
+		custom_tooltip = omni_seduction_abandoned_tt
+	}
+	after = {
+		if = {
+			limit = { scope:omni_seducer = { has_variable = omni_seduction_active } }
+			trigger_event = { on_action = omni_seduction_stage_two days = { 30 60 } }
+		}
+	}
+}
+
+omni_seduction.2 = {
+	type = country_event
+	title = omni_seduction.2.t
+	desc = omni_seduction.2.desc
+	picture = senator_conversing
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+
+	trigger = {
+		exists = scope:omni_seducer
+		exists = scope:omni_seduction_target
+		scope:omni_seducer = { is_alive = yes is_ruler = yes has_variable = omni_seduction_active }
+		scope:omni_seduction_target = { is_alive = yes prisoner = no }
+	}
+
+	option = {
+		name = omni_seduction.2.a
+		scope:omni_seducer = { add_popularity = -1 }
+		scope:omni_seducer = { set_variable = { name = omni_seduction_careful days = 300 } }
+		custom_tooltip = omni_seduction_careful_tt
+	}
+	option = {
+		name = omni_seduction.2.b
+		scope:omni_seducer = { add_corruption = 2 }
+		scope:omni_seducer = { set_variable = { name = omni_seduction_daring days = 300 } }
+		custom_tooltip = omni_seduction_daring_tt
+	}
+	option = {
+		name = omni_seduction.2.c
+		trigger = { scope:omni_seducer = { wealth >= 15 } }
+		scope:omni_seducer = { add_gold = -15 }
+		scope:omni_seducer = { set_variable = { name = omni_seduction_servant_bribed days = 300 } }
+		custom_tooltip = omni_seduction_bribe_servant_tt
+	}
+	after = { trigger_event = { on_action = omni_seduction_stage_three days = { 30 90 } } }
+}
+
+omni_seduction.3 = {
+	type = country_event
+	title = omni_seduction.3.t
+	desc = omni_seduction.3.desc
+	picture = greek_court
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+
+	trigger = {
+		exists = scope:omni_seducer
+		exists = scope:omni_seduction_target
+		scope:omni_seducer = { is_alive = yes is_ruler = yes has_variable = omni_seduction_active }
+		scope:omni_seduction_target = { is_alive = yes prisoner = no }
+	}
+
+	option = {
+		name = omni_seduction.3.a
+		custom_tooltip = omni_seduction_invitation_sent_tt
+	}
+	after = {
+		if = {
+			limit = {
+				scope:omni_seduction_target.employer = {
+					is_ai = no
+					NOT = { this = scope:omni_seducer.employer }
+				}
+			}
+			scope:omni_seduction_target.employer = { trigger_event = { id = omni_seduction.12 days = { 1 3 } } }
+		}
+		else = { random_list = {
+			50 = {
+				modifier = { factor = 4 scope:omni_seduction_target = { is_spouse_of = scope:omni_seducer } }
+				modifier = { factor = 2 scope:omni_seduction_target = { has_trait = lustful } }
+				modifier = { factor = 1.5 scope:omni_seduction_target = { is_friend = scope:omni_seducer } }
+				modifier = { factor = 1.25 scope:omni_seducer = { has_variable = omni_seduction_gift } }
+				modifier = { factor = 1.25 scope:omni_seducer = { has_variable = omni_seduction_flattery charisma >= 8 } }
+				modifier = { factor = 1.35 scope:omni_seducer = { has_variable = omni_seduction_bold has_trait = lustful } }
+				modifier = { factor = 1.20 scope:omni_seducer = { has_variable = omni_seduction_daring } }
+				modifier = { factor = 1.25 scope:omni_seducer = { charisma >= 10 } }
+				modifier = { factor = 1.25 scope:omni_seducer = { charisma >= 14 } }
+				modifier = { factor = 1.15 scope:omni_seduction_target = { has_same_culture_group_as = scope:omni_seducer } }
+				modifier = { factor = 1.10 scope:omni_seduction_target = { has_same_religion_as = scope:omni_seducer } }
+				modifier = { factor = 0.50 scope:omni_seduction_target = { has_trait = self_controlled } }
+				modifier = { factor = 0.75 scope:omni_seduction_target = { has_trait = devout } }
+				modifier = { factor = 1.25 scope:omni_seduction_target = { has_trait = reckless } }
+				modifier = { factor = 0.25 scope:omni_seduction_target = { char_is_ill_trigger = yes } }
+				modifier = { factor = 0.20 scope:omni_seduction_target = { has_trait = chaste } }
+				modifier = { factor = 0.10 scope:omni_seduction_target = { is_rival = scope:omni_seducer } }
+				trigger_event = { id = omni_seduction.4 }
+			}
+			50 = { trigger_event = { id = omni_seduction.5 } }
+		} }
+	}
+}
+
+# A human who controls the target's court owns the final decision. This is
+# deliberately separate from the seducer's event so multiplayer never resolves
+# one player's character through another player's button or through AI weights.
+omni_seduction.12 = {
+	type = country_event
+	title = omni_seduction.12.t
+	desc = omni_seduction.12.desc
+	picture = greek_court
+	left_portrait = scope:omni_seduction_target
+	right_portrait = scope:omni_seducer
+	trigger = {
+		is_ai = no
+		exists = scope:omni_seducer
+		exists = scope:omni_seduction_target
+		scope:omni_seducer = { is_alive = yes has_variable = omni_seduction_active }
+		scope:omni_seduction_target = { is_alive = yes prisoner = no }
+	}
+	option = {
+		name = omni_seduction.12.a
+		scope:omni_seduction_target = { add_corruption = 1 }
+		custom_tooltip = omni_seduction_mp_accept_tt
+		scope:omni_seducer.employer = { trigger_event = { id = omni_seduction.4 days = { 1 2 } } }
+	}
+	option = {
+		name = omni_seduction.12.b
+		scope:omni_seduction_target = { add_popularity = -1 }
+		custom_tooltip = omni_seduction_mp_refuse_private_tt
+		scope:omni_seducer.employer = { trigger_event = { id = omni_seduction.5 days = { 1 2 } } }
+	}
+	option = {
+		name = omni_seduction.12.c
+		scope:omni_seduction_target = { add_popularity = 2 }
+		scope:omni_seduction_target = { set_variable = { name = omni_seduction_rejected_exposed days = 30 } }
+		custom_tooltip = omni_seduction_mp_expose_tt
+		scope:omni_seducer.employer = {
+			trigger_event = { id = omni_seduction.5 days = { 1 2 } }
+			trigger_event = { id = omni_seduction.13 days = { 2 4 } }
+		}
+	}
+}
+
+omni_seduction.13 = {
+	type = country_event
+	title = omni_seduction.13.t
+	desc = omni_seduction.13.desc
+	picture = senator_conversing
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+	option = {
+		name = omni_seduction.13.a
+		scope:omni_seducer = { add_popularity = -5 add_corruption = 2 }
+		if = {
+			limit = { NOT = { scope:omni_seducer.employer = scope:omni_seduction_target.employer } }
+			scope:omni_seduction_target.employer = {
+				add_opinion = { target = scope:omni_seducer.employer modifier = omni_foreign_royal_affair }
+			}
+		}
+	}
+}
+
+omni_seduction.4 = {
+	type = country_event
+	title = omni_seduction.4.t
+	desc = omni_seduction.4.desc
+	picture = greek_court
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+	option = {
+		name = omni_seduction.4.a
+		custom_tooltip = omni_seduction_success_tt
+		scope:omni_seducer = {
+			remove_variable = omni_seduction_active
+			set_variable = { name = omni_seduction_cooldown days = 1095 }
+			add_character_modifier = { name = omni_renewed_affection duration = 730 }
+		}
+		scope:omni_seduction_target = {
+			add_loyalty = loyalty_omni_seduction_accepted
+			add_character_modifier = { name = omni_ongoing_affair duration = 730 }
+		}
+		if = {
+			limit = {
+				scope:omni_seducer = { char_can_have_friends_trigger = yes NOT = { is_friend = scope:omni_seduction_target } }
+				scope:omni_seduction_target = { char_can_be_friend_trigger = yes }
+			}
+			scope:omni_seducer = { add_friend = scope:omni_seduction_target }
+		}
+		trigger_event = { id = omni_seduction.6 days = { 1 3 } }
+		if = {
+			limit = { NOT = { scope:omni_seduction_target = { is_spouse_of = scope:omni_seducer } } }
+			trigger_event = { id = omni_seduction.11 days = { 300 500 } }
+		}
+	}
+}
+
+omni_seduction.5 = {
+	type = country_event
+	title = omni_seduction.5.t
+	desc = omni_seduction.5.desc
+	picture = greek_court
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+	option = {
+		name = omni_seduction.5.a
+		custom_tooltip = omni_seduction_rejection_tt
+		scope:omni_seducer = { remove_variable = omni_seduction_active }
+		scope:omni_seduction_target = {
+			add_loyalty = loyalty_omni_seduction_rejected
+			set_variable = { name = omni_recently_rejected_seducer value = scope:omni_seducer days = 730 }
+		}
+		scope:omni_seducer = {
+			remove_variable = omni_seduction_gift
+			remove_variable = omni_seduction_flattery
+			remove_variable = omni_seduction_bold
+			remove_variable = omni_seduction_careful
+			remove_variable = omni_seduction_daring
+			remove_variable = omni_seduction_servant_bribed
+		}
+	}
+}
+
+omni_seduction.6 = {
+	type = country_event
+	title = omni_seduction.6.t
+	desc = omni_seduction.6.desc
+	picture = greek_court
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+	option = {
+		name = omni_seduction.6.a
+		custom_tooltip = omni_seduction_private_night_tt
+		hidden_effect = {
+			random_list = {
+				30 = {
+					modifier = { factor = 0.85 scope:omni_seducer = { OR = { has_trait = high_elf_trait has_trait = mycelar_trait } } }
+					modifier = { factor = 0.85 scope:omni_seduction_target = { OR = { has_trait = high_elf_trait has_trait = mycelar_trait } } }
+					modifier = { factor = 0.90 scope:omni_seducer = { OR = { has_trait = forest_elf_trait has_trait = sea_elf_trait } } }
+					modifier = { factor = 0.90 scope:omni_seduction_target = { OR = { has_trait = forest_elf_trait has_trait = sea_elf_trait } } }
+					modifier = { factor = 0.95 scope:omni_seducer = { OR = { has_trait = copper_dwarf_trait has_trait = gold_dwarf_trait has_trait = silver_dwarf_trait has_trait = castaway_dwarf_trait } } }
+					modifier = { factor = 0.95 scope:omni_seduction_target = { OR = { has_trait = copper_dwarf_trait has_trait = gold_dwarf_trait has_trait = silver_dwarf_trait has_trait = castaway_dwarf_trait } } }
+					modifier = { factor = 1.10 scope:omni_seducer = { has_trait = lustful } }
+					modifier = { factor = 1.10 scope:omni_seduction_target = { has_trait = lustful } }
+					modifier = { factor = 0.80 scope:omni_seducer = { has_trait = chaste } }
+					modifier = { factor = 0.80 scope:omni_seduction_target = { has_trait = chaste } }
+				if = {
+					limit = {
+						scope:omni_seducer = { omni_can_impregnate_trigger = yes }
+						scope:omni_seduction_target = { omni_can_become_pregnant_trigger = yes }
+					}
+					scope:omni_seduction_target = {
+						if = {
+							limit = { is_spouse_of = scope:omni_seducer }
+							make_pregnant = { father = scope:omni_seducer known_bastard = no number_of_children = 1 }
+						}
+						else = {
+							set_variable = { name = omni_seduction_father value = scope:omni_seducer days = 400 }
+							set_variable = { name = omni_seduction_father_country value = scope:omni_seducer.employer days = 400 }
+							if = {
+								limit = { scope:omni_seducer = { is_ruler = yes } }
+								set_variable = { name = omni_seduction_father_was_ruler days = 400 }
+							}
+							if = {
+								limit = { is_ruler = yes }
+								set_variable = { name = omni_seduction_mother_was_ruler days = 400 }
+							}
+							if = {
+								limit = { spouse = { is_ruler = yes } }
+								set_variable = { name = omni_seduction_mother_was_consort days = 400 }
+							}
+							if = {
+								limit = { is_married = yes }
+								set_variable = { name = omni_seduction_betrayed_spouse value = spouse days = 400 }
+							}
+							if = {
+								limit = { scope:omni_seducer = { is_married = yes } }
+								set_variable = { name = omni_seduction_father_spouse value = scope:omni_seducer.spouse days = 400 }
+							}
+							make_pregnant = { father = scope:omni_seducer known_bastard = yes number_of_children = 1 }
+							employer = { trigger_event = { id = omni_seduction.9 days = { 120 220 } } }
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						scope:omni_seducer = { omni_can_become_pregnant_trigger = yes }
+						scope:omni_seduction_target = { omni_can_impregnate_trigger = yes }
+					}
+					scope:omni_seducer = {
+						if = {
+							limit = { is_spouse_of = scope:omni_seduction_target }
+							make_pregnant = { father = scope:omni_seduction_target known_bastard = no number_of_children = 1 }
+						}
+						else = {
+							set_variable = { name = omni_seduction_father value = scope:omni_seduction_target days = 400 }
+							set_variable = { name = omni_seduction_father_country value = scope:omni_seduction_target.employer days = 400 }
+							if = {
+								limit = { scope:omni_seduction_target = { is_ruler = yes } }
+								set_variable = { name = omni_seduction_father_was_ruler days = 400 }
+							}
+							if = {
+								limit = { is_ruler = yes }
+								set_variable = { name = omni_seduction_mother_was_ruler days = 400 }
+							}
+							if = {
+								limit = { spouse = { is_ruler = yes } }
+								set_variable = { name = omni_seduction_mother_was_consort days = 400 }
+							}
+							if = {
+								limit = { is_married = yes }
+								set_variable = { name = omni_seduction_betrayed_spouse value = spouse days = 400 }
+							}
+							if = {
+								limit = { scope:omni_seduction_target = { is_married = yes } }
+								set_variable = { name = omni_seduction_father_spouse value = scope:omni_seduction_target.spouse days = 400 }
+							}
+							make_pregnant = { father = scope:omni_seduction_target known_bastard = yes number_of_children = 1 }
+							employer = { trigger_event = { id = omni_seduction.9 days = { 120 220 } } }
+						}
+					}
+				}
+				}
+				70 = { }
+			}
+			if = {
+				limit = { NOT = { scope:omni_seduction_target = { is_spouse_of = scope:omni_seducer } } }
+				random_list = {
+					25 = {
+						modifier = { factor = 0.40 scope:omni_seducer = { has_variable = omni_seduction_careful } }
+						modifier = { factor = 0.50 scope:omni_seducer = { has_variable = omni_seduction_servant_bribed } }
+						modifier = { factor = 2 scope:omni_seducer = { has_variable = omni_seduction_bold } }
+						modifier = { factor = 1.5 scope:omni_seducer = { has_variable = omni_seduction_daring } }
+						trigger_event = { id = omni_seduction.7 days = { 10 30 } }
+					}
+					75 = { }
+				}
+			}
+			scope:omni_seducer = {
+				remove_variable = omni_seduction_gift
+				remove_variable = omni_seduction_flattery
+				remove_variable = omni_seduction_bold
+				remove_variable = omni_seduction_careful
+				remove_variable = omni_seduction_daring
+				remove_variable = omni_seduction_servant_bribed
+			}
+		}
+	}
+}
+
+omni_seduction.7 = {
+	type = country_event
+	title = omni_seduction.7.t
+	desc = omni_seduction.7.desc
+	picture = senator_conversing
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+	option = {
+		name = omni_seduction.7.a
+		custom_tooltip = omni_seduction_exposure_tt
+		scope:omni_seducer = { add_popularity = -10 add_corruption = 5 }
+		if = {
+			limit = { scope:omni_seducer = { has_variable = omni_seduction_father } }
+			scope:omni_seducer = { set_variable = { name = omni_seduction_discovered days = 400 } }
+		}
+		if = {
+			limit = { scope:omni_seduction_target = { has_variable = omni_seduction_father } }
+			scope:omni_seduction_target = { set_variable = { name = omni_seduction_discovered days = 400 } }
+		}
+		if = {
+			limit = { exists = scope:omni_target_spouse scope:omni_target_spouse = { is_alive = yes } }
+			scope:omni_seducer = { save_scope_as = omni_betrayal_culprit }
+			scope:omni_target_spouse = {
+				omni_betrayed_spouse_effect = yes
+				if = {
+					limit = { OR = { has_trait = vengeful has_trait = cruel has_trait = deceitful } }
+					save_scope_as = omni_avenging_spouse
+				}
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:omni_seducer_spouse
+				scope:omni_seducer_spouse = { is_alive = yes }
+				NOT = { scope:omni_seducer_spouse = scope:omni_target_spouse }
+			}
+			scope:omni_seduction_target = { save_scope_as = omni_betrayal_culprit }
+			scope:omni_seducer_spouse = {
+				omni_betrayed_spouse_effect = yes
+				if = {
+					limit = { OR = { has_trait = vengeful has_trait = cruel has_trait = deceitful } }
+					save_scope_as = omni_avenging_spouse
+				}
+			}
+		}
+		if = {
+			limit = { exists = scope:omni_avenging_spouse }
+			random = { chance = 25 trigger_event = { id = omni_seduction.8 days = { 90 240 } } }
+		}
+		if = {
+			limit = { NOT = { scope:omni_seducer.employer = scope:omni_seduction_target.employer } }
+			scope:omni_seduction_target.employer = {
+				add_opinion = { target = scope:omni_seducer.employer modifier = omni_foreign_royal_affair }
+			}
+		}
+	}
+}
+
+omni_seduction.9 = {
+	type = country_event
+	title = omni_seduction.9.t
+	desc = omni_seduction.9.desc
+	picture = greek_court
+	left_portrait = scope:omni_pregnant_lover
+	right_portrait = scope:omni_seducer
+
+	trigger = {
+		OR = {
+			scope:omni_seducer = {
+				is_alive = yes
+				is_pregnant = yes
+				has_variable = omni_seduction_father
+				NOT = { has_variable = omni_seduction_discovered }
+			}
+			scope:omni_seduction_target = {
+				is_alive = yes
+				is_pregnant = yes
+				has_variable = omni_seduction_father
+				NOT = { has_variable = omni_seduction_discovered }
+			}
+		}
+	}
+	immediate = {
+		if = {
+			limit = { scope:omni_seducer = { is_pregnant = yes has_variable = omni_seduction_father } }
+			scope:omni_seducer = { save_scope_as = omni_pregnant_lover }
+		}
+		else = { scope:omni_seduction_target = { save_scope_as = omni_pregnant_lover } }
+	}
+	option = {
+		name = omni_seduction.9.a
+		trigger = { scope:omni_pregnant_lover = { wealth >= 30 } }
+		scope:omni_pregnant_lover = { add_gold = -30 }
+		custom_tooltip = omni_seduction_pregnancy_concealed_tt
+	}
+	option = {
+		name = omni_seduction.9.b
+		custom_tooltip = omni_seduction_pregnancy_risk_tt
+		random_list = {
+			50 = {
+				scope:omni_pregnant_lover = { set_variable = { name = omni_seduction_discovered days = 400 } }
+				scope:omni_seducer.employer = { trigger_event = { id = omni_seduction.7 days = { 1 3 } } }
+			}
+			50 = { }
+		}
+	}
+	option = {
+		name = omni_seduction.9.c
+		custom_tooltip = omni_seduction_pregnancy_confess_tt
+		scope:omni_pregnant_lover = { set_variable = { name = omni_seduction_discovered days = 400 } }
+		scope:omni_seducer.employer = { trigger_event = { id = omni_seduction.7 days = { 1 3 } } }
+	}
+}
+
+omni_seduction.8 = {
+	type = country_event
+	title = omni_seduction.8.t
+	desc = omni_seduction.8.desc
+	picture = assassination
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_avenging_spouse
+	trigger = {
+		exists = scope:omni_seducer
+		exists = scope:omni_avenging_spouse
+		scope:omni_seducer = { is_alive = yes is_ruler = yes }
+		scope:omni_avenging_spouse = { is_alive = yes }
+	}
+	option = {
+		name = omni_seduction.8.a
+		trigger = { scope:omni_seducer = { wealth >= 50 } }
+		scope:omni_seducer = { add_gold = -50 }
+		custom_tooltip = omni_seduction_revenge_guarded_tt
+	}
+	option = {
+		name = omni_seduction.8.b
+		custom_tooltip = omni_seduction_revenge_risk_tt
+		scope:omni_seducer = {
+			random_list = {
+				20 = { death = { killer = scope:omni_avenging_spouse death_reason = death_assassinated } }
+				30 = { add_trait = wounded }
+				50 = { add_popularity = -5 }
+			}
+		}
+	}
+}
+
+omni_seduction.10 = {
+	type = country_event
+	title = omni_seduction.10.t
+	desc = omni_seduction.10.desc
+	picture = greek_court
+	option = {
+		name = omni_seduction.10.a
+		custom_tooltip = omni_seduction_abandoned_tt
+		if = {
+			limit = { exists = scope:omni_seducer }
+			scope:omni_seducer = {
+				remove_variable = omni_seduction_active
+				remove_variable = omni_seduction_gift
+				remove_variable = omni_seduction_flattery
+				remove_variable = omni_seduction_bold
+				remove_variable = omni_seduction_careful
+				remove_variable = omni_seduction_daring
+				remove_variable = omni_seduction_servant_bribed
+			}
+		}
+	}
+}
+
+omni_seduction.11 = {
+	type = country_event
+	title = omni_seduction.11.t
+	desc = omni_seduction.11.desc
+	picture = greek_court
+	left_portrait = scope:omni_seducer
+	right_portrait = scope:omni_seduction_target
+	trigger = {
+		exists = scope:omni_seducer
+		exists = scope:omni_seduction_target
+		scope:omni_seducer = { is_alive = yes is_ruler = yes }
+		scope:omni_seduction_target = { is_alive = yes has_character_modifier = omni_ongoing_affair }
+		NOT = { scope:omni_seduction_target = { is_spouse_of = scope:omni_seducer } }
+	}
+	option = {
+		name = omni_seduction.11.a
+		custom_tooltip = omni_seduction_affair_fade_tt
+		scope:omni_seduction_target = { remove_character_modifier = omni_ongoing_affair }
+		ai_chance = { factor = 50 }
+	}
+	option = {
+		name = omni_seduction.11.b
+		scope:omni_seducer = { add_corruption = 2 }
+		custom_tooltip = omni_seduction_affair_continue_tt
+		scope:omni_seduction_target = { add_character_modifier = { name = omni_ongoing_affair duration = 730 } }
+		trigger_event = { id = omni_seduction.6 days = { 1 3 } }
+		trigger_event = { id = omni_seduction.11 days = { 300 500 } }
+		ai_chance = {
+			factor = 30
+			modifier = { factor = 2 scope:omni_seducer = { has_trait = lustful } }
+			modifier = { factor = 2 scope:omni_seduction_target = { has_trait = lustful } }
+		}
+	}
+	option = {
+		name = omni_seduction.11.c
+		trigger = { scope:omni_seduction_target = { is_friend = scope:omni_seducer } }
+		custom_tooltip = omni_seduction_affair_end_friend_tt
+		scope:omni_seducer = { remove_friend = scope:omni_seduction_target }
+		scope:omni_seduction_target = { remove_character_modifier = omni_ongoing_affair }
+		ai_chance = { factor = 20 }
+	}
+}
+
+omni_seduction.20 = {
+	type = country_event
+	title = omni_seduction.20.t
+	desc = omni_seduction.20.desc
+	picture = successors
+	left_portrait = scope:omni_bastard_mother
+	left_portrait = scope:omni_betrayed_spouse
+	left_portrait = scope:omni_father_spouse
+	right_portrait = scope:omni_bastard_child
+	right_portrait = scope:omni_bastard_father
+
+	option = {
+		name = omni_seduction.20.a
+		trigger = { scope:omni_bastard_child = { NOT = { has_variable = omni_parentage_discovered } } }
+		custom_tooltip = omni_seduction_child_concealed_tt
+		ai_chance = { factor = 60 }
+	}
+	option = {
+		name = omni_seduction.20.b
+		trigger = {
+			exists = scope:omni_bastard_father
+			exists = scope:omni_bastard_father.employer
+			scope:omni_bastard_father = { is_alive = yes }
+		}
+		scope:omni_bastard_child = { add_character_modifier = { name = omni_disputed_parentage duration = -1 } }
+		if = {
+			limit = { exists = scope:omni_betrayed_spouse scope:omni_betrayed_spouse = { is_alive = yes } }
+			scope:omni_bastard_father = { save_scope_as = omni_betrayal_culprit }
+			scope:omni_betrayed_spouse = { omni_betrayed_spouse_effect = yes }
+		}
+		if = {
+			limit = {
+				exists = scope:omni_father_spouse
+				scope:omni_father_spouse = { is_alive = yes }
+				NOT = { scope:omni_father_spouse = scope:omni_betrayed_spouse }
+			}
+			scope:omni_bastard_mother = { save_scope_as = omni_betrayal_culprit }
+			scope:omni_father_spouse = { omni_betrayed_spouse_effect = yes }
+		}
+		scope:omni_bastard_father.employer = { trigger_event = { id = omni_seduction.21 days = { 1 3 } } }
+		ai_chance = { factor = 25 }
+	}
+	option = {
+		name = omni_seduction.20.c
+		trigger = { exists = scope:omni_bastard_father scope:omni_bastard_father = { is_alive = no } }
+		scope:omni_bastard_child = {
+			add_character_modifier = { name = omni_disputed_parentage duration = -1 }
+			add_character_modifier = { name = omni_recognized_royal_bastard duration = -1 }
+			omni_schedule_bastard_adulthood_effect = yes
+		}
+		ai_chance = { factor = 100 }
+	}
+	option = {
+		name = omni_seduction.20.d
+		trigger = { scope:omni_bastard_mother = { is_ruler = yes employer = { is_monarchy = yes } } }
+		scope:omni_bastard_mother = { add_popularity = -10 employer = { add_legitimacy = -10 } }
+		scope:omni_bastard_child = {
+			set_family = scope:omni_bastard_mother.family
+			add_character_modifier = { name = omni_legitimized_bastard duration = -1 }
+			omni_schedule_bastard_adulthood_effect = yes
+		}
+		omni_bastard_legitimization_reaction_effect = yes
+		calculate_succession_effect = yes
+		ai_chance = { factor = 10 }
+	}
+	option = {
+		name = omni_seduction.20.e
+		trigger = { scope:omni_bastard_mother = { is_ruler = yes employer = { is_monarchy = yes } } }
+		scope:omni_bastard_mother = { add_popularity = -20 employer = { add_legitimacy = -20 add_stability = -5 } }
+		scope:omni_bastard_child = {
+			set_family = scope:omni_bastard_mother.family
+			add_character_modifier = { name = omni_legitimized_bastard duration = -1 }
+			add_character_modifier = { name = nominated_heir_modifier duration = -1 }
+			omni_schedule_bastard_adulthood_effect = yes
+		}
+		omni_bastard_legitimization_reaction_effect = yes
+		calculate_succession_effect = yes
+		ai_chance = { factor = 5 }
+	}
+}
+
+omni_seduction.21 = {
+	type = country_event
+	title = omni_seduction.21.t
+	desc = omni_seduction.21.desc
+	picture = successors
+	left_portrait = scope:omni_bastard_father
+	right_portrait = scope:omni_bastard_child
+	option = {
+		name = omni_seduction.21.a
+		scope:omni_bastard_child = { add_loyalty = loyalty_omni_bastard_acknowledged }
+		if = {
+			limit = {
+				exists = scope:omni_bastard_mother.employer
+				NOT = { scope:omni_bastard_mother.employer = scope:omni_bastard_father.employer }
+			}
+			scope:omni_bastard_mother.employer = { trigger_event = { id = omni_seduction.23 days = { 1 3 } } }
+		}
+		ai_chance = { factor = 40 }
+	}
+	option = {
+		name = omni_seduction.21.b
+		scope:omni_bastard_child = {
+			add_character_modifier = { name = omni_recognized_royal_bastard duration = -1 }
+			omni_schedule_bastard_adulthood_effect = yes
+		}
+		scope:omni_bastard_father = { add_popularity = -5 }
+		if = {
+			limit = {
+				exists = scope:omni_bastard_mother.employer
+				NOT = { scope:omni_bastard_mother.employer = scope:omni_bastard_father.employer }
+			}
+			scope:omni_bastard_mother.employer = { trigger_event = { id = omni_seduction.24 days = { 1 3 } } }
+		}
+		ai_chance = { factor = 35 }
+	}
+	option = {
+		name = omni_seduction.21.c
+		trigger = { scope:omni_bastard_father = { is_ruler = yes } }
+		scope:omni_bastard_father = { add_popularity = -15 employer = { add_legitimacy = -10 } }
+		if = {
+			limit = { scope:omni_bastard_child = { employer = scope:omni_bastard_father.employer } }
+			scope:omni_bastard_child = { omni_legitimize_bastard_effect = yes }
+			scope:omni_bastard_father.employer = { calculate_succession_effect = yes }
+			scope:omni_bastard_father.employer = { omni_bastard_legitimization_reaction_effect = yes }
+		}
+		else = {
+			scope:omni_bastard_child.employer = { trigger_event = { id = omni_seduction.22 days = { 1 3 } } }
+		}
+		ai_chance = { factor = 20 }
+	}
+	option = {
+		name = omni_seduction.21.d
+		trigger = { scope:omni_bastard_father = { is_ruler = yes employer = { is_monarchy = yes } } }
+		scope:omni_bastard_father = { add_popularity = -25 employer = { add_legitimacy = -20 add_stability = -5 } }
+		scope:omni_bastard_child = { set_variable = { name = omni_bastard_named_heir_pending days = 365 } }
+		if = {
+			limit = { scope:omni_bastard_child = { employer = scope:omni_bastard_father.employer } }
+			scope:omni_bastard_child = {
+				omni_legitimize_bastard_effect = yes
+				add_character_modifier = { name = nominated_heir_modifier duration = -1 }
+				remove_variable = omni_bastard_named_heir_pending
+			}
+			scope:omni_bastard_father.employer = { calculate_succession_effect = yes }
+			scope:omni_bastard_father.employer = { omni_bastard_legitimization_reaction_effect = yes }
+		}
+		else = { scope:omni_bastard_child.employer = { trigger_event = { id = omni_seduction.22 days = { 1 3 } } } }
+		ai_chance = { factor = 5 }
+	}
+}
+
+omni_seduction.23 = {
+	type = country_event
+	title = omni_seduction.23.t
+	desc = omni_seduction.23.desc
+	picture = successors
+	left_portrait = scope:omni_bastard_mother
+	right_portrait = scope:omni_bastard_child
+	right_portrait = scope:omni_bastard_father
+	option = {
+		name = omni_seduction.23.a
+		scope:omni_bastard_child = { remove_character_modifier = omni_disputed_parentage }
+		calculate_succession_effect = yes
+		ai_chance = { factor = 50 }
+	}
+	option = {
+		name = omni_seduction.23.b
+		add_opinion = { target = scope:omni_bastard_father.employer modifier = omni_bastard_denial_insult }
+		ai_chance = { factor = 50 }
+	}
+}
+
+omni_seduction.24 = {
+	type = country_event
+	title = omni_seduction.24.t
+	desc = omni_seduction.24.desc
+	picture = successors
+	left_portrait = scope:omni_bastard_mother
+	right_portrait = scope:omni_bastard_child
+	right_portrait = scope:omni_bastard_father
+	option = {
+		name = omni_seduction.24.a
+		add_opinion = { target = scope:omni_bastard_father.employer modifier = omni_bastard_acknowledged_abroad }
+		ai_chance = { factor = 70 }
+	}
+	option = {
+		name = omni_seduction.24.b
+		scope:omni_bastard_child = { move_country = scope:omni_bastard_father.employer }
+		ai_chance = { factor = 30 }
+	}
+}
+
+omni_seduction.22 = {
+	type = country_event
+	title = omni_seduction.22.t
+	desc = omni_seduction.22.desc
+	picture = successors
+	left_portrait = scope:omni_bastard_mother
+	right_portrait = scope:omni_bastard_child
+	right_portrait = scope:omni_bastard_father
+	option = {
+		name = omni_seduction.22.a
+		scope:omni_bastard_child = {
+			move_country = scope:omni_bastard_father.employer
+			omni_legitimize_bastard_effect = yes
+			if = {
+				limit = { has_variable = omni_bastard_named_heir_pending }
+				add_character_modifier = { name = nominated_heir_modifier duration = -1 }
+				remove_variable = omni_bastard_named_heir_pending
+			}
+		}
+		scope:omni_bastard_father.employer = { calculate_succession_effect = yes }
+		scope:omni_bastard_father.employer = { omni_bastard_legitimization_reaction_effect = yes }
+		ai_chance = { factor = 35 }
+	}
+	option = {
+		name = omni_seduction.22.b
+		add_opinion = { target = scope:omni_bastard_father.employer modifier = omni_bastard_custody_refused }
+		scope:omni_bastard_child = {
+			add_character_modifier = { name = omni_recognized_royal_bastard duration = -1 }
+			omni_schedule_bastard_adulthood_effect = yes
+		}
+		ai_chance = { factor = 45 }
+	}
+	option = {
+		name = omni_seduction.22.c
+		add_opinion = { target = scope:omni_bastard_father.employer modifier = omni_bastard_custody_refused }
+		scope:omni_bastard_child = {
+			remove_character_modifier = omni_disputed_parentage
+			remove_character_modifier = omni_recognized_royal_bastard
+			remove_variable = omni_bastard_named_heir_pending
+		}
+		calculate_succession_effect = yes
+		ai_chance = { factor = 20 }
+	}
+}
+
+omni_seduction.30 = {
+	type = character_event
+	title = omni_seduction.30.t
+	desc = omni_seduction.30.desc
+	picture = successors
+	left_portrait = root
+	right_portrait = scope:omni_adult_bastard_father
+
+	trigger = {
+		is_alive = yes
+		is_adult = yes
+		has_variable = omni_royal_bastard_father
+		OR = {
+			has_character_modifier = omni_recognized_royal_bastard
+			has_character_modifier = omni_legitimized_bastard
+		}
+	}
+	immediate = {
+		var:omni_royal_bastard_father = { save_scope_as = omni_adult_bastard_father }
+		remove_variable = omni_bastard_adulthood_scheduled
+	}
+	option = {
+		name = omni_seduction.30.a
+		trigger = {
+			exists = scope:omni_adult_bastard_father
+			scope:omni_adult_bastard_father = { is_alive = yes exists = employer }
+			NOT = { employer = scope:omni_adult_bastard_father.employer }
+		}
+		move_country = scope:omni_adult_bastard_father.employer
+		add_loyalty = loyalty_omni_bastard_acknowledged
+		ai_chance = { factor = 30 }
+	}
+	option = {
+		name = omni_seduction.30.b
+		add_popularity = 5
+		add_prominence = 10
+		ai_chance = { factor = 50 }
+	}
+	option = {
+		name = omni_seduction.30.c
+		trigger = { has_character_modifier = omni_legitimized_bastard }
+		add_character_modifier = { name = omni_bastard_claimant duration = -1 }
+		add_popularity = 10
+		set_variable = { name = omni_bastard_claim_target value = scope:omni_adult_bastard_father.employer }
+		trigger_event = { id = omni_seduction.31 days = { 730 1460 } }
+		ai_chance = { factor = 20 }
+	}
+}
+
+# Claimant content wakes only for the individual who chose to press the claim.
+omni_seduction.31 = {
+	type = character_event
+	title = omni_seduction.31.t
+	desc = omni_seduction.31.desc
+	picture = successors
+	left_portrait = root
+	trigger = {
+		is_alive = yes
+		is_adult = yes
+		prisoner = no
+		has_character_modifier = omni_bastard_claimant
+		has_variable = omni_bastard_claim_target
+		var:omni_bastard_claim_target = { exists = current_ruler is_monarchy = yes }
+	}
+	immediate = { var:omni_bastard_claim_target = { save_scope_as = omni_claimed_realm } }
+	option = {
+		name = omni_seduction.31.a
+		remove_character_modifier = omni_bastard_claimant
+		remove_variable = omni_bastard_claim_target
+		add_popularity = -5
+		ai_chance = { factor = 25 }
+	}
+	option = {
+		name = omni_seduction.31.b
+		trigger = { employer = scope:omni_claimed_realm }
+		add_loyalty = loyalty_omni_claimant_faction
+		add_prominence = 20
+		add_popularity = 15
+		scope:omni_claimed_realm = { add_stability = -5 }
+		trigger_event = { id = omni_seduction.32 days = { 365 730 } }
+		ai_chance = { factor = 45 }
+	}
+	option = {
+		name = omni_seduction.31.c
+		trigger = {
+			exists = employer
+			NOT = { employer = scope:omni_claimed_realm }
+			employer = {
+				is_subject = no
+				NOT = { war_with = scope:omni_claimed_realm }
+				NOT = { has_truce_with = scope:omni_claimed_realm }
+			}
+			scope:omni_claimed_realm = { is_subject = no }
+		}
+		employer = {
+			scope:omni_claimed_realm.capital_scope = { add_claim = root.employer }
+			declare_war_with_wargoal = {
+				war_goal = omni_bastard_claim_wargoal
+				province = scope:omni_claimed_realm.capital_scope
+				target = scope:omni_claimed_realm
+			}
+		}
+		add_popularity = 20
+		ai_chance = { factor = 15 }
+	}
+	option = {
+		name = omni_seduction.31.d
+		add_popularity = 5
+		trigger_event = { id = omni_seduction.31 days = { 1095 1825 } }
+		ai_chance = { factor = 15 }
+	}
+}
+
+omni_seduction.32 = {
+	type = character_event
+	title = omni_seduction.32.t
+	desc = omni_seduction.32.desc
+	picture = successors
+	left_portrait = root
+	trigger = {
+		is_alive = yes
+		prisoner = no
+		has_character_modifier = omni_bastard_claimant
+		has_variable = omni_bastard_claim_target
+		employer = var:omni_bastard_claim_target
+		employer = { has_civil_war = no }
+	}
+	option = {
+		name = omni_seduction.32.a
+		add_loyalty = loyalty_omni_claimant_reconciled
+		remove_character_modifier = omni_bastard_claimant
+		remove_variable = omni_bastard_claim_target
+		ai_chance = { factor = 35 }
+	}
+	option = {
+		name = omni_seduction.32.b
+		add_loyalty = loyalty_omni_claimant_escalating
+		add_prominence = 20
+		add_popularity = 10
+		trigger_event = { id = omni_seduction.32 days = { 365 730 } }
+		ai_chance = { factor = 40 }
+	}
+	option = {
+		name = omni_seduction.32.c
+		remove_all_positions = yes
+		employer = { start_civil_war = root }
+		remove_variable = omni_bastard_claim_target
+		ai_chance = { factor = 25 }
+	}
+}

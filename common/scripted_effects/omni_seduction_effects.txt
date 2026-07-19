@@ -1,0 +1,49 @@
+omni_schedule_bastard_adulthood_effect = {
+	set_variable = { name = omni_royal_bastard_father value = scope:omni_bastard_father }
+	if = {
+		limit = { NOT = { has_variable = omni_bastard_adulthood_scheduled } }
+		set_variable = { name = omni_bastard_adulthood_scheduled days = 7000 }
+		trigger_event = { id = omni_seduction.30 days = { 5840 6570 } }
+	}
+}
+
+omni_legitimize_bastard_effect = {
+	remove_character_modifier = omni_disputed_parentage
+	remove_character_modifier = omni_recognized_royal_bastard
+	set_family = scope:omni_bastard_father.family
+	add_character_modifier = { name = omni_legitimized_bastard duration = -1 }
+	omni_schedule_bastard_adulthood_effect = yes
+}
+
+omni_bastard_legitimization_reaction_effect = {
+	every_successor = {
+		limit = { NOT = { this = scope:omni_bastard_child } }
+		add_loyalty = loyalty_omni_bastard_legitimized
+	}
+	if = {
+		limit = {
+			exists = current_ruler.spouse
+			NOT = { current_ruler.spouse = scope:omni_bastard_mother }
+		}
+		current_ruler.spouse = { add_loyalty = loyalty_omni_betrayed_spouse }
+	}
+}
+
+omni_betrayed_spouse_effect = {
+	if = {
+		limit = { has_trait = forgiving }
+		add_loyalty = loyalty_omni_betrayed_spouse_forgiving
+	}
+	else = {
+		add_loyalty = loyalty_omni_betrayed_spouse
+		add_character_modifier = { name = omni_humiliated_by_affair duration = 1825 }
+		if = {
+			limit = { is_friend = scope:omni_betrayal_culprit }
+			remove_friend = scope:omni_betrayal_culprit
+		}
+		if = {
+			limit = { can_get_rivals = yes scope:omni_betrayal_culprit = { can_get_rivals = yes } }
+			add_rival = scope:omni_betrayal_culprit
+		}
+	}
+}

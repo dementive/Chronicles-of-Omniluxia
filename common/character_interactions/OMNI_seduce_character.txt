@@ -1,0 +1,164 @@
+omni_seduce_character = {
+	on_own_nation = yes
+	on_other_nation = no
+	message = no
+	sound = "event:/SFX/UI/Character/Unique/sfx_ui_character_befriend"
+
+	potential_trigger = {
+		exists = scope:actor
+		exists = scope:target
+		hidden:scope:actor = { exists = current_ruler }
+		NOT = { scope:target = scope:actor.current_ruler }
+		scope:target = {
+			is_alive = yes
+			is_adult = yes
+			is_mercenary = no
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			NOT = { employer = { tag = PIR } }
+		}
+	}
+
+	allowed_trigger = {
+		scope:actor = { omni_ruler_available_for_court_action_trigger = yes }
+		scope:actor.current_ruler = {
+			is_alive = yes
+			is_adult = yes
+			prisoner = no
+			NOT = { has_variable = omni_seduction_active }
+			NOT = { has_variable = omni_seduction_cooldown }
+			NOT = { has_character_modifier = indisposed_charmod }
+			OR = {
+				is_spouse_of = scope:target
+				AND = {
+					has_trait = lustful
+					NOT = { is_close_relative = scope:target }
+				}
+			}
+		}
+		scope:target = {
+			prisoner = no
+			NOT = { has_variable = omni_recently_rejected_seducer }
+			OR = {
+				employer = scope:actor
+				is_spouse_of = scope:actor.current_ruler
+			}
+		}
+	}
+
+	effect = {
+		scope:actor.current_ruler = {
+			save_scope_as = omni_seducer
+			set_variable = { name = omni_seduction_active days = 400 }
+			if = {
+				limit = { is_married = yes }
+				spouse = { save_scope_as = omni_seducer_spouse }
+			}
+		}
+		scope:target = {
+			save_scope_as = omni_seduction_target
+			if = {
+				limit = { is_married = yes }
+				spouse = { save_scope_as = omni_target_spouse }
+			}
+		}
+		scope:actor = {
+			trigger_event = { id = omni_seduction.1 days = { 1 3 } }
+		}
+		custom_tooltip = omni_seduce_character_started_tt
+	}
+
+	ai_will_do = {
+		factor = 0
+	}
+}
+
+omni_seduce_foreign_character = {
+	on_own_nation = no
+	on_other_nation = yes
+	message = no
+	sound = "event:/SFX/UI/Character/Unique/sfx_ui_character_befriend"
+
+	potential_trigger = {
+		exists = scope:actor
+		exists = scope:target
+		hidden:scope:actor = { exists = current_ruler }
+		NOT = { scope:target = scope:actor.current_ruler }
+		scope:target = {
+			is_alive = yes
+			is_adult = yes
+			is_mercenary = no
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			NOT = { employer = { tag = PIR } }
+		}
+	}
+
+	allowed_trigger = {
+		scope:actor = { omni_ruler_available_for_court_action_trigger = yes }
+		scope:actor.current_ruler = {
+			is_alive = yes
+			is_adult = yes
+			prisoner = no
+			NOT = { has_variable = omni_seduction_active }
+			NOT = { has_variable = omni_seduction_cooldown }
+			NOT = { has_character_modifier = indisposed_charmod }
+			OR = {
+				is_spouse_of = scope:target
+				AND = {
+					has_trait = lustful
+					NOT = { is_close_relative = scope:target }
+				}
+			}
+		}
+		scope:target = {
+			prisoner = no
+			NOT = { has_variable = omni_recently_rejected_seducer }
+			OR = {
+				is_spouse_of = scope:actor.current_ruler
+				AND = {
+					OR = {
+						is_ruler = yes
+						AND = {
+							is_married = yes
+							spouse = { is_ruler = yes }
+						}
+					}
+					NOT = { employer = scope:actor }
+					OR = {
+						is_spouse_of = scope:actor.current_ruler
+						employer = { alliance_with = scope:actor }
+						employer = { is_subject_of = scope:actor }
+						scope:actor = { is_subject_of = scope:target.employer }
+					}
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor.current_ruler = {
+			save_scope_as = omni_seducer
+			set_variable = { name = omni_seduction_active days = 400 }
+			if = {
+				limit = { is_married = yes }
+				spouse = { save_scope_as = omni_seducer_spouse }
+			}
+		}
+		scope:target = {
+			save_scope_as = omni_seduction_target
+			if = {
+				limit = { is_married = yes }
+				spouse = { save_scope_as = omni_target_spouse }
+			}
+		}
+		scope:actor = {
+			trigger_event = { id = omni_seduction.1 days = { 1 3 } }
+		}
+		custom_tooltip = omni_seduce_character_started_tt
+	}
+
+	ai_will_do = {
+		factor = 0
+	}
+}
