@@ -42,6 +42,7 @@ MOD_ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 # By default look for the wiki cloned as a sibling of the mod repo.
 WIKI_ROOT = os.path.join(os.path.dirname(MOD_ROOT), "Chronicles-of-Omniluxia.wiki")
 REGISTRY_PATH = os.path.join(HERE, "article_registry.json")
+METADATA_PATH = os.path.join(HERE, "article_metadata.json")
 
 WIKI_URL_RE = re.compile(
     r"https?://github\.com/[^/]+/Chronicles-of-Omniluxia/wiki/([^)\s\"'#]+)(#[^)\s\"']*)?"
@@ -256,6 +257,7 @@ class Page:
         self.summary = ""
         self.aliases = []
         self.auto_links = set()
+        self.metadata = {}
         self.words = len(re.findall(r"\w+", self.raw))
         self.mtime = os.path.getmtime(path)
 
@@ -317,6 +319,7 @@ class Site:
         self.alias_targets = {}
         self.ambiguous_aliases = set()
         self.excluded_aliases = set()
+        self.status_labels = {}
 
     # -- load ---------------------------------------------------------------
     def load(self):
@@ -341,6 +344,39 @@ class Site:
 
         print(f"  loaded {len(self.pages)} pages")
         self.load_registry()
+        self.load_metadata()
+
+    def load_metadata(self):
+        if not os.path.isfile(METADATA_PATH):
+            return
+        with open(METADATA_PATH, encoding="utf-8") as f:
+            config = json.load(f)
+        self.status_labels = config.get("status_labels", {})
+        for name, metadata in config.get("pages", {}).items():
+            page = self.by_key.get(normalize_key(name))
+            if not page:
+                raise ValueError(f"Article metadata target does not exist: {name}")
+            status = metadata.get("status", "established")
+            if status not in self.status_labels:
+                raise ValueError(f"Unknown article status {status!r} for {name}")
+            for source in metadata.get("source_pages", []):
+                if normalize_key(source) not in self.by_key:
+                    raise ValueError(f"Metadata source page does not exist: {name} -> {source}")
+
+            def validate_fact_targets(value: object) -> None:
+                if isinstance(value, list):
+                    for item in value:
+                        validate_fact_targets(item)
+                elif isinstance(value, dict):
+                    target = value.get("target")
+                    if target and normalize_key(str(target)) not in self.by_key:
+                        raise ValueError(f"Metadata fact target does not exist: {name} -> {target}")
+                    for item in value.values():
+                        validate_fact_targets(item)
+
+            validate_fact_targets(metadata.get("facts", {}))
+            page.metadata = metadata
+        print(f"  metadata: {sum(bool(p.metadata) for p in self.pages)} curated pages")
 
     def load_registry(self):
         """Build the canonical title/alias -> article lookup.
@@ -585,6 +621,7 @@ class Site:
             events.append({
                 "date": strip_tags(date_label),
                 "html": rendered,
+                "text": re.sub(r"\s+", " ", strip_tags(rendered)).strip(),
                 "url": "timeline.html",
             })
         return events
@@ -596,6 +633,7 @@ class Site:
             cls = ' class="on"' if ckey == active else ""
             items.append(f'<a href="c-{ckey}.html"{cls}>{label}</a>')
         items.append('<a href="all.html#search">Search</a>')
+        items.append('<a href="all.html" data-random-page>Surprise me</a>')
         return "\n        ".join(items)
 
     def shell(self, *, title, desc, body, active=None, page_class="",
@@ -761,6 +799,18 @@ class Site:
 
         rt = reading_time(p.raw)
         connection_count = len((p.links | p.auto_links) - {p.key})
+        def render_fact(value):
+            if isinstance(value, list):
+                return ", ".join(render_fact(item) for item in value)
+            if isinstance(value, dict):
+                target = self.by_key.get(normalize_key(value.get("target", "")))
+                label = html.escape(str(value.get("label", value.get("target", ""))))
+                return f'<a href="{target.out}">{label}</a>' if target else label
+            return html.escape(str(value))
+
+        curated_facts = "".join(
+            f'<div><dt>{html.escape(label)}</dt><dd>{render_fact(value)}</dd></div>'
+            for label, value in p.metadata.get("facts", {}).items())
         facts = f"""
       <aside class="article-facts" aria-label="Article summary">
         <h2>At a glance</h2>
@@ -769,8 +819,51 @@ class Site:
           <div><dt>Reading time</dt><dd>{rt} min</dd></div>
           <div><dt>Linked topics</dt><dd>{connection_count}</dd></div>
           <div><dt>Mentioned by</dt><dd>{len(p.backlinks)}</dd></div>
+          {curated_facts}
         </dl>
       </aside>"""
+
+        provenance = ""
+        if p.metadata:
+            status = self.status_labels[p.metadata["status"]]
+            source_links = []
+            for source in p.metadata.get("source_pages", []):
+                target = self.by_key.get(normalize_key(source))
+                if target:
+                    source_links.append(f'<a href="{target.out}">{html.escape(target.title)}</a>')
+            sources = ""
+            if source_links:
+                sources = f'<span class="source-pages">Based on {", ".join(source_links)}.</span>'
+            provenance = f"""
+      <aside class="provenance provenance-{p.metadata['status']}" aria-label="Canon status">
+        <strong>{html.escape(status['label'])}</strong>
+        <span>{html.escape(status['description'])}</span>{sources}
+      </aside>"""
+
+        timeline_explorer = ""
+        if p.key == "timeline":
+            timeline_explorer = f"""
+      <section class="timeline-explorer" id="chronology-explorer" data-timeline-explorer aria-labelledby="timeline-explorer-title">
+        <header>
+          <span class="eyebrow static">Explore {len(self.timeline_events())} dated moments</span>
+          <h2 id="timeline-explorer-title">Chronology explorer</h2>
+          <p>Search the calendar or narrow it to the eras before and after the Luxterran Calendar.</p>
+        </header>
+        <div class="timeline-tools">
+          <label for="timeline-search">Search events</label>
+          <input id="timeline-search" type="search" placeholder="Try Zani, dragon, collapse&hellip;" autocomplete="off">
+          <div class="timeline-filters" role="group" aria-label="Filter historical dates">
+            <button type="button" class="on" data-era="all">All dates</button>
+            <button type="button" data-era="blc">BLC</button>
+            <button type="button" data-era="lc">LC</button>
+            <button type="button" data-era="approx">Approximate</button>
+            <button type="button" data-random-event>Random event</button>
+          </div>
+        </div>
+        <p class="timeline-status" aria-live="polite"></p>
+        <div class="timeline-results" data-timeline-results></div>
+        <button type="button" class="btn timeline-more" data-timeline-more>Show more</button>
+      </section>"""
         body = f"""
 <article class="page">
   <div class="hero{' has-toc-hero' if toc_html else ''}" style="--plate:url('img/hero-{plate:02d}-1280.jpg');--plate-sm:url('img/hero-{plate:02d}-800.jpg')">
@@ -791,6 +884,8 @@ class Site:
       <span aria-hidden="true">&rsaquo;</span><a href="c-{cat}.html">{catlabel}</a>
       <span aria-hidden="true">&rsaquo;</span><span>{html.escape(p.title)}</span></nav>
       {facts}
+      {provenance}
+      {timeline_explorer}
       {p.html}
     </div>
   </div>
@@ -916,6 +1011,7 @@ class Site:
       <div class="splash-cta">
         <a class="btn primary" href="c-history.html">Enter the Chronicle</a>
         <a class="btn" href="all.html">Browse all {total} pages</a>
+        <a class="btn" href="all.html" data-random-page>Surprise me</a>
       </div>
       <div class="splash-stats">
         <div><strong>{total}</strong><span>articles</span></div>
@@ -1005,6 +1101,13 @@ class Site:
         {''.join(f'<button type="button" data-filter="{key}">{label}</button>' for key, _hub, label, _blurb in CATEGORIES)}
       </div>
       <p class="search-status" aria-live="polite"></p>
+      <div class="random-portals" id="random">
+        <span>Open a random:</span>
+        <a class="btn" href="all.html" data-random-page data-random-scope="all">Article</a>
+        <a class="btn" href="all.html" data-random-page data-random-scope="characters">Character</a>
+        <a class="btn" href="all.html" data-random-page data-random-scope="countries">Country</a>
+        <a class="btn" href="timeline.html" data-random-moment>Historical moment</a>
+      </div>
     </section>
     {"".join(groups)}
   </div>

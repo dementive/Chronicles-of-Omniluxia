@@ -144,3 +144,19 @@ The home page also draws dated entries from `Timeline.md` into an **On this day
 in the chronicle** card. The initial event changes daily and readers can reroll
 it without reloading. The generator preserves the timeline's LC/BLC precision;
 it never invents a month or day when the source only supplies a year.
+
+## Curated metadata and discovery
+
+`article_metadata.json` is the only source for structured facts and canon-status
+labels. The generator never guesses a ruler, capital, date, relationship, or
+confidence level from prose. Metadata entries may add linked facts and classify
+an article as established wiki canon, cross-wiki synthesis, in-universe
+tradition, or incomplete canon. Source-page names are validated during every
+build, so a renamed or missing reference fails immediately.
+
+The Timeline page includes a client-side chronology explorer built from the same
+dated entries as On This Day. Readers can search, filter LC/BLC/approximate
+dates, reveal additional results, or request a random event. Random discovery
+links elsewhere on the site can open any article or narrow the choice to a
+character or country. All random controls retain ordinary links as no-JavaScript
+fallbacks.

@@ -11,9 +11,15 @@ class AutolinkTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.original_registry = build.REGISTRY_PATH
+        self.original_metadata = build.METADATA_PATH
         build.REGISTRY_PATH = os.path.join(self.temp.name, "registry.json")
+        build.METADATA_PATH = os.path.join(self.temp.name, "metadata.json")
         with open(build.REGISTRY_PATH, "w", encoding="utf-8") as f:
             f.write('{"aliases": {}, "exclude": []}')
+        with open(build.METADATA_PATH, "w", encoding="utf-8") as f:
+            f.write('{"status_labels": {"synthesis": {"label": "Synthesis", "description": "Test"}}, '
+                    '"pages": {"Luxterra": {"status": "synthesis", "source_pages": ["Timeline"], '
+                    '"facts": {"Era": "LC"}}}}')
         pages = {
             "Home.md": "# Home\n",
             "Helluvianism.md": "# Helluvianism\n",
@@ -31,6 +37,7 @@ class AutolinkTests(unittest.TestCase):
 
     def tearDown(self):
         build.REGISTRY_PATH = self.original_registry
+        build.METADATA_PATH = self.original_metadata
         self.temp.cleanup()
 
     def test_links_first_occurrence_and_longest_alias(self):
@@ -61,6 +68,12 @@ class AutolinkTests(unittest.TestCase):
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0]["date"], "670 LC")
         self.assertIn('href="luxterra.html"', events[0]["html"])
+        self.assertIn("Great Collapse", events[0]["text"])
+
+    def test_loads_reviewed_metadata_without_inferring_facts(self):
+        page = self.site.by_key["luxterra"]
+        self.assertEqual(page.metadata["status"], "synthesis")
+        self.assertEqual(page.metadata["facts"], {"Era": "LC"})
 
 
 if __name__ == "__main__":
