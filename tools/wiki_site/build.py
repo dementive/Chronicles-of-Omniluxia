@@ -633,7 +633,7 @@ class Site:
             cls = ' class="on"' if ckey == active else ""
             items.append(f'<a href="c-{ckey}.html"{cls}>{label}</a>')
         items.append('<a href="all.html#search">Search</a>')
-        items.append('<a href="all.html" data-random-page>Surprise me</a>')
+        items.append('<a href="all.html" data-random-page>Random Article</a>')
         return "\n        ".join(items)
 
     def shell(self, *, title, desc, body, active=None, page_class="",
@@ -1011,7 +1011,7 @@ class Site:
       <div class="splash-cta">
         <a class="btn primary" href="c-history.html">Enter the Chronicle</a>
         <a class="btn" href="all.html">Browse all {total} pages</a>
-        <a class="btn" href="all.html" data-random-page>Surprise me</a>
+        <a class="btn" href="all.html" data-random-page>Random Article</a>
       </div>
       <div class="splash-stats">
         <div><strong>{total}</strong><span>articles</span></div>
