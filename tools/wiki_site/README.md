@@ -88,9 +88,10 @@ The generator adapts to how this wiki is actually written:
 - Each category draws plates from a terrain-appropriate subset
   (`CATEGORY_PLATES`), so a category looks coherent without every page being
   identical.
-- **No JavaScript at all.** Scroll reveals use `animation-timeline: view()` behind
-  an `@supports` guard, so browsers without it simply show the content. The mobile
-  menu is a checkbox. `prefers-reduced-motion` is respected.
+- The only JavaScript is progressive enhancement for the All Pages search and
+  category filters. Article reading, navigation, and the mobile menu still work
+  without it. Scroll reveals use `animation-timeline: view()` behind an
+  `@supports` guard and `prefers-reduced-motion` is respected.
 - About 1.2 MB of art for the whole site, shared across every page and cached
   after first load. Only sizes the site actually loads are generated: 1280 for
   desktop hero plates, 800 for narrow viewports and the social preview image.
@@ -108,3 +109,54 @@ that appear nowhere on the site is worse than no credits page.
 One gotcha: `url()` inside a CSS custom property resolves relative to the
 **stylesheet**, not the HTML document. The generator emits `--plate:url('img/...')`,
 not `assets/img/...`.
+
+## Article links and aliases
+
+The generator links the first meaningful mention of another article in each
+page. It never changes headings, existing links, code, or the article's own
+name. Every page title and filename is recognized automatically.
+
+Put adjectival, plural, historical, or alternate names in
+`article_registry.json`. Ambiguous generic words belong in its `exclude` list;
+the generator deliberately refuses to guess when an alias resolves to multiple
+articles. For example, `Helluvian`, `Helluvians`, `Helluvian faith`, and
+`Helluvian Heresy` all resolve to `Helluvianism`.
+
+The generated graph is checked with:
+
+```bash
+python3 tools/wiki_site/audit.py --site docs
+```
+
+It produces JSON and Markdown reports covering broken links, orphan articles,
+articles without outgoing links, reciprocal relationships, and weakly connected
+pages. CI fails on broken targets and uploads both reports for editorial review.
+
+The same CI artifact includes an editorial expansion backlog generated from
+article length, explicit placeholder language, section structure, and incoming
+links. Run it locally with:
+
+```bash
+python3 tools/wiki_site/editorial_audit.py --wiki ../Chronicles-of-Omniluxia.wiki
+```
+
+The home page also draws dated entries from `Timeline.md` into an **On this day
+in the chronicle** card. The initial event changes daily and readers can reroll
+it without reloading. The generator preserves the timeline's LC/BLC precision;
+it never invents a month or day when the source only supplies a year.
+
+## Curated metadata and discovery
+
+`article_metadata.json` is the only source for structured facts and canon-status
+labels. The generator never guesses a ruler, capital, date, relationship, or
+confidence level from prose. Metadata entries may add linked facts and classify
+an article as established wiki canon, cross-wiki synthesis, in-universe
+tradition, or incomplete canon. Source-page names are validated during every
+build, so a renamed or missing reference fails immediately.
+
+The Timeline page includes a client-side chronology explorer built from the same
+dated entries as On This Day. Readers can search, filter LC/BLC/approximate
+dates, reveal additional results, or request a random event. Random discovery
+links elsewhere on the site can open any article or narrow the choice to a
+character or country. All random controls retain ordinary links as no-JavaScript
+fallbacks.
