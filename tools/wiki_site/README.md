@@ -131,3 +131,16 @@ python3 tools/wiki_site/audit.py --site docs
 It produces JSON and Markdown reports covering broken links, orphan articles,
 articles without outgoing links, reciprocal relationships, and weakly connected
 pages. CI fails on broken targets and uploads both reports for editorial review.
+
+The same CI artifact includes an editorial expansion backlog generated from
+article length, explicit placeholder language, section structure, and incoming
+links. Run it locally with:
+
+```bash
+python3 tools/wiki_site/editorial_audit.py --wiki ../Chronicles-of-Omniluxia.wiki
+```
+
+The home page also draws dated entries from `Timeline.md` into an **On this day
+in the chronicle** card. The initial event changes daily and readers can reroll
+it without reloading. The generator preserves the timeline's LC/BLC precision;
+it never invents a month or day when the source only supplies a year.

@@ -18,6 +18,7 @@ class AutolinkTests(unittest.TestCase):
             "Home.md": "# Home\n",
             "Helluvianism.md": "# Helluvianism\n",
             "Luxterra.md": "# Luxterra\n",
+            "Timeline.md": "# Timeline\n\n* 670 LC\n> The Great Collapse reshaped [Luxterra](Luxterra).\n\n* Mythic Age\n> Not a dated entry.\n",
         }
         for name, text in pages.items():
             with open(os.path.join(self.temp.name, name), "w", encoding="utf-8") as f:
@@ -54,6 +55,12 @@ class AutolinkTests(unittest.TestCase):
         page = self.site.by_key["helluvianism"]
         result = self.site.autolink_html("<p>Helluvianism and Helluvian faith.</p>", page)
         self.assertNotIn("autolink", result)
+
+    def test_extracts_dated_timeline_events_without_inventing_dates(self):
+        events = self.site.timeline_events()
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["date"], "670 LC")
+        self.assertIn('href="luxterra.html"', events[0]["html"])
 
 
 if __name__ == "__main__":

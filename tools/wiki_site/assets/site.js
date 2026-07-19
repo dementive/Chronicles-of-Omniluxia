@@ -1,4 +1,37 @@
 (() => {
+  const dayCard = document.querySelector('[data-on-this-day]');
+  if (dayCard) {
+    const date = dayCard.querySelector('[data-day-date]');
+    const event = dayCard.querySelector('[data-day-event]');
+    const reroll = dayCard.querySelector('[data-day-reroll]');
+    let moments = [];
+    let current = -1;
+
+    function showMoment(index) {
+      if (!moments.length) return;
+      current = ((index % moments.length) + moments.length) % moments.length;
+      date.textContent = moments[current].date;
+      event.innerHTML = moments[current].html;
+    }
+
+    fetch('timeline-events.json')
+      .then(response => response.ok ? response.json() : [])
+      .then(data => {
+        moments = data;
+        const now = new Date();
+        const dayNumber = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 86400000);
+        showMoment(dayNumber);
+      })
+      .catch(() => { moments = []; });
+
+    reroll?.addEventListener('click', () => {
+      if (moments.length < 2) return;
+      let next = current;
+      while (next === current) next = Math.floor(Math.random() * moments.length);
+      showMoment(next);
+    });
+  }
+
   const input = document.querySelector('#wiki-search');
   if (!input) return;
 

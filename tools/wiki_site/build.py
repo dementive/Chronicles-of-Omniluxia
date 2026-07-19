@@ -565,6 +565,30 @@ class Site:
         h = sum(ord(c) * (i + 7) for i, c in enumerate(p.key))
         return plates[h % len(plates)]
 
+    def timeline_events(self):
+        """Extract dated entries from Timeline.md without inventing precision."""
+        timeline = self.by_key.get("timeline")
+        if not timeline:
+            return []
+        pattern = re.compile(
+            r"^\*\s+([^\n]+)\n(?:>\s*)?(.+?)(?=\n\s*\n|\n\*\s+|\Z)", re.M | re.S)
+        events = []
+        for date_label, event_md in pattern.findall(timeline.body_md):
+            date_label = re.sub(r"\s+", " ", date_label).strip()
+            if not re.search(r"\d", date_label):
+                continue
+            event_md = re.sub(r"\s+", " ", event_md).strip()
+            if len(event_md) < 20:
+                continue
+            rendered = markdown.markdown(self.rewrite_links(event_md))
+            rendered = self.autolink_html(rendered, timeline)
+            events.append({
+                "date": strip_tags(date_label),
+                "html": rendered,
+                "url": "timeline.html",
+            })
+        return events
+
     # -- HTML shell ---------------------------------------------------------
     def nav(self, active=None):
         items = []
@@ -826,6 +850,27 @@ class Site:
         home = self.by_key.get("home")
         total = len(self.pages)
         words = sum(p.words for p in self.pages)
+        events = self.timeline_events()
+        daily = events[_dt.date.today().toordinal() % len(events)] if events else None
+        today_html = ""
+        if daily:
+            today_html = f"""
+  <section class="wrap chronicle-day" data-on-this-day>
+    {self.RULE}
+    <header class="sec-head">
+      <span class="eyebrow static">A page from the calendar</span>
+      <h2>On this day in the chronicle</h2>
+      <p>A different dated moment from Omniluxia's history each day.</p>
+    </header>
+    <article class="day-card">
+      <p class="day-date" data-day-date>{html.escape(daily['date'])}</p>
+      <div class="day-event prose" data-day-event>{daily['html']}</div>
+      <div class="day-actions">
+        <a class="btn" href="timeline.html">Open the timeline</a>
+        <button class="btn" type="button" data-day-reroll>Another moment</button>
+      </div>
+    </article>
+  </section>"""
 
         cats = []
         for ckey, _h, label, blurb in CATEGORIES:
@@ -900,6 +945,8 @@ class Site:
     <div class="feats">{"".join(feats)}
     </div>
   </section>
+
+  {today_html}
 
   <section class="wrap closing">
     {self.RULE}
@@ -1167,6 +1214,9 @@ class Site:
         ]
         with open(os.path.join(self.out, "search-index.json"), "w", encoding="utf-8") as f:
             json.dump(search_index, f, ensure_ascii=False, separators=(",", ":"))
+
+        with open(os.path.join(self.out, "timeline-events.json"), "w", encoding="utf-8") as f:
+            json.dump(self.timeline_events(), f, ensure_ascii=False, separators=(",", ":"))
 
         # Sitemap
         if self.base:
