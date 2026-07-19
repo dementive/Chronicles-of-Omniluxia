@@ -28,6 +28,8 @@ import sys
 import unicodedata
 from collections import defaultdict
 
+STEAM_WORKSHOP_URL = "https://steamcommunity.com/workshop/filedetails/?id=3154169256"
+
 try:
     import markdown
 except ImportError:
@@ -534,7 +536,8 @@ class Site:
       </div>
       <div>
         <h4>The Mod</h4>
-        <a href="https://github.com/dementive/Chronicles-of-Omniluxia" target="_blank" rel="noopener">Repository</a>
+        <a href="{STEAM_WORKSHOP_URL}" target="_blank" rel="noopener">Steam Workshop</a>
+        <a href="https://github.com/dementive/Chronicles-of-Omniluxia" target="_blank" rel="noopener">Source Repository</a>
         <a href="https://github.com/dementive/Chronicles-of-Omniluxia/wiki" target="_blank" rel="noopener">Edit the wiki</a>
         <a href="https://www.youtube.com/watch?v=IlOfHsAzH1U" target="_blank" rel="noopener">Visual History</a>
       </div>
@@ -782,7 +785,7 @@ class Site:
     <em>Imperator: Rome</em>. Everything here is drawn from the project's own wiki, which
     remains open to contributions.</p>
     <div class="splash-cta">
-      <a class="btn primary" href="https://github.com/dementive/Chronicles-of-Omniluxia" target="_blank" rel="noopener">Get the mod</a>
+      <a class="btn primary" href="{STEAM_WORKSHOP_URL}" target="_blank" rel="noopener">Get the mod</a>
       <a class="btn" href="https://github.com/dementive/Chronicles-of-Omniluxia/wiki" target="_blank" rel="noopener">Edit the wiki</a>
     </div>
   </section>
@@ -850,6 +853,65 @@ class Site:
       <a href="https://github.com/dementive/Chronicles-of-Omniluxia/wiki" target="_blank" rel="noopener" class="ext">Chronicles of Omniluxia wiki</a>
       and is reproduced here unchanged. The wiki remains the canonical source; this
       site is a generated presentation layer over it.</p>
+      <p class="callout"><strong>Get the mod.</strong> Chronicles of Omniluxia is
+      available on the
+      <a href="{STEAM_WORKSHOP_URL}" target="_blank" rel="noopener" class="ext">Steam Workshop</a>.</p>
+
+      <h2 id="wiki-contributors">Wiki Contributors</h2>
+      <p>The wiki is primarily maintained by <strong>Zorgoball</strong> and
+      <strong>Starlord</strong>, with additions and corrections from the wider
+      Omniluxia community.</p>
+
+      <h2 id="mod-contributors">Omniluxia Contributors</h2>
+      <p>Credits adapted from the
+      <a href="{STEAM_WORKSHOP_URL}" target="_blank" rel="noopener" class="ext">Steam Workshop page</a>.</p>
+
+      <h3 id="current-developers">Current Developers</h3>
+      <p>Dementive, Izn, Zorgoball, MurderChicken, Starlord, Primal Aspid,
+      Dulac14, Ratatosk.</p>
+
+      <h3 id="original-developers">Original Developers</h3>
+      <p>MrAdrianPL and Xangelo as lead developers, with MisterDiego27, POT,
+      Pancaked_Src and AlthauSanafu, [REDi]1R CAPT Owlcoholic [A,D],
+      MattTheLegoman, Boots, Hispania, anoldretiredelephant, Snowlet, Benjin,
+      and Pyrrus.</p>
+
+      <h3 id="invictus-team">Invictus Team</h3>
+      <p>Snowlet, Jphiloponus, Mike Bittersteel, Dementive, Erik Erik,
+      Hannibal_theCannibal, Izn, OmegaCorps, Palando, Parcipal, Paulus,
+      Sealionforever, Thymos, Torugu, Tudhaliya, Aerozona, Diskianterezh,
+      gmb360, Idonea, IhateTrains, Olivenkranz, Shocky27, Stallone, Typhion,
+      Zorgoball, rickinator9, Acult, TheMadRegent, derekmark, MikeW.</p>
+
+      <h3 id="artists">Artists</h3>
+      <p>Aquizar, CrazyZombie, Fildez, Nerdman3000, RetconCrisis, Kailas.</p>
+
+      <h3 id="translators">Translators</h3>
+      <p>Apollon, Frank, Juanen, Julianus, Lemon, Machiavello, Pilar, Spikos,
+      Vityviktor.</p>
+
+      <h3 id="contributors">Contributors</h3>
+      <p>Agamidae, Arkerios, Ben4Peters, DaFoogle, Diego I de Persia, Dustin,
+      Hexon, Kalen, MattTheLegoman, Nebular, Pardo, Presidentstorm, Prometheus,
+      Licarious, AtomicFission, Sobisonator, IsaacCat, NPK.</p>
+
+      <h3 id="testers">Testers</h3>
+      <p>Augustus_Caesar, bla, Brasidas, DDJR, FBI Agent, Jake_P, Jandoski,
+      Lil_squindie, llamafanatic, Memer Nener, Pydras, Sav, Somebody, Trewajg,
+      Tuko Tuko, Eel, Mateusz, Salt.</p>
+
+      <h3 id="scholars">Scholars</h3>
+      <p>Chehrazad, Derek, Felix Amiculus, Herodotus, INKRSN, Manny,
+      QuietRustler, Sethos, Trarco.</p>
+
+      <h3 id="special-thanks">Special Thanks</h3>
+      <ul>
+        <li>Snowlet for balance help and bug finding.</li>
+        <li>Pureon for allowing the use of illustrations from the Lord of the Rings mod.</li>
+        <li>Terrapass for the chasm terrain shader.</li>
+        <li>Turplesmee for the main menu music.</li>
+        <li>Agami for Better UI.</li>
+      </ul>
 
       <h2 id="art">Artwork</h2>
       <p>Every image on this site comes from the mod's own files. Nothing is
@@ -881,16 +943,6 @@ class Site:
         <li><strong>Cormorant Garamond</strong> by Christian Thalmann &mdash; SIL Open Font Licence.</li>
         <li><strong>Spectral</strong> by Production Type &mdash; SIL Open Font Licence.</li>
       </ul>
-
-      <h2 id="build">How this site is built</h2>
-      <p>A Python script reads the wiki's markdown files, classifies them from the
-      hub pages, rewrites the wiki links, and renders them through a single template.
-      There is no JavaScript and no build framework. To regenerate after editing the
-      wiki:</p>
-      <pre><code>git pull
-python3 tools/wiki_site/build.py</code></pre>
-      <p>The artwork is only regenerated when the mod's own art changes:</p>
-      <pre><code>python3 tools/wiki_site/build_art.py</code></pre>
     </div>
   </div>
 </div>
