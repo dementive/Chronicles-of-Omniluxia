@@ -1,0 +1,97 @@
+name: Build wiki site
+
+# The `gollum` event fires whenever a page in this repository's wiki is created
+# or edited, so the published site rebuilds within about a minute of anyone
+# editing the wiki on github.com. No local step is ever required.
+on:
+  gollum:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/wiki_site/**'
+      - 'gfx/loadingscreens/**'
+      - 'gfx/interface/frontend/**'
+      - '.github/workflows/wiki-site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: wiki-site
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the mod repository
+        uses: actions/checkout@v4
+
+      # The wiki is a separate git repository: <repo>.wiki.git
+      - name: Check out the wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: .wiki
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install markdown pillow
+
+      # Grades the mod's own .dds art into web plates. Output is not committed;
+      # it is regenerated here on every run.
+      - name: Grade artwork
+        run: python tools/wiki_site/build_art.py
+
+      - name: Build the site
+        run: |
+          python tools/wiki_site/build.py \
+            --wiki .wiki \
+            --out docs \
+            --base "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+
+      - name: Check every internal link resolves
+        run: |
+          python - <<'EOF'
+          import glob, os, re, sys
+          os.chdir('docs')
+          pages = {os.path.basename(f) for f in glob.glob('*.html')}
+          broken = []
+          for f in glob.glob('*.html'):
+              html = open(f, encoding='utf-8').read()
+              for href in re.findall(r'href="([^"]+)"', html):
+                  if href.startswith(('http', 'mailto:', '#', '//')):
+                      continue
+                  if href.endswith(('.css', '.xml', '.png')):
+                      continue
+                  target = href.split('#')[0]
+                  if target and target not in pages:
+                      broken.append(f'{f} -> {href}')
+          if broken:
+              print('Broken internal links:', *broken[:20], sep='\n  ')
+              sys.exit(1)
+          print(f'{len(pages)} pages, all internal links resolve.')
+          EOF
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
