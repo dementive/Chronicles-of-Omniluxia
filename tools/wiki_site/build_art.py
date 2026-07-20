@@ -23,6 +23,7 @@ import sys
 from PIL import Image, ImageFilter, ImageEnhance
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
 # This script sits in <mod repo>/tools/wiki_site/; the art is in <mod repo>/gfx/.
 MOD_ROOT = os.environ.get(
     "OMNI_MOD", os.path.abspath(os.path.join(HERE, "..", "..")))
