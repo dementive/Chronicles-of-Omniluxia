@@ -1,8 +1,8 @@
 name: Build wiki site
 
-# The `gollum` event fires whenever a page in this repository's wiki is created
-# or edited, so the published site rebuilds within about a minute of anyone
-# editing the wiki on github.com. No local step is ever required.
+# The `gollum` event fires whenever a page in this repository's wiki is
+# created or edited, so the published site rebuilds itself within a minute
+# of anyone editing the wiki on GitHub. No local step is required.
 on:
   gollum:
   push:
@@ -30,8 +30,7 @@ jobs:
       - name: Check out the mod repository
         uses: actions/checkout@v4
 
-      # The wiki is a separate git repository: <repo>.wiki.git
-      - name: Check out the wiki
+      - name: Check out the wiki repository
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}.wiki
@@ -45,13 +44,8 @@ jobs:
       - name: Install dependencies
         run: pip install markdown pillow
 
-      # Grades the mod's own .dds art into web plates. Output is not committed;
-      # it is regenerated here on every run.
-      - name: Grade artwork
-        run: python tools/wiki_site/build_art.py
-
-      - name: Test wiki generator
-        run: python -m unittest tools/wiki_site/test_wiki_site.py -v
+      - name: Grade the mod's art into web plates
+        run: python tools/wiki_site/build_art.py --out docs/assets/img
 
       - name: Build the site
         run: |
@@ -60,27 +54,8 @@ jobs:
             --out docs \
             --base "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
-      - name: Copy generated wiki assets
-        run: |
-          if [ -d .wiki/site/assets ]; then
-            cp -R .wiki/site/assets/. docs/assets/
-          fi
-
-      - name: Check every internal link resolves
-        run: python tools/wiki_site/audit.py --site docs --report wiki-audit.json --markdown-report wiki-audit.md
-
-      - name: Build editorial expansion backlog
-        run: python tools/wiki_site/editorial_audit.py --wiki .wiki --json wiki-editorial-backlog.json --markdown wiki-editorial-backlog.md
-
-      - name: Upload link graph audit
-        uses: actions/upload-artifact@v4
-        with:
-          name: wiki-link-audit
-          path: |
-            wiki-audit.json
-            wiki-audit.md
-            wiki-editorial-backlog.json
-            wiki-editorial-backlog.md
+      - name: Check generated links and assets
+        run: python tools/wiki_site/check_site.py docs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

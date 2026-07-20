@@ -7,8 +7,8 @@ static site into docs/, which GitHub Pages serves.
 
 The wiki remains the single source of truth. Nothing about authoring changes:
 pages are written on github.com as normal. The workflow in
-.github/workflows/wiki-site.yml re-runs this on every wiki edit, so the published
-site follows the wiki automatically.
+.github/workflows/wiki-site.yml re-runs this on every wiki edit, so the
+published site follows the wiki automatically.
 
 Usage:
     python3 tools/wiki_site/build.py [--wiki PATH] [--out PATH] [--base URL]
@@ -21,15 +21,13 @@ import argparse
 import datetime as _dt
 import glob
 import html
-import json
 import os
 import re
 import shutil
 import sys
+import tempfile
 import unicodedata
 from collections import defaultdict
-
-STEAM_WORKSHOP_URL = "https://steamcommunity.com/workshop/filedetails/?id=3154169256"
 
 try:
     import markdown
@@ -38,11 +36,9 @@ except ImportError:
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # This script sits in <mod repo>/tools/wiki_site/.
-MOD_ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 # By default look for the wiki cloned as a sibling of the mod repo.
-WIKI_ROOT = os.path.join(os.path.dirname(MOD_ROOT), "Chronicles-of-Omniluxia.wiki")
-REGISTRY_PATH = os.path.join(HERE, "article_registry.json")
-METADATA_PATH = os.path.join(HERE, "article_metadata.json")
+WIKI_ROOT = os.path.join(os.path.dirname(REPO_ROOT), "Chronicles-of-Omniluxia.wiki")
 
 WIKI_URL_RE = re.compile(
     r"https?://github\.com/[^/]+/Chronicles-of-Omniluxia/wiki/([^)\s\"'#]+)(#[^)\s\"']*)?"
@@ -63,33 +59,39 @@ CATEGORIES = [
      "The chronicle of Omniluxia, from the first ages to the fracture of empires."),
     ("magic",       "Magic",                "Magic",
      "Mana, spellcraft, and the disciplines that bend reality to imagination."),
+    ("items",       "Items",                "Items",
+     "Equipment, artifacts, and the markets where characters outfit themselves and their realms."),
+    ("bloodlines",  "Bloodlines",           "Bloodlines",
+     "Inherited legacies of legendary dynasties, founders, prophets, conquerors, and sacred lineages."),
     ("races",       "Races",                "Races",
      "The peoples of the world, from the near-human to the utterly alien."),
     ("religions",   "Religions",            "Religions",
      "Gods, prophets, pantheons, and the faiths that move nations."),
     ("cultures",    "Cultures",             "Cultures",
      "Tongues, traditions, and the culture groups that carry them."),
+    ("continents",  "Continents",           "Continents",
+     "Luxterra, Morrigon, Arteon, Eptelon, Horteon, Polaria, and Austropetolia."),
     ("regions",     "Regions",              "Regions",
      "Continents, seas, forests, and the storied places between them."),
     ("countries",   "Countries",            "Countries",
      "The realms of the world, standing and fallen alike — from the Zani "
      "successor states to the ancient dwarven kingdoms."),
-    ("newworld",    "New-World",            "The New World",
-     "The Jade Island, the Mushroom Isles, and the ten ancient races beyond the horizon."),
     ("characters",  "Important-Characters", "Characters",
      "Gods, demi-gods, emperors, generals, prophets, and rebels who shaped the age."),
 ]
 
 CLASSIFY_PRIORITY = [
-    "newworld",    # claims its ten races before the general Races hub can
     "races",
     "religions",
     "cultures",
     "characters",
+    "continents",
     "regions",     # places before polities: a country page can mention a sea,
     "countries",   # but the sea is a region first
     "history",     # essay hubs last: they link everywhere incidentally
     "magic",
+    "items",
+    "bloodlines",
 ]
 
 CATEGORY_LABEL = {k: lbl for k, _h, lbl, _b in CATEGORIES}
@@ -128,13 +130,24 @@ CATEGORY_OVERRIDES = {
     "Melodian": "magic",
     "Omnic": "magic",
 
+    # Equipment and item systems
+    "Item-Instructions": "items",
+    "Artifacts-and-Holy-Site-Items": "items",
+    "City-Instructions": "items",
+
+    # Inherited dynasties and legendary lineages
+    "Bloodlines": "bloodlines",
+
     # Polities, standing and fallen
     "Anempanso": "countries",
     "Dwarven-Grandlands": "countries",
     "Eagelian-Kingdom": "countries",
     "Jarenam-Empire": "countries",
+    "Kingdom-of-Edis": "countries",
     "Northern-Empire": "countries",
+    "Rohenoa-and-Rohevia": "countries",
     "Gevanni": "countries",
+    "Zainudian-World": "countries",
 
     # The dwarven founding pairs and the primordial parents are mythic figures
     "Ava": "characters",
@@ -153,12 +166,20 @@ CATEGORY_OVERRIDES = {
     "Waal": "cultures",
     "Jaam": "cultures",
 
-    # Places. Luxterra and Morrigon are Old World continents; the New World hub
-    # names them only to say the New World lies beyond them.
-    "Luxterra": "regions",
-    "Morrigon": "regions",
+    # Old World continents and continent-scale lands.
+    "Luxterra": "continents",
+    "Morrigon": "continents",
+    "Arteon": "continents",
+    "Eptelon": "continents",
+    "Horteon": "continents",
+    "Polaria": "continents",
+    "Austropetolia": "continents",
+
+    # Places below continental scale.
+    "Borderlands": "regions",
     "Silver-Caves": "regions",
     "Eldritch-Forest": "regions",
+    "New-World": "regions",
 
     # Likewise the Zani Empire is referenced everywhere but belongs to no hub
     "Zani-Empire": "countries",
@@ -174,6 +195,28 @@ CATEGORY_OVERRIDES = {
     # Genuinely miscellaneous
     "Order-of-Sennmoggen": "lore",
     "Sources": "lore",
+    "Great-Wonders": "items",
+    "Magic-Instructions": "magic",
+
+    # Explicitly typed pages. Hub links are useful navigation, but must not
+    # silently change the subject of a page when a new cross-reference lands.
+    "Green-Valley": "regions",
+    "Peaceful-Valley": "regions",
+    "Marenica-Sea": "regions",
+    "Kino": "religions",
+    "Theolosius": "characters",
+    "Melodias": "characters",
+    "Wielkopan": "characters",
+    "Wishtheon": "characters",
+    "Naathran": "characters",
+    "Bachin": "characters",
+    "Jaoz": "characters",
+    "Zerywani": "races",
+    "Character-Interactions": "lore",
+    "Getting-Started": "lore",
+    "Gameplay-Systems": "lore",
+    "Glossary": "lore",
+    "Changelog": "history",
 }
 
 # Hero art assignment. The loading screens vary by terrain; each category draws
@@ -182,17 +225,21 @@ CATEGORY_OVERRIDES = {
 CATEGORY_PLATES = {
     "history":    [13, 14, 9, 3],
     "magic":      [8, 12, 7],
+    "items":      [5, 11, 1, 12],
+    "bloodlines": [13, 2, 10, 9],
     "races":      [6, 0, 8, 7, 4],
     "religions":  [8, 7, 5, 12],
     "cultures":   [6, 10, 5, 2],
+    "continents": [0, 11, 4, 12, 2],
     "regions":    [0, 4, 12, 2, 11],
     "countries":  [10, 13, 3, 1, 14],
-    "newworld":   [6, 0, 7, 4],
     "characters": [13, 2, 10, 9],
     "lore":       [5, 11, 1, 12, 0],
 }
 
-FEATURED = ["Timeline", "Magic", "Zani-Empire", "Races", "Religions", "New-World"]
+FEATURED = ["Timeline", "Magic", "Items", "Bloodlines", "Zani-Empire", "Races", "Religions", "Regions"]
+
+ALIASES = {"sumun": "sumun-the-great"}
 
 
 # ---------------------------------------------------------------------------
@@ -242,6 +289,7 @@ class Page:
         self.key = normalize_key(self.name)
         self.slug = slugify(self.name)
         self.is_home = self.key == "home"
+        self.is_alias = self.key in ALIASES
         self.out = "index.html" if self.is_home else f"{self.slug}.html"
         with open(path, encoding="utf-8") as f:
             self.raw = f.read()
@@ -255,16 +303,22 @@ class Page:
         self.html = ""
         self.toc = []
         self.summary = ""
-        self.aliases = []
-        self.auto_links = set()
-        self.metadata = {}
         self.words = len(re.findall(r"\w+", self.raw))
         self.mtime = os.path.getmtime(path)
+        self.primary_category = None
 
     # -- parsing ------------------------------------------------------------
     def parse_front(self):
         """Pull the H1 title and a leading blockquote epigraph out of the body."""
         body = self.raw
+
+        # Optional invisible metadata for pages whose subject is broader than
+        # the first hub that happens to link to them. Example:
+        # <!-- primary-category: regions -->
+        category = re.search(r"<!--\s*primary-category:\s*([a-z-]+)\s*-->", body,
+                             re.I)
+        if category:
+            self.primary_category = category.group(1).lower()
 
         m = re.match(r"\s*#\s+(.+?)\s*\n", body)
         if m:
@@ -316,10 +370,48 @@ class Site:
         self.pages = []
         self.by_key = {}
         self.by_category = defaultdict(list)
-        self.alias_targets = {}
-        self.ambiguous_aliases = set()
-        self.excluded_aliases = set()
-        self.status_labels = {}
+
+    def canonical_for(self, output_name):
+        return f"{self.base}/{output_name}" if self.base else ""
+
+    def public_pages(self):
+        return [p for p in self.pages if not p.is_home and not p.is_alias]
+
+    def clean_output(self):
+        """Remove stale generated files before writing a fresh site.
+
+        The output is always a generated directory inside this repository.
+        Refusing paths outside the repository prevents an accidental clean of
+        an unrelated directory.
+        """
+        out_abs = os.path.abspath(self.out)
+        root_abs = REPO_ROOT
+        try:
+            inside = os.path.commonpath([out_abs, root_abs]) == root_abs
+        except ValueError:
+            inside = False
+        if not inside or out_abs == root_abs:
+            raise SystemExit("Refusing to clean an output directory outside the repository")
+        if not os.path.isdir(out_abs):
+            return
+        # A publish workflow may grade the mod's art into docs/assets/img
+        # immediately before this script runs. Preserve that generated bundle
+        # while removing every other stale output.
+        art_backup = None
+        art_path = os.path.join(out_abs, "assets", "img")
+        if os.path.isdir(art_path):
+            art_backup = tempfile.mkdtemp(prefix="omniluxia-art-")
+            shutil.copytree(art_path, os.path.join(art_backup, "img"))
+        for name in os.listdir(out_abs):
+            path = os.path.join(out_abs, name)
+            if os.path.isdir(path) and not os.path.islink(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
+        if art_backup:
+            os.makedirs(os.path.join(out_abs, "assets"), exist_ok=True)
+            shutil.copytree(os.path.join(art_backup, "img"), art_path)
+            shutil.rmtree(art_backup, ignore_errors=True)
 
     # -- load ---------------------------------------------------------------
     def load(self):
@@ -343,75 +435,6 @@ class Site:
                     p.title = titleize(p.name)
 
         print(f"  loaded {len(self.pages)} pages")
-        self.load_registry()
-        self.load_metadata()
-
-    def load_metadata(self):
-        if not os.path.isfile(METADATA_PATH):
-            return
-        with open(METADATA_PATH, encoding="utf-8") as f:
-            config = json.load(f)
-        self.status_labels = config.get("status_labels", {})
-        for name, metadata in config.get("pages", {}).items():
-            page = self.by_key.get(normalize_key(name))
-            if not page:
-                raise ValueError(f"Article metadata target does not exist: {name}")
-            status = metadata.get("status", "established")
-            if status not in self.status_labels:
-                raise ValueError(f"Unknown article status {status!r} for {name}")
-            for source in metadata.get("source_pages", []):
-                if normalize_key(source) not in self.by_key:
-                    raise ValueError(f"Metadata source page does not exist: {name} -> {source}")
-
-            def validate_fact_targets(value: object) -> None:
-                if isinstance(value, list):
-                    for item in value:
-                        validate_fact_targets(item)
-                elif isinstance(value, dict):
-                    target = value.get("target")
-                    if target and normalize_key(str(target)) not in self.by_key:
-                        raise ValueError(f"Metadata fact target does not exist: {name} -> {target}")
-                    for item in value.values():
-                        validate_fact_targets(item)
-
-            validate_fact_targets(metadata.get("facts", {}))
-            page.metadata = metadata
-        print(f"  metadata: {sum(bool(p.metadata) for p in self.pages)} curated pages")
-
-    def load_registry(self):
-        """Build the canonical title/alias -> article lookup.
-
-        Titles and filenames work automatically. article_registry.json only
-        needs to contain adjectival, plural, historical, or otherwise unusual
-        forms, plus exclusions for names that are too ambiguous to auto-link.
-        """
-        config = {"aliases": {}, "exclude": []}
-        if os.path.isfile(REGISTRY_PATH):
-            with open(REGISTRY_PATH, encoding="utf-8") as f:
-                config = json.load(f)
-        self.excluded_aliases = {a.casefold() for a in config.get("exclude", [])}
-
-        candidates = defaultdict(set)
-        for p in self.pages:
-            for alias in {p.title, titleize(p.name)}:
-                if len(alias.strip()) >= 3:
-                    candidates[alias.strip().casefold()].add(p.key)
-        for target_name, aliases in config.get("aliases", {}).items():
-            target = self.by_key.get(normalize_key(target_name))
-            if not target:
-                raise ValueError(f"Registry alias target does not exist: {target_name}")
-            for alias in aliases:
-                candidates[alias.strip().casefold()].add(target.key)
-
-        self.ambiguous_aliases = {a for a, keys in candidates.items() if len(keys) > 1}
-        for alias, keys in candidates.items():
-            if alias not in self.excluded_aliases and len(keys) == 1:
-                self.alias_targets[alias] = self.by_key[next(iter(keys))]
-        for alias, target in self.alias_targets.items():
-            target.aliases.append(alias)
-        print(f"  registry: {len(self.alias_targets)} aliases, "
-              f"{len(self.ambiguous_aliases)} ambiguous, "
-              f"{len(self.excluded_aliases)} excluded")
 
     def resolve(self, key):
         return self.by_key.get(key)
@@ -432,7 +455,7 @@ class Site:
         overrides = {normalize_key(n): c for n, c in CATEGORY_OVERRIDES.items()}
 
         for p in self.pages:
-            if p.is_home:
+            if p.is_home or p.is_alias:
                 p.category = None
                 continue
             if p.key in hub_keys:
@@ -441,8 +464,15 @@ class Site:
                 continue
             p.is_hub = False
 
+            if p.primary_category in CATEGORY_LABEL:
+                p.category = p.primary_category
+                continue
+
             if p.key in overrides:
                 p.category = overrides[p.key]
+                continue
+            if "<!-- country-data:start -->" in p.raw:
+                p.category = "countries"
                 continue
 
             cat = None
@@ -524,9 +554,13 @@ class Site:
         body = self.promote_era_markers(body)
         out = md.convert(body)
 
-        # Add contextual links after Markdown conversion so existing Markdown
-        # links, headings, code, and other structural elements remain untouched.
-        out = self.autolink_html(out, p)
+        # The data pages contain hand-authored HTML generated from game
+        # localization. Normalize the few recurring presentation artifacts at
+        # the presentation boundary so the wiki source remains traceable while
+        # the public site stays readable.
+        out = self.clean_generated_markup(out)
+        out = self.enhance_data_entries(out)
+        out = self.link_data_references(out, p)
 
         # External links open in a new tab and get a marker.
         out = re.sub(r'<a href="(https?://[^"]+)"',
@@ -545,55 +579,80 @@ class Site:
             p.summary = p.epigraph
         return out
 
-    AUTOLINK_BLOCKED = {"a", "code", "pre", "script", "style",
-                        "h1", "h2", "h3", "h4", "h5", "h6"}
+    @staticmethod
+    def clean_generated_markup(out):
+        replacements = {
+            "Agressive": "Aggressive",
+            "Happyness": "Happiness",
+            "negative_gw_workrate_percent_svalue_minor": "Great Work Total Workrate Modifier (minor)",
+            "gw_fixed_prestige_svalue_minor": "Great Work Fixed Prestige Modifier (minor)",
+            "Â·": "·",
+            " Â·": " ·",
+        }
+        for old, new in replacements.items():
+            out = out.replace(old, new)
+        out = re.sub(r"\s+([,.;])", r"\1", out)
+        return out
 
-    def autolink_html(self, rendered, page):
-        """Link the first meaningful occurrence of every known article alias."""
-        aliases = [(alias, target) for alias, target in self.alias_targets.items()
-                   if target.key != page.key]
-        aliases.sort(key=lambda item: (-len(item[0]), item[0]))
-        if not aliases:
-            return rendered
-        pattern = re.compile(
-            r"(?<![\w])(" + "|".join(re.escape(a) for a, _ in aliases) + r")(?![\w])",
-            re.I,
-        )
-        targets = {a: t for a, t in aliases}
-        linked_targets = set()
-        blocked = []
-        parts = re.split(r"(<[^>]+>)", rendered)
-        output = []
+    @staticmethod
+    def enhance_data_entries(out):
+        """Give raw data entries stable anchors and searchable metadata."""
+        seen = set()
 
-        for part in parts:
-            if part.startswith("<"):
-                close = re.match(r"</\s*([a-z0-9]+)", part, re.I)
-                opening = re.match(r"<\s*([a-z0-9]+)(?:\s|>|/)", part, re.I)
-                if close:
-                    tag = close.group(1).lower()
-                    if blocked and blocked[-1] == tag:
-                        blocked.pop()
-                elif opening and not part.rstrip().endswith("/>"):
-                    tag = opening.group(1).lower()
-                    if tag in self.AUTOLINK_BLOCKED:
-                        blocked.append(tag)
-                output.append(part)
+        def entry_repl(match):
+            opening, body = match.group(1), match.group(2)
+            title = re.search(r"<h2(?:\s[^>]*)?>(.*?)</h2>", body, re.S)
+            key = re.search(r"<code>(.*?)</code>", body, re.S)
+            raw_id = strip_tags(key.group(1) if key else (title.group(1) if title else "entry"))
+            raw_id = html.unescape(raw_id).strip()
+            ident = slugify(raw_id) or "entry"
+            if ident in seen:
+                n = 2
+                while f"{ident}-{n}" in seen:
+                    n += 1
+                ident = f"{ident}-{n}"
+            seen.add(ident)
+            opening = opening.replace('class="data-entry"',
+                                      f'class="data-entry" id="entry-{ident}" data-entry-key="{html.escape(raw_id, quote=True)}"', 1)
+            if title and ' id="' not in title.group(0):
+                replacement = title.group(0).replace("<h2", f'<h2 id="entry-{ident}"', 1)
+                body = body.replace(title.group(0), replacement, 1)
+            return opening + body + "</article>"
+
+        return re.sub(r'(<article\s+class="data-entry">)(.*?)</article>',
+                      entry_repl, out, flags=re.S)
+
+    def link_data_references(self, out, page):
+        """Link known people, places, and polities inside generated entries.
+
+        Only data-entry headings, descriptions, and location/controller fields
+        are touched. Mechanics and localization keys remain literal game data.
+        """
+        targets = []
+        for target in self.pages:
+            if target is page or target.is_home or target.is_alias or target.is_hub:
                 continue
-            if blocked or not part.strip():
-                output.append(part)
+            label = target.title.strip()
+            if len(label) < 5 or label.casefold() in {"overview", "history", "magic"}:
                 continue
+            targets.append((label, target.out))
+        targets.sort(key=lambda item: len(item[0]), reverse=True)
 
-            def replace(match):
-                alias = match.group(0).casefold()
-                target = targets.get(alias)
-                if not target or target.key in linked_targets:
-                    return match.group(0)
-                linked_targets.add(target.key)
-                page.auto_links.add(target.key)
-                return f'<a href="{target.out}" class="autolink">{match.group(0)}</a>'
+        def field_repl(match):
+            tag, attrs, content, closing = match.groups()
+            attrs = attrs or ""
+            if "mechanics" in attrs:
+                return match.group(0)
+            if "<a " in content:
+                return match.group(0)
+            for label, href in targets:
+                pattern = re.compile(rf"(?<![\w>])({re.escape(label)})(?![\w<])")
+                content = pattern.sub(lambda m: f'<a href="{href}">{m.group(1)}</a>', content)
+            return f"<{tag}{attrs}>{content}{closing}"
 
-            output.append(pattern.sub(replace, part))
-        return "".join(output)
+        entry_re = re.compile(
+            r"<(h2|p)(\s[^>]*)?>(.*?)((?:</h2>|</p>))", re.S | re.I)
+        return entry_re.sub(field_repl, out)
 
     def plate_for(self, p):
         cat = p.category or "lore"
@@ -601,45 +660,19 @@ class Site:
         h = sum(ord(c) * (i + 7) for i, c in enumerate(p.key))
         return plates[h % len(plates)]
 
-    def timeline_events(self):
-        """Extract dated entries from Timeline.md without inventing precision."""
-        timeline = self.by_key.get("timeline")
-        if not timeline:
-            return []
-        pattern = re.compile(
-            r"^\*\s+([^\n]+)\n(?:>\s*)?(.+?)(?=\n\s*\n|\n\*\s+|\Z)", re.M | re.S)
-        events = []
-        for date_label, event_md in pattern.findall(timeline.body_md):
-            date_label = re.sub(r"\s+", " ", date_label).strip()
-            if not re.search(r"\d", date_label):
-                continue
-            event_md = re.sub(r"\s+", " ", event_md).strip()
-            if len(event_md) < 20:
-                continue
-            rendered = markdown.markdown(self.rewrite_links(event_md))
-            rendered = self.autolink_html(rendered, timeline)
-            events.append({
-                "date": strip_tags(date_label),
-                "html": rendered,
-                "text": re.sub(r"\s+", " ", strip_tags(rendered)).strip(),
-                "url": "timeline.html",
-            })
-        return events
-
     # -- HTML shell ---------------------------------------------------------
     def nav(self, active=None):
         items = []
         for ckey, _hub, label, _b in CATEGORIES:
             cls = ' class="on"' if ckey == active else ""
             items.append(f'<a href="c-{ckey}.html"{cls}>{label}</a>')
-        items.append('<a href="all.html#search">Search</a>')
-        items.append('<a href="all.html" data-random-page>Random Article</a>')
         return "\n        ".join(items)
 
     def shell(self, *, title, desc, body, active=None, page_class="",
-              canonical=""):
+              canonical="", og_type="article"):
         year = _dt.date.today().year
         desc_a = html.escape(re.sub(r"\s+", " ", desc or "")[:180], quote=True)
+        full_title = "Chronicles of Omniluxia" if "homepage" in page_class else f"{title} — Chronicles of Omniluxia"
         og = f"{self.base}/assets/img/sigils-800.jpg" if self.base else \
              "assets/img/sigils-800.jpg"
         return f"""<!DOCTYPE html>
@@ -647,12 +680,17 @@ class Site:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(title)} &mdash; Chronicles of Omniluxia</title>
+<title>{html.escape(full_title)}</title>
 <meta name="description" content="{desc_a}">
-<meta property="og:title" content="{html.escape(title)} — Chronicles of Omniluxia">
+<meta property="og:title" content="{html.escape(full_title)}">
 <meta property="og:description" content="{desc_a}">
 <meta property="og:image" content="{og}">
-<meta property="og:type" content="article">
+<meta property="og:type" content="{og_type}">
+{f'<meta property="og:url" content="{html.escape(canonical, quote=True)}">' if canonical else ''}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{html.escape(full_title)}">
+<meta name="twitter:description" content="{desc_a}">
+<meta name="twitter:image" content="{og}">
 <meta name="theme-color" content="#0a090e">
 {f'<link rel="canonical" href="{canonical}">' if canonical else ''}
 <link rel="icon" href="assets/img/logo.png">
@@ -670,12 +708,13 @@ class Site:
     <a class="brand" href="index.html" aria-label="Chronicles of Omniluxia — home">
       <img src="assets/img/logo.png" alt="Chronicles of Omniluxia" width="128" height="57">
     </a>
-    <input type="checkbox" id="navtoggle" class="navtoggle">
-    <label for="navtoggle" class="navburger" aria-label="Menu"><span></span></label>
-    <nav class="nav">
-        {self.nav(active)}
-        <a href="all.html">All Pages</a>
-    </nav>
+    <details class="nav-menu" open>
+      <summary class="navburger"><span></span><span class="sr-only">Open navigation</span></summary>
+      <nav class="nav" id="site-nav" aria-label="Primary">
+          {self.nav(active)}
+          <a href="all.html">All Pages</a>
+      </nav>
+    </details>
   </div>
 </header>
 
@@ -697,8 +736,7 @@ class Site:
       </div>
       <div>
         <h4>The Mod</h4>
-        <a href="{STEAM_WORKSHOP_URL}" target="_blank" rel="noopener">Steam Workshop</a>
-        <a href="https://github.com/dementive/Chronicles-of-Omniluxia" target="_blank" rel="noopener">Source Repository</a>
+        <a href="https://github.com/dementive/Chronicles-of-Omniluxia" target="_blank" rel="noopener">Repository</a>
         <a href="https://github.com/dementive/Chronicles-of-Omniluxia/wiki" target="_blank" rel="noopener">Edit the wiki</a>
         <a href="https://www.youtube.com/watch?v=IlOfHsAzH1U" target="_blank" rel="noopener">Visual History</a>
       </div>
@@ -727,11 +765,11 @@ class Site:
 
     # -- page types ---------------------------------------------------------
     def render_page(self, p):
-        if not p.html:
-            self.render_markdown(p)
+        self.render_markdown(p)
         plate = self.plate_for(p)
         cat = p.category or "lore"
         catlabel = CATEGORY_LABEL.get(cat, "Lore")
+        data_count = len(re.findall(r'<article\s+class="data-entry"', p.html))
 
         epi = ""
         if p.epigraph:
@@ -740,12 +778,25 @@ class Site:
             epi = (f'<blockquote class="epigraph">'
                    f'<p>{html.escape(p.epigraph)}</p>{by}</blockquote>')
 
-        # Sidebar contents. Prefer H2s, but many long pages (Timeline is 8,000
-        # words) are structured entirely with H3s, and those need a TOC most.
+        # Sidebar contents. Prefer the parser's TOC tokens, with an HTML
+        # fallback for raw headings and generated era markers.
         toc_html = ""
-        heads = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', p.html, re.S)
+        heads = []
+
+        def flatten_toc(tokens):
+            for token in tokens:
+                if token.get("level", 0) in (2, 3):
+                    heads.append((token.get("id", ""), token.get("name", "")))
+                flatten_toc(token.get("children", []))
+
+        if data_count < 20:
+            flatten_toc(p.toc)
+        if not heads and data_count < 20:
+            heads = re.findall(r'<h2\b[^>]*\bid="([^"]+)"[^>]*>(.*?)</h2>',
+                               p.html, re.S)
         if len(heads) < 3:
-            h3s = re.findall(r'<h3 id="([^"]+)">(.*?)</h3>', p.html, re.S)
+            h3s = re.findall(r'<h3\b[^>]*\bid="([^"]+)"[^>]*>(.*?)</h3>',
+                             p.html, re.S)
             if len(h3s) >= 4:
                 heads = h3s
         if len(heads) >= 3:
@@ -755,32 +806,28 @@ class Site:
             toc_html = (f'<nav class="toc"><h4>On this page</h4>'
                         f'<ol>{items}</ol></nav>')
 
-        # Explain relationships instead of presenting one opaque mixed list.
-        def relation_group(title, keys, limit=10):
-            targets = [self.by_key[k] for k in keys
-                       if k in self.by_key and not self.by_key[k].is_home]
-            targets.sort(key=lambda x: (x.category != p.category, x.title.casefold()))
-            targets = targets[:limit]
-            if not targets:
-                return ""
+        # Related: authored outgoing links first, then useful backlinks. Hub
+        # pages are deliberately de-prioritized so cross-references remain
+        # semantic rather than becoming a list of index pages.
+        rel = []
+        seen = set()
+        ordered_keys = list(sorted(p.links)) + list(sorted(p.backlinks))
+        for k in ordered_keys:
+            t = self.by_key.get(k)
+            if (t and not t.is_home and not t.is_alias and t.key not in seen
+                    and (t.key in p.links or not getattr(t, "is_hub", False))):
+                seen.add(t.key)
+                rel.append(t)
+        rel = rel[:12]
+        rel_html = ""
+        if rel:
             chips = "".join(
                 f'<a class="chip" href="{t.out}"><span class="chip-c">'
                 f'{CATEGORY_LABEL.get(t.category,"Lore")}</span>{html.escape(t.title)}</a>'
-                for t in targets)
-            return f'<div class="relation-group"><h4>{title}</h4><div class="chips">{chips}</div></div>'
-
-        outgoing = (p.links | p.auto_links) - p.backlinks
-        reciprocal = (p.links | p.auto_links) & p.backlinks
-        incoming = p.backlinks - (p.links | p.auto_links)
-        relation_html = (
-            relation_group("Closely related", reciprocal) +
-            relation_group("People, places, and ideas in this article", outgoing) +
-            relation_group("Mentioned in", incoming)
-        )
-        rel_html = ""
-        if relation_html:
+                for t in rel)
             rel_html = (f'<section class="related">{self.RULE}'
-                        f'<h3>Connections across the chronicle</h3>{relation_html}</section>')
+                        f'<h3>Threads leading elsewhere</h3>'
+                        f'<div class="chips">{chips}</div></section>')
 
         # Sibling navigation within the category.
         sibs = [s for s in self.by_category.get(cat, []) if s is not p]
@@ -798,72 +845,14 @@ class Site:
                          f'<strong>{html.escape(q.title)}</strong></a>')
 
         rt = reading_time(p.raw)
-        connection_count = len((p.links | p.auto_links) - {p.key})
-        def render_fact(value):
-            if isinstance(value, list):
-                return ", ".join(render_fact(item) for item in value)
-            if isinstance(value, dict):
-                target = self.by_key.get(normalize_key(value.get("target", "")))
-                label = html.escape(str(value.get("label", value.get("target", ""))))
-                return f'<a href="{target.out}">{label}</a>' if target else label
-            return html.escape(str(value))
-
-        curated_facts = "".join(
-            f'<div><dt>{html.escape(label)}</dt><dd>{render_fact(value)}</dd></div>'
-            for label, value in p.metadata.get("facts", {}).items())
-        facts = f"""
-      <aside class="article-facts" aria-label="Article summary">
-        <h2>At a glance</h2>
-        <dl>
-          <div><dt>Subject</dt><dd>{catlabel}</dd></div>
-          <div><dt>Reading time</dt><dd>{rt} min</dd></div>
-          <div><dt>Linked topics</dt><dd>{connection_count}</dd></div>
-          <div><dt>Mentioned by</dt><dd>{len(p.backlinks)}</dd></div>
-          {curated_facts}
-        </dl>
-      </aside>"""
-
-        provenance = ""
-        if p.metadata:
-            status = self.status_labels[p.metadata["status"]]
-            source_links = []
-            for source in p.metadata.get("source_pages", []):
-                target = self.by_key.get(normalize_key(source))
-                if target:
-                    source_links.append(f'<a href="{target.out}">{html.escape(target.title)}</a>')
-            sources = ""
-            if source_links:
-                sources = f'<span class="source-pages">Based on {", ".join(source_links)}.</span>'
-            provenance = f"""
-      <aside class="provenance provenance-{p.metadata['status']}" aria-label="Canon status">
-        <strong>{html.escape(status['label'])}</strong>
-        <span>{html.escape(status['description'])}</span>{sources}
-      </aside>"""
-
-        timeline_explorer = ""
-        if p.key == "timeline":
-            timeline_explorer = f"""
-      <section class="timeline-explorer" id="chronology-explorer" data-timeline-explorer aria-labelledby="timeline-explorer-title">
-        <header>
-          <span class="eyebrow static">Explore {len(self.timeline_events())} dated moments</span>
-          <h2 id="timeline-explorer-title">Chronology explorer</h2>
-          <p>Search the calendar or narrow it to the eras before and after the Luxterran Calendar.</p>
-        </header>
-        <div class="timeline-tools">
-          <label for="timeline-search">Search events</label>
-          <input id="timeline-search" type="search" placeholder="Try Zani, dragon, collapse&hellip;" autocomplete="off">
-          <div class="timeline-filters" role="group" aria-label="Filter historical dates">
-            <button type="button" class="on" data-era="all">All dates</button>
-            <button type="button" data-era="blc">BLC</button>
-            <button type="button" data-era="lc">LC</button>
-            <button type="button" data-era="approx">Approximate</button>
-            <button type="button" data-random-event>Random event</button>
-          </div>
-        </div>
-        <p class="timeline-status" aria-live="polite"></p>
-        <div class="timeline-results" data-timeline-results></div>
-        <button type="button" class="btn timeline-more" data-timeline-more>Show more</button>
-      </section>"""
+        data_tools = ""
+        if data_count >= 20:
+            data_tools = f'''<div class="data-tools" role="search">
+  <label for="entry-search"><span>Filter this index</span>
+    <input id="entry-search" type="search" placeholder="Search names, cultures, effects..." autocomplete="off" data-entry-search>
+  </label>
+  <span class="data-count" data-entry-count>{data_count:,} entries</span>
+</div>'''
         body = f"""
 <article class="page">
   <div class="hero{' has-toc-hero' if toc_html else ''}" style="--plate:url('img/hero-{plate:02d}-1280.jpg');--plate-sm:url('img/hero-{plate:02d}-800.jpg')">
@@ -880,12 +869,7 @@ class Site:
   <div class="wrap{' has-toc' if toc_html else ''}" id="main">
     {toc_html}
     <div class="prose">
-      <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="index.html">Home</a>
-      <span aria-hidden="true">&rsaquo;</span><a href="c-{cat}.html">{catlabel}</a>
-      <span aria-hidden="true">&rsaquo;</span><span>{html.escape(p.title)}</span></nav>
-      {facts}
-      {provenance}
-      {timeline_explorer}
+      {data_tools}
       {p.html}
     </div>
   </div>
@@ -894,7 +878,8 @@ class Site:
 </article>
 """
         return self.shell(title=p.title, desc=p.summary or p.epigraph or "",
-                          body=body, active=cat, page_class=f"article category-{cat}")
+                          body=body, active=cat, page_class="article",
+                          canonical=self.canonical_for(p.out))
 
     def render_category(self, ckey):
         pages = self.by_category[ckey]
@@ -909,14 +894,16 @@ class Site:
             summ = html.escape((p.summary or "")[:190])
             if len(p.summary or "") > 190:
                 summ += "&hellip;"
-            hubbadge = '<span class="badge">Overview</span>' if getattr(p, "is_hub", False) else ""
+            is_hub = getattr(p, "is_hub", False)
+            card_title = "Overview" if is_hub else p.title
+            action = f"Read {label}" if is_hub else "Read"
             cards.append(f"""
       <a class="card" href="{p.out}" style="--tex:url('img/tex-{self.plate_for(p):02d}.jpg')">
         <div class="card-tex" aria-hidden="true"></div>
         <div class="card-in">
-          <h3>{html.escape(p.title)}{hubbadge}</h3>
+          <h3>{html.escape(card_title)}</h3>
           <p>{summ}</p>
-          <span class="card-more">Read &rarr;</span>
+          <span class="card-more">{html.escape(action)} &rarr;</span>
         </div>
       </a>""")
 
@@ -928,7 +915,7 @@ class Site:
       <span class="eyebrow static">Compendium</span>
       <h1>{label}</h1>
       <p class="lede">{blurb}</p>
-      <p class="meta"><span>{len(pages)} entries</span></p>
+      <p class="meta"><span>{len(pages)} {'entry' if len(pages) == 1 else 'entries'}</span></p>
     </div>
     <div class="hero-fade" aria-hidden="true"></div>
   </div>
@@ -939,45 +926,28 @@ class Site:
 </div>
 """
         return self.shell(title=label, desc=blurb, body=body, active=ckey,
-                          page_class="listing")
+                          page_class="listing",
+                          canonical=self.canonical_for(f"c-{ckey}.html"),
+                          og_type="website")
 
     def render_home(self):
         home = self.by_key.get("home")
-        total = len(self.pages)
-        words = sum(p.words for p in self.pages)
-        events = self.timeline_events()
-        daily = events[_dt.date.today().toordinal() % len(events)] if events else None
-        today_html = ""
-        if daily:
-            today_html = f"""
-  <section class="wrap chronicle-day" data-on-this-day>
-    {self.RULE}
-    <header class="sec-head">
-      <span class="eyebrow static">A page from the calendar</span>
-      <h2>On this day in the chronicle</h2>
-      <p>A different dated moment from Omniluxia's history each day.</p>
-    </header>
-    <article class="day-card">
-      <p class="day-date" data-day-date>{html.escape(daily['date'])}</p>
-      <div class="day-event prose" data-day-event>{daily['html']}</div>
-      <div class="day-actions">
-        <a class="btn" href="timeline.html">Open the timeline</a>
-        <button class="btn" type="button" data-day-reroll>Another moment</button>
-      </div>
-    </article>
-  </section>"""
+        public = self.public_pages()
+        total = len(public)
+        words = sum(p.words for p in public)
 
         cats = []
         for ckey, _h, label, blurb in CATEGORIES:
             n = len(self.by_category.get(ckey, []))
             plate = CATEGORY_PLATES[ckey][0]
+            count_word = "entry" if n == 1 else "entries"
             cats.append(f"""
         <a class="ccard" href="c-{ckey}.html" style="--tex:url('img/tex-{plate:02d}.jpg')">
           <div class="ccard-tex" aria-hidden="true"></div>
           <div class="ccard-in">
             <h3>{label}</h3>
             <p>{blurb}</p>
-            <span class="ccard-n">{n} entries</span>
+            <span class="ccard-n">{n} {count_word}</span>
           </div>
         </a>""")
 
@@ -999,6 +969,17 @@ class Site:
           </div>
         </a>""")
 
+        guide_cards = []
+        for name in ("Getting-Started", "Gameplay-Systems", "Glossary", "Changelog"):
+            p = self.by_key.get(normalize_key(name))
+            if not p:
+                continue
+            if not p.summary:
+                self.render_markdown(p)
+            guide_cards.append(
+                f'<a class="quick-link" href="{p.out}"><strong>{html.escape(p.title)}</strong>'
+                f'<span>{html.escape((p.summary or "").strip()[:150])}</span></a>')
+
         body = f"""
 <div class="page home">
   <div class="splash">
@@ -1011,13 +992,12 @@ class Site:
       <div class="splash-cta">
         <a class="btn primary" href="c-history.html">Enter the Chronicle</a>
         <a class="btn" href="all.html">Browse all {total} pages</a>
-        <a class="btn" href="all.html" data-random-page>Random Article</a>
       </div>
       <div class="splash-stats">
         <div><strong>{total}</strong><span>articles</span></div>
-        <div><strong>{words // 1000}k</strong><span>words of lore</span></div>
+        <div><strong>{words // 1000}k</strong><span>words indexed</span></div>
         <div><strong>670 LC</strong><span>year of the great collapse</span></div>
-        <div><strong>1001 LC</strong><span>game start date</span></div>
+        <div><strong>1000 LC</strong><span>game start date</span></div>
       </div>
     </div>
     <div class="splash-scroll" aria-hidden="true"><span></span></div>
@@ -1026,7 +1006,7 @@ class Site:
   <section class="wrap wide" id="main">
     <header class="sec-head">
       <h2>The Compendium</h2>
-      <p>Nine roads into the world. Follow whichever one calls.</p>
+      <p>{len(CATEGORIES)} roads into the world. Follow whichever one calls.</p>
     </header>
     <div class="ccards">{"".join(cats)}
     </div>
@@ -1036,12 +1016,20 @@ class Site:
     {self.RULE}
     <header class="sec-head">
       <h2>Start Here</h2>
+      <p>The pages most people open first.</p>
     </header>
     <div class="feats">{"".join(feats)}
     </div>
   </section>
 
-  {today_html}
+  <section class="wrap wide quick-sec">
+    {self.RULE}
+    <header class="sec-head">
+      <h2>Orientation</h2>
+      <p>Practical guides for finding your footing.</p>
+    </header>
+    <div class="quick-links">{"".join(guide_cards)}</div>
+  </section>
 
   <section class="wrap closing">
     {self.RULE}
@@ -1049,7 +1037,8 @@ class Site:
     <em>Imperator: Rome</em>. Everything here is drawn from the project's own wiki, which
     remains open to contributions.</p>
     <div class="splash-cta">
-      <a class="btn primary" href="{STEAM_WORKSHOP_URL}" target="_blank" rel="noopener">Get the mod</a>
+      <a class="btn primary" href="https://steamcommunity.com/workshop/filedetails/?id=3154169256" target="_blank" rel="noopener">Subscribe on Steam</a>
+      <a class="btn" href="https://github.com/dementive/Chronicles-of-Omniluxia" target="_blank" rel="noopener">Source &amp; development</a>
       <a class="btn" href="https://github.com/dementive/Chronicles-of-Omniluxia/wiki" target="_blank" rel="noopener">Edit the wiki</a>
     </div>
   </section>
@@ -1060,7 +1049,8 @@ class Site:
             desc="The wiki for Chronicles of Omniluxia, a total-conversion fantasy "
                  "mod for Imperator: Rome. Races, religions, empires, magic and "
                  "a thousand years of history.",
-            body=body, page_class="homepage")
+            body=body, page_class="homepage",
+            canonical=self.canonical_for("index.html"), og_type="website")
 
     def render_all(self):
         groups = []
@@ -1071,11 +1061,10 @@ class Site:
             if not pages:
                 continue
             links = "".join(
-                f'<li data-title="{html.escape(p.title.casefold(), quote=True)}" '
-                f'data-category="{ckey}"><a href="{p.out}">{html.escape(p.title)}</a>'
+                f'<li data-index-item><a href="{p.out}">{html.escape(p.title)}</a>'
                 f'<span>{p.words:,}w</span></li>' for p in pages)
             groups.append(f"""
-      <section class="idx-group" data-category-group="{ckey}">
+      <section class="idx-group">
         <h2 id="{ckey}">{label} <span class="idx-n">{len(pages)}</span></h2>
         <ul class="idx-list">{links}</ul>
       </section>""")
@@ -1091,30 +1080,21 @@ class Site:
     </div>
     <div class="hero-fade" aria-hidden="true"></div>
   </div>
-  <div class="wrap wide" id="main">
-    <section class="wiki-search" id="search" aria-labelledby="search-title">
-      <label id="search-title" for="wiki-search">Search the chronicle</label>
-      <input id="wiki-search" type="search" placeholder="Try Helluvian, Zani, Luxterra&hellip;" autocomplete="off">
-      <div class="category-filters" role="group" aria-label="Filter by subject">
-        <button type="button" class="on" data-filter="all">All</button>
-        {''.join(f'<button type="button" data-filter="{key}">{label}</button>' for key, _hub, label, _blurb in CATEGORIES)}
-      </div>
-      <p class="search-status" aria-live="polite"></p>
-      <div class="random-portals" id="random">
-        <span>Open a random:</span>
-        <a class="btn" href="all.html" data-random-page data-random-scope="all">Article</a>
-        <a class="btn" href="all.html" data-random-page data-random-scope="characters">Character</a>
-        <a class="btn" href="all.html" data-random-page data-random-scope="countries">Country</a>
-        <a class="btn" href="timeline.html" data-random-moment>Historical moment</a>
-      </div>
-    </section>
-    {"".join(groups)}
+  <div class="wrap wide" id="main">{"".join(groups)}
+    <div class="index-tools" role="search">
+      <label for="index-search"><span>Search the index</span>
+        <input id="index-search" type="search" placeholder="Search pages..." autocomplete="off" data-index-search>
+      </label>
+      <span class="data-count" data-index-count>{len(self.public_pages()):,} pages</span>
+    </div>
   </div>
 </div>
 """
         return self.shell(title="All Pages", desc="Complete index of the "
                           "Chronicles of Omniluxia wiki.", body=body,
-                          page_class="listing")
+                          page_class="listing",
+                          canonical=self.canonical_for("all.html"),
+                          og_type="website")
 
     def render_credits(self):
         body = f"""
@@ -1130,74 +1110,23 @@ class Site:
   </div>
   <div class="wrap" id="main">
     <div class="prose">
+      <h2 id="contributors">Omniluxia Contributors</h2>
+      <p>Credits adapted from the
+      <a href="https://steamcommunity.com/workshop/filedetails/?id=3154169256" target="_blank" rel="noopener" class="ext">Steam Workshop page</a>.</p>
+      <p><strong>Current Developers.</strong> Dementive, Izn, Zorgoball,
+      MurderChicken, Starlord, Pureon, Anbeeld, Primal Aspid, Dulac14, Ratatosk.</p>
+
       <h2 id="text">Text</h2>
       <p>All lore on this site is written by the contributors to the
       <a href="https://github.com/dementive/Chronicles-of-Omniluxia/wiki" target="_blank" rel="noopener" class="ext">Chronicles of Omniluxia wiki</a>
       and is reproduced here unchanged. The wiki remains the canonical source; this
       site is a generated presentation layer over it.</p>
-      <p class="callout"><strong>Get the mod.</strong> Chronicles of Omniluxia is
-      available on the
-      <a href="{STEAM_WORKSHOP_URL}" target="_blank" rel="noopener" class="ext">Steam Workshop</a>.</p>
-
-      <h2 id="wiki-contributors">Wiki Contributors</h2>
-      <p>The wiki is primarily maintained by <strong>Zorgoball</strong> and
-      <strong>Starlord</strong>, with additions and corrections from the wider
-      Omniluxia community.</p>
-
-      <h2 id="mod-contributors">Omniluxia Contributors</h2>
-      <p>Credits adapted from the
-      <a href="{STEAM_WORKSHOP_URL}" target="_blank" rel="noopener" class="ext">Steam Workshop page</a>.</p>
-
-      <h3 id="current-developers">Current Developers</h3>
-      <p>Dementive, Izn, Zorgoball, MurderChicken, Starlord, Primal Aspid,
-      Dulac14, Ratatosk.</p>
-
-      <h3 id="original-developers">Original Developers</h3>
-      <p>MrAdrianPL and Xangelo as lead developers, with MisterDiego27, POT,
-      Pancaked_Src and AlthauSanafu, [REDi]1R CAPT Owlcoholic [A,D],
-      MattTheLegoman, Boots, Hispania, anoldretiredelephant, Snowlet, Benjin,
-      and Pyrrus.</p>
-
-      <h3 id="invictus-team">Invictus Team</h3>
-      <p>Snowlet, Jphiloponus, Mike Bittersteel, Dementive, Erik Erik,
-      Hannibal_theCannibal, Izn, OmegaCorps, Palando, Parcipal, Paulus,
-      Sealionforever, Thymos, Torugu, Tudhaliya, Aerozona, Diskianterezh,
-      gmb360, Idonea, IhateTrains, Olivenkranz, Shocky27, Stallone, Typhion,
-      Zorgoball, rickinator9, Acult, TheMadRegent, derekmark, MikeW.</p>
-
-      <h3 id="artists">Artists</h3>
-      <p>Aquizar, CrazyZombie, Fildez, Nerdman3000, RetconCrisis, Kailas.</p>
-
-      <h3 id="translators">Translators</h3>
-      <p>Apollon, Frank, Juanen, Julianus, Lemon, Machiavello, Pilar, Spikos,
-      Vityviktor.</p>
-
-      <h3 id="contributors">Contributors</h3>
-      <p>Agamidae, Arkerios, Ben4Peters, DaFoogle, Diego I de Persia, Dustin,
-      Hexon, Kalen, MattTheLegoman, Nebular, Pardo, Presidentstorm, Prometheus,
-      Licarious, AtomicFission, Sobisonator, IsaacCat, NPK.</p>
-
-      <h3 id="testers">Testers</h3>
-      <p>Augustus_Caesar, bla, Brasidas, DDJR, FBI Agent, Jake_P, Jandoski,
-      Lil_squindie, llamafanatic, Memer Nener, Pydras, Sav, Somebody, Trewajg,
-      Tuko Tuko, Eel, Mateusz, Salt.</p>
-
-      <h3 id="scholars">Scholars</h3>
-      <p>Chehrazad, Derek, Felix Amiculus, Herodotus, INKRSN, Manny,
-      QuietRustler, Sethos, Trarco.</p>
-
-      <h3 id="special-thanks">Special Thanks</h3>
-      <ul>
-        <li>Snowlet for balance help and bug finding.</li>
-        <li>Pureon for allowing the use of illustrations from the Lord of the Rings mod.</li>
-        <li>Terrapass for the chasm terrain shader.</li>
-        <li>Turplesmee for the main menu music.</li>
-        <li>Agami for Better UI.</li>
-      </ul>
 
       <h2 id="art">Artwork</h2>
-      <p>Every image on this site comes from the mod's own files. Nothing is
-      sourced from anywhere else. Each one is colour-graded at build time so that
+      <p>Every image on this site is taken from the mod files used by the project.
+      Before redistributing the generated site, confirm the project has permission
+      to publish each source image and retain any upstream attribution required by
+      the mod or its contributors. Each one is colour-graded at build time so that
       text stays legible over it, but the underlying art is unaltered:</p>
       <ul>
         <li><strong>Hero backgrounds</strong> &mdash; the fifteen loading screens from
@@ -1209,15 +1138,17 @@ class Site:
         <li><strong>Wordmark</strong>, in the header and as the favicon &mdash;
         <code>gfx/interface/frontend/game_logo_main_menu.dds</code>.</li>
       </ul>
-      <p>That is the complete list: three sources, seventeen original files. These
-      assets belong to the Chronicles of Omniluxia project and are used here as part
-      of it.</p>
-      <p class="callout"><strong>Game assets.</strong> Some of this artwork derives
-      from <em>Imperator: Rome</em>, which is a trademark of Paradox Interactive.
-      Chronicles of Omniluxia is an unofficial fan project, not affiliated with or
-      endorsed by Paradox, and is distributed under the terms that apply to mods for
-      their games. If you add imagery to the wiki, keep it to the project's own work
-      or to material that is public domain or CC0, and record it here.</p>
+      <p>That is the current list: three source locations, seventeen files. The
+      source files remain subject to the permissions and attribution terms that
+      apply to the mod and its credited contributors.</p>
+      <p class="callout"><strong>Imperator: Rome.</strong> <em>Imperator: Rome</em>
+      is a game developed and published by Paradox Interactive. Imperator: Rome,
+      its name, trademarks, and original copyrighted material belong to Paradox
+      Interactive and their respective rights holders. Chronicles of Omniluxia is
+      an unofficial fan project, not affiliated with or endorsed by Paradox, and is
+      distributed under the terms that apply to mods for their games. If you add
+      imagery to the wiki, keep it to the project's own work or to material that is
+      public domain or CC0, and record it here.</p>
 
       <h2 id="type">Typography</h2>
       <ul>
@@ -1225,13 +1156,27 @@ class Site:
         <li><strong>Cormorant Garamond</strong> by Christian Thalmann &mdash; SIL Open Font Licence.</li>
         <li><strong>Spectral</strong> by Production Type &mdash; SIL Open Font Licence.</li>
       </ul>
+
+      <h2 id="build">How this site is built</h2>
+      <p>A Python script reads the wiki's markdown files, classifies them from the
+      hub pages, rewrites the wiki links, and renders them through a single template.
+      The site uses a tiny progressive-enhancement script for navigation and search,
+      with no build framework. To regenerate after editing the wiki:</p>
+      <pre><code>git pull
+python3 site/build.py</code></pre>
+      <p>The artwork is only regenerated when the mod's own art changes, and needs to
+      be pointed at the mod repository, since that is where the source
+      <code>.dds</code> files live:</p>
+      <pre><code>python3 tools/wiki_site/build_art.py</code></pre>
     </div>
   </div>
 </div>
 """
         return self.shell(title="Credits", desc="Art, type, and text credits for "
                           "the Chronicles of Omniluxia wiki site.", body=body,
-                          page_class="article")
+                          page_class="article",
+                          canonical=self.canonical_for("credits.html"),
+                          og_type="website")
 
     def render_404(self):
         body = """
@@ -1257,75 +1202,73 @@ class Site:
 
     # -- write --------------------------------------------------------------
     def write(self):
+        self.clean_output()
         os.makedirs(self.out, exist_ok=True)
+
+        def save(path, content):
+            # Keep generated files clean for diffs and downstream publishing.
+            content = content.replace("\ufffd", "-")
+            content = re.sub(r"[ \t]+(?=\n)", "", content).rstrip() + "\n"
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
 
         # Static assets
         src_assets = os.path.join(HERE, "assets")
         dst_assets = os.path.join(self.out, "assets")
         os.makedirs(dst_assets, exist_ok=True)
         for f in os.listdir(src_assets):
-            shutil.copy2(os.path.join(src_assets, f), os.path.join(dst_assets, f))
-
-        # Render every article first. Auto-links then become part of the graph,
-        # allowing later pages to display complete generated backlinks.
-        for p in self.pages:
-            if not p.is_home:
-                self.render_markdown(p)
-                p.links.update(p.auto_links)
-        for p in self.pages:
-            for key in p.auto_links:
-                target = self.by_key.get(key)
-                if target:
-                    target.backlinks.add(p.key)
+            src = os.path.join(src_assets, f)
+            dst = os.path.join(dst_assets, f)
+            if os.path.isdir(src):
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+            else:
+                shutil.copy2(src, dst)
 
         n = 0
         for p in self.pages:
-            if p.is_home:
+            if p.is_home or p.is_alias:
                 continue
-            with open(os.path.join(self.out, p.out), "w", encoding="utf-8") as f:
-                f.write(self.render_page(p))
+            save(os.path.join(self.out, p.out), self.render_page(p))
+            n += 1
+
+        # Keep legacy links alive without indexing aliases as duplicate
+        # articles.
+        for p in self.pages:
+            if not p.is_alias:
+                continue
+            target = self.by_key.get(ALIASES[p.key])
+            if not target:
+                continue
+            canonical = self.canonical_for(target.out)
+            location = target.out
+            save(os.path.join(self.out, p.out), self.render_redirect(p.title, location, canonical))
             n += 1
 
         for ckey, _h, _l, _b in CATEGORIES:
-            with open(os.path.join(self.out, f"c-{ckey}.html"), "w",
-                      encoding="utf-8") as f:
-                f.write(self.render_category(ckey))
+            save(os.path.join(self.out, f"c-{ckey}.html"), self.render_category(ckey))
             n += 1
         if self.by_category.get(FALLBACK_CATEGORY):
-            with open(os.path.join(self.out, f"c-{FALLBACK_CATEGORY}.html"), "w",
-                      encoding="utf-8") as f:
-                f.write(self.render_category(FALLBACK_CATEGORY))
+            save(os.path.join(self.out, f"c-{FALLBACK_CATEGORY}.html"), self.render_category(FALLBACK_CATEGORY))
             n += 1
 
         for fn, fn_render in [("index.html", self.render_home),
                               ("all.html", self.render_all),
                               ("credits.html", self.render_credits),
                               ("404.html", self.render_404)]:
-            with open(os.path.join(self.out, fn), "w", encoding="utf-8") as f:
-                f.write(fn_render())
+            save(os.path.join(self.out, fn), fn_render())
             n += 1
 
         # Tell GitHub Pages not to run Jekyll over this.
         open(os.path.join(self.out, ".nojekyll"), "w").close()
-
-        search_index = [
-            {"title": p.title, "url": p.out,
-             "category": p.category or FALLBACK_CATEGORY,
-             "summary": p.summary, "aliases": sorted(set(p.aliases))}
-            for p in self.pages if not p.is_home
-        ]
-        with open(os.path.join(self.out, "search-index.json"), "w", encoding="utf-8") as f:
-            json.dump(search_index, f, ensure_ascii=False, separators=(",", ":"))
-
-        with open(os.path.join(self.out, "timeline-events.json"), "w", encoding="utf-8") as f:
-            json.dump(self.timeline_events(), f, ensure_ascii=False, separators=(",", ":"))
 
         # Sitemap
         if self.base:
             today = _dt.date.today().isoformat()
             urls = ["index.html", "all.html", "credits.html"]
             urls += [f"c-{c}.html" for c, _h, _l, _b in CATEGORIES]
-            urls += [p.out for p in self.pages if not p.is_home]
+            if self.by_category.get(FALLBACK_CATEGORY):
+                urls.append(f"c-{FALLBACK_CATEGORY}.html")
+            urls += [p.out for p in self.public_pages()]
             xml = ['<?xml version="1.0" encoding="UTF-8"?>',
                    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
             for u in urls:
@@ -1335,9 +1278,25 @@ class Site:
             with open(os.path.join(self.out, "sitemap.xml"), "w",
                       encoding="utf-8") as f:
                 f.write("\n".join(xml))
+            with open(os.path.join(self.out, "robots.txt"), "w",
+                      encoding="utf-8") as f:
+                f.write(f"User-agent: *\nAllow: /\nSitemap: {self.base}/sitemap.xml\n")
 
         print(f"  wrote {n} html files to {self.out}")
         return n
+
+    def render_redirect(self, title, location, canonical=""):
+        body = f'''<div class="page">
+  <div class="wrap article-redirect" id="main">
+    <div class="prose">
+      <h1>{html.escape(title)}</h1>
+      <p>This legacy address now lives at <a href="{html.escape(location)}">{html.escape(location)}</a>.</p>
+      <p><a class="btn primary" href="{html.escape(location)}">Continue to the article</a></p>
+    </div>
+  </div>
+</div>'''
+        return self.shell(title=title, desc="Legacy article address.", body=body,
+                          page_class="article", canonical=canonical)
 
 
 def main():
@@ -1345,7 +1304,7 @@ def main():
     ap.add_argument("--wiki", default=os.environ.get("OMNI_WIKI", WIKI_ROOT),
                     help="Directory of wiki markdown (default: the wiki repo "
                          "cloned beside this one)")
-    ap.add_argument("--out", default=os.path.join(MOD_ROOT, "docs"),
+    ap.add_argument("--out", default=os.path.join(REPO_ROOT, "docs"),
                     help="Where to write the site (default: docs/)")
     ap.add_argument("--base", default="", help="Canonical base URL for sitemap")
     a = ap.parse_args()
