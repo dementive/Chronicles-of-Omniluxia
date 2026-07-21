@@ -1,0 +1,26 @@
+﻿# AI library scroll shopping (events/omni_library_scroll_events.txt system).
+# PERF: this used to run inside omni_yearly_country_effect (choo_effects.txt), i.e. for every AI
+# country on the same shared yearly tick, with no pre-gate - the stock-build effect behind it
+# (omni_build_library_scroll_stock + omni_ai_buy_library_scrolls_effect) is one of the heaviest
+# scripted effects in the mod (up to 10 rolls through ~150-entry random_lists with per-entry
+# modifier triggers, then ~190 sequential list-membership checks). Now it is its own delayed
+# sub-pulse - spread across the year like the disaster roll - and the trigger below skips every
+# country that can't buy anything anyway. Cadence is unchanged: yearly per AI country.
+yearly_country_pulse = {
+	on_actions = {
+		delay = { days = { 1 364 } }
+		omni_yearly_ai_library_pulse
+	}
+}
+
+omni_yearly_ai_library_pulse = {
+	trigger = {
+		# Cheapest checks first (documented pattern - see agent.md).
+		is_ai = yes
+		treasury >= 60 # price of the cheapest scroll; per-scroll purchases are gold-gated anyway
+		any_owned_province = { has_building = library_building }
+	}
+	effect = {
+		omni_ai_buy_library_scrolls_effect = yes
+	}
+}
