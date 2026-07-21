@@ -1,0 +1,1571 @@
+﻿namespace = omni_disease
+
+# Disease Outbreak System. Structurally a sibling of omni_disaster (events/omni_natural_disasters.txt) - same
+# shape (opening event -> contain/ignore choice -> optional spread -> resolution, terrain/season gated, no
+# hardcoded regions, 25yr cooldown per disease). See agent.md "Disease Outbreak System" for the full pattern
+# and why this shares omni_yearly_disaster_pulse's roll instead of adding a second on_action.
+#
+# Three chain lengths, matching the "mild to epidemic" ask:
+#  - Short (2 events): onset -> resolution. Never escalates. omni_disease_resolve_mild_effect (~2% death).
+#  - Medium (3 events): onset -> spread/worsen -> resolution. omni_disease_resolve_moderate_effect (~10% death).
+#  - Long (4 events): onset -> worsens -> spreads/epidemic -> resolution. omni_disease_resolve_severe_effect
+#    (~25% death), but only if left unchecked through every stage - acting against it early still short-circuits
+#    straight to resolution, same as the locust chain (omni_disaster.11-14).
+#
+# Character infection: only the sick province's governor (if any, alive, uninfected) ever catches it - see
+# omni_infect_province_governor_effect. No realm-wide character scans.
+
+############################################
+# GREY COUGH (short chain) - crowd respiratory illness, farmland
+############################################
+omni_disease.1 = { #Grey Cough - onset
+	type = country_event
+	title = omni_disease.1.t
+	desc = omni_disease.1.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:grey_cough_province.governor
+	goto_location = scope:grey_cough_province
+
+	trigger = {
+		any_owned_province = {
+			omni_grey_cough_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = grey_cough_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_grey_cough_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = grey_cough_province
+			add_province_modifier = {
+				name = omni_grey_cough_outbreak
+				duration = 180
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #quarantine the sick
+		name = omni_disease.1.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 4
+			min = -150
+			max = -30
+		}
+	}
+
+	option = { #let it pass
+		name = omni_disease.1.b
+	}
+
+	after = {
+		set_variable = {
+			name = grey_cough_cooldown
+			days = 9125 #25yrs
+		}
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.2
+				days = { 150 210 }
+			}
+		}
+	}
+}
+
+omni_disease.2 = { #Grey Cough - resolution
+	type = country_event
+	title = omni_disease.2.t
+	desc = omni_disease.2.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:grey_cough_province.governor
+	goto_location = scope:grey_cough_province
+
+	immediate = {
+		scope:grey_cough_province = {
+			omni_disease_resolve_mild_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.2.a
+	}
+}
+
+############################################
+# SAILOR'S ROT (short chain) - trade-borne wasting sickness, coastal
+############################################
+omni_disease.3 = { #Sailor's Rot - onset
+	type = country_event
+	title = omni_disease.3.t
+	desc = omni_disease.3.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:sailors_rot_province.governor
+	goto_location = scope:sailors_rot_province
+
+	trigger = {
+		any_owned_province = {
+			omni_sailors_rot_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = sailors_rot_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_sailors_rot_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = sailors_rot_province
+			add_province_modifier = {
+				name = omni_sailors_rot_outbreak
+				duration = 180
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #pay for fresh stores
+		name = omni_disease.3.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 4
+			min = -150
+			max = -30
+		}
+	}
+
+	option = { #ration as usual
+		name = omni_disease.3.b
+	}
+
+	after = {
+		set_variable = {
+			name = sailors_rot_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.4
+				days = { 150 210 }
+			}
+		}
+	}
+}
+
+omni_disease.4 = { #Sailor's Rot - resolution
+	type = country_event
+	title = omni_disease.4.t
+	desc = omni_disease.4.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:sailors_rot_province.governor
+	goto_location = scope:sailors_rot_province
+
+	immediate = {
+		scope:sailors_rot_province = {
+			omni_disease_resolve_mild_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.4.a
+	}
+}
+
+############################################
+# RIVER FLUX (short chain) - waterborne dysentery, riverine
+############################################
+omni_disease.5 = { #River Flux - onset
+	type = country_event
+	title = omni_disease.5.t
+	desc = omni_disease.5.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:river_flux_province.governor
+	goto_location = scope:river_flux_province
+
+	trigger = {
+		any_owned_province = {
+			omni_river_flux_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = river_flux_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_river_flux_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = river_flux_province
+			add_province_modifier = {
+				name = omni_river_flux_outbreak
+				duration = 180
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #boil the water
+		name = omni_disease.5.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 4
+			min = -150
+			max = -30
+		}
+	}
+
+	option = { #drink as usual
+		name = omni_disease.5.b
+	}
+
+	after = {
+		set_variable = {
+			name = river_flux_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.6
+				days = { 150 210 }
+			}
+		}
+	}
+}
+
+omni_disease.6 = { #River Flux - resolution
+	type = country_event
+	title = omni_disease.6.t
+	desc = omni_disease.6.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:river_flux_province.governor
+	goto_location = scope:river_flux_province
+
+	immediate = {
+		scope:river_flux_province = {
+			omni_disease_resolve_mild_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.6.a
+	}
+}
+
+############################################
+# MARSH AGUE (medium chain) - mosquito-borne recurring fever, marsh
+############################################
+omni_disease.7 = { #Marsh Ague - onset
+	type = country_event
+	title = omni_disease.7.t
+	desc = omni_disease.7.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:marsh_ague_province.governor
+	goto_location = scope:marsh_ague_province
+
+	trigger = {
+		any_owned_province = {
+			omni_marsh_ague_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = marsh_ague_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_marsh_ague_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = marsh_ague_province
+			add_province_modifier = {
+				name = omni_marsh_ague_light
+				duration = 200
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #drain the stagnant water
+		name = omni_disease.7.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 8
+			min = -250
+			max = -50
+		}
+		set_variable = {
+			name = act_against_marsh_ague
+			days = 1
+		}
+	}
+
+	option = { #wait it out
+		name = omni_disease.7.b
+	}
+
+	after = {
+		set_variable = {
+			name = marsh_ague_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_marsh_ague
+					}
+					trigger_event = {
+						id = omni_disease.9
+						days = { 30 60 }
+					}
+				}
+				6 = {
+					trigger_event = {
+						id = omni_disease.8
+						days = { 14 28 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.8 = { #Marsh Ague - lingers and worsens
+	type = country_event
+	title = omni_disease.8.t
+	desc = omni_disease.8.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:marsh_ague_province.governor
+	goto_location = scope:marsh_ague_province
+
+	immediate = {
+		scope:marsh_ague_province = {
+			remove_province_modifier = omni_marsh_ague_light
+			add_province_modifier = {
+				name = omni_marsh_ague_severe
+				duration = 240
+			}
+		}
+	}
+
+	option = { #call in healers
+		name = omni_disease.8.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 12
+			min = -350
+			max = -60
+		}
+	}
+
+	option = { #nothing left to do but wait
+		name = omni_disease.8.b
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.9
+				days = { 60 100 }
+			}
+		}
+	}
+}
+
+omni_disease.9 = { #Marsh Ague - resolution
+	type = country_event
+	title = omni_disease.9.t
+	desc = omni_disease.9.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:marsh_ague_province.governor
+	goto_location = scope:marsh_ague_province
+
+	immediate = {
+		scope:marsh_ague_province = {
+			omni_disease_resolve_moderate_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.9.a
+	}
+}
+
+############################################
+# DEEP ROT (medium chain) - fungal lung sickness in the mines, cavern
+############################################
+omni_disease.10 = { #Deep Rot - onset
+	type = country_event
+	title = omni_disease.10.t
+	desc = omni_disease.10.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:deep_rot_province.governor
+	goto_location = scope:deep_rot_province
+
+	trigger = {
+		any_owned_province = {
+			omni_deep_rot_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = deep_rot_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_deep_rot_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = deep_rot_province
+			add_province_modifier = {
+				name = omni_deep_rot_light
+				duration = 200
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #seal the bad shafts
+		name = omni_disease.10.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 8
+			min = -250
+			max = -50
+		}
+		set_variable = {
+			name = act_against_deep_rot
+			days = 1
+		}
+	}
+
+	option = { #keep mining
+		name = omni_disease.10.b
+	}
+
+	after = {
+		set_variable = {
+			name = deep_rot_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_deep_rot
+					}
+					trigger_event = {
+						id = omni_disease.12
+						days = { 30 60 }
+					}
+				}
+				6 = {
+					trigger_event = {
+						id = omni_disease.11
+						days = { 14 28 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.11 = { #Deep Rot - lingers and worsens
+	type = country_event
+	title = omni_disease.11.t
+	desc = omni_disease.11.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:deep_rot_province.governor
+	goto_location = scope:deep_rot_province
+
+	immediate = {
+		scope:deep_rot_province = {
+			remove_province_modifier = omni_deep_rot_light
+			add_province_modifier = {
+				name = omni_deep_rot_severe
+				duration = 240
+			}
+		}
+	}
+
+	option = { #ventilate and evacuate the deep shafts
+		name = omni_disease.11.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 12
+			min = -350
+			max = -60
+		}
+	}
+
+	option = { #the ore is worth it
+		name = omni_disease.11.b
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.12
+				days = { 60 100 }
+			}
+		}
+	}
+}
+
+omni_disease.12 = { #Deep Rot - resolution
+	type = country_event
+	title = omni_disease.12.t
+	desc = omni_disease.12.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:deep_rot_province.governor
+	goto_location = scope:deep_rot_province
+
+	immediate = {
+		scope:deep_rot_province = {
+			omni_disease_resolve_moderate_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.12.a
+	}
+}
+
+############################################
+# GLACIER CHILL (medium chain) - cold-borne pneumonia, glacier, winter-gated
+############################################
+omni_disease.13 = { #Glacier Chill - onset
+	type = country_event
+	title = omni_disease.13.t
+	desc = omni_disease.13.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:glacier_chill_province.governor
+	goto_location = scope:glacier_chill_province
+
+	trigger = {
+		any_owned_province = {
+			omni_glacier_chill_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = glacier_chill_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_glacier_chill_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = glacier_chill_province
+			add_province_modifier = {
+				name = omni_glacier_chill_light
+				duration = 200
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #distribute furs and firewood
+		name = omni_disease.13.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 8
+			min = -250
+			max = -50
+		}
+		set_variable = {
+			name = act_against_glacier_chill
+			days = 1
+		}
+	}
+
+	option = { #the cold always passes
+		name = omni_disease.13.b
+	}
+
+	after = {
+		set_variable = {
+			name = glacier_chill_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_glacier_chill
+					}
+					trigger_event = {
+						id = omni_disease.15
+						days = { 30 60 }
+					}
+				}
+				6 = {
+					trigger_event = {
+						id = omni_disease.14
+						days = { 14 28 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.14 = { #Glacier Chill - lingers and worsens
+	type = country_event
+	title = omni_disease.14.t
+	desc = omni_disease.14.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:glacier_chill_province.governor
+	goto_location = scope:glacier_chill_province
+
+	immediate = {
+		scope:glacier_chill_province = {
+			remove_province_modifier = omni_glacier_chill_light
+			add_province_modifier = {
+				name = omni_glacier_chill_severe
+				duration = 240
+			}
+		}
+	}
+
+	option = { #burn the reserves to keep them warm
+		name = omni_disease.14.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 12
+			min = -350
+			max = -60
+		}
+	}
+
+	option = { #ration the firewood
+		name = omni_disease.14.b
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.15
+				days = { 60 100 }
+			}
+		}
+	}
+}
+
+omni_disease.15 = { #Glacier Chill - resolution
+	type = country_event
+	title = omni_disease.15.t
+	desc = omni_disease.15.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:glacier_chill_province.governor
+	goto_location = scope:glacier_chill_province
+
+	immediate = {
+		scope:glacier_chill_province = {
+			omni_disease_resolve_moderate_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.15.a
+	}
+}
+
+############################################
+# WASTING FEVER (medium chain) - contaminated well sickness, oasis
+############################################
+omni_disease.16 = { #Wasting Fever - onset
+	type = country_event
+	title = omni_disease.16.t
+	desc = omni_disease.16.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:wasting_fever_province.governor
+	goto_location = scope:wasting_fever_province
+
+	trigger = {
+		any_owned_province = {
+			omni_wasting_fever_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = wasting_fever_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_wasting_fever_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = wasting_fever_province
+			add_province_modifier = {
+				name = omni_wasting_fever_light
+				duration = 200
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #seal and dig a new well
+		name = omni_disease.16.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 8
+			min = -250
+			max = -50
+		}
+		set_variable = {
+			name = act_against_wasting_fever
+			days = 1
+		}
+	}
+
+	option = { #the oasis is all they have
+		name = omni_disease.16.b
+	}
+
+	after = {
+		set_variable = {
+			name = wasting_fever_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_wasting_fever
+					}
+					trigger_event = {
+						id = omni_disease.18
+						days = { 30 60 }
+					}
+				}
+				6 = {
+					trigger_event = {
+						id = omni_disease.17
+						days = { 14 28 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.17 = { #Wasting Fever - lingers and worsens
+	type = country_event
+	title = omni_disease.17.t
+	desc = omni_disease.17.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:wasting_fever_province.governor
+	goto_location = scope:wasting_fever_province
+
+	immediate = {
+		scope:wasting_fever_province = {
+			remove_province_modifier = omni_wasting_fever_light
+			add_province_modifier = {
+				name = omni_wasting_fever_severe
+				duration = 240
+			}
+		}
+	}
+
+	option = { #ration the clean water
+		name = omni_disease.17.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 12
+			min = -350
+			max = -60
+		}
+	}
+
+	option = { #drink and hope
+		name = omni_disease.17.b
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.18
+				days = { 60 100 }
+			}
+		}
+	}
+}
+
+omni_disease.18 = { #Wasting Fever - resolution
+	type = country_event
+	title = omni_disease.18.t
+	desc = omni_disease.18.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:wasting_fever_province.governor
+	goto_location = scope:wasting_fever_province
+
+	immediate = {
+		scope:wasting_fever_province = {
+			omni_disease_resolve_moderate_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.18.a
+	}
+}
+
+############################################
+# JUNGLE ROT FEVER (long chain, epidemic-capable) - hemorrhagic fever, jungle
+############################################
+omni_disease.19 = { #Jungle Rot Fever - first cases
+	type = country_event
+	title = omni_disease.19.t
+	desc = omni_disease.19.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:jungle_rot_province.governor
+	goto_location = scope:jungle_rot_province
+
+	trigger = {
+		any_owned_province = {
+			omni_jungle_rot_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = jungle_rot_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_jungle_rot_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = jungle_rot_province
+			add_province_modifier = {
+				name = omni_jungle_rot_light
+				duration = 180
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #burn the infected huts
+		name = omni_disease.19.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 10
+			min = -300
+			max = -50
+		}
+		set_variable = {
+			name = act_against_jungle_rot
+			days = 1
+		}
+	}
+
+	option = { #hope it burns itself out
+		name = omni_disease.19.b
+	}
+
+	after = {
+		set_variable = {
+			name = jungle_rot_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_jungle_rot
+					}
+					trigger_event = {
+						id = omni_disease.22
+						days = { 30 60 }
+					}
+				}
+				7 = {
+					trigger_event = {
+						id = omni_disease.20
+						days = { 14 30 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.20 = { #Jungle Rot Fever - lingers, worsens in place
+	type = country_event
+	title = omni_disease.20.t
+	desc = omni_disease.20.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:jungle_rot_province.governor
+	goto_location = scope:jungle_rot_province
+
+	immediate = {
+		scope:jungle_rot_province = {
+			remove_province_modifier = omni_jungle_rot_light
+			add_province_modifier = {
+				name = omni_jungle_rot_plague
+				duration = 240
+			}
+		}
+	}
+
+	option = { #quarantine the province
+		name = omni_disease.20.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 14
+			min = -400
+			max = -75
+		}
+		set_variable = {
+			name = act_against_jungle_rot
+			days = 1
+		}
+	}
+
+	option = { #travel and trade continue
+		name = omni_disease.20.b
+	}
+
+	after = {
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_jungle_rot
+					}
+					trigger_event = {
+						id = omni_disease.22
+						days = { 30 60 }
+					}
+				}
+				10 = {
+					trigger_event = {
+						id = omni_disease.21
+						days = { 14 21 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.21 = { #Jungle Rot Fever - spreads to an epidemic
+	type = country_event
+	title = omni_disease.21.t
+	desc = omni_disease.21.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:jungle_rot_province.governor
+	goto_location = scope:jungle_rot_province
+
+	immediate = {
+		custom_tooltip = omni_disease_spreading_tt
+		hidden_effect = {
+			scope:jungle_rot_province = {
+				remove_province_modifier = omni_jungle_rot_plague
+				add_province_modifier = {
+					name = omni_jungle_rot_epidemic
+					duration = 365
+				}
+			}
+			scope:jungle_rot_province = {
+				every_neighbor_province = {
+					limit = {
+						NOT = {
+							has_province_modifier = omni_jungle_rot_plague
+						}
+					}
+					add_province_modifier = {
+						name = omni_jungle_rot_light
+						duration = 180
+					}
+					omni_infect_province_governor_effect = yes
+				}
+			}
+		}
+		show_as_tooltip = {
+			scope:jungle_rot_province = {
+				add_province_modifier = {
+					name = omni_jungle_rot_epidemic
+					duration = 365
+				}
+			}
+		}
+	}
+
+	option = { #every hand to the sickbeds
+		name = omni_disease.21.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 18
+			min = -500
+			max = -100
+		}
+	}
+
+	option = { #the fever runs its course
+		name = omni_disease.21.b
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.22
+				days = { 30 60 }
+			}
+		}
+	}
+}
+
+omni_disease.22 = { #Jungle Rot Fever - resolution
+	type = country_event
+	title = omni_disease.22.t
+	desc = omni_disease.22.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:jungle_rot_province.governor
+	goto_location = scope:jungle_rot_province
+
+	immediate = {
+		scope:jungle_rot_province = {
+			omni_disease_resolve_severe_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.22.a
+	}
+}
+
+############################################
+# GRASS POX (long chain, epidemic-capable) - smallpox-like, steppes
+############################################
+omni_disease.23 = { #Grass Pox - first cases
+	type = country_event
+	title = omni_disease.23.t
+	desc = omni_disease.23.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:grass_pox_province.governor
+	goto_location = scope:grass_pox_province
+
+	trigger = {
+		any_owned_province = {
+			omni_grass_pox_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = grass_pox_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_grass_pox_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = grass_pox_province
+			add_province_modifier = {
+				name = omni_grass_pox_light
+				duration = 180
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #isolate the afflicted camps
+		name = omni_disease.23.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 10
+			min = -300
+			max = -50
+		}
+		set_variable = {
+			name = act_against_grass_pox
+			days = 1
+		}
+	}
+
+	option = { #the tribes will not be told to stay
+		name = omni_disease.23.b
+	}
+
+	after = {
+		set_variable = {
+			name = grass_pox_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_grass_pox
+					}
+					trigger_event = {
+						id = omni_disease.26
+						days = { 30 60 }
+					}
+				}
+				7 = {
+					trigger_event = {
+						id = omni_disease.24
+						days = { 14 30 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.24 = { #Grass Pox - lingers, worsens in place
+	type = country_event
+	title = omni_disease.24.t
+	desc = omni_disease.24.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:grass_pox_province.governor
+	goto_location = scope:grass_pox_province
+
+	immediate = {
+		scope:grass_pox_province = {
+			remove_province_modifier = omni_grass_pox_light
+			add_province_modifier = {
+				name = omni_grass_pox_plague
+				duration = 240
+			}
+		}
+	}
+
+	option = { #burn the pox-marked tents
+		name = omni_disease.24.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 14
+			min = -400
+			max = -75
+		}
+		set_variable = {
+			name = act_against_grass_pox
+			days = 1
+		}
+	}
+
+	option = { #the herds must move on regardless
+		name = omni_disease.24.b
+	}
+
+	after = {
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_grass_pox
+					}
+					trigger_event = {
+						id = omni_disease.26
+						days = { 30 60 }
+					}
+				}
+				10 = {
+					trigger_event = {
+						id = omni_disease.25
+						days = { 14 21 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.25 = { #Grass Pox - spreads to an epidemic
+	type = country_event
+	title = omni_disease.25.t
+	desc = omni_disease.25.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:grass_pox_province.governor
+	goto_location = scope:grass_pox_province
+
+	immediate = {
+		custom_tooltip = omni_disease_spreading_tt
+		hidden_effect = {
+			scope:grass_pox_province = {
+				remove_province_modifier = omni_grass_pox_plague
+				add_province_modifier = {
+					name = omni_grass_pox_epidemic
+					duration = 365
+				}
+			}
+			scope:grass_pox_province = {
+				every_neighbor_province = {
+					limit = {
+						NOT = {
+							has_province_modifier = omni_grass_pox_plague
+						}
+					}
+					add_province_modifier = {
+						name = omni_grass_pox_light
+						duration = 180
+					}
+					omni_infect_province_governor_effect = yes
+				}
+			}
+		}
+		show_as_tooltip = {
+			scope:grass_pox_province = {
+				add_province_modifier = {
+					name = omni_grass_pox_epidemic
+					duration = 365
+				}
+			}
+		}
+	}
+
+	option = { #every hand to the sickbeds
+		name = omni_disease.25.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 18
+			min = -500
+			max = -100
+		}
+	}
+
+	option = { #the pox runs its course
+		name = omni_disease.25.b
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.26
+				days = { 30 60 }
+			}
+		}
+	}
+}
+
+omni_disease.26 = { #Grass Pox - resolution
+	type = country_event
+	title = omni_disease.26.t
+	desc = omni_disease.26.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:grass_pox_province.governor
+	goto_location = scope:grass_pox_province
+
+	immediate = {
+		scope:grass_pox_province = {
+			omni_disease_resolve_severe_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.26.a
+	}
+}
+
+############################################
+# MANA SICKNESS (long chain, epidemic-capable) - magic-corruption wasting, eldritch_forest
+############################################
+omni_disease.27 = { #Mana Sickness - first cases
+	type = country_event
+	title = omni_disease.27.t
+	desc = omni_disease.27.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:mana_sickness_province.governor
+	goto_location = scope:mana_sickness_province
+
+	trigger = {
+		any_owned_province = {
+			omni_mana_sickness_target_trigger = yes
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = mana_sickness_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_mana_sickness_target_trigger = yes
+				total_population >= 4
+			}
+			save_scope_as = mana_sickness_province
+			add_province_modifier = {
+				name = omni_mana_sickness_light
+				duration = 180
+			}
+			omni_infect_province_governor_effect = yes
+		}
+	}
+
+	option = { #ward the forest's edge
+		name = omni_disease.27.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 10
+			min = -300
+			max = -50
+		}
+		set_variable = {
+			name = act_against_mana_sickness
+			days = 1
+		}
+	}
+
+	option = { #the mages will handle it themselves
+		name = omni_disease.27.b
+	}
+
+	after = {
+		set_variable = {
+			name = mana_sickness_cooldown
+			days = 9125
+		}
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_mana_sickness
+					}
+					trigger_event = {
+						id = omni_disease.30
+						days = { 30 60 }
+					}
+				}
+				7 = {
+					trigger_event = {
+						id = omni_disease.28
+						days = { 14 30 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.28 = { #Mana Sickness - lingers, worsens in place
+	type = country_event
+	title = omni_disease.28.t
+	desc = omni_disease.28.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:mana_sickness_province.governor
+	goto_location = scope:mana_sickness_province
+
+	immediate = {
+		scope:mana_sickness_province = {
+			remove_province_modifier = omni_mana_sickness_light
+			add_province_modifier = {
+				name = omni_mana_sickness_plague
+				duration = 240
+			}
+		}
+	}
+
+	option = { #bind the leyline with wardstones
+		name = omni_disease.28.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 14
+			min = -400
+			max = -75
+		}
+		set_variable = {
+			name = act_against_mana_sickness
+			days = 1
+		}
+	}
+
+	option = { #let the mana settle on its own
+		name = omni_disease.28.b
+	}
+
+	after = {
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_mana_sickness
+					}
+					trigger_event = {
+						id = omni_disease.30
+						days = { 30 60 }
+					}
+				}
+				10 = {
+					trigger_event = {
+						id = omni_disease.29
+						days = { 14 21 }
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disease.29 = { #Mana Sickness - spreads to an epidemic
+	type = country_event
+	title = omni_disease.29.t
+	desc = omni_disease.29.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:mana_sickness_province.governor
+	goto_location = scope:mana_sickness_province
+
+	immediate = {
+		custom_tooltip = omni_disease_spreading_tt
+		hidden_effect = {
+			scope:mana_sickness_province = {
+				remove_province_modifier = omni_mana_sickness_plague
+				add_province_modifier = {
+					name = omni_mana_sickness_epidemic
+					duration = 365
+				}
+			}
+			scope:mana_sickness_province = {
+				every_neighbor_province = {
+					limit = {
+						NOT = {
+							has_province_modifier = omni_mana_sickness_plague
+						}
+					}
+					add_province_modifier = {
+						name = omni_mana_sickness_light
+						duration = 180
+					}
+					omni_infect_province_governor_effect = yes
+				}
+			}
+		}
+		show_as_tooltip = {
+			scope:mana_sickness_province = {
+				add_province_modifier = {
+					name = omni_mana_sickness_epidemic
+					duration = 365
+				}
+			}
+		}
+	}
+
+	option = { #every mage to the wardstones
+		name = omni_disease.29.a
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 18
+			min = -500
+			max = -100
+		}
+	}
+
+	option = { #the mana storm runs its course
+		name = omni_disease.29.b
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disease.30
+				days = { 30 60 }
+			}
+		}
+	}
+}
+
+omni_disease.30 = { #Mana Sickness - resolution
+	type = country_event
+	title = omni_disease.30.t
+	desc = omni_disease.30.desc
+	picture = city_country
+
+	left_portrait = current_ruler
+	right_portrait = scope:mana_sickness_province.governor
+	goto_location = scope:mana_sickness_province
+
+	immediate = {
+		scope:mana_sickness_province = {
+			omni_disease_resolve_severe_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_disease.30.a
+	}
+}

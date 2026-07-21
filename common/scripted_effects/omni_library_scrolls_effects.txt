@@ -1,0 +1,122 @@
+﻿omni_add_scroll_to_stock = {
+    if = {
+        limit = {
+            NOT = {
+                is_target_in_variable_list = {
+                    name = omni_library_scroll_stock
+                    target = flag:$SCROLL$
+                }
+            }
+            root.var:omni_library_scroll_count > 0
+        }
+        add_to_variable_list = {
+            name = omni_library_scroll_stock
+            target = flag:$SCROLL$
+        }
+        root = {
+            change_variable = {
+                name = omni_library_scroll_count
+                subtract = 1
+            }
+        }
+    }
+}
+
+omni_roll_market_library_scroll = {
+    if = {
+        limit = { root.var:omni_library_quality < 45 }
+        random_list = {
+            80 = { omni_roll_common_scroll = yes }
+            20 = { omni_roll_uncommon_scroll = yes }
+        }
+    }
+    else_if = {
+        limit = {
+            root.var:omni_library_quality >= 45
+            root.var:omni_library_quality < 75
+        }
+        random_list = {
+            60 = { omni_roll_common_scroll = yes }
+            30 = { omni_roll_uncommon_scroll = yes }
+            10 = { omni_roll_rare_scroll = yes }
+        }
+    }
+    else_if = {
+        limit = {
+            root.var:omni_library_quality >= 75
+            root.var:omni_library_quality < 105
+        }
+        random_list = {
+            30 = { omni_roll_common_scroll = yes }
+            50 = { omni_roll_uncommon_scroll = yes }
+            20 = { omni_roll_rare_scroll = yes }
+        }
+    }
+    else = {
+        random_list = {
+            20 = { omni_roll_common_scroll = yes }
+            40 = { omni_roll_uncommon_scroll = yes }
+            40 = { omni_roll_rare_scroll = yes }
+        }
+    }
+}
+
+omni_build_library_scroll_stock = {
+    clear_variable_list = omni_library_scroll_stock
+    root = {
+        set_variable = {
+            name = omni_library_quality
+            value = 0
+        }
+        set_variable = {
+            name = omni_library_scroll_count
+            value = 0
+        }
+        
+        # Population (Non-cumulative else_if)
+        if = { limit = { scope:omni_item_market_province = { total_population >= 100 } } change_variable = { name = omni_library_quality add = 20 } }
+        else_if = { limit = { scope:omni_item_market_province = { total_population >= 50 } } change_variable = { name = omni_library_quality add = 10 } }
+        else_if = { limit = { scope:omni_item_market_province = { total_population >= 20 } } change_variable = { name = omni_library_quality add = 5 } }
+        
+        # Civilization Value (Non-cumulative else_if)
+        if = { limit = { scope:omni_item_market_province = { civilization_value >= 95 } } change_variable = { name = omni_library_quality add = 15 } }
+        else_if = { limit = { scope:omni_item_market_province = { civilization_value >= 75 } } change_variable = { name = omni_library_quality add = 10 } }
+        else_if = { limit = { scope:omni_item_market_province = { civilization_value >= 50 } } change_variable = { name = omni_library_quality add = 5 } }
+        
+        if = { limit = { scope:omni_item_market_province = { is_capital = yes } } change_variable = { name = omni_library_quality add = 5 } }
+        if = { limit = { scope:omni_item_market_province = { is_holy_site = yes } } change_variable = { name = omni_library_quality add = 10 } }
+        if = { limit = { scope:omni_item_market_province = { trade_goods = papyrus } } change_variable = { name = omni_library_quality add = 15 } }
+        
+        # Academies provide major boosts to quality
+        if = { limit = { scope:omni_item_market_province = { num_of_academy_building >= 3 } } change_variable = { name = omni_library_quality add = 30 } }
+        else_if = { limit = { scope:omni_item_market_province = { num_of_academy_building >= 2 } } change_variable = { name = omni_library_quality add = 20 } }
+        else_if = { limit = { scope:omni_item_market_province = { num_of_academy_building >= 1 } } change_variable = { name = omni_library_quality add = 10 } }
+
+        # Library buildings determine stock count
+        if = { 
+            limit = { scope:omni_item_market_province = { num_of_library_building >= 3 } } 
+            set_variable = { name = omni_library_scroll_count value = 10 } 
+            change_variable = { name = omni_library_quality add = 30 } 
+        }
+        else_if = { 
+            limit = { scope:omni_item_market_province = { num_of_library_building >= 2 } } 
+            set_variable = { name = omni_library_scroll_count value = 6 } 
+            change_variable = { name = omni_library_quality add = 20 } 
+        }
+        else_if = { 
+            limit = { scope:omni_item_market_province = { num_of_library_building >= 1 } } 
+            set_variable = { name = omni_library_scroll_count value = 3 } 
+            change_variable = { name = omni_library_quality add = 10 } 
+        }
+        else = {
+            # Fallback if accessed via debug or non-standard way
+            set_variable = { name = omni_library_scroll_count value = 3 } 
+        }
+    }
+    
+    # Roll the stock up to the limit
+    while = {
+        limit = { root.var:omni_library_scroll_count > 0 }
+        omni_roll_market_library_scroll = yes
+    }
+}

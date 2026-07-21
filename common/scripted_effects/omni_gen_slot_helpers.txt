@@ -37,19 +37,26 @@ omni_add_scoped_item_to_shop_stock = {
 # Buys the generated item held in character variable omni_shop_slot_$SLOT$.
 # Price by rarity matches the old per-item options (60/120/200).
 omni_buy_generated_slot_item = {
-	if = { limit = { is_target_in_global_variable_list = { name = item_common_rarity target = var:omni_shop_slot_$SLOT$ } } add_gold = -60 }
-	else_if = { limit = { is_target_in_global_variable_list = { name = item_uncommon_rarity target = var:omni_shop_slot_$SLOT$ } } add_gold = -120 }
-	else = { add_gold = -200 }
 	if = {
-		limit = { NOT = { is_target_in_variable_list = { name = item_list target = var:omni_shop_slot_$SLOT$ } } }
-		add_to_variable_list = { name = item_list target = var:omni_shop_slot_$SLOT$ }
+		limit = {
+			OR = {
+				AND = { is_target_in_global_variable_list = { name = item_common_rarity target = var:omni_shop_slot_$SLOT$ } wealth >= 60 }
+				AND = { is_target_in_global_variable_list = { name = item_uncommon_rarity target = var:omni_shop_slot_$SLOT$ } wealth >= 120 }
+				wealth >= 200
+			}
+		}
+		if = { limit = { is_target_in_global_variable_list = { name = item_common_rarity target = var:omni_shop_slot_$SLOT$ } } add_gold = -60 }
+		else_if = { limit = { is_target_in_global_variable_list = { name = item_uncommon_rarity target = var:omni_shop_slot_$SLOT$ } } add_gold = -120 }
+		else = { add_gold = -200 }
+		if = {
+			limit = { NOT = { is_target_in_variable_list = { name = item_list target = var:omni_shop_slot_$SLOT$ } } }
+			add_to_variable_list = { name = item_list target = var:omni_shop_slot_$SLOT$ }
+		}
+		remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
+		remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
+		hidden_effect = { omni_gen_slot_apply_modifier = { SLOT = $SLOT$ } }
+		remove_variable = omni_shop_slot_$SLOT$
 	}
-	remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
-	remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
-	# Apply the bought item's modifier to the buyer (hidden so the tooltip isn't
-	# duplicated; the option's show_as_tooltip renders it instead).
-	hidden_effect = { omni_gen_slot_apply_modifier = { SLOT = $SLOT$ } }
-	remove_variable = omni_shop_slot_$SLOT$
 }
 
 # Adventure loot: pick from a pool and hand straight to ROOT (the adventurer).

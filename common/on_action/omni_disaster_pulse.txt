@@ -1,0 +1,62 @@
+﻿# Wires up events/omni_natural_disasters.txt. yearly_country_pulse already exists (see 00_yearly_country.txt,
+# ai_pulse.txt, omni_dynastic_union_pulse.txt) - Imperator stacks every mod file's on_actions under the same
+# key, so this just adds two more entries without touching anything else.
+yearly_country_pulse = {
+	on_actions = {
+		omni_disaster_seasons_effect
+		delay = { days = { 1 364 } }
+		omni_yearly_disaster_pulse
+	}
+}
+
+# Kicks off (and keeps re-kicking) the winter/summer season globals from events/000_harvest_seasons.txt.
+# That event file already existed in Omniluxia but nothing was calling it, so harvest_winter_var /
+# harvest_summer_var were never actually set. omni_disaster.10 (snowstorm, via has_winter) doesn't need this,
+# but omni_disaster.11 (locusts, via harvest_summer_var) does.
+omni_disaster_seasons_effect = {
+	effect = {
+		if = {
+			limit = {
+				NOT = { has_global_variable = seasonal_food_game_rule }
+			}
+			trigger_event = { id = harvest.1 days = 333 }
+			trigger_event = { id = harvest.2 days = 148 }
+		}
+	}
+}
+
+omni_yearly_disaster_pulse = {
+	trigger = {
+		num_of_cities >= 5
+	}
+	random_events = {
+		3000 = 0
+
+		#Chances mirror Invictus's yearly_invictus_disaster_pulse; adjust to taste.
+		4 = omni_disaster.1 #Floods - Farmland/Plains
+		2 = omni_disaster.4 #Avalanche - Mountains
+		3 = omni_disaster.5 #Landslide - Hills
+		4 = omni_disaster.7 #Drought - Desert and Desert Hills
+		5 = omni_disaster.9 #Sandstorm - Desert
+		5 = omni_disaster.10 #Snowstorm - Wherever it's currently winter
+		3 = omni_disaster.11 #Locust Swarm - Desert, summer only
+		4 = omni_disaster.15 #Spore Bloom - Mushroom Forest
+
+		#Disease Outbreak System (events/omni_disease_outbreaks.txt). Appended to this SAME roll deliberately -
+		#see agent.md "Disease Outbreak System" for why: one yearly on_action/trigger check covers both systems,
+		#no second pulse. Short-chain (mild ceiling) diseases weighted highest, long-chain (epidemic-capable)
+		#lowest, mirroring how real outbreaks of that severity actually scale in rarity.
+		#Display names below are the localized disease names. Where the internal id differs (scopes, triggers
+		#and modifier keys were NOT renamed), the id is given in parentheses.
+		5 = omni_disease.1 #Grey Cough - Farmland
+		4 = omni_disease.3 #Sailor's Rot - Coastal
+		4 = omni_disease.5 #River Flux - Riverine
+		3 = omni_disease.7 #Blue Tongue Fever (marsh_ague) - Marsh
+		3 = omni_disease.10 #Deep Rot - Cavern
+		3 = omni_disease.13 #Hollowfrost (glacier_chill) - Glacier, winter only
+		3 = omni_disease.16 #Bitterwell Fever (wasting_fever) - Oasis
+		2 = omni_disease.19 #Redmouth (jungle_rot) - Jungle
+		2 = omni_disease.23 #Grass Pox - Steppes
+		2 = omni_disease.27 #Leyrot (mana_sickness) - Eldritch Forest
+	}
+}

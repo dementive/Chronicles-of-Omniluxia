@@ -10,17 +10,30 @@
 omni_army_buy_slot_item = {
 	if = {
 		limit = { NOT = { is_ruler = yes } }
-		if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_shop_slot_$SLOT$ } } add_gold = -130 }
-		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_shop_slot_$SLOT$ } } add_gold = -200 }
-		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_shop_slot_$SLOT$ } } add_gold = -300 }
-		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_shop_slot_$SLOT$ } } add_gold = -440 }
-		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_shop_slot_$SLOT$ } } add_gold = -640 }
-		else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_shop_slot_$SLOT$ } } add_gold = -920 }
-		else = { add_gold = -1300 }
-		give_character_an_item_from_variable = { ITEM_VAR = omni_shop_slot_$SLOT$ }
-		remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
-		remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
-		remove_variable = omni_shop_slot_$SLOT$
+		if = {
+			limit = {
+				OR = {
+					AND = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_shop_slot_$SLOT$ } wealth >= 130 }
+					AND = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_shop_slot_$SLOT$ } wealth >= 200 }
+					AND = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_shop_slot_$SLOT$ } wealth >= 300 }
+					AND = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_shop_slot_$SLOT$ } wealth >= 440 }
+					AND = { is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_shop_slot_$SLOT$ } wealth >= 640 }
+					AND = { is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_shop_slot_$SLOT$ } wealth >= 920 }
+					wealth >= 1300
+				}
+			}
+			if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_shop_slot_$SLOT$ } } add_gold = -130 }
+			else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_shop_slot_$SLOT$ } } add_gold = -200 }
+			else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_shop_slot_$SLOT$ } } add_gold = -300 }
+			else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_shop_slot_$SLOT$ } } add_gold = -440 }
+			else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_shop_slot_$SLOT$ } } add_gold = -640 }
+			else_if = { limit = { is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_shop_slot_$SLOT$ } } add_gold = -920 }
+			else = { add_gold = -1300 }
+			give_character_an_item_from_variable = { ITEM_VAR = omni_shop_slot_$SLOT$ }
+			remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
+			remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
+			remove_variable = omni_shop_slot_$SLOT$
+		}
 	}
 	else = {
 		omni_army_buy_slot_item_national = { SLOT = $SLOT$ }
@@ -79,9 +92,12 @@ omni_army_buy_fixed = {
 		set_variable = omni_fixed_purchase_succeeded
 	}
 	else = {
-		add_gold = { value = $PRICE$ multiply = -1 }
-		give_character_an_item = { item_ID = $item_ID$ }
-		set_variable = omni_fixed_purchase_succeeded
+		if = {
+			limit = { wealth >= $PRICE$ }
+			add_gold = { value = $PRICE$ multiply = -1 }
+			give_character_an_item = { item_ID = $item_ID$ }
+			set_variable = omni_fixed_purchase_succeeded
+		}
 	}
 	if = {
 		limit = { has_variable = omni_fixed_purchase_succeeded }

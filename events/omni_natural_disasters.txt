@@ -1,0 +1,1817 @@
+﻿namespace = omni_disaster
+
+# Ported from Invictus (disasters_inv.txt), reskinned for Omniluxia:
+# - Floods no longer require the Invictus-only "flood_plain" terrain (which Omniluxia's map doesn't have painted).
+#   They now trigger on farmland/plains, which every country already has.
+# - Snowstorm no longer hardcodes real-world Invictus regions (scandinavia_region, germania_region, etc).
+#   It now fires on any owned province currently experiencing winter (has_winter = yes) - i.e. wherever it's
+#   actually snowy season right now, wherever that happens to be on the Omniluxia map.
+# - Locusts no longer hardcode Arabia/Nubia/Egypt. They fire on desert-terrain provinces, and only during the
+#   in-game "summer" window (harvest_summer_var, set by the harvest season system in 000_harvest_seasons.txt).
+# All buildings/modifiers/effects referenced are vanilla or already exist elsewhere in Omniluxia.
+
+###Floods
+omni_disaster.1 = { #flood on farmland
+	type = country_event
+	title = omni_disaster.1.t
+	desc = omni_disaster.1.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:the_day_after.governor
+	goto_location = scope:the_day_after
+
+	trigger = {
+		any_owned_province = {
+			OR = {
+				terrain = farmland
+				terrain = plains
+			}
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = floods_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				OR = {
+					terrain = farmland
+					terrain = plains
+				}
+				total_population >= 4
+			}
+			save_scope_as = the_day_after
+			add_province_modifier = {
+				name = omni_flood_initial_damage
+				duration = 730
+			}
+			ordered_pops_in_province = {
+				order_by = pop_hapiness
+				max = {
+					value = total_population
+					multiply = 0.15
+				}
+				kill_pop = yes
+			}
+			custom_tooltip = omni_disaster_destroyed_building
+			hidden_effect = {
+				random_list = {
+					1 = {
+						trigger = { has_building = commerce_building }
+						remove_building_level = commerce_building
+					}
+					1 = {
+						trigger = { has_building = library_building }
+						remove_building_level = library_building
+					}
+					1 = {
+						trigger = { has_building = theathre_building }
+						remove_building_level = theathre_building
+					}
+					1 = {
+						trigger = { has_building = academy_building }
+						remove_building_level = academy_building
+					}
+					1 = {
+						trigger = { has_building = population_building } # granary
+						remove_building_level = population_building
+					}
+					1 = {
+						trigger = { has_building = forum_building }
+						remove_building_level = forum_building
+					}
+					1 = {
+						trigger = { has_building = workshop_building }
+						remove_building_level = workshop_building
+					}
+					1 = {
+						trigger = { has_building = port_building }
+						remove_building_level = port_building
+					}
+					8 = {}
+				}
+			}
+		}
+	}
+
+	option = { #secure the area
+		name = omni_disaster.1.a
+		current_ruler = {
+			add_popularity = 5
+		}
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 6
+			floor = yes
+			max = -50
+			min = -200
+		}
+		trigger_event = {
+			id = omni_disaster.3
+			days = { 10 20 }
+		}
+	}
+
+	option = { #greedy bastard
+		name = omni_disaster.1.b
+		hidden_effect = {
+			if = {
+				limit = {
+					scope:the_day_after = {
+						any_neighbor_province = {
+							exists = owner
+							owner = root
+							OR = {
+								terrain = farmland
+								terrain = plains
+							}
+						}
+					}
+				}
+				random = {
+					chance = 50
+					trigger_event = {
+						id = omni_disaster.2
+						days = { 1 7 }
+					}
+				}
+			}
+		}
+	}
+
+	after = {
+		set_variable = {
+			name = floods_cooldown
+			days = 9125 #25yrs
+		}
+	}
+}
+
+omni_disaster.2 = { #spread of the flood
+	type = country_event
+	title = omni_disaster.2.t
+	desc = omni_disaster.2.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:the_day_after.governor
+	goto_location = scope:the_day_after
+
+	immediate = {
+		if = {
+			limit = {
+				scope:the_day_after = {
+					any_neighbor_province = {
+						exists = owner
+						owner = root
+						OR = {
+							terrain = farmland
+							terrain = plains
+						}
+					}
+				}
+			}
+			scope:the_day_after = {
+				every_neighbor_province = {
+					add_province_modifier = {
+						name = omni_flood_reduced_damage
+						duration = 365
+					}
+					hidden_effect = {
+						random_list = {
+							1 = {
+								trigger = { has_building = commerce_building }
+								remove_building_level = commerce_building
+							}
+							1 = {
+								trigger = { has_building = library_building }
+								remove_building_level = library_building
+							}
+							1 = {
+								trigger = { has_building = theathre_building }
+								remove_building_level = theathre_building
+							}
+							1 = {
+								trigger = { has_building = academy_building }
+								remove_building_level = academy_building
+							}
+							1 = {
+								trigger = { has_building = population_building } # granary
+								remove_building_level = population_building
+							}
+							1 = {
+								trigger = { has_building = forum_building }
+								remove_building_level = forum_building
+							}
+							1 = {
+								trigger = { has_building = workshop_building }
+								remove_building_level = workshop_building
+							}
+							1 = {
+								trigger = { has_building = port_building }
+								remove_building_level = port_building
+							}
+							8 = {}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = omni_disaster.2.a
+		trigger_event = {
+			id = omni_disaster.3
+			days = { 1 7 }
+		}
+	}
+}
+
+omni_disaster.3 = { #flood receding
+	type = country_event
+	title = omni_disaster.3.t
+	desc = omni_disaster.3.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:the_day_after.governor
+	goto_location = scope:the_day_after
+
+	option = {
+		name = omni_disaster.3.a
+	}
+}
+
+###Avalanche
+omni_disaster.4 = { #Avalanche
+	type = country_event
+	title = omni_disaster.4.t
+	desc = omni_disaster.4.desc
+	picture = natural_disaster
+
+	left_portrait = current_ruler
+	right_portrait = scope:snowball.governor
+	goto_location = scope:snowball
+
+	trigger = {
+		any_owned_province = {
+			terrain = mountain
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = avalanche_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				terrain = mountain
+				total_population >= 4
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_variable = starting_point
+					}
+				}
+				set_variable = {
+					name = starting_point
+					days = 2
+				}
+			}
+			switch = {
+				trigger = has_variable
+				starting_point = {
+					save_scope_as = snowball
+				}
+				recurring_disaster = {}
+			}
+			add_province_modifier = {
+				name = omni_hit_by_avalanche
+				duration = 730
+			}
+			ordered_pops_in_province = {
+				order_by = pop_hapiness
+				max = {
+					value = total_population
+					multiply = 0.35
+				}
+				kill_pop = yes
+			}
+			if = {
+				limit = {
+					any_unit_in_province = {
+						exists = yes
+					}
+				}
+				every_unit_in_province = {
+					damage_unit_percent = 0.06
+					damage_unit_morale_percent = 0.12
+				}
+			}
+			custom_tooltip = omni_disaster_destroyed_building
+			hidden_effect = {
+				random_list = {
+					1 = {
+						trigger = { has_building = commerce_building }
+						remove_building_level = commerce_building
+					}
+					1 = {
+						trigger = { has_building = library_building }
+						remove_building_level = library_building
+					}
+					1 = {
+						trigger = { has_building = theathre_building }
+						remove_building_level = theathre_building
+					}
+					1 = {
+						trigger = { has_building = academy_building }
+						remove_building_level = academy_building
+					}
+					1 = {
+						trigger = { has_building = population_building } # granary
+						remove_building_level = population_building
+					}
+					1 = {
+						trigger = { has_building = forum_building }
+						remove_building_level = forum_building
+					}
+					1 = {
+						trigger = { has_building = workshop_building }
+						remove_building_level = workshop_building
+					}
+					1 = {
+						trigger = { has_building = port_building }
+						remove_building_level = port_building
+					}
+					8 = {}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = omni_disaster.4.a
+	}
+
+	after = {
+		if = {
+			limit = {
+				scope:snowball = {
+					any_neighbor_province = {
+						terrain = mountain
+						NOT = {
+							has_province_modifier = omni_hit_by_avalanche
+						}
+					}
+				}
+			}
+			scope:snowball = {
+				clear_saved_scope = snowball
+				random_neighbor_province = {
+					limit = {
+						terrain = mountain
+						NOT = {
+							has_province_modifier = omni_hit_by_avalanche
+						}
+					}
+					save_scope_as = snowball
+					set_variable = {
+						name = recurring_disaster
+						days = 7
+					}
+					random = {
+						chance = 50
+						owner = {
+							trigger_event = {
+								id = omni_disaster.4
+								days = { 3 5 }
+							}
+						}
+					}
+				}
+			}
+		}
+		else = {
+			set_variable = {
+				name = avalanche_cooldown
+				days = 9125 #25 yrs
+			}
+		}
+	}
+}
+
+###Landslide
+omni_disaster.5 = { #landslide
+	type = country_event
+	title = omni_disaster.5.t
+	desc = omni_disaster.5.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:mudstick.governor
+	goto_location = scope:mudstick
+
+	trigger = {
+		any_owned_province = {
+			terrain = hills
+			total_population >= 4
+		}
+		NOT = {
+			has_variable = hills_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				terrain = hills
+				total_population >= 4
+			}
+			save_scope_as = mudstick
+			add_province_modifier = {
+				name = omni_the_land_slides_into_your_dms
+				duration = 730
+			}
+			if = {
+				limit = {
+					any_unit_in_province = {
+						exists = yes
+					}
+				}
+				every_unit_in_province = {
+					damage_unit_percent = 0.06
+					damage_unit_morale_percent = 0.12
+				}
+			}
+			if = {
+				limit = {
+					has_building = fortress_ramparts_building
+				}
+				ordered_pops_in_province = {
+					order_by = pop_hapiness
+					max = {
+						value = total_population
+						multiply = 0.05
+					}
+					kill_pop = yes
+				}
+			}
+			else = {
+				ordered_pops_in_province = {
+					order_by = pop_hapiness
+					max = {
+						value = total_population
+						multiply = 0.15
+					}
+					kill_pop = yes
+				}
+			}
+			custom_tooltip = omni_disaster_destroyed_building
+			hidden_effect = {
+				random_list = {
+					1 = {
+						trigger = { has_building = commerce_building }
+						remove_building_level = commerce_building
+					}
+					1 = {
+						trigger = { has_building = library_building }
+						remove_building_level = library_building
+					}
+					1 = {
+						trigger = { has_building = theathre_building }
+						remove_building_level = theathre_building
+					}
+					1 = {
+						trigger = { has_building = academy_building }
+						remove_building_level = academy_building
+					}
+					1 = {
+						trigger = { has_building = population_building } # granary
+						remove_building_level = population_building
+					}
+					1 = {
+						trigger = { has_building = forum_building }
+						remove_building_level = forum_building
+					}
+					1 = {
+						trigger = { has_building = workshop_building }
+						remove_building_level = workshop_building
+					}
+					1 = {
+						trigger = { has_building = port_building }
+						remove_building_level = port_building
+					}
+					8 = {}
+				}
+			}
+		}
+	}
+
+	option = { #Prepare for further damage
+		name = omni_disaster.5.a
+		current_ruler = {
+			add_popularity = 5
+			add_trait = disciplined
+		}
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 12
+			floor = yes
+			max = -50
+			min = -300
+		}
+		set_variable = {
+			name = money_money_money
+			days = 14
+		}
+	}
+
+	option = { #Run the risk of further damage
+		name = omni_disaster.5.b
+		set_variable = {
+			name = must_be_funny
+			days = 14
+			value = 0
+		}
+		current_ruler = {
+			add_trait = uncaring
+		}
+	}
+
+	after = {
+		trigger_event = {
+			id = omni_disaster.6
+			days = { 3 10 }
+		}
+	}
+}
+
+omni_disaster.6 = {
+	type = country_event
+	title = omni_disaster.6.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_variable = money_money_money
+				}
+				desc = omni_disaster.6.desc_1
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = must_be_funny
+				}
+				desc = omni_disaster.6.desc_2
+			}
+		}
+	}
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:mudstick.governor
+	goto_location = scope:mudstick
+
+	immediate = {
+		if = {
+			limit = {
+				has_variable = must_be_funny
+			}
+			random = { #Landslide gets worse
+				chance = 50
+				change_variable = {
+					add = 1
+					name = must_be_funny
+				}
+			}
+			if = {
+				limit = {
+					var:must_be_funny = 1
+				}
+				scope:mudstick = {
+					reduce_province_rank_effect = yes
+					if = {
+						limit = {
+							is_holy_site = yes
+						}
+						remove_province_deity = yes
+					}
+					if = {
+						limit = {
+							has_building = fortress_ramparts_building
+						}
+						ordered_pops_in_province = {
+							order_by = pop_hapiness
+							max = {
+								value = total_population
+								multiply = 0.05
+							}
+							kill_pop = yes
+						}
+					}
+					else = {
+						ordered_pops_in_province = {
+							order_by = pop_hapiness
+							max = {
+								value = total_population
+								multiply = 0.15
+							}
+							kill_pop = yes
+						}
+					}
+					random_list = {
+						1 = {
+							trigger = { has_building = commerce_building }
+							remove_building_level = commerce_building
+						}
+						1 = {
+							trigger = { has_building = library_building }
+							remove_building_level = library_building
+						}
+						1 = {
+							trigger = { has_building = theathre_building }
+							remove_building_level = theathre_building
+						}
+						1 = {
+							trigger = { has_building = academy_building }
+							remove_building_level = academy_building
+						}
+						1 = {
+							trigger = { has_building = population_building } # granary
+							remove_building_level = population_building
+						}
+						1 = {
+							trigger = { has_building = forum_building }
+							remove_building_level = forum_building
+						}
+						1 = {
+							trigger = { has_building = workshop_building }
+							remove_building_level = workshop_building
+						}
+						1 = {
+							trigger = { has_building = port_building }
+							remove_building_level = port_building
+						}
+					}
+				}
+			}
+			else = {
+				scope:mudstick = {
+					random_list = {
+						1 = {
+							trigger = { has_building = commerce_building }
+							remove_building_level = commerce_building
+						}
+						1 = {
+							trigger = { has_building = library_building }
+							remove_building_level = library_building
+						}
+						1 = {
+							trigger = { has_building = theathre_building }
+							remove_building_level = theathre_building
+						}
+						1 = {
+							trigger = { has_building = academy_building }
+							remove_building_level = academy_building
+						}
+						1 = {
+							trigger = { has_building = population_building } # granary
+							remove_building_level = population_building
+						}
+						1 = {
+							trigger = { has_building = forum_building }
+							remove_building_level = forum_building
+						}
+						1 = {
+							trigger = { has_building = workshop_building }
+							remove_building_level = workshop_building
+						}
+						1 = {
+							trigger = { has_building = port_building }
+							remove_building_level = port_building
+						}
+						1 = {}
+					}
+				}
+				add_political_influence = -10
+			}
+		}
+	}
+
+	option = { #prepared
+		name = omni_disaster.6.a
+		trigger = {
+			has_variable = money_money_money
+		}
+		exclusive = yes
+	}
+
+	option = { #unprepared
+		name = omni_disaster.6.b
+		trigger = {
+			has_variable = must_be_funny
+		}
+		exclusive = yes
+	}
+
+	after = {
+		set_variable = {
+			name = hills_cooldown
+			days = 9125 #25 yrs
+		}
+	}
+}
+
+###Drought - May turn into a famine
+omni_disaster.7 = { #drought
+	type = country_event
+	title = omni_disaster.7.t
+	desc = omni_disaster.7.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:i_am_thirsty.governor
+	goto_location = scope:i_am_thirsty
+
+	trigger = {
+		any_country_state = {
+			OR = {
+				state_monthly_food_income < 0
+				has_state_food <= 0
+			}
+		}
+		any_owned_province = {
+			OR = {
+				terrain = desert
+				terrain = desert_hills
+			}
+		}
+		NOT = {
+			has_variable = drought_cooldown
+		}
+	}
+
+	immediate = {
+		random_country_state = {
+			limit = {
+				OR = {
+					state_monthly_food_income < 0
+					has_state_food <= 0
+				}
+			}
+			save_scope_as = i_am_thirsty
+			add_state_modifier = {
+				name = omni_grow_a_pear
+				duration = 1825 #5 yrs
+			}
+		}
+	}
+
+	option = { #try to save and feed your people
+		name = omni_disaster.7.a
+		scope:i_am_thirsty = {
+			area = {
+				every_neighbor_area = {
+					every_area_state = {
+						add_state_food = -100
+						add_state_modifier = {
+							name = omni_i_bet_you_wish_you_had_my_water
+							duration = 365
+						}
+					}
+				}
+			}
+			add_state_food = {
+				value = 100
+				multiply = 2 #count neighboring states
+			}
+		}
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 16
+			min = -300
+			max = -50
+		}
+		current_ruler = {
+			add_trait = benefactor
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					scope:i_am_thirsty.area = {
+						any_neighbor_area = {
+							any_area_state = {
+								has_state_food <= 0
+							}
+						}
+					}
+				}
+				scope:i_am_thirsty.area = {
+					every_neighbor_area = {
+						every_area_state = {
+							limit = {
+								has_state_food <= 0
+							}
+							add_state_modifier = {
+								name = omni_grow_a_pear
+								duration = 1825 # 5yrs
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = { #ignore the area
+		name = omni_disaster.7.b
+		current_ruler = {
+			add_trait = harsh
+		}
+		hidden_effect = {
+			trigger_event = {
+				id = omni_disaster.8 #drought spreads
+				days = { 30 100 }
+			}
+			scope:i_am_thirsty.area = {
+				every_neighbor_area = {
+					every_area_state = {
+						limit = {
+							owner = root
+						}
+						add_state_food = -150
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disaster.8 = {
+	type = country_event
+	title = omni_disaster.8.t
+	desc = omni_disaster.8.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:i_am_thirsty.governor
+	goto_location = scope:i_am_thirsty
+
+	immediate = {
+		set_variable = {
+			name = drought_spread
+			days = 500
+			value = 5
+		}
+		scope:i_am_thirsty.area = {
+			every_neighbor_area = {
+				every_area_state = {
+					add_state_modifier = {
+						name = omni_grow_a_pear
+						duration = 1825 # 5yrs
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = omni_disaster.8.a
+		random_list = {
+			25 = {
+				modifier = {
+					factor = var:drought_spread
+				}
+				custom_tooltip = omni_disaster_8_a_1
+				trigger_event = {
+					id = omni_disaster.8
+					days = { 30 100 }
+				}
+			}
+			75 = {
+				custom_tooltip = omni_disaster_8_a_2
+				set_variable = {
+					name = drought_cooldown
+					days = 9125 #25 yrs
+				}
+			}
+		}
+	}
+
+	option = {
+		name = omni_disaster.8.b
+		custom_tooltip = omni_disaster_8_b
+		trigger = {
+			current_ruler = {
+				OR = {
+					has_trait = merciful
+					has_trait = lunatic
+					has_trait = lapsed
+					has_trait = arbitrary
+					has_trait = easygoing
+				}
+			}
+			var:drought_spread >= 1
+		}
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 32
+			min = -500
+			max = -50
+		}
+		highlight = yes
+	}
+
+	after = {
+		if = {
+			limit = {
+				OR = {
+					var:drought_spread = 5
+					var:drought_spread = 4
+					var:drought_spread = 3
+					var:drought_spread = 2
+				}
+			}
+			change_variable = {
+				add = -1
+				name = drought_spread
+			}
+		}
+		scope:i_am_thirsty = {
+			remove_state_modifier = omni_grow_a_pear
+			add_state_modifier = {
+				name = omni_grow_a_pear
+				duration = 3650 #10 yrs
+			}
+			clear_saved_scope = i_am_thirsty
+			set_variable = {
+				name = thirsty_bois
+				days = 500
+			}
+			area = {
+				random_neighbor_area = {
+					random_area_state = {
+						limit = {
+							has_state_modifier = omni_grow_a_pear
+							NOT = {
+								has_variable = thirsty_bois
+							}
+						}
+						save_scope_as = i_am_thirsty
+					}
+				}
+			}
+		}
+	}
+}
+
+###Sandstorm
+omni_disaster.9 = { #Sandstorm Extreme
+	type = country_event
+	title = omni_disaster.9.t
+	desc = omni_disaster.9.desc
+	picture = natural_disaster
+
+	left_portrait = current_ruler
+	right_portrait = scope:sandman.governor
+	goto_location = scope:sandman
+
+	trigger = {
+		any_owned_province = {
+			OR = {
+				terrain = desert
+				terrain = desert_hills
+				terrain = oasis
+			}
+			any_neighbor_province = {
+				has_province_modifier = desert_storm
+				OR = {
+					terrain = desert
+					terrain = desert_hills
+					terrain = oasis
+				}
+			}
+		}
+	}
+
+	immediate = {
+		random_province = {
+			limit = {
+				OR = {
+					terrain = desert
+					terrain = desert_hills
+				}
+				has_province_modifier = desert_storm
+			}
+			random_neighbor_province = {
+				limit = {
+					owner = root
+				}
+				if = {
+					limit = {
+						NOT = {
+							has_variable = starting_point
+						}
+					}
+					set_variable = {
+						name = starting_point
+						days = 2
+					}
+				}
+				switch = {
+					trigger = has_variable
+					starting_point = {
+						save_scope_as = sandman
+					}
+					recurring_disaster = {}
+				}
+				ordered_pops_in_province = {
+					order_by = pop_hapiness
+					max = {
+						value = total_population
+						multiply = 0.1
+					}
+					kill_pop = yes
+				}
+				if = {
+					limit = {
+						any_unit_in_province = {
+							exists = yes
+						}
+					}
+					every_unit_in_province = {
+						damage_unit_percent = 0.12
+						damage_unit_morale_percent = 0.3
+					}
+				}
+				add_province_modifier = {
+					name = omni_sand_up_comedy
+					duration = 120
+				}
+				add_vfx = {
+					name = "desert_sandstorm"
+					duration = 120
+				}
+			}
+			save_scope_as = sandman_daddy
+			hidden_effect = {
+				every_neighbor_province = {
+					limit = {
+						OR = {
+							terrain = desert
+							terrain = desert_hills
+							terrain = oasis
+						}
+						NOT = { has_province_modifier = desert_storm }
+					}
+					add_vfx = {
+						name = "desert_sandstorm"
+						duration = 90
+					}
+					add_province_modifier = {
+						name = "omni_sand_up_comedy"
+						duration = 90
+					}
+					every_neighbor_province = {
+						limit = {
+							has_owner = yes
+							OR = {
+								terrain = desert
+								terrain = desert_hills
+								terrain = oasis
+							}
+							NOT = { has_province_modifier = desert_storm }
+						}
+						add_province_modifier = {
+							name = "omni_sand_up_comedy"
+							duration = 90
+						}
+						add_vfx = {
+							name = "desert_sandstorm"
+							duration = 90
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = omni_disaster.9.a
+	}
+
+	after = {
+		custom_tooltip = omni_disaster_spread_chance_tt
+		hidden_effect = {
+			random = {
+				chance = 50
+				scope:sandman = {
+					clear_saved_scope = sandman
+				}
+				random_owned_province = {
+					limit = {
+						has_province_modifier = omni_sand_up_comedy
+						any_neighbor_province = {
+							NOT = {
+								has_province_modifier = omni_sand_up_comedy
+							}
+						}
+					}
+					random_neighbor_province = {
+						limit = {
+							NOT = {
+								has_province_modifier = omni_sand_up_comedy
+							}
+						}
+						save_scope_as = sandman
+						set_variable = {
+							name = recurring_disaster
+							days = 7
+						}
+					}
+				}
+				scope:sandman.owner = {
+					trigger_event = {
+						id = omni_disaster.9
+						days = { 2 6 }
+					}
+				}
+			}
+		}
+	}
+}
+
+###Snowstorm
+omni_disaster.10 = { #Snowstorm Extreme - fires wherever it's currently winter, no hardcoded regions
+	type = country_event
+	title = omni_disaster.10.t
+	desc = omni_disaster.10.desc
+	picture = natural_disaster
+
+	left_portrait = current_ruler
+	right_portrait = scope:not_snowden.governor
+	goto_location = scope:not_snowden
+
+	trigger = {
+		any_owned_province = {
+			has_winter = yes
+			NOT = { has_province_modifier = omni_snow_storm }
+			any_neighbor_province = {
+				owner = prev.owner
+			}
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				has_winter = yes
+				any_neighbor_province = {
+					owner = prev.owner
+				}
+			}
+			save_scope_as = snow_daddy
+			random_neighbor_province = {
+				limit = {
+					owner = root
+					has_winter = yes
+					NOT = { has_province_modifier = omni_snow_storm }
+				}
+				if = {
+					limit = {
+						NOT = {
+							has_variable = starting_point
+						}
+					}
+					set_variable = {
+						name = starting_point
+						days = 2
+					}
+				}
+				switch = {
+					trigger = has_variable
+					starting_point = {
+						save_scope_as = not_snowden
+					}
+					recurring_disaster = {}
+				}
+				ordered_pops_in_province = {
+					order_by = pop_hapiness
+					max = {
+						value = total_population
+						multiply = 0.15
+					}
+					kill_pop = yes
+				}
+				if = {
+					limit = {
+						any_unit_in_province = {
+							exists = yes
+						}
+					}
+					every_unit_in_province = {
+						damage_unit_percent = 0.12
+						damage_unit_morale_percent = 0.3
+					}
+				}
+				add_vfx = {
+					name = "snowstorm"
+					duration = 90
+				}
+				add_province_modifier = {
+					name = "omni_snow_storm"
+					duration = 90
+				}
+				every_neighbor_province = {
+					limit = {
+						has_winter = yes
+						NOT = { has_province_modifier = omni_snow_storm }
+					}
+					add_vfx = {
+						name = "snowstorm"
+						duration = 90
+					}
+					add_province_modifier = {
+						name = "omni_snow_storm"
+						duration = 90
+					}
+					every_neighbor_province = {
+						limit = {
+							has_winter = yes
+							NOT = { has_province_modifier = omni_snow_storm }
+						}
+						add_vfx = {
+							name = "snowstorm"
+							duration = 90
+						}
+						add_province_modifier = {
+							name = "omni_snow_storm"
+							duration = 90
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = omni_disaster.10.a
+	}
+
+	after = {
+		custom_tooltip = omni_disaster_spread_chance_tt
+		hidden_effect = {
+			random = {
+				chance = 50
+				scope:not_snowden = {
+					clear_saved_scope = not_snowden
+				}
+				random_owned_province = {
+					limit = {
+						has_province_modifier = omni_snow_storm
+						any_neighbor_province = {
+							NOT = {
+								has_province_modifier = omni_snow_storm
+							}
+						}
+					}
+					random_neighbor_province = {
+						limit = {
+							NOT = {
+								has_province_modifier = omni_snow_storm
+							}
+						}
+						save_scope_as = not_snowden
+						set_variable = {
+							name = recurring_disaster
+							days = 7
+						}
+					}
+				}
+				scope:not_snowden.owner = {
+					trigger_event = {
+						id = omni_disaster.10
+						days = { 2 6 }
+					}
+				}
+			}
+		}
+	}
+}
+
+###Locusts - only during the in-game "summer" window, only in desert terrain
+omni_disaster.11 = { #first sightings of bigger swarms of locusts. Can try to squash
+	type = country_event
+	title = omni_disaster.11.t
+	desc = omni_disaster.11.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:we_are_hungry.governor
+	goto_location = scope:we_are_hungry
+
+	trigger = {
+		has_global_variable = harvest_summer_var
+		any_owned_province = {
+			omni_locust_target_trigger = yes #desert terrain, ideally with plant-based trade goods nearby
+		}
+		NOT = {
+			has_variable = locusts_ate_everything_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				omni_locust_target_trigger = yes
+			}
+			add_province_modifier = {
+				name = omni_light_locust_plague
+				duration = 200
+			}
+			save_scope_as = we_are_hungry
+		}
+	}
+
+	option = { #act against
+		name = omni_disaster.11.a
+		custom_tooltip = omni_anti_locust_power_tt
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 24
+			min = -500
+			max = -50
+		}
+		set_variable = {
+			name = act_against_locusts
+			days = 1
+		}
+	}
+
+	option = { #don't do anything
+		name = omni_disaster.11.b
+	}
+
+	after = {
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_locusts
+					}
+					set_variable = {
+						name = locusts_ate_everything_cooldown
+						days = 9125 #25 yrs
+					}
+					trigger_event = {
+						id = omni_disaster.14
+						days = { 30 60 }
+					}
+				}
+				5 = {
+					trigger_event = {
+						id = omni_disaster.12
+						days = { 14 35 } #2-5 weeks
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disaster.12 = { #locusts getting worse
+	type = country_event
+	title = omni_disaster.12.t
+	desc = omni_disaster.12.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:we_are_hungry.governor
+	goto_location = scope:we_are_hungry
+
+	immediate = {
+		scope:we_are_hungry = {
+			every_neighbor_province = {
+				add_province_modifier = {
+					name = omni_light_locust_plague
+					duration = 180
+				}
+			}
+		}
+	}
+
+	option = { #act against
+		name = omni_disaster.12.a
+		custom_tooltip = omni_anti_locust_power_tt
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 36
+			min = -600
+			max = -50
+		}
+		set_variable = {
+			name = act_against_locusts
+			days = 1
+		}
+	}
+
+	option = { #don't do anything
+		name = omni_disaster.12.b
+	}
+
+	after = {
+		hidden_effect = {
+			random_list = {
+				10 = {
+					trigger = {
+						has_variable = act_against_locusts
+					}
+					set_variable = {
+						name = locusts_ate_everything_cooldown
+						days = 9125 #25 yrs
+					}
+					trigger_event = {
+						id = omni_disaster.14
+						days = { 30 60 }
+					}
+				}
+				10 = {
+					trigger_event = {
+						id = omni_disaster.13
+						days = { 14 21 } #2-3 Weeks
+					}
+				}
+			}
+		}
+	}
+}
+
+omni_disaster.13 = { #locusts spreading
+	type = country_event
+	title = omni_disaster.13.t
+	desc = omni_disaster.13.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:we_are_hungry.governor
+	goto_location = scope:we_are_hungry
+
+	immediate = {
+		custom_tooltip = omni_locusts_spreading_tt
+		hidden_effect = {
+			every_owned_province = {
+				limit = {
+					has_province_modifier = omni_light_locust_plague
+				}
+				remove_province_modifier = omni_light_locust_plague
+				if = {
+					limit = {
+						omni_locust_target_trigger = yes
+						NOT = {
+							has_province_modifier = omni_locust_plague
+						}
+					}
+					add_province_modifier = {
+						name = omni_locust_plague
+						duration = 365
+					}
+					every_neighbor_province = {
+						limit = {
+							NOT = {
+								has_province_modifier = omni_locust_plague_non_plant
+							}
+						}
+						add_province_modifier = {
+							name = omni_light_locust_plague
+							duration = 180
+						}
+					}
+				}
+				else = {
+					add_province_modifier = {
+						name = omni_locust_plague_non_plant
+						duration = 365
+					}
+					every_neighbor_province = {
+						add_province_modifier = {
+							name = omni_light_locust_plague
+							duration = 180
+						}
+					}
+				}
+			}
+		}
+		show_as_tooltip = {
+			scope:we_are_hungry = {
+				add_province_modifier = {
+					name = omni_locust_plague
+					duration = 365
+				}
+			}
+		}
+		custom_tooltip = omni_locusts_spreading_2_tt
+		show_as_tooltip = {
+			scope:we_are_hungry = {
+				add_province_modifier = {
+					name = omni_locust_plague_non_plant
+					duration = 365
+				}
+			}
+		}
+		custom_tooltip = omni_locusts_spreading_3_tt
+		show_as_tooltip = {
+			scope:we_are_hungry = {
+				add_province_modifier = {
+					name = omni_light_locust_plague
+					duration = 180
+				}
+			}
+		}
+	}
+
+	option = { #act against
+		name = omni_disaster.13.a
+		custom_tooltip = omni_anti_locust_power_tt
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 15
+			min = -300
+			max = -50
+		}
+	}
+
+	option = { #don't do anything
+		name = omni_disaster.13.b
+	}
+
+	after = {
+		hidden_effect = {
+			set_variable = {
+				name = locusts_ate_everything_cooldown
+				days = 9125 #25 yrs
+			}
+			trigger_event = {
+				id = omni_disaster.14
+				days = { 30 60 }
+			}
+		}
+	}
+}
+
+omni_disaster.14 = { #locusts over
+	type = country_event
+	title = omni_disaster.14.t
+	desc = omni_disaster.14.desc
+	picture = farming
+
+	left_portrait = current_ruler
+	right_portrait = scope:we_are_hungry.governor
+	goto_location = scope:we_are_hungry
+
+	option = {
+		name = omni_disaster.14.a
+		random_list = {
+			3 = {
+				current_ruler = {
+					add_trait = wise
+				}
+			}
+			12 = {
+			}
+		}
+	}
+}
+
+###Spore Bloom - the giant mushrooms of the mushroom_forest release clouds of super-pollen and choking gas.
+# omni_spore_plague (acute hit) and omni_spore_miasma (lingering spread to neighbors) use the exact same
+# stat blocks as omni_snow_storm and omni_i_bet_you_wish_you_had_my_water respectively - just under their
+# own keys, so the modifier tooltip flavor text actually matches a mushroom forest instead of a blizzard.
+omni_disaster.15 = { #the mushrooms release their spores
+	type = country_event
+	title = omni_disaster.15.t
+	desc = omni_disaster.15.desc
+	picture = natural_disaster
+
+	left_portrait = current_ruler
+	right_portrait = scope:spore_zone.governor
+	goto_location = scope:spore_zone
+
+	trigger = {
+		any_owned_province = {
+			terrain = mushroom_forest
+		}
+		NOT = {
+			has_variable = spore_bloom_cooldown
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				terrain = mushroom_forest
+				total_population >= 4
+			}
+			save_scope_as = spore_zone
+			add_province_modifier = {
+				name = omni_spore_plague
+				duration = 730
+			}
+			ordered_pops_in_province = {
+				order_by = pop_hapiness
+				max = {
+					value = total_population
+					multiply = 0.15
+				}
+				kill_pop = yes
+			}
+			custom_tooltip = omni_disaster_destroyed_building
+			hidden_effect = {
+				random_list = {
+					1 = {
+						trigger = { has_building = commerce_building }
+						remove_building_level = commerce_building
+					}
+					1 = {
+						trigger = { has_building = library_building }
+						remove_building_level = library_building
+					}
+					1 = {
+						trigger = { has_building = theathre_building }
+						remove_building_level = theathre_building
+					}
+					1 = {
+						trigger = { has_building = academy_building }
+						remove_building_level = academy_building
+					}
+					1 = {
+						trigger = { has_building = population_building } # granary
+						remove_building_level = population_building
+					}
+					1 = {
+						trigger = { has_building = forum_building }
+						remove_building_level = forum_building
+					}
+					1 = {
+						trigger = { has_building = workshop_building }
+						remove_building_level = workshop_building
+					}
+					1 = {
+						trigger = { has_building = port_building }
+						remove_building_level = port_building
+					}
+					8 = {}
+				}
+			}
+		}
+	}
+
+	option = { #seal off the forest
+		name = omni_disaster.15.a
+		current_ruler = {
+			add_popularity = 5
+		}
+		add_treasury = {
+			subtract = has_monthly_income
+			multiply = 6
+			floor = yes
+			max = -50
+			min = -200
+		}
+		trigger_event = {
+			id = omni_disaster.17
+			days = { 10 20 }
+		}
+	}
+
+	option = { #let the wind carry it where it may
+		name = omni_disaster.15.b
+		hidden_effect = {
+			if = {
+				limit = {
+					scope:spore_zone = {
+						any_neighbor_province = {
+							exists = owner
+							owner = root
+							terrain = mushroom_forest
+						}
+					}
+				}
+				random = {
+					chance = 50
+					trigger_event = {
+						id = omni_disaster.16
+						days = { 1 7 }
+					}
+				}
+			}
+		}
+	}
+
+	after = {
+		set_variable = {
+			name = spore_bloom_cooldown
+			days = 9125 #25yrs
+		}
+	}
+}
+
+omni_disaster.16 = { #the spores spread
+	type = country_event
+	title = omni_disaster.16.t
+	desc = omni_disaster.16.desc
+	picture = natural_disaster
+
+	left_portrait = current_ruler
+	right_portrait = scope:spore_zone.governor
+	goto_location = scope:spore_zone
+
+	immediate = {
+		if = {
+			limit = {
+				scope:spore_zone = {
+					any_neighbor_province = {
+						exists = owner
+						owner = root
+						terrain = mushroom_forest
+					}
+				}
+			}
+			scope:spore_zone = {
+				every_neighbor_province = {
+					limit = {
+						terrain = mushroom_forest
+					}
+					add_province_modifier = {
+						name = omni_spore_miasma
+						duration = 365
+					}
+					hidden_effect = {
+						random_list = {
+							1 = {
+								trigger = { has_building = commerce_building }
+								remove_building_level = commerce_building
+							}
+							1 = {
+								trigger = { has_building = library_building }
+								remove_building_level = library_building
+							}
+							1 = {
+								trigger = { has_building = theathre_building }
+								remove_building_level = theathre_building
+							}
+							1 = {
+								trigger = { has_building = academy_building }
+								remove_building_level = academy_building
+							}
+							1 = {
+								trigger = { has_building = population_building } # granary
+								remove_building_level = population_building
+							}
+							1 = {
+								trigger = { has_building = forum_building }
+								remove_building_level = forum_building
+							}
+							1 = {
+								trigger = { has_building = workshop_building }
+								remove_building_level = workshop_building
+							}
+							1 = {
+								trigger = { has_building = port_building }
+								remove_building_level = port_building
+							}
+							8 = {}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = omni_disaster.16.a
+		trigger_event = {
+			id = omni_disaster.17
+			days = { 1 7 }
+		}
+	}
+}
+
+omni_disaster.17 = { #the spores disperse
+	type = country_event
+	title = omni_disaster.17.t
+	desc = omni_disaster.17.desc
+	picture = natural_disaster
+
+	left_portrait = current_ruler
+	right_portrait = scope:spore_zone.governor
+	goto_location = scope:spore_zone
+
+	option = {
+		name = omni_disaster.17.a
+	}
+}

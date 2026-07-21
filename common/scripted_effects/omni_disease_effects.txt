@@ -1,0 +1,83 @@
+﻿# Supports events/omni_disease_outbreaks.txt.
+# One choke-point each for infection, recovery/death, and building damage so all 10 diseases share the
+# same balancing knobs instead of duplicating logic (and risk) in every event chain.
+
+# Note: unlike the disaster system, disease events deliberately skip the building-damage roll - a plague
+# doesn't collapse a granary the way a flood or avalanche does. Their footprint is pop/character health,
+# not infrastructure, so there's no omni_disease_building_damage_effect here.
+
+# Call with a PROVINCE in scope. Infects that province's governor if there is a living, uninfected one.
+# Cheap by construction: only ever touches one already-scoped character, never scans the realm.
+omni_infect_province_governor_effect = {
+	if = {
+		limit = {
+			omni_province_has_infectable_governor_trigger = yes
+		}
+		governor = {
+			add_character_modifier = {
+				name = omni_disease_infected
+				duration = -1 #cleared explicitly by the resolve effects below, not by a timer
+			}
+		}
+	}
+}
+
+# Call with a PROVINCE in scope at a chain's resolution event. ~2% death chance for the infected governor -
+# for mild diseases (Grey Cough, Sailor's Rot, River Flux) that never escalate past onset/one spread.
+omni_disease_resolve_mild_effect = {
+	if = {
+		limit = {
+			governor = { has_character_modifier = omni_disease_infected }
+		}
+		governor = {
+			random_list = {
+				49 = {
+					remove_character_modifier = omni_disease_infected
+				}
+				1 = {
+					death = { death_reason = death_fever }
+				}
+			}
+		}
+	}
+}
+
+# ~10% death chance for the infected governor - for moderate-chain diseases that reach one spread stage
+# (Marsh Ague, Deep Rot, Glacier Chill, Wasting Fever).
+omni_disease_resolve_moderate_effect = {
+	if = {
+		limit = {
+			governor = { has_character_modifier = omni_disease_infected }
+		}
+		governor = {
+			random_list = {
+				9 = {
+					remove_character_modifier = omni_disease_infected
+				}
+				1 = {
+					death = { death_reason = death_fever }
+				}
+			}
+		}
+	}
+}
+
+# ~25% death chance for the infected governor - only reachable by the long-chain, epidemic-capable
+# diseases (Jungle Rot Fever, Grass Pox, Mana Sickness) once they've hit their epidemic stage.
+omni_disease_resolve_severe_effect = {
+	if = {
+		limit = {
+			governor = { has_character_modifier = omni_disease_infected }
+		}
+		governor = {
+			random_list = {
+				3 = {
+					remove_character_modifier = omni_disease_infected
+				}
+				1 = {
+					death = { death_reason = death_plague }
+				}
+			}
+		}
+	}
+}
