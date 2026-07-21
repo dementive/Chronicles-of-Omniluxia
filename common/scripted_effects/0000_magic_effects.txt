@@ -73,10 +73,6 @@ set_magic_vars = {
 			}
 		}
 	}
-	# PERF: the old every_province init here wrote a magic=0 variable onto ~5,900
-	# provinces at game start (save bloat, dead data - nothing reads a province's
-	# magic var except the monthly tick, which now self-initializes provinces the
-	# moment they are registered via omni_add_province_magic_effect).
 	every_living_character = {
 		if = {
 			limit = {
@@ -184,14 +180,6 @@ change_country_scope_magic_vars = {
 			value = 100
 		}
 	}
-	# --- Province mana ---
-	# PERF: local_cohort_recruit_speed (the province mana regen stat) has exactly
-	# one source in the whole mod: the province_magic_* keyed modifiers, which must
-	# be granted through omni_add_province_magic_effect below. That effect registers
-	# the province in the omni_magic_provinces global list, so the monthly tick only
-	# iterates registered provinces instead of evaluating a modifier on every owned
-	# province of every country (~all land provinces per month). An empty list -
-	# the current state, nothing grants these modifiers yet - costs nothing.
 	if = {
 		# Guard also silences the "Variable 'omni_magic_provinces' is used but is
 		# never set" lint warning while nothing grants province magic yet.
@@ -226,20 +214,6 @@ change_country_scope_magic_vars = {
 			}
 		}
 	}
-	# --- Character mana ---
-	# PERF: nearly every character has nonzero regen through racial traits, so a
-	# skip-filter buys nothing - instead the per-character body is minimal (each
-	# engine modifier read once, stored values reused) AND, per approved design
-	# tradeoff (July 2026), characters tick QUARTERLY at triple regen: same
-	# long-run mana income at one third of the work. magic_monthly still stores
-	# the MONTHLY rate, so the character tooltips read unchanged; mana simply
-	# arrives in three-month chunks.
-	# PERF (Round 5): the counter must be DE-SYNCHRONIZED across countries. With
-	# everyone initialized to 0 in the same month, all ~500 countries hit the
-	# quarterly character pass in the SAME month - measured as a multi-second
-	# one-day stall. Each country now rolls a random 0-2 starting phase (once,
-	# also migrating existing saves whose counters are aligned), so each month
-	# only ~a third of the world runs the character loop.
 	if = {
 		limit = { NOT = { has_variable = omni_mana_desync_done } }
 		set_variable = omni_mana_desync_done

@@ -9,25 +9,6 @@ yearly_country_pulse = {
 	}
 }
 
-# Seeds the yearly ~90-day "summer" window (harvest_summer_var) that gates the locust disaster
-# (omni_disaster.11). This is the ONLY consumer of the season globals in the whole mod - snowstorm
-# and Hollowfrost use the native, free has_winter trigger instead.
-#
-# PERF (fixed after the disaster/disease commit slowed the ticker):
-# 1. This effect used to fire the full Invictus harvest chain (harvest.1/harvest.2 in
-#    events/000_harvest_seasons.txt). Those events each run an every_ownable_province pass over the
-#    ENTIRE map (~thousands of provinces) and blanket every food-producing settlement in timed
-#    91-95 day province modifiers - a seasonal-food feature that was never active in Omniluxia
-#    before that commit accidentally wired it up. Worse, their province limits call
-#    city_is_in_india_trigger / is_in_himalayan_mountains_trigger, whose regions don't exist on
-#    Omniluxia's map, so every province evaluated also wrote error.log lines (I/O in the hot path).
-#    We now set the one flag the locusts need and skip the harvest chain entirely.
-#    (If the team ever wants seasonal food as a real feature, port the harvest events properly:
-#    Omniluxia region gates, and ideally an off-by-default game rule like Invictus's
-#    seasonal_food_game_rule.)
-# 2. Global once-per-year guard: previously EVERY living tag queued 2 harvest events per year
-#    (hundreds of permanently pending events, all due the same day). Now the first country whose
-#    yearly pulse fires schedules the single season event; everyone else pays one global-var check.
 omni_disaster_seasons_effect = {
 	effect = {
 		if = {
