@@ -1,0 +1,87 @@
+﻿# OMNILUXIA OVERRIDE of the vanilla file (PERF Round 7): identical to vanilla except for
+# `exists = scope:...` guards at the top of potential_trigger blocks that dereference
+# hidden:scope:actor/target. The engine's AI interaction-enumeration pass evaluates these
+# triggers without those scopes set, producing hundreds of error.log writes inside the monthly
+# character-AI wall. exists fails cleanly and short-circuits instead of erroring.
+grant_laurels = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	message = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_punishment"
+	
+	potential_trigger = {
+		exists = scope:actor # PERF guard: AI enumeration evaluates this without actor set -> "Failed context switch" error.log spam
+		exists = scope:target # PERF guard (see above)
+		hidden:scope:actor = {
+			is_republic = yes
+		}
+		hidden:scope:target = {
+			employer = scope:actor
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			is_alive = yes
+			is_mercenary = no
+			is_ruler = no
+		}
+	}
+	
+	
+	allowed_trigger = {
+		scope:target = {
+			is_general = yes
+			loyalty <= 40
+			custom_tooltip = {
+				text = laurels_already_granted_tt
+				NOT = {
+					has_variable = already_granted_laurels
+				}
+			}
+		}
+		scope:actor = {
+			can_pay_price = price_grant_laurels
+			stability >= 10
+		}
+	}
+	
+	effect = {
+		scope:actor = { 
+			pay_price = price_grant_laurels
+			if = {
+				limit = { stability >= 10 }
+				add_stability = -20
+			}
+			current_ruler = { add_popularity = subtract_popularity_huge }
+		}
+		scope:target = {
+			set_variable = {
+				name = already_granted_laurels
+			}
+			custom_tooltip = laurels_effect_tt
+			hidden_effect = { # Update TT if changing this!
+				add_loyalty = laurels_acknowledged_l
+				add_prominence = 20
+				add_popularity = 20
+			}
+			if = {
+				limit = { has_nickname = no }
+				add_triumph_nickname_effect = yes
+			}
+		}
+	}
+	
+	ai_will_do = {
+		modifier = {
+			add = 5
+			trigger = {
+				loyalty < 5
+				employer = {
+					stability >= 40
+				}
+			}
+		}
+	}
+
+}	
+

@@ -1,0 +1,158 @@
+﻿# OMNILUXIA OVERRIDE of the vanilla file (PERF Round 7): identical to vanilla except for
+# `exists = scope:...` guards at the top of potential_trigger blocks that dereference
+# hidden:scope:actor/target. The engine's AI interaction-enumeration pass evaluates these
+# triggers without those scopes set, producing hundreds of error.log writes inside the monthly
+# character-AI wall. exists fails cleanly and short-circuits instead of erroring.
+tutor_heir = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	message = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_scholar"
+	
+	potential_trigger = {
+		exists = scope:actor # PERF guard: AI enumeration evaluates this without actor set -> "Failed context switch" error.log spam
+		exists = scope:target # PERF guard (see above)
+		hidden:scope:actor = {
+			is_monarchy = yes
+		}
+		hidden:scope:target = {
+			employer = scope:actor
+			is_alive = yes
+			has_office = office_royal_tutor
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+		}
+	}
+	
+	
+	allowed_trigger = {
+		scope:target = {
+			loyalty >= 40
+		}
+		custom_tooltip = {
+			text = royal_child_of_appropriate_age_tt
+			scope:actor = {
+				any_character = {
+					OR = {
+						is_ruler = yes
+						is_successor = yes
+						is_primary_heir = yes
+						is_close_relative = scope:actor.current_ruler
+					}
+					is_adult = no
+					age >= 12
+					custom_tooltip = {
+						text = tutored_already_tt
+						NOT = { has_variable = tutored_already }
+					}
+				}
+			}
+		}
+	}
+	
+	character_actor_trigger = {
+		OR = {
+			is_ruler = yes
+			is_successor = yes
+			is_primary_heir = yes
+			is_close_relative = current_ruler
+		}
+		is_adult = no
+		age >= 12
+		NOT = { has_variable = tutored_already }
+	}
+	
+	effect = {
+		if = {
+			limit = { exists = scope:recipient }
+			scope:recipient = {
+				set_variable = {
+					name = tutored_already
+					days = 180
+				}
+			}
+		}
+		else = { custom_tooltip = tutor_tt }
+		scope:actor = { 
+			trigger_event = {
+				id = character_events.38
+			}
+		}
+	}
+}	
+
+tutor_child = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	message = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_scholar"
+	
+	potential_trigger = {
+		exists = scope:actor # PERF guard: AI enumeration evaluates this without actor set -> "Failed context switch" error.log spam
+		exists = scope:target # PERF guard (see above)
+		hidden:scope:actor = {
+			is_monarchy = yes
+		}
+		hidden:scope:target = {
+			employer = scope:actor
+			is_alive = yes
+			is_adult = no
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+		}
+	}
+	
+	
+	allowed_trigger = {
+		scope:target = {
+			is_adult = no
+			OR = {
+				is_close_relative = employer.current_ruler
+				is_primary_heir = yes
+				is_successor = yes
+				is_ruler = yes
+			}
+			custom_tooltip = {
+				text = child_of_appropriate_age_tt
+				age >= 12
+			}
+			custom_tooltip = {
+				text = tutored_already_tt
+				NOT = { has_variable = tutored_already }
+			}
+		}
+		scope:actor = {
+			custom_tooltip = {
+				text = tutor_exists_tt
+				any_character = {
+					has_office = office_royal_tutor
+				}
+			}
+		}
+	}
+	
+	effect = {
+		scope:target = {
+			save_scope_as = recipient
+			set_variable = {
+				name = tutored_already
+				days = 180
+			}
+		}
+		scope:actor = {
+			random_character = {
+				limit = { has_office = office_royal_tutor }
+				save_scope_as = target
+			}
+			trigger_event = {
+				id = character_events.38
+			}
+		}
+		custom_tooltip = tutor_tt
+	}
+}	
+

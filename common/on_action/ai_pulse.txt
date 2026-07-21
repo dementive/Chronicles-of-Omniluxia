@@ -25,35 +25,23 @@ yearly_country_pulse = {
 	}
 }
 
+# PERF (Round 6): this pulse fired the entire Advanced-AI suite below for EVERY country on the
+# same undelayed yearly tick (and on_action `delay` would not have helped - it rolls once per
+# firing, not per country; see PERFORMANCE_AUDIT.md Round 5). The suite includes some of the most
+# expensive script in the mod (road-building pathfinding, fort/state-capital optimization,
+# colonization scans). The work now runs via omni_perf.3, scheduled with a per-country random
+# offset so each country does its yearly AI planning on its own day. Same yearly cadence.
 omniluxia_ai_yearly_pulse = {
 	effect = {
-		omni_court_arcana_yearly = yes
-		create_list_of_ownable_territories = yes
-		ai_recruit_mercenaries = yes
-		optimize_state_capitals_and_forts = { periodic = 1 }
-		cache_adjusted_research_efficiency = yes
-		ai_determine_economic_policies = yes
-		ai_revoke_free_hands = yes
-		ai_fix_character_loyalty = yes
-		ai_choose_and_enact_law = yes
-		ai_perform_divine_sacrifice = yes
-		ai_manually_move_pops_to_cities = yes
-		ai_try_upgrading_city_to_metropolis = yes
-		ai_choose_territory_and_found_city = yes
-		ai_perform_custom_road_building = yes
-		ai_press_hold_games_button = yes
-		ai_choose_and_make_investment = yes
-		ai_import_food_into_states_in_need = yes  # Every year         Global, food is lowest during winter
-		ai_enshrine_social_equity = yes           # Every year         Only if Mixed Gender Rules are enabled
-		ai_destroy_leftover_navies = yes          # Every year
-		omni_ai_study_magic_effect = yes          # Yearly chance      Uses Magic Academies to train useful mages
-		omni_ai_seduce_character_effect = yes     # Yearly chance      Allows lustful AI characters and spouses to seduce
+		trigger_event = { id = omni_perf.3 days = { 0 300 } }
 	}
 }
 
+# Colonization kept on its own schedule (the old midyear offset existed so colonization funds
+# don't compete with the winter food-import window) - same per-country spreading treatment.
 omniluxia_ai_midyear_pulse = {
 	effect = {
-		ai_colonize_unowned_territories = yes     # Every year         Global, spends a bit of gold
+		trigger_event = { id = omni_perf.4 days = { 0 60 } }
 	}
 }
 

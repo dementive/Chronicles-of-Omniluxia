@@ -1,0 +1,110 @@
+namespace = omni_perf
+
+# ---------------------------------------------------------------------------
+# PER-COUNTRY WORK-SPREADING EVENTS (see PERFORMANCE_AUDIT.md Round 5)
+#
+# Measured in-game (July 2026): the ticker froze 15-20+ real seconds on ONE
+# day mid-month, then ran fast - all countries' "staggered" script work was
+# landing on the same tick. Root cause: `delay = { days = { X Y } }` inside an
+# on_action's on_actions list is rolled ONCE per firing, not once per country,
+# so every delayed sub-pulse fires for every country on the same (random) day.
+#
+# The reliable way to spread work per country is trigger_event with a day
+# range - the range is rolled independently for each country that executes
+# the effect. These hidden events carry the heavy per-country work; the
+# on_action/effect that used to run the work directly now just schedules the
+# matching event with a random offset.
+#
+# RULE: any new recurring effect that is heavy AND runs for many countries at
+# the same cadence must be routed through an event like these, NOT through a
+# delayed on_action, and NOT called directly from a shared pulse tick.
+# ---------------------------------------------------------------------------
+
+# Monthly magic tick (country regen + quarterly character pass).
+# Scheduled from omni_monthly_magic_pulse (00_monthly_country.txt) with
+# days = { 0 24 }: each country runs its mana work on its own day of the month.
+omni_perf.1 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		magic_monthly_effects = yes
+	}
+
+	option = {}
+}
+
+# Yearly AI economy refresh: item-shop stock build, AI army gear purchase,
+# and AI library scroll shopping. Scheduled from omni_yearly_country_effect
+# (choo_effects.txt) with days = { 0 300 }: each AI country restocks and shops
+# on its own day of the year instead of every AI country on the same tick.
+omni_perf.2 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+	}
+
+	immediate = {
+		omni_build_ai_country_item_shop_stock = yes
+		omni_army_ai_purchase = yes
+		# Scroll shopping only where it can do anything: cheapest checks first.
+		if = {
+			limit = {
+				treasury >= 60 # price of the cheapest scroll
+				any_owned_province = { has_building = library_building }
+			}
+			omni_ai_buy_library_scrolls_effect = yes
+		}
+	}
+
+	option = {}
+}
+
+# Yearly Advanced-AI planning suite (moved from omniluxia_ai_yearly_pulse in ai_pulse.txt).
+# Scheduled per-country with days = { 0 300 } so the expensive planners (roads, forts, cities)
+# don't run for all ~500 living tags on one tick.
+omni_perf.3 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		omni_court_arcana_yearly = yes
+		create_list_of_ownable_territories = yes
+		ai_recruit_mercenaries = yes
+		optimize_state_capitals_and_forts = { periodic = 1 }
+		cache_adjusted_research_efficiency = yes
+		ai_determine_economic_policies = yes
+		ai_revoke_free_hands = yes
+		ai_fix_character_loyalty = yes
+		ai_choose_and_enact_law = yes
+		ai_perform_divine_sacrifice = yes
+		ai_manually_move_pops_to_cities = yes
+		ai_try_upgrading_city_to_metropolis = yes
+		ai_choose_territory_and_found_city = yes
+		ai_perform_custom_road_building = yes
+		ai_press_hold_games_button = yes
+		ai_choose_and_make_investment = yes
+		ai_import_food_into_states_in_need = yes  # Global, food is lowest during winter
+		ai_enshrine_social_equity = yes           # Only if Mixed Gender Rules are enabled
+		ai_destroy_leftover_navies = yes
+		omni_ai_study_magic_effect = yes          # Uses Magic Academies to train useful mages
+		omni_ai_seduce_character_effect = yes     # Lustful AI characters and spouses seduce
+	}
+
+	option = {}
+}
+
+# Midyear colonization (moved from omniluxia_ai_midyear_pulse) - scheduled 181 days after the
+# yearly pulse plus a 0-60 day per-country spread, preserving the winter-avoidance intent.
+omni_perf.4 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		ai_colonize_unowned_territories = yes
+	}
+
+	option = {}
+}

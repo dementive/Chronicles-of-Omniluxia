@@ -38,7 +38,13 @@
  ENVOY_TEXT:0 "Current Envoy"
  DATE:0 "Date: $DATE$"
  UNTIL_DATE:0 "until $DATE$"
- CURRENT_DATE:0 "[Player.Custom('omni_current_day_cloc')] [Player.Custom('omni_current_month_short_cloc')], [Player.Custom('omni_current_year_cloc')] LC"
+ # PERF Round 7: CURRENT_DATE is rendered by the engine in contexts with no valid player object
+ # (e.g. every AI-to-AI message-feed entry), where Player.Custom(...) errored 3x per render into
+ # error.log - thousands of writes inside the monthly character-AI wall. GetDateString needs no
+ # player scope, and the Luxterran month names already come from the overridden Jan/Feb/... keys,
+ # so the display is unchanged. The omni_current_*_cloc functions (31k-line file) now only run in
+ # CURRENT_DATE_TOOLTIP, which renders on hover only, always with a valid player.
+ CURRENT_DATE:0 "[GetDateString] LC"
  CURRENT_DATE_TOOLTIP: "#T Current Date#!\n[Player.Custom('omni_current_day_cloc')] [Player.Custom('omni_current_month_full_cloc')], [Player.Custom('omni_current_year_cloc')] LC\n\nThe game date counts from the founding of the #Y Eagelian Kingdom#! by #T Sumun the Great#!.\n\n#TF Zanis Zani, when he was asked what time was, answered that it was the soul of this world.#!"
  DATE_TODAY:0 "This is Today"
  DATE_YEARS_MONTHS_DAYS_PAST:0 "This was $YEARS$ years $MONTHS$ months $DAYS$ days ago."

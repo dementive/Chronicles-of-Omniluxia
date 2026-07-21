@@ -1,0 +1,216 @@
+﻿# OMNILUXIA OVERRIDE of the vanilla file (PERF Round 7): identical to vanilla except for
+# `exists = scope:...` guards at the top of potential_trigger blocks that dereference
+# hidden:scope:actor/target. The engine's AI interaction-enumeration pass evaluates these
+# triggers without those scopes set, producing hundreds of error.log writes inside the monthly
+# character-AI wall. exists fails cleanly and short-circuits instead of erroring.
+inspire_disloyalty = {
+
+	on_other_nation = yes
+	on_own_nation = no
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_corruption"
+	
+	potential_trigger = {
+		exists = scope:target # PERF guard (see above)
+		hidden:scope:target = {
+			is_alive = yes
+			is_mercenary = no
+			employer = {
+				NOT = { tag = MER }
+				NOT = { tag = BAR }
+				NOT = { tag = REB }
+				NOT = { tag = PIR }
+			}
+			NOT = {
+				employer = scope:actor
+			}
+			NOT = {
+				has_character_modifier = inspire_disloyalty_modifier
+			}
+		}
+	}
+	
+	
+	allowed_trigger = {
+		custom_tooltip = {
+			text = already_inspiring_tooltip
+			hidden:scope:actor = {
+				OR = {
+					NOT = {
+						has_variable = inspiring_foreign_character
+					}
+					AND = {
+						has_variable = inspiring_foreign_character
+						NOT = {
+							exists = var:inspiring_foreign_character
+						}
+					}
+					AND = {
+						has_variable = inspiring_foreign_character
+						var:inspiring_foreign_character = {
+							OR = {
+								is_alive = no
+								NOT = {
+									has_character_modifier = inspire_disloyalty_modifier
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		hidden:scope:actor = {
+			can_pay_price = inspire_disloyalty
+		}
+		scope:actor = {
+			in_diplomatic_range = scope:target.employer
+		}
+		hidden:scope:target = {
+			is_adult = yes
+			is_ruler = no
+		}
+		scope:target = {
+			NOT = {
+				has_triggered_character_modifier = free_hands_cmod
+			}
+		}
+	}
+	
+
+	
+	effect = {
+		scope:actor = {
+			pay_price = inspire_disloyalty
+		}
+		scope:target = {
+			add_loyalty = loyalty_inspire_disloyalty
+			add_triggered_character_modifier = {
+				name = inspire_disloyalty_modifier
+			}
+			set_variable = {
+				name = inspire_cooldown
+				days = 730
+			}
+		}
+		custom_tooltip = inspire_cooldown_action_tooltip
+		hidden_effect = {
+			scope:actor = {
+				set_variable = {
+					name = inspiring_foreign_character
+					value = scope:target
+				}
+			}
+		}
+	}
+	
+}	
+
+stop_inspire_disloyalty = {
+
+	on_other_nation = yes 
+	on_own_nation = no 
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_corruption"
+	
+	potential_trigger = {
+		exists = scope:actor # PERF guard: AI enumeration evaluates this without actor set -> "Failed context switch" error.log spam
+		exists = scope:target # PERF guard (see above)
+		hidden:scope:target = {
+			has_character_modifier = inspire_disloyalty_modifier
+		}
+		hidden:scope:actor = {
+			has_variable = inspiring_foreign_character
+			exists = var:inspiring_foreign_character
+			var:inspiring_foreign_character = scope:target
+		}
+	}
+	
+	
+	allowed_trigger = {
+		scope:target = {
+			is_alive = yes
+			has_character_modifier = inspire_disloyalty_modifier
+			custom_tooltip = {
+				text = inspire_cooldown_tooltip
+				NOT = {
+					has_variable = inspire_cooldown
+				}
+			}
+		}
+	}
+	
+
+	
+	effect = {
+		scope:target = {
+			remove_character_modifier = inspire_disloyalty_modifier
+			remove_loyalty = loyalty_inspire_disloyalty
+		}
+		hidden_effect = {
+			scope:actor = {
+				remove_variable = inspiring_foreign_character
+			}
+		}
+	}
+	
+}
+
+stop_inspire_disloyalty_ruler = {
+
+	on_other_nation = no 
+	on_own_nation = yes 
+	
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_corruption"
+	
+	potential_trigger = {
+		exists = scope:actor # PERF guard: AI enumeration evaluates this without actor set -> "Failed context switch" error.log spam
+		hidden:scope:actor = {
+			has_variable = inspiring_foreign_character
+			exists = var:inspiring_foreign_character
+			var:inspiring_foreign_character = {
+				is_alive = yes
+				has_character_modifier = inspire_disloyalty_modifier
+			}
+		}
+		scope:actor.current_ruler = scope:target
+	}
+	
+	
+	allowed_trigger = {
+		scope:actor = {
+			var:inspiring_foreign_character = {
+				is_alive = yes
+				has_character_modifier = inspire_disloyalty_modifier
+				custom_tooltip = {
+					text = inspire_cooldown_tooltip
+					NOT = {
+						has_variable = inspire_cooldown
+					}
+				}
+			}
+		}
+	}
+	
+
+	
+	effect = {
+		scope:actor = {
+			if = {
+				limit = {
+					var:inspiring_foreign_character = {
+						has_character_modifier = inspire_disloyalty_modifier
+					}
+				}
+				var:inspiring_foreign_character = {
+					remove_character_modifier = inspire_disloyalty_modifier
+				}
+			}
+		}
+		hidden_effect = {
+			scope:actor = {
+				remove_variable = inspiring_foreign_character
+			}
+		}
+	}
+	
+}

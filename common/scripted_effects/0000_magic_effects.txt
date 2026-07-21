@@ -233,13 +233,20 @@ change_country_scope_magic_vars = {
 	# tradeoff (July 2026), characters tick QUARTERLY at triple regen: same
 	# long-run mana income at one third of the work. magic_monthly still stores
 	# the MONTHLY rate, so the character tooltips read unchanged; mana simply
-	# arrives in three-month chunks. The counter is per country, so the quarterly
-	# character tick inherits the same 1-27 day monthly stagger.
+	# arrives in three-month chunks.
+	# PERF (Round 5): the counter must be DE-SYNCHRONIZED across countries. With
+	# everyone initialized to 0 in the same month, all ~500 countries hit the
+	# quarterly character pass in the SAME month - measured as a multi-second
+	# one-day stall. Each country now rolls a random 0-2 starting phase (once,
+	# also migrating existing saves whose counters are aligned), so each month
+	# only ~a third of the world runs the character loop.
 	if = {
-		limit = { NOT = { has_variable = omni_mana_tick_counter } }
-		set_variable = {
-			name = omni_mana_tick_counter
-			value = 0
+		limit = { NOT = { has_variable = omni_mana_desync_done } }
+		set_variable = omni_mana_desync_done
+		random_list = {
+			1 = { set_variable = { name = omni_mana_tick_counter value = 0 } }
+			1 = { set_variable = { name = omni_mana_tick_counter value = 1 } }
+			1 = { set_variable = { name = omni_mana_tick_counter value = 2 } }
 		}
 	}
 	change_variable = {

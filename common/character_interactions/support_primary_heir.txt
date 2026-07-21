@@ -1,0 +1,86 @@
+﻿# OMNILUXIA OVERRIDE of the vanilla file (PERF Round 7): identical to vanilla except for
+# `exists = scope:...` guards at the top of potential_trigger blocks that dereference
+# hidden:scope:actor/target. The engine's AI interaction-enumeration pass evaluates these
+# triggers without those scopes set, producing hundreds of error.log writes inside the monthly
+# character-AI wall. exists fails cleanly and short-circuits instead of erroring.
+support_primary_heir = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	message = no
+	
+	sound = "event:/SFX/UI/Character/Unique/sfx_ui_character_give_free_hands"
+	
+	potential_trigger = {
+		exists = scope:actor # PERF guard: AI enumeration evaluates this without actor set -> "Failed context switch" error.log spam
+		exists = scope:target # PERF guard (see above)
+		hidden:scope:actor = {
+			is_monarchy = yes
+		}
+		hidden:scope:target = {
+			exists = preferred_heir
+			preferred_heir = {
+				is_primary_heir = no
+			}
+			is_alive = yes
+			is_mercenary = no
+			is_ruler = no
+			is_pretender = no
+			is_primary_heir = no
+			OR = {
+				has_any_position = yes
+				is_head_of_family = yes
+				is_pretender = yes
+			}
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			NOT = {
+				has_character_modifier = support_primary_heir_cmod
+			}
+		}
+	}
+	
+	
+	allowed_trigger = {
+		hidden:scope:target = {
+			exists = preferred_heir
+			loyalty >= 50
+		}
+		hidden:scope:actor = {
+			can_pay_price = price_support_primary_heir
+		}
+	}
+	
+	effect = {
+		scope:actor = { pay_price = price_support_primary_heir }
+		scope:target = {
+			add_character_modifier = {
+				name = support_primary_heir_cmod
+				duration = 1825
+			}
+		}
+	}
+	
+	ai_will_do = {
+		modifier = {
+			add = 100
+			trigger = {
+				preferred_heir = {
+					is_primary_heir = no
+				}
+				employer = {
+					tyranny <= 30
+					legitimacy <= 70
+				}
+			}
+		}
+		modifier = {
+			add = -20
+			employer = {
+				tyranny > 30
+			}
+		}
+	}
+	
+}	
+

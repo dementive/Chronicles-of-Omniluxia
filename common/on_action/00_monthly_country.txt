@@ -37,9 +37,14 @@ monthly_country_pulse = {
 }
 
 # Mana regeneration for the country, its provinces and its characters.
+# PERF (Round 5): the on_action `delay` above is rolled once per firing, NOT per
+# country - so the delayed sub-pulse still ran for every country on the same
+# day (measured as a 15-20s one-day stall). trigger_event day ranges ARE rolled
+# per country, so the actual work now runs via omni_perf.1 on each country's
+# own random day of the month. Same monthly cadence.
 omni_monthly_magic_pulse = {
 	effect = {
-		magic_monthly_effects = yes
+		trigger_event = { id = omni_perf.1 days = { 0 24 } }
 	}
 }
 
