@@ -1,28 +1,6 @@
-namespace = omni_perf
+﻿namespace = omni_perf
 
-# ---------------------------------------------------------------------------
-# PER-COUNTRY WORK-SPREADING EVENTS (see PERFORMANCE_AUDIT.md Round 5)
-#
-# Measured in-game (July 2026): the ticker froze 15-20+ real seconds on ONE
-# day mid-month, then ran fast - all countries' "staggered" script work was
-# landing on the same tick. Root cause: `delay = { days = { X Y } }` inside an
-# on_action's on_actions list is rolled ONCE per firing, not once per country,
-# so every delayed sub-pulse fires for every country on the same (random) day.
-#
-# The reliable way to spread work per country is trigger_event with a day
-# range - the range is rolled independently for each country that executes
-# the effect. These hidden events carry the heavy per-country work; the
-# on_action/effect that used to run the work directly now just schedules the
-# matching event with a random offset.
-#
-# RULE: any new recurring effect that is heavy AND runs for many countries at
-# the same cadence must be routed through an event like these, NOT through a
-# delayed on_action, and NOT called directly from a shared pulse tick.
-# ---------------------------------------------------------------------------
 
-# Monthly magic tick (country regen + quarterly character pass).
-# Scheduled from omni_monthly_magic_pulse (00_monthly_country.txt) with
-# days = { 0 24 }: each country runs its mana work on its own day of the month.
 omni_perf.1 = {
 	type = country_event
 	hidden = yes
@@ -34,10 +12,7 @@ omni_perf.1 = {
 	option = {}
 }
 
-# Yearly AI economy refresh: item-shop stock build, AI army gear purchase,
-# and AI library scroll shopping. Scheduled from omni_yearly_country_effect
-# (choo_effects.txt) with days = { 0 300 }: each AI country restocks and shops
-# on its own day of the year instead of every AI country on the same tick.
+
 omni_perf.2 = {
 	type = country_event
 	hidden = yes
@@ -62,9 +37,7 @@ omni_perf.2 = {
 	option = {}
 }
 
-# Yearly Advanced-AI planning suite (moved from omniluxia_ai_yearly_pulse in ai_pulse.txt).
-# Scheduled per-country with days = { 0 300 } so the expensive planners (roads, forts, cities)
-# don't run for all ~500 living tags on one tick.
+
 omni_perf.3 = {
 	type = country_event
 	hidden = yes
@@ -96,8 +69,7 @@ omni_perf.3 = {
 	option = {}
 }
 
-# Midyear colonization (moved from omniluxia_ai_midyear_pulse) - scheduled 181 days after the
-# yearly pulse plus a 0-60 day per-country spread, preserving the winter-avoidance intent.
+
 omni_perf.4 = {
 	type = country_event
 	hidden = yes
