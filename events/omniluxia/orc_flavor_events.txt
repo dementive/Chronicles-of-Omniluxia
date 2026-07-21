@@ -384,32 +384,34 @@ orc_flavor.13 = { # Embracing the Black Flame
     picture = city_country
     left_portrait = scope:evil_orc
 
+    # PERF: evaluated for every country in the monthly flavor pulse. Cheapest and
+    # most selective check first (single orc_trait lookup) so the scan bails out
+    # of non-orcs immediately instead of testing four dark-magic traits on every
+    # character in every country's court. Same characters match as before.
     trigger = {
         any_character = {
-                AND = {
-                    OR = {
-            		  has_trait = vampire_trait
-            		  has_trait = necromancer_trait
-            		  has_trait = warlock_trait
-            		  has_trait = lich_trait
-            	   }
-            	   has_trait = orc_trait
-                    NOT = { has_trait = black_flame_trait }
-                }
+            has_trait = orc_trait
+            NOT = { has_trait = black_flame_trait }
+            OR = {
+                has_trait = vampire_trait
+                has_trait = necromancer_trait
+                has_trait = warlock_trait
+                has_trait = lich_trait
+            }
         }
     }
 
     immediate = {
         random_character = {
         	limit = {
+	        	has_trait = orc_trait
+	        	NOT = { has_trait = black_flame_trait }
 	        	OR = {
 	        		has_trait = vampire_trait
 	        		has_trait = necromancer_trait
 	        		has_trait = warlock_trait
 	        		has_trait = lich_trait
 	        	}
-	        	has_trait = orc_trait
-                NOT = { has_trait = black_flame_trait }
         	}
         	save_scope_as = evil_orc
         }

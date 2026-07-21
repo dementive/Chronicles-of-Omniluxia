@@ -2,6 +2,14 @@
 	change_country_scope_magic_vars = yes
 }
 
+# NOTE (July 2026): magic_monthly and magic_max are display-only copies of the
+# modifier-derived script values (omni_character_monthly_mana_value /
+# omni_character_magic_max_value). The tick regenerates them from modifiers, so
+# any hand-written change_variable bonus to them is wiped at the next refresh
+# and never has a mechanical effect (see PERFORMANCE_AUDIT.md). They must stay
+# STORED because this Imperator version's data system has no ScriptValue loc
+# function - the mana tooltips can only read Var('magic_monthly')/Var('magic_max').
+# They now refresh QUARTERLY (with the mana tick) instead of monthly.
 recalculate_character_magic_vars = {
 	if = {
 		limit = { NOT = { has_variable = magic } }
@@ -12,19 +20,11 @@ recalculate_character_magic_vars = {
 	}
 	set_variable = {
 		name = magic_monthly
-		value = 0
-	}
-	change_variable = {
-		name = magic_monthly
-		add = omni_character_monthly_mana_value
+		value = omni_character_monthly_mana_value
 	}
 	set_variable = {
 		name = magic_max
-		value = 100
-	}
-	change_variable = {
-		name = magic_max
-		add = omni_character_max_mana_bonus_value
+		value = omni_character_magic_max_value
 	}
 }
 
@@ -32,9 +32,8 @@ refill_character_magic_to_max = {
 	recalculate_character_magic_vars = yes
 	set_variable = {
 		name = magic
-		value = var:magic_max
+		value = omni_character_magic_max_value
 	}
-	clamp_character_magic_to_max = yes
 }
 
 magic_on_birth_effects = {
@@ -74,21 +73,10 @@ set_magic_vars = {
 			}
 		}
 	}
-	every_province = {
-		limit = {
-			is_sea = no
-			is_inhabitable = yes
-		}
-		if = {
-			limit = {
-				NOT = { has_variable = magic }
-			}
-			set_variable = {
-				name = magic
-				value = 0
-			}
-		}
-	}
+	# PERF: the old every_province init here wrote a magic=0 variable onto ~5,900
+	# provinces at game start (save bloat, dead data - nothing reads a province's
+	# magic var except the monthly tick, which now self-initializes provinces the
+	# moment they are registered via omni_add_province_magic_effect).
 	every_living_character = {
 		if = {
 			limit = {
@@ -132,7 +120,6 @@ change_province_magic = {
 }
 
 clamp_character_magic_to_max = {
-	recalculate_character_magic_vars = yes
 	if = {
 		limit = {
 			has_variable = magic
@@ -140,11 +127,7 @@ clamp_character_magic_to_max = {
 		}
 		set_variable = {
 			name = magic
-			value = 100
-		}
-		change_variable = {
-			name = magic
-			add = omni_character_max_mana_bonus_value
+			value = omni_character_magic_max_value
 		}
 	}
 }
@@ -180,6 +163,7 @@ change_character_magic_monthly = {
 }
 
 change_country_scope_magic_vars = {
+	# --- Country mana ---
 	if = {
 		limit = {
 			NOT = { has_variable = magic }
@@ -200,65 +184,138 @@ change_country_scope_magic_vars = {
 			value = 100
 		}
 	}
-	every_owned_province = {
-		limit = {
-			is_sea = no
-			is_inhabitable = yes
-			# Perf: skip provinces where this month's tick is provably a no-op:
-			# var already initialized, zero regen to add, and no clamping needed.
-			# Behavior identical to running the body.
-			NAND = {
-				has_variable = magic
-				modifier:local_cohort_recruit_speed = 0
-				var:magic <= 100
-			}
-		}
-		if = {
-			limit = {
-				NOT = { has_variable = magic }
-			}
-			set_variable = {
-				name = magic
-				value = 0
-			}
-		}
-		change_variable = {
-			name = magic
-			add = modifier:local_cohort_recruit_speed
-		}
-		if = {
-			limit = { var:magic > 100 }
-			set_variable = {
-				name = magic
-				value = 100
+	# --- Province mana ---
+	# PERF: local_cohort_recruit_speed (the province mana regen stat) has exactly
+	# one source in the whole mod: the province_magic_* keyed modifiers, which must
+	# be granted through omni_add_province_magic_effect below. That effect registers
+	# the province in the omni_magic_provinces global list, so the monthly tick only
+	# iterates registered provinces instead of evaluating a modifier on every owned
+	# province of every country (~all land provinces per month). An empty list -
+	# the current state, nothing grants these modifiers yet - costs nothing.
+	if = {
+		# Guard also silences the "Variable 'omni_magic_provinces' is used but is
+		# never set" lint warning while nothing grants province magic yet.
+		limit = { has_global_variable_list = omni_magic_provinces }
+		every_in_global_list = {
+			variable = omni_magic_provinces
+			if = {
+				limit = {
+					exists = owner
+					owner = root
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = magic }
+					}
+					set_variable = {
+						name = magic
+						value = 0
+					}
+				}
+				change_variable = {
+					name = magic
+					add = modifier:local_cohort_recruit_speed
+				}
+				if = {
+					limit = { var:magic > 100 }
+					set_variable = {
+						name = magic
+						value = 100
+					}
+				}
 			}
 		}
 	}
-	every_character = {
-		limit = {
-			is_alive = yes
-			# Perf: skip characters where the monthly tick is provably a no-op:
-			# var initialized, zero regen, and magic <= 100 with a non-negative max
-			# bonus means the clamp cannot trigger. magic_max/magic_monthly are only
-			# ever read right after being recalculated, so skipping the recalc here
-			# is unobservable. Behavior identical.
-			NAND = {
-				has_variable = magic
-				modifier:great_work_tribals_workrate_character_modifier = 0
-				modifier:great_work_freemen_workrate_character_modifier >= 0
-				var:magic <= 100
-			}
+	# --- Character mana ---
+	# PERF: nearly every character has nonzero regen through racial traits, so a
+	# skip-filter buys nothing - instead the per-character body is minimal (each
+	# engine modifier read once, stored values reused) AND, per approved design
+	# tradeoff (July 2026), characters tick QUARTERLY at triple regen: same
+	# long-run mana income at one third of the work. magic_monthly still stores
+	# the MONTHLY rate, so the character tooltips read unchanged; mana simply
+	# arrives in three-month chunks. The counter is per country, so the quarterly
+	# character tick inherits the same 1-27 day monthly stagger.
+	if = {
+		limit = { NOT = { has_variable = omni_mana_tick_counter } }
+		set_variable = {
+			name = omni_mana_tick_counter
+			value = 0
 		}
-		if = {
+	}
+	change_variable = {
+		name = omni_mana_tick_counter
+		add = 1
+	}
+	if = {
+		limit = { var:omni_mana_tick_counter >= 3 }
+		set_variable = {
+			name = omni_mana_tick_counter
+			value = 0
+		}
+		every_character = {
 			limit = {
-				NOT = { has_variable = magic }
+				is_alive = yes
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = magic }
+				}
+				set_variable = {
+					name = magic
+					value = 0
+				}
+			}
+			# Refresh the display copies (tooltips can only read stored vars in
+			# this engine version), apply a quarter's regen, clamp.
+			set_variable = {
+				name = magic_monthly
+				value = omni_character_monthly_mana_value
 			}
 			set_variable = {
+				name = magic_max
+				value = omni_character_magic_max_value
+			}
+			change_variable = {
 				name = magic
-				value = 0
+				add = omni_character_quarterly_mana_value
+			}
+			if = {
+				limit = { var:magic > omni_character_magic_max_value }
+				set_variable = {
+					name = magic
+					value = omni_character_magic_max_value
+				}
 			}
 		}
-		change_character_magic_monthly = yes
+	}
+}
+
+# ---------------------------------------------------------------------------
+# PROVINCE MANA CHOKE-POINT
+# Always grant province mana regen through this effect, never with a bare
+# add_province_modifier - it keeps the omni_magic_provinces global list in sync,
+# and the monthly tick above ONLY regenerates provinces in that list.
+# Call in PROVINCE scope with MOD = province_magic_1 .. province_magic_4.
+# Removal note: if you later remove a province's magic modifier, the province
+# can safely stay in the list - with zero regen the tick is a no-op for it.
+omni_add_province_magic_effect = {
+	add_province_modifier = {
+		name = $MOD$
+		duration = -1
+	}
+	if = {
+		limit = {
+			NOT = {
+				is_target_in_global_variable_list = {
+					name = omni_magic_provinces
+					target = THIS
+				}
+			}
+		}
+		add_to_global_variable_list = {
+			name = omni_magic_provinces
+			target = THIS
+		}
 	}
 }
 

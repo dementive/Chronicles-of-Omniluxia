@@ -6,6 +6,18 @@ bloodlines_setup_completion.1 = {
 	type = country_event
 	hidden = yes
 
+	# PERF: this event sits in main_event_pulse_country's events list, which
+	# re-fires it for every country on every main pulse forever. The run_* variable
+	# machine below only stops the SELF-retrigger chain, not the pulse re-fire, so
+	# without this trigger every country repeated the full bloodline setup pass
+	# (a whole-court character scan) once a year for the entire campaign.
+	# The three setup passes still run for every country, including newly spawned
+	# ones (no vars set -> trigger passes). Inheritance after setup is handled by
+	# bloodline_on_born_effect on birth, so re-running the pass added nothing.
+	trigger = {
+		NOT = { has_variable = run_once }
+	}
+
 	immediate = {
 
 		bloodline_setup_effect = yes

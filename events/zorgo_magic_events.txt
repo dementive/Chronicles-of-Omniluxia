@@ -5830,101 +5830,45 @@ me_zorgo_magic_focus.31 = { # AI: a besieging mage-general auto-casts a siege sp
     # settlement they are besieging - the AI equivalent of the player clicking
     # the Cast A Spell button on the Siege window. Gated on mana (and on the
     # breach not already being active) so the AI does not spam it every month.
+    #
+    # PERF: scans the country's armies (few) instead of every character in the
+    # country (many). An army's commander is by definition a living general, and
+    # any_army/every_army only lists ROOT's own units, so the old is_general /
+    # is_alive / unit_owner = ROOT checks are implied. Same casters, same spell,
+    # same cost - just reached from the unit side. The shared eligibility trigger
+    # also excludes characters away on an omni adventure, matching .35/.37.
     trigger = {
         is_ai = yes
         war = yes
-        any_character = {
-            is_general = yes
-            is_alive = yes
-            NOT = { has_variable = is_the_revant }
-            OR = {
-                has_trait = mage_trait
-                has_trait = archmage_trait
-                has_trait = warlock_trait
-                has_trait = cleric_trait
-                has_trait = necromancer_trait
-                has_trait = lich_trait
-                has_trait = druid_trait
-                has_trait = elementalist_trait
-                has_trait = diviner_trait
-                has_trait = hierophant_trait
-                has_trait = illusionist_trait
-                has_trait = vampire_trait
-                has_trait = blood_angel_curse_trait
-                has_variable = folk_unlocked_var
+        any_army = {
+            unit_location = {
+                has_siege = yes
+                NOT = { has_province_modifier = omni_siege_breach_spell_mod }
             }
-            NOR = {
-                has_trait = brain_damaged
-                has_trait = goblin_trait
-                has_variable = on_orc_adventure
-            }
-            omni_can_afford_spell = { BASE = 50 }
-            any_character_unit = {
-                is_army = yes
-                unit_owner = { this = ROOT }
-                unit_location = {
-                    has_siege = yes
-                    NOT = { has_province_modifier = omni_siege_breach_spell_mod }
-                }
-            }
+            omni_unit_commander_can_cast_trigger = { BASE = 50 }
         }
     }
 
     immediate = {
-        every_character = {
+        # Cast Breaching Tremor on the settlement each qualifying general besieges.
+        every_army = {
             limit = {
-                is_general = yes
-                is_alive = yes
-                NOT = { has_variable = is_the_revant }
-                OR = {
-                    has_trait = mage_trait
-                    has_trait = archmage_trait
-                    has_trait = warlock_trait
-                    has_trait = cleric_trait
-                    has_trait = necromancer_trait
-                    has_trait = lich_trait
-                    has_trait = druid_trait
-                    has_trait = elementalist_trait
-                    has_trait = diviner_trait
-                    has_trait = hierophant_trait
-                    has_trait = illusionist_trait
-                    has_trait = vampire_trait
-                    has_trait = blood_angel_curse_trait
-                    has_variable = folk_unlocked_var
-                }
-                NOR = {
-                    has_trait = brain_damaged
-                    has_trait = goblin_trait
-                    has_variable = on_orc_adventure
-                }
-                omni_can_afford_spell = { BASE = 50 }
-                any_character_unit = {
-                    is_army = yes
-                    unit_owner = { this = ROOT }
-                    unit_location = {
-                        has_siege = yes
-                        NOT = { has_province_modifier = omni_siege_breach_spell_mod }
-                    }
-                }
-            }
-            # Cast Breaching Tremor on the settlement this general is besieging.
-            random_character_unit = {
-                limit = {
-                    is_army = yes
-                    unit_location = {
-                        has_siege = yes
-                        NOT = { has_province_modifier = omni_siege_breach_spell_mod }
-                    }
-                }
                 unit_location = {
-                    add_province_modifier = {
-                        name = omni_siege_breach_spell_mod
-                        duration = 365
-                    }
-                    siege = { add_breach = 1 }
+                    has_siege = yes
+                    NOT = { has_province_modifier = omni_siege_breach_spell_mod }
                 }
+                omni_unit_commander_can_cast_trigger = { BASE = 50 }
             }
-            omni_spell_mana_cost_effect = { BASE = 50 }
+            unit_location = {
+                add_province_modifier = {
+                    name = omni_siege_breach_spell_mod
+                    duration = 365
+                }
+                siege = { add_breach = 1 }
+            }
+            commander = {
+                omni_spell_mana_cost_effect = { BASE = 50 }
+            }
         }
     }
 }
@@ -5940,41 +5884,29 @@ me_zorgo_magic_focus.35 = { # AI: mage-generals auto-cast friendly battle buffs 
     # Blessing of War / the new arcane battle buffs when already locked in battle.
     # Mana cost and tier gating reuse the shared scripted effects, so the AI plays
     # by the same rules as the player.
+    # PERF: scans the country's armies (few) instead of every character in the
+    # country (many). The old character scan required is_general = yes, so navy
+    # commanders (admirals) never qualified - only generals, whose army unit is
+    # found via every_army (embarked armies are still army units). Commander of
+    # an army is a living general and the unit is ROOT's own, so those checks
+    # are implied. Same casters, same buffs, same mana rules.
     trigger = {
         is_ai = yes
         war = yes
-        any_character = {
-            is_general = yes
-            is_alive = yes
-            NOT = { has_variable = is_the_revant }
-            omni_character_is_eligible_caster = yes
-            omni_can_afford_spell = { BASE = 25 }
-            any_character_unit = {
-                OR = {
-                    is_army = yes
-                    is_navy = yes
-                }
-            }
+        any_army = {
+            omni_unit_commander_can_cast_trigger = { BASE = 25 }
         }
     }
 
     immediate = {
         save_scope_as = caster_country
-        every_character = {
+        every_army = {
             limit = {
-                is_general = yes
-                is_alive = yes
-                NOT = { has_variable = is_the_revant }
-                omni_character_is_eligible_caster = yes
-                omni_can_afford_spell = { BASE = 25 }
-                any_character_unit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                }
+                omni_unit_commander_can_cast_trigger = { BASE = 25 }
             }
-            omni_ai_battlecast_effect = yes
+            commander = {
+                omni_ai_battlecast_effect = yes
+            }
         }
     }
 }

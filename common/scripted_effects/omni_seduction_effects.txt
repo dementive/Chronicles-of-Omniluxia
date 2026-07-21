@@ -47,3 +47,93 @@ omni_betrayed_spouse_effect = {
 		}
 	}
 }
+
+omni_ai_seduce_character_effect = {
+	every_character = {
+		limit = {
+			is_alive = yes
+			is_adult = yes
+			prisoner = no
+			NOT = { has_variable = omni_seduction_active }
+			NOT = { has_variable = omni_seduction_cooldown }
+			NOT = { has_character_modifier = indisposed_charmod }
+			exists = employer
+			OR = {
+				has_trait = lustful
+				AND = {
+					is_married = yes
+					spouse = {
+						NOT = { has_variable = omni_recently_rejected_seducer }
+					}
+				}
+			}
+		}
+
+		# Basic roll to prevent it happening constantly. E.g. 5% chance a year.
+		# (This roll used to sit in the limit above as 'random = { percent = 5 }',
+		# but random is an EFFECT, not a trigger - the engine logged
+		# "Unknown trigger type: random" and the whole scan misparsed. Moved into
+		# the body as the vanilla-style random = { chance = 5 } effect.)
+		random = {
+			chance = 5
+
+		# Now try to find a target.
+		# (random_character is a country-scope list; running it directly in
+		# character scope logged "Inconsistent effect scopes (character vs.
+		# country)". Searching from the seducer's employer matches the comment
+		# below: own court, or their own spouse.)
+		save_scope_as = omni_ai_seducer_candidate
+		employer = {
+			random_character = {
+				limit = {
+					is_alive = yes
+					is_adult = yes
+					prisoner = no
+					is_mercenary = no
+					NOT = { employer = { tag = REB } }
+					NOT = { employer = { tag = BAR } }
+					NOT = { employer = { tag = PIR } }
+					NOT = { this = scope:omni_ai_seducer_candidate }
+					NOT = { has_variable = omni_recently_rejected_seducer }
+
+					# The interaction allowed_trigger allows own court or spouse of current ruler or allied/subject ruler's spouse.
+					# To keep it performant and simple for AI: just allow in own court, or their own spouse.
+					OR = {
+						is_spouse_of = scope:omni_ai_seducer_candidate
+						AND = {
+							scope:omni_ai_seducer_candidate = { has_trait = lustful }
+							NOT = { is_close_relative = scope:omni_ai_seducer_candidate }
+							employer = scope:omni_ai_seducer_candidate.employer
+						}
+					}
+				}
+				# Found a target!
+				save_scope_as = omni_ai_seduction_target
+			}
+		}
+		
+		if = {
+			limit = {
+				exists = scope:omni_ai_seduction_target
+			}
+			# Execute the effect as if they did it.
+			save_scope_as = omni_seducer
+			set_variable = { name = omni_seduction_active days = 400 }
+			if = {
+				limit = { is_married = yes }
+				spouse = { save_scope_as = omni_seducer_spouse }
+			}
+			
+			scope:omni_ai_seduction_target = {
+				save_scope_as = omni_seduction_target
+				if = {
+					limit = { is_married = yes }
+					spouse = { save_scope_as = omni_target_spouse }
+				}
+			}
+			
+			trigger_event = { id = omni_seduction.1 days = { 1 3 } }
+		}
+		} # closes random = { chance = 5
+	}
+}

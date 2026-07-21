@@ -1,4 +1,12 @@
-﻿monthly_country_pulse = {
+﻿# PERF NOTE: everything Omniluxia adds to the month tick is pushed into the
+# delayed sub-pulses below (omni_monthly_magic_pulse / omni_monthly_flavor_pulse /
+# omni_monthly_ai_gear_pulse) with a random 1-27 day delay, so each country does
+# its mod work on its own day of the month instead of every country doing all of
+# it on the same tick the engine already uses for economy/pops. Cadence is still
+# monthly per country. Keep new monthly additions inside one of these sub-pulses
+# (or a new delayed one) - do NOT add scans or effects directly to
+# monthly_country_pulse's events/effect blocks.
+monthly_country_pulse = {
 	events = {
 		family_events.1 #Rise of a Family
 		family_events.2 #Prune Family
@@ -6,6 +14,39 @@
 		family_events.6 #Tribal family rise
 		family_events.7 #Tribal family fall
 		family_events.9 #Rise of Family in Republics
+	}
+	random_events = {
+		750 = 0
+		5 = comet.4
+	}
+	on_actions = {
+		dictatorship_power_held_pulse
+		passover_supported_characters_pulse
+		monthly_guarantee_pulse
+		delay = { days = { 1 27 } }
+		omni_monthly_magic_pulse
+		delay = { days = { 1 27 } }
+		omni_monthly_flavor_pulse
+		delay = { days = { 1 27 } }
+		omni_monthly_ai_gear_pulse
+	}
+	effect = {
+		# One-shot per country (variable-guarded), cheap enough to stay on the tick.
+		omni_distribute_starting_items = yes
+	}
+}
+
+# Mana regeneration for the country, its provinces and its characters.
+omni_monthly_magic_pulse = {
+	effect = {
+		magic_monthly_effects = yes
+	}
+}
+
+# Flavor and AI-caster events that scan the country's court. Same events, same
+# monthly cadence as before - just spread across the month.
+omni_monthly_flavor_pulse = {
+	events = {
 		me_zorgoomni.83 #Rise of Lodge
 		snake_flavor.2 #Check if Illuminati Mage is Employed
 		snake_flavor.1 #New Illuminati Mage
@@ -20,18 +61,11 @@
 		#me_zorgo_magic_focus.26 # Mana Sickness
 		#me_zorgo_magic_focus.28 # Mana Death
 	}
-	random_events = {
-		750 = 0
-		5 = comet.4
-	}
-	on_actions = {		
-		dictatorship_power_held_pulse
-		passover_supported_characters_pulse
-		monthly_guarantee_pulse
-	}
+}
+
+# AI artifact management (war/peace transitions, variable-guarded).
+omni_monthly_ai_gear_pulse = {
 	effect = {
-		magic_monthly_effects = yes
-		omni_distribute_starting_items = yes
 		omni_ai_manage_artifacts_effect = yes
 	}
 }
