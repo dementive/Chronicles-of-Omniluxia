@@ -117,6 +117,13 @@ omni_apply_cramming_fatigue = {
 # this only adds the equivalent spell flags, so loading a save cannot remove
 # previously available magic.
 omni_migrate_legacy_magic = {
+	# One-shot per character. This is a save-compatibility bridge; once a
+	# character's legacy unlocks have been copied to the new spell flags there
+	# is nothing left to migrate, so the guard skips the ~15 has_variable checks
+	# on every subsequent yearly maintenance tick.
+	if = {
+	limit = { NOT = { has_variable = omni_magic_migrated } }
+	set_variable = omni_magic_migrated
 	if = { limit = { has_variable = diviner_t2_unlocked_var } omni_learn_spell = { SPELL = light_shields } }
 	if = { limit = { has_variable = diviner_t3_unlocked_var } omni_learn_spell = { SPELL = light_rays } }
 	if = { limit = { has_variable = diviner_t4_unlocked_var } omni_learn_spell = { SPELL = gravity_well } }
@@ -134,4 +141,5 @@ omni_migrate_legacy_magic = {
 		set_variable = { name = elementalist_mastered_var value = 1 }
 		set_variable = { name = necromancer_mastered_var value = 1 }
 	}
+	} # closes one-shot migration guard
 }

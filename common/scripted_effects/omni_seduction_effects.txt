@@ -49,8 +49,19 @@ omni_betrayed_spouse_effect = {
 }
 
 omni_ai_seduce_character_effect = {
+	# This scans the whole character list (every_character is a global iterator),
+	# so it only needs to run ONCE per year, not once per AI country. It is called
+	# from omni_perf.3 (per-AI-country); the global-variable lock below lets the
+	# first AI country to reach it each year run the scan and suppresses the rest
+	# for 300 days, removing the old O(AI-countries x characters) redundancy.
+	if = {
+	limit = { NOT = { has_global_variable = omni_ai_seduction_scan_done } }
+	set_global_variable = { name = omni_ai_seduction_scan_done days = 300 }
 	every_character = {
 		limit = {
+			# AI-controlled seducers only - never auto-initiate seductions from a
+			# human player's court.
+			employer = { is_ai = yes }
 			is_alive = yes
 			is_adult = yes
 			prisoner = no
@@ -135,5 +146,6 @@ omni_ai_seduce_character_effect = {
 			trigger_event = { id = omni_seduction.1 days = { 1 3 } }
 		}
 		} # closes random = { chance = 5
-	}
+	} # closes every_character
+	} # closes once-per-year global gate
 }
