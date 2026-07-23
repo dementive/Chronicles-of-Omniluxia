@@ -41,12 +41,33 @@
         duration = 30
 
         allow = {
-            manpower >= 5
+            manpower >= 2
         }
 
         on_completion = {
             trigger_event = me_eptelon_gen.1
+            if = {
+                limit = {
+                    capital_scope = {
+                        is_in_region = eptelon_north_region
+                    }
+                }
+                region:eptelon_north_region = {
+                    add_provincial_claim_effect = yes
+                }
+            }
+            if = {
+                limit = {
+                    capital_scope = {
+                        is_in_region = eptelon_shout_region
+                    }
+                }
+                region:eptelon_shout_region = {
+                    add_provincial_claim_effect = yes
+                }
+            }
             show_as_tooltip = {
+                add_manpower = -2
                 add_military_experience = 5
                 add_country_modifier = {
                     name = eptelon_tested_shore_mod
@@ -58,10 +79,13 @@
 
     03_eptelon_generic_task_2 = {
         icon = "task_atlas"
-        requires = { 03_eptelon_generic_task_1 }
+        requires = { 03_eptelon_generic_task_5a }
 
         allow = {
-            num_of_ships >= 10
+            custom_tooltip = {
+				text = generic_migration_invasion_prepare_tt
+				has_country_modifier = assemble_raiding_party_button_modifier
+			}
         }
 
         on_completion = {
@@ -78,7 +102,7 @@
 
     03_eptelon_generic_task_3 = {
         icon = "task_economical"
-        requires = { 03_eptelon_generic_task_1 }
+        requires = { 03_eptelon_generic_task_7b }
 
         allow = {
             trigger_if = {
@@ -113,7 +137,7 @@
     # Task 3_hept 
     03_eptelon_generic_task_3_hept = {
         icon = "task_economical"
-        requires = { 03_eptelon_generic_task_1 }
+        requires = { 03_eptelon_generic_task_9 }
 
         allow = {
             invention = commerce_inv_1
@@ -138,8 +162,8 @@
 
     03_eptelon_generic_task_4 = {
         icon = "task_conquest"
-        requires = { 03_eptelon_generic_task_2 03_eptelon_generic_task_3 03_eptelon_generic_task_3_hept }
-
+        requires = { 03_eptelon_generic_task_1 }
+        
         highlight = {
             scope:province = {
                 region = root.capital_scope.region
@@ -168,7 +192,7 @@
     # -----------------------------------------------------------
 
     03_eptelon_generic_task_sum_khaya = {
-        icon = "task_political"
+        icon = "task_economical"
         requires = { 03_eptelon_generic_task_4 }
 
         highlight = {
@@ -194,29 +218,28 @@
     # -------------------------------------------
 
     03_eptelon_generic_task_5a = {
-        icon = "task_diplomatic"
+        icon = "task_political"
         requires = { 03_eptelon_generic_task_4 }
+        duration = 30
 
         bypass = {
             NOT = { country_culture_group = eptelon }
         }
 
         allow = {
-            country_culture_group = eptelon
+            custom_tooltip = {
+                text = ruler_needs_to_scheme_influence_tt
+                current_ruler = {
+                    has_ambition = scheme_influence
+                }
+            }
             political_influence >= 20
-            stability >= 35
         }
 
         on_completion = {
             add_political_influence = -20
-            trigger_event = me_eptelon_gen.10
+            trigger_event = me_eptelon_gen.50
             show_as_tooltip = {
-                add_country_modifier = {
-                    name = eptelon_warchief_covenant_mod
-                    duration = 3650
-                }
-            }
-            hidden_effect = {
                 add_country_modifier = {
                     name = eptelon_warchief_covenant_mod
                     duration = 3650
@@ -235,27 +258,31 @@
 
         highlight = {
             scope:province = {
-                is_in_region = eptelon_north_region
+                province_id = 586
             }
         }
 
         allow = {
-            country_culture_group = eptelon
-            owns_or_subject_owns_region = eptelon_north_region
+            war = no
+            owns_or_subject_owns = 586
+            custom_tooltip = {
+                text = tybin_omen_active_tt
+                has_this_omen = deity:omen_tybin
+            }
+            manpower >= 5
+            military_experience >= 20
         }
 
         on_completion = {
+            add_military_experience = -20
             trigger_event = me_eptelon_gen.11
             show_as_tooltip = {
-                area:eptelon_shout_area_1 = {
-                    add_provincial_claim_effect = yes
+                add_country_modifier = {
+                    name = eptelon_tybin_assault_mod
+                    duration = 1825
                 }
             }
-            hidden_effect = {
-                area:eptelon_shout_area_1 = {
-                    add_provincial_claim_effect = yes
-                }
-            }
+            
         }
     }
 
@@ -269,8 +296,7 @@
         }
 
         allow = {
-            country_culture_group = eptelon
-            capital_scope = {
+            hidden:capital_scope = {
                 has_building = temple_building
             }
             treasury >= 150
@@ -285,7 +311,7 @@
                     icon = "cr_treasure_golden_lion_rhyton_01"
                     modifier = {
                         global_population_happiness = 0.03
-                        global_monthly_state_loyalty = 0.02
+                        global_monthly_state_loyalty = 0.05
                     }
                 }
                 current_ruler = {
@@ -314,34 +340,38 @@
         }
     }
 
-    # Parallel Task: The Tribal Council (diplomatic consolidation of tribes)
     03_eptelon_generic_task_tribal_council = {
         icon = "task_diplomatic"
         requires = { 03_eptelon_generic_task_6a }
+        duration = 365
 
         bypass = {
             NOT = { country_culture_group = eptelon }
         }
 
         allow = {
-            country_culture_group = eptelon
-            political_influence >= 30
-            stability >= 45
+            treasury >= 200
+            political_influence >= 50
+            stability >= 60
+            hidden:capital_scope.state = {
+                trade_good_surplus = { target = marble value >= 2 }
+            }
         }
 
         on_completion = {
-            add_political_influence = -30
+            add_treasury = -200
+            add_political_influence = -50
             trigger_event = me_eptelon_gen.13
             show_as_tooltip = {
                 add_country_modifier = {
                     name = eptelon_tribal_council_mod
                     duration = -1
                 }
-            }
-            hidden_effect = {
-                add_country_modifier = {
-                    name = eptelon_tribal_council_mod
-                    duration = -1
+                capital_scope = {
+                    add_province_modifier = {
+                        name = eptelonian_permanent_tribal_council_mod
+                        duration = -1
+                    }
                 }
             }
         }
@@ -391,7 +421,7 @@
 
     03_eptelon_generic_task_8a = {
         icon = "task_conquest"
-        requires = { 03_eptelon_generic_task_7a }
+        requires = { 03_eptelon_generic_task_9 }
 
         bypass = {
             NOT = { country_culture_group = eptelon }
@@ -440,9 +470,8 @@
         }
 
         allow = {
-            country_culture_group = high_elves
-            stability >= 50
-            capital_scope = {
+            has_law = recruit_from_nobles
+            hidden:capital_scope = {
                 has_building = military_building
             }
         }
@@ -459,13 +488,7 @@
             show_as_tooltip = {
                 add_country_modifier = {
                     name = eptelon_ascendic_order_mod
-                    duration = 3650
-                }
-            }
-            hidden_effect = {
-                add_country_modifier = {
-                    name = eptelon_ascendic_order_mod
-                    duration = 3650
+                    duration = -1
                 }
             }
         }
@@ -659,7 +682,7 @@
     }
 
     03_eptelon_generic_task_6c = {
-        icon = "task_atlas"
+        icon = "task_economical"
         requires = { 03_eptelon_generic_task_5c }
         duration = 365
 
@@ -713,6 +736,7 @@
         }
 
         allow = {
+            invention = global_start_experience_inv_2
             manpower >= 6
             military_experience >= 20
         }
@@ -723,65 +747,68 @@
                 add_military_experience = -20
                 add_country_modifier = {
                     name = eptelon_colonial_levy_mod
-                    duration = 7300
+                    duration = -1
                 }
             }
         }
     }
 
-    # A Colony No Longer — grants the Harbor Charter (unique item)
+    # Regional Hegemon
     03_eptelon_generic_task_8c = {
-        icon = "task_political"
+        icon = "task_atlas"
         requires = { 03_eptelon_generic_task_7c }
 
         bypass = {
-            NOT = { 
+            NOT = {
                 OR = {
                     country_culture_group = arteonian
                     country_culture_group = horteonian
-                }    
+                }
             }
         }
 
         highlight = {
             scope:province = {
-                OR = {
-                    is_in_region = eptelon_north_region
-                    is_in_region = eptelon_shout_region
-                }
+                region = root.capital_scope.region
             }
         }
 
         allow = {
-            primary_culture = heptelonians
-            owns_or_subject_owns_region = eptelon_north_region
-            owns_or_subject_owns_region = eptelon_shout_region
+            owns_percent_of_region = {
+                PROVINCE = capital_scope
+                PERCENT = "0.75"
+            }
         }
 
         on_completion = {
             trigger_event = me_eptelon_gen.33
             show_as_tooltip = {
-                add_country_modifier = {
-                    name = eptelon_colony_no_more_mod
-                    duration = -1
-                }
-                current_ruler = {
-                    give_character_an_item = {
-                        item_ID = item_eptelon_harbor_charter
+                if = {
+                    limit = {
+                        NOT = { has_variable = eptelon_sword_created_var }
                     }
-                    add_popularity = 10
+                    create_country_treasure = {
+                        key = "treasure_eptelon_sword"
+                        icon = "chinesesword1"
+                        modifier = {
+                            local_country_civilization_value = 3
+                        }
+                    }
                 }
             }
             hidden_effect = {
-                add_country_modifier = {
-                    name = eptelon_colony_no_more_mod
-                    duration = -1
-                }
-                current_ruler = {
-                    give_character_an_item = {
-                        item_ID = item_eptelon_harbor_charter
+                if = {
+                    limit = {
+                        NOT = { has_variable = eptelon_sword_created_var }
                     }
-                    add_popularity = 10
+                    create_country_treasure = {
+                        key = "treasure_eptelon_sword"
+                        icon = "chinesesword1"
+                        modifier = {
+                            local_country_civilization_value = 3
+                        }
+                    }
+                    set_variable = eptelon_sword_created_var
                 }
             }
         }
@@ -793,7 +820,7 @@
 
     03_eptelon_generic_task_9 = {
         icon = "task_battle"
-        requires = { 03_eptelon_generic_task_8a 03_eptelon_generic_task_8b 03_eptelon_generic_task_8c }
+        requires = { 03_eptelon_generic_task_7a 03_eptelon_generic_task_8b 03_eptelon_generic_task_8c }
 
         highlight = {
             scope:province = {
@@ -805,12 +832,24 @@
         }
 
         allow = {
-            owns_or_subject_owns_region = eptelon_north_region
-            owns_or_subject_owns_region = eptelon_shout_region
+
         }
 
         on_completion = {
             trigger_event = me_eptelon_gen.40
+            custom_tooltip = eptelon_claims_tt
+            hidden_effect = {
+                region:eptelon_north_region = {
+			    every_region_province = {
+				    add_claim = root
+				}
+			}
+            region:eptelon_shout_region = {
+			    every_region_province = {
+				    add_claim = root
+				}
+			}
+            }
         }
     }
 

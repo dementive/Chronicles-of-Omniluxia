@@ -950,6 +950,50 @@ assign_all_items_to_categories = {
     assing_item_to_category = { item_category = trinket  item_ID = item_mythril_drill }
     assing_item_to_category = { item_category = trinket  item_ID = item_stellaric_urn }
     assing_item_to_category = { item_category = curse  item_ID = item_rooftile }
+    omni_assign_artifact_item_categories = yes
+
+}
+
+# Artifact/treasure system items need the same category assignment as choo_items so
+# has_any_other_same_category_item_equipped works for them too. Called both from
+# assign_all_items_to_categories (new games) and, separately, from a one-time monthly
+# catch-up in common/on_action (existing saves, see omni_artifact_categories_migrated_v1).
+omni_assign_artifact_item_categories = {
+    assing_item_to_category = { item_category = emblem  item_ID = item_artifact_Cyrogley_crown_of_eagalia }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_arteon_blood_drinker_blade }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_arteon_vampire_slayer_blade }
+    assing_item_to_category = { item_category = emblem  item_ID = item_artifact_iron_crown_of_herue }
+    assing_item_to_category = { item_category = trinket  item_ID = item_artifact_treasure_Dunydurcerg_royal_scale }
+    assing_item_to_category = { item_category = shield  item_ID = item_artifact_treasure_Shield_krak }
+    assing_item_to_category = { item_category = ring  item_ID = item_artifact_treasure_agony_band }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_arcane_doomblade }
+    assing_item_to_category = { item_category = emblem  item_ID = item_artifact_treasure_ascendic_diadem }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_axe_of_Fiorinoes }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_dragon_blade }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_eptelon_sword }
+    assing_item_to_category = { item_category = shield  item_ID = item_artifact_treasure_eternity_shield }
+    assing_item_to_category = { item_category = armour  item_ID = item_artifact_treasure_fire_fleece }
+    assing_item_to_category = { item_category = trinket  item_ID = item_artifact_treasure_flame_chalice }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_grom_axe }
+    assing_item_to_category = { item_category = helmet  item_ID = item_artifact_treasure_helm_of_the_mother_warrior }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_hobgob_droitra_dagger }
+    assing_item_to_category = { item_category = ring  item_ID = item_artifact_treasure_invisible_ring }
+    assing_item_to_category = { item_category = trinket  item_ID = item_artifact_treasure_kinone_bowl_of_plenty }
+    assing_item_to_category = { item_category = emblem  item_ID = item_artifact_treasure_krak_diadem }
+    assing_item_to_category = { item_category = armour  item_ID = item_artifact_treasure_lech_cape }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_martyr }
+    assing_item_to_category = { item_category = armour  item_ID = item_artifact_treasure_mending_cloak }
+    assing_item_to_category = { item_category = armour  item_ID = item_artifact_treasure_nuvians_robe_orcanite }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_primal_maul }
+    assing_item_to_category = { item_category = ring  item_ID = item_artifact_treasure_ring_of_feelings }
+    assing_item_to_category = { item_category = shield  item_ID = item_artifact_treasure_roldalls_shield }
+    assing_item_to_category = { item_category = weapon_ranged  item_ID = item_artifact_treasure_ros_bow }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_spear_krak }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_sword_of_artheousan }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_sword_of_the_victory_goddess }
+    assing_item_to_category = { item_category = weapon  item_ID = item_artifact_treasure_sword_rebels }
+    assing_item_to_category = { item_category = trinket  item_ID = item_artifact_treasure_wolf_tooth }
+    assing_item_to_category = { item_category = special  item_ID = item_artifact_treasure_zehia_horse_saddle }
 }
 
 assign_all_items_to_rarities = {
@@ -1087,6 +1131,13 @@ equip_item_with_modifier = {
 give_character_an_artifact = {
     hidden_effect = {
         give_character_an_item = { item_ID = $item_ID$ }
+        # Artifacts occupy a slot exactly like a normal choo_item once equipped,
+        # so they show up in the Items-button tooltip and block equipping another
+        # item/artifact of the same category (see has_any_other_same_category_item_equipped).
+        add_to_variable_list = {
+            name = equiped_item_list
+            target = flag:$item_ID$
+        }
     }
     add_character_modifier = { name = $item_ID$_modifier duration = -1 }
     country = { add_country_modifier = { name = $item_ID$_army duration = -1 } }
