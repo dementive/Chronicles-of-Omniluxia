@@ -90,13 +90,10 @@ omni_learn_all_spells = {
 	omni_learn_spell = { SPELL = helluvius_peace }
 	omni_learn_spell = { SPELL = hellas_providence }
 	omni_learn_spell = { SPELL = silver_tongue_charm }
-	omni_learn_spell = { SPELL = silver_tongue_charm_school }
 	omni_learn_spell = { SPELL = sculpt_buildings_stone_magic }
 	omni_learn_spell = { SPELL = palpan }
 	omni_learn_spell = { SPELL = mended_anima_soul }
-	omni_learn_spell = { SPELL = mended_anima_soul_school }
 	omni_learn_spell = { SPELL = astral_search_soul }
-	omni_learn_spell = { SPELL = astral_search_soul_school }
 }
 
 omni_buy_catchup_beginner_spell = {
@@ -107,10 +104,11 @@ omni_buy_catchup_beginner_spell = {
 omni_apply_cramming_fatigue = {
 	add_trait = cramming_fatigue_trait
 	change_variable = { name = magic_monthly subtract = 0.5 }
-	# Keep a plain setter for the script validator; the timed setter below
-	# supplies the actual 180-day expiry used by the mechanic.
-	set_variable = { name = cramming_fatigue_timer value = 1 }
-	set_variable = { name = cramming_fatigue_timer days = 180 }
+	# Single combined timed-variable setter: value + days together is the standard
+	# idiom for a variable that auto-expires after N days. The consumer
+	# (omni_magic_learning_on_actions.txt) only checks has_variable, so expiry alone
+	# clears the fatigue gate; no numeric value comparison is needed.
+	set_variable = { name = cramming_fatigue_timer value = 1 days = 180 }
 }
 
 # Compatibility bridge for existing saves. Legacy unlocks remain untouched;

@@ -1071,7 +1071,29 @@ razani_legion_setup_effect = {
 }
 
 razani_legion_setup_effect_2 = {
-	char:171 = { remove_all_positions = yes } # Heir Apparent
+	# char:171 ("Ap-Urud", d. 130.2.18) is a long-dead history character and can no
+	# longer be relied on to be the living Heir Apparent at game start (it caused
+	# "Trying to add a dead character as a unit leader" crashes). Look up whoever
+	# is actually the current living heir instead, and no-op gracefully if none exists.
+	if = {
+		limit = {
+			any_character = {
+				is_alive = yes
+				is_successor = yes
+			}
+		}
+		random_character = {
+			limit = {
+				is_alive = yes
+				is_successor = yes
+			}
+			save_temporary_scope_as = razani_heir_apparent_scope
+		}
+	}
+	if = {
+		limit = { exists = scope:razani_heir_apparent_scope }
+		scope:razani_heir_apparent_scope = { remove_all_positions = yes }
+	}
 	capital_scope.governorship = {
 		raise_legion = {
 			create_unit = {
@@ -1100,8 +1122,11 @@ razani_legion_setup_effect_2 = {
 				province = p:2564
 				date = 994.4.25
 			}
-			char:171 = { add_to_legion = PREV }
-			random_legion_unit = { set_as_commander = char:171 }
+			if = {
+				limit = { exists = scope:razani_heir_apparent_scope }
+				scope:razani_heir_apparent_scope = { add_to_legion = PREV }
+				random_legion_unit = { set_as_commander = scope:razani_heir_apparent_scope }
+			}
 			if = {
 				limit = { has_dlc = "Heirs of Alexander" }
 				add_distinction = distinction_imperial

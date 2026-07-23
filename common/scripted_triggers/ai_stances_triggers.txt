@@ -45,9 +45,18 @@ ai_wants_warmongering_stance = {
                     has_civil_war = no # Won't help for civil wars
                     any_current_war = {
                         is_war_leader = prev # Otherwise not getting enough spoils to warrant stance change
+                        # Save the war leader (this country) right here, inside the same war-scope
+                        # block that actually confirms is_war_leader = prev. THIS inside any_current_war
+                        # is the war, not the country, so scope back to prev (the country) explicitly
+                        # before saving. This guarantees scope:war_leader_country is bound at the exact
+                        # moment the war leader is determined, rather than relying on scope happening to
+                        # still be the country a couple of conditions later (fragile if this trigger is
+                        # ever refactored).
+                        prev = {
+                            save_temporary_scope_as = war_leader_country
+                        }
                     }
                     needs_neutral_stance_for_diplomatic_relations = no # Switching to non-neutral stance won't hurt us
-                    save_temporary_scope_as = war_leader_country
                     num_of_territories_of_enemies_where_is_war_leader >= 40 # Only if potential AE gain is large enough
                 }
             }

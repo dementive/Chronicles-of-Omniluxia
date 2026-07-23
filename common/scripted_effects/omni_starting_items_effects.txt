@@ -1,7 +1,7 @@
 ﻿assign_starting_common_item = {
 	current_ruler = {
 		country = {
-			omni_pick_random_generated_item_by_culture = { RARITY = common }
+			omni_pick_random_generated_common_item_by_culture = yes
 		}
 	}
 }
@@ -9,7 +9,7 @@
 assign_starting_uncommon_item = {
 	current_ruler = {
 		country = {
-			omni_pick_random_generated_item_by_culture = { RARITY = uncommon }
+			omni_pick_random_generated_uncommon_item_by_culture = yes
 		}
 	}
 }
@@ -17,23 +17,57 @@ assign_starting_uncommon_item = {
 assign_starting_rare_item = {
 	current_ruler = {
 		country = {
-			omni_pick_random_generated_item_by_culture = { RARITY = rare }
+			omni_pick_random_generated_rare_item_by_culture = yes
 		}
 	}
 }
 
 # Pick a random generated item by rarity from the appropriate cultural pool.
-# Call with RARITY = common/uncommon/rare
+# Split into three concrete (non-macro) effects because quoted macro interpolation
+# in a list-name string (e.g. "item_$RARITY$_rarity") is unreliable in Jomini script
+# and can resolve to garbage like "itemcommon$_rarity". Each effect below uses a
+# literal, non-interpolated variable name instead (see choo_items_effects.txt for
+# the equivalent pattern used for the assing_*_item_to_rarity helpers).
+# If per-culture differentiation is needed later, this can be expanded to use
+# omni_gen_pool_[culture_name]_[rarity] instead.
 # Scopes: country, with current_ruler available.
-omni_pick_random_generated_item_by_culture = {
-	# Pick from the global rarity pool (all generated items of that rarity across all cultures).
-	# If per-culture differentiation is needed later, this can be expanded to use
-	# omni_gen_pool_[culture_name]_[rarity] instead.
+omni_pick_random_generated_common_item_by_culture = {
 	random_in_global_list = {
-		variable = "item_$RARITY$_rarity"
+		variable = item_common_rarity
 		save_scope_as = omni_start_item_pick
 	}
-	# Give the picked item to the ruler
+	if = {
+		limit = { exists = scope:omni_start_item_pick }
+		current_ruler = {
+			if = {
+				limit = { NOT = { is_target_in_variable_list = { name = item_list target = scope:omni_start_item_pick } } }
+				add_to_variable_list = { name = item_list target = scope:omni_start_item_pick }
+			}
+		}
+	}
+}
+
+omni_pick_random_generated_uncommon_item_by_culture = {
+	random_in_global_list = {
+		variable = item_uncommon_rarity
+		save_scope_as = omni_start_item_pick
+	}
+	if = {
+		limit = { exists = scope:omni_start_item_pick }
+		current_ruler = {
+			if = {
+				limit = { NOT = { is_target_in_variable_list = { name = item_list target = scope:omni_start_item_pick } } }
+				add_to_variable_list = { name = item_list target = scope:omni_start_item_pick }
+			}
+		}
+	}
+}
+
+omni_pick_random_generated_rare_item_by_culture = {
+	random_in_global_list = {
+		variable = item_rare_rarity
+		save_scope_as = omni_start_item_pick
+	}
 	if = {
 		limit = { exists = scope:omni_start_item_pick }
 		current_ruler = {
