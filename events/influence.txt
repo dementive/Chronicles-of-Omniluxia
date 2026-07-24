@@ -1,0 +1,340 @@
+﻿namespace = influence
+
+influence.1 = {
+	type = character_event
+	title = "influence.1.t"
+	desc = "influence.1.desc"
+	
+	trigger = {
+		exists = scope:ongoing_scheme_target
+		scope:ongoing_scheme_target = {
+			finesse >= root.finesse
+			is_alive = yes
+			employer = root.employer
+		}
+		employer = {
+			any_owned_province = {
+				NOT = {
+					exists = holding_owner
+				}
+			}
+		}
+	}
+	
+	left_portrait = root
+	right_portrait = scope:ongoing_scheme_target
+	
+	picture = city_country
+	
+	immediate = {
+		employer = {
+			random_owned_province = {
+				limit = {
+					NOT = {
+						exists = holding_owner
+					}
+				}
+				save_scope_as = holding_province
+			}
+		}
+	}
+	
+	option = {
+		name = "influence.1.a"
+		scope:ongoing_scheme_target = {
+			add_holding = scope:holding_province
+		}
+		add_influence_civic_reward_large = yes
+	}
+	
+	option = {
+		name = "influence.1.b"
+		scope:ongoing_scheme_target = {
+			add_loyalty = loyalty_offed_declined
+		}
+	}
+	
+	option = {
+		name = "influence.1.c"
+		custom_tooltip = "silver_tongued_tooltip"
+		highlight = yes
+		trigger = {
+			has_trait = silver_tongued
+		}
+		add_influence_civic_reward_small = yes
+	}
+	
+	option = {
+		name = "influence.1.d"
+		custom_tooltip = "lunatic_tooltip"
+		highlight = yes
+		trigger = {
+			has_trait = lunatic
+		}
+		scope:ongoing_scheme_target = {
+			if = {
+				limit = {
+					health > 10
+				}
+				add_health = -10
+			}
+			else = {
+				death = {
+					death_reason = death_other_lunacy
+				}
+			}
+		}
+	}
+}
+
+influence.2 = {
+	type = character_event
+	title = "influence.2.t"
+	desc = "influence.2.desc"
+	
+	trigger = {
+		exists = employer
+		employer = {
+			any_character = {
+				martial >= root.martial
+				is_adult = yes
+				is_ruler = no
+				prisoner = no
+			}
+			manpower >= 10
+		}
+	}
+	
+	immediate = {
+		employer = {
+			random_character = {
+				limit = {
+					martial >= root.martial
+					is_adult = yes
+					is_ruler = no
+					prisoner = no
+				}
+				save_scope_as = ongoing_scheme_target
+			}
+		}
+	}
+	
+	left_portrait = root
+	right_portrait = scope:ongoing_scheme_target
+	
+	picture = romans_marching
+	
+	option = {
+		name = "influence.2.a"
+		add_influence_military_reward_large = yes
+		employer = {
+			add_manpower = -10
+		}
+	}
+	
+	option = {
+		name = "influence.2.b"
+		scope:ongoing_scheme_target = {
+			add_popularity = popularity_medium
+			add_loyalty = loyalty_offed_declined
+		}
+	}
+	
+	option = {
+		name = "influence.2.c"
+		add_influence_military_reward_small = yes
+		employer = {
+			add_treasury = {
+				value = has_monthly_income
+				multiply = -3
+				max = -30
+				min = -200
+			}
+		}
+	}
+}
+
+influence.3 = {
+	type = character_event
+	title = "influence.3.t"
+	desc = "influence.3.desc"
+	
+	trigger = {
+		exists = employer
+		employer = {
+			any_character = {
+				charisma >= root.charisma
+				is_adult = yes
+				is_ruler = no
+				prisoner = no
+			}
+			stability >= 20
+		}
+	}
+	
+	left_portrait = root
+	right_portrait = scope:ongoing_scheme_target
+	
+	picture = senator_conversing
+	
+	immediate = {
+		employer = {
+			random_character = {
+				limit = {
+					charisma >= root.charisma
+					is_adult = yes
+					is_ruler = no
+					prisoner = no
+				}
+				save_scope_as = ongoing_scheme_target
+			}
+		}
+	}
+	
+	option = {
+		name = "influence.3.a"
+		add_influence_oratory_reward_huge = yes
+		employer = {
+			add_stability = -10
+		}
+	}
+	
+	option = {
+		name = "influence.3.b"
+		scope:ongoing_scheme_target = {
+			add_loyalty = loyalty_offed_declined
+		}
+		employer = {
+			add_stability = 5
+		}
+	}
+}
+
+influence.4 = {
+	type = character_event
+	title = "influence.4.t"
+	desc = "influence.4.desc"
+	
+	trigger = {
+		exists = employer
+		employer = {
+			any_character = {
+				zeal >= root.zeal
+				is_adult = yes
+				is_ruler = no
+				prisoner = no
+				is_mercenary = no
+			}
+		}
+		is_alive = yes
+	}
+	
+	left_portrait = root
+	right_portrait = scope:ongoing_scheme_target
+	
+	picture = senator_conversing
+	
+	immediate = {
+		employer = {
+			random_character = {
+				limit = {
+					zeal >= root.zeal
+					is_adult = yes
+					is_ruler = no
+					prisoner = no
+					is_mercenary = no
+				}
+				save_scope_as = ongoing_scheme_target
+			}
+		}
+	}
+	
+	option = {
+		name = "influence.4.a"
+		add_corruption = 10
+		add_influence_religious_reward_huge = yes
+	}
+	
+	option = {
+		name = "influence.4.b"
+		scope:ongoing_scheme_target = {
+			add_loyalty = loyalty_influence_punished
+		}
+		add_influence_religious_reward_small = yes
+	}
+}
+
+influence.5 = { ### End event, do not use for pulse copy
+	type = character_event
+	title = "influence.5.t"
+	desc = "influence.5.desc"
+	
+	trigger = {
+
+	}
+	
+	left_portrait = root
+	right_portrait = scope:ongoing_scheme_target
+	
+	picture = senator_conversing
+	
+	option = {
+		name = "influence.5.a"
+		add_influence_reward_large = yes
+	}
+}
+
+influence.6 = {
+	type = country_event
+	title = "influence.6.t"
+	desc = "influence.6.desc"
+	
+	
+	left_portrait = current_ruler
+	right_portrait = scope:actor.current_ruler
+	right_portrait = scope:target
+	
+	picture = slaves_working
+	
+	trigger = {
+		exists = scope:target
+		scope:target = {
+			is_alive = yes
+		}
+	}
+	
+	option = {
+		name = "influence.6.a"
+		add_treasury = {
+			value = root.has_monthly_income
+			multiply = -3
+		}
+		scope:target = {
+			custom_tooltip = "yes_ty_move_country"
+			hidden_effect = {
+				remove_all_positions = yes
+				move_country = root
+				set_as_minor_character = this
+				# Moved here from the event's `after` block. Deaths queued in an
+				# option are not resolved until the end of the tick, so the
+				# `is_alive = yes` guard in `after` still passed for the character
+				# killed by option influence.6.b and set_home_country then logged
+				# "scope was dead". Only this option needs it anyway.
+				set_home_country = ROOT
+			}
+		}
+	}
+	
+	option = {
+		name = "influence.6.b" 
+		scope:target = {
+			custom_tooltip = "no_ty_sell_somewhere_else"
+			hidden_effect = {
+				death = {
+					death_reason = death_obscurity
+				}
+			}
+		}
+	}
+	
+}

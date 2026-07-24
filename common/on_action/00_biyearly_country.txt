@@ -5,32 +5,62 @@
 		5 = family_events.10
 	}
 	effect = {
-		every_character = {
-			limit = {
-				NOR = {
-					has_trait = forest_elf_trait
-					has_trait = high_elf_trait
-					has_trait = orc_trait
-					has_trait = gold_dwarf_trait
-					has_trait = copper_dwarf_trait
-					has_trait = silver_dwarf_trait
-					has_trait = snakefolk_trait
-					has_trait = human_trait
-					has_trait = goblin_trait
-					has_trait = hobgoblin_trait
-					has_trait = drow_trait
-					has_trait = wraith_trait
-					has_trait = zorg_trait
-					has_trait = half_elf_trait
-					has_trait = silver_halfling_trait
-					has_trait = halfling_trait
-					has_trait = gnome_trait
-					has_trait = deep_gnome_trait
-					has_trait = sea_elf_trait
-					has_trait = kinones_trait
-				}
+		# ------------------------------------------------------------------
+		# PERF: racial-trait backfill sweep.
+		#
+		# every_character is a GLOBAL iterator - it walks every living character
+		# in the world, not just this country's court. (Compare the deliberate
+		# "employer = root" filters in omni_vampire_spread_effect and the
+		# mercenary scans in 00_on_action_effects.txt, which only make sense
+		# against a global list.) Because biyearly_country_pulse fires once per
+		# country, this block used to cost
+		#     ~750 countries x every character in the world x 20 has_trait checks
+		# in a single Jan 1 tick, every other year.
+		#
+		# It is pure backfill: set_racial_trait_effect is already hooked to both
+		# on_character_created and on_being_born (00_specific_from_code.txt lines
+		# 1215 and 1545), so every character born or created in a normal game is
+		# already covered at the moment it appears.
+		#
+		# The global cooldown below means the sweep runs once per DECADE for the
+		# whole world - the first country to hit the pulse does the sweep and
+		# every other country skips it on a single has_global_variable check.
+		# That keeps the safety net (old saves, characters added by effects that
+		# bypass the hooks) at ~1/1500th of the previous cost.
+		# ------------------------------------------------------------------
+		if = {
+			limit = { NOT = { has_global_variable = omni_racial_trait_sweep_cd } }
+			set_global_variable = {
+				name = omni_racial_trait_sweep_cd
+				years = 10
 			}
-			set_racial_trait_effect = yes
+			every_character = {
+				limit = {
+					NOR = {
+						has_trait = forest_elf_trait
+						has_trait = high_elf_trait
+						has_trait = orc_trait
+						has_trait = gold_dwarf_trait
+						has_trait = copper_dwarf_trait
+						has_trait = silver_dwarf_trait
+						has_trait = snakefolk_trait
+						has_trait = human_trait
+						has_trait = goblin_trait
+						has_trait = hobgoblin_trait
+						has_trait = drow_trait
+						has_trait = wraith_trait
+						has_trait = zorg_trait
+						has_trait = half_elf_trait
+						has_trait = silver_halfling_trait
+						has_trait = halfling_trait
+						has_trait = gnome_trait
+						has_trait = deep_gnome_trait
+						has_trait = sea_elf_trait
+						has_trait = kinones_trait
+					}
+				}
+				set_racial_trait_effect = yes
+			}
 		}
 		# Hacky fix so the revant character can't have kids cause if he does their graphics are broken
 		if = {

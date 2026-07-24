@@ -4,6 +4,38 @@ omni_add_study_progress = {
 	change_variable = { name = magic_study_progress add = 8 }
 }
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Safe affinity increments.
+#
+# change_variable on a variable that was never set logs
+#   "change_variable effect [ Variable not of the 'value' scope type. Type: empty ]"
+# and silently does nothing, so the affinity is lost. That happened wherever a
+# character reached a magic event without having gone through
+# omni_resolve_magic_study_state first (which is what initialises the four
+# affinity vars). These wrappers initialise on demand, and every raw
+# change_variable on an affinity var in events/magic_studying_events.txt now
+# calls one of them instead.
+# ----------------------------------------------------------------------------------------------------------------------
+omni_gain_omnic_affinity = {
+	if = { limit = { NOT = { has_variable = omnic_affinity_var } } set_variable = { name = omnic_affinity_var value = 0 } }
+	change_variable = { name = omnic_affinity_var add = 1 }
+}
+
+omni_gain_aldic_affinity = {
+	if = { limit = { NOT = { has_variable = aldic_affinity_var } } set_variable = { name = aldic_affinity_var value = 0 } }
+	change_variable = { name = aldic_affinity_var add = 1 }
+}
+
+omni_gain_amten_affinity = {
+	if = { limit = { NOT = { has_variable = amten_affinity_var } } set_variable = { name = amten_affinity_var value = 0 } }
+	change_variable = { name = amten_affinity_var add = 1 }
+}
+
+omni_gain_melodian_affinity = {
+	if = { limit = { NOT = { has_variable = melodian_affinity_var } } set_variable = { name = melodian_affinity_var value = 0 } }
+	change_variable = { name = melodian_affinity_var add = 1 }
+}
+
 omni_resolve_magic_study_state = {
 	if = { limit = { NOT = { has_variable = magic_study_progress } } set_variable = { name = magic_study_progress value = 0 } }
 	if = { limit = { NOT = { has_variable = omnic_affinity_var } } set_variable = { name = omnic_affinity_var value = 0 } }

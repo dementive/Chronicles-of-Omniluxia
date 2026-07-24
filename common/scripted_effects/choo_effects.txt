@@ -1,5 +1,11 @@
 ﻿omni_yearly_country_effect = {
-	disable_racial_assimilation = yes
+	# PERF: disable_racial_assimilation used to run here, undelayed, for every
+	# country on Jan 1 - 34 macro expansions each containing an
+	# every_country_culture loop. It is idempotent (the modifier is duration = -1),
+	# so it is now (a) seeded for every country at game start, (b) re-applied on
+	# ownership change, and (c) kept here only as a safety net, spread across the
+	# year via omni_perf.5 and gated by a cheap any_country_culture early-out.
+	trigger_event = { id = omni_perf.5 days = { 0 300 } }
 	if = {
 		limit = { is_ai = yes }
 		trigger_event = { id = omni_perf.2 days = { 0 300 } }
@@ -17,7 +23,12 @@ choo_on_game_init_effects = {
 		set_racial_trait_effect = yes
 	}
 	bloodline_game_start_effects = yes
-	disable_racial_assimilation = yes
+	# Seed every country once at init. This is the run that actually matters -
+	# afterwards the modifier is permanent (duration = -1) and the yearly pulse
+	# early-outs on the any_country_culture guard inside the effect.
+	every_country = {
+		disable_racial_assimilation = yes
+	}
 	magic_game_start_effects = yes
 	c:MER = {
 		omni_seed_starting_magical_mercenaries = yes
@@ -173,7 +184,36 @@ disable_racial_assimilation_for_humans = {
 	}
 }
 
+# PERF WRAPPER.
+# The body below (disable_racial_assimilation_inner) is 34 macro expansions, each
+# with a large culture-group OR/NOR gate wrapped around an every_country_culture
+# loop, plus disable_racial_assimilation_for_humans with its ~50-entry lists.
+# It used to run for every country every Jan 1.
+#
+# The modifier it applies is duration = -1, so the work only ever needs redoing
+# when a country's set of country cultures can actually have changed. The dirty
+# flag below is:
+#   - set with years = 10, so it expires on its own and the sweep self-heals
+#     once a decade even if some path is missed;
+#   - removed on on_ownership_change / on_province_colonized (see
+#     common/on_action/omni_racial_assimilation.txt), so newly acquired cultures
+#     are picked up on the next pulse rather than waiting for the decade.
+#
+# NOTE: do NOT try to gate this on "any_country_culture without the modifier" -
+# a country's own primary culture is deliberately never given the modifier, so
+# that condition is true for essentially every country and saves nothing.
 disable_racial_assimilation = {
+	if = {
+		limit = { NOT = { has_variable = omni_racial_assim_done } }
+		disable_racial_assimilation_inner = yes
+		set_variable = {
+			name = omni_racial_assim_done
+			years = 10
+		}
+	}
+}
+
+disable_racial_assimilation_inner = {
 	disable_racial_assimilation_macro = {
 		COUNTRY_LIMIT = "country_culture_group = forest_elves country_culture_group = morrigon_forest_elves country_culture_group = southern_forest_elves country_culture_group = sunset_elves"
 		CULTURE_LIMIT = "this.culture.culture_group = culture_group:forest_elves this.culture.culture_group = culture_group:morrigon_forest_elves this.culture.culture_group = culture_group:southern_forest_elves this.culture.culture_group = culture_group:sunset_elves"
@@ -287,8 +327,8 @@ disable_racial_assimilation = {
 		CULTURE_LIMIT = "this.culture.culture_group = culture_group:eastern_golems"
 	}
 	disable_racial_assimilation_macro = {
-		COUNTRY_LIMIT = "country_culture_group = savannah_arame COUNTRY_LIMIT = "country_culture_group = polarian_arame COUNTRY_LIMIT = "country_culture_group = southern_arame"
-		CULTURE_LIMIT = "this.culture.culture_group = culture_group:savannah_arame CULTURE_LIMIT = "this.culture.culture_group = culture_group:polarian_arame CULTURE_LIMIT = "this.culture.culture_group = culture_group:southern_arame"
+		COUNTRY_LIMIT = "country_culture_group = savannah_arame country_culture_group = polarian_arame country_culture_group = southern_arame"
+		CULTURE_LIMIT = "this.culture.culture_group = culture_group:savannah_arame this.culture.culture_group = culture_group:polarian_arame this.culture.culture_group = culture_group:southern_arame"
 	}
 
 	disable_racial_assimilation_macro = {

@@ -31,6 +31,32 @@ omni_apply_unit_buff_effect = {
 	}
 }
 
+# Apply a player-equivalent morale battle spell to every army or navy led by
+# this character. The player battle menu applies the modifier and the current
+# morale burst together, so the AI must do both as well.
+#   $MOD$ = the unit modifier name to apply.
+#   $DAYS$ = how long the modifier should last.
+#   $MORALE$ = immediate current morale to add.
+omni_apply_unit_buff_with_morale_effect = {
+	every_character_unit = {
+		limit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+		}
+		if = {
+			limit = { has_unit_modifier = $MOD$ }
+			remove_unit_modifier = $MOD$
+		}
+		add_unit_modifier = {
+			name = $MOD$
+			duration = $DAYS$
+		}
+		add_morale = $MORALE$
+	}
+}
+
 # MORALE cast: best affordable positive battle morale spell on the general's own
 # force. Used when danger is near but battle has not yet started or as a fallback
 # in combat if stronger support options are unavailable.
@@ -53,18 +79,24 @@ omni_ai_cast_mobility_buff_effect = {
 			}
 		}
 		if = {
-			limit = { omni_can_afford_spell = { BASE = 75 } }
-			omni_spell_mana_cost_effect = { BASE = 75 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 }
+			limit = {
+				omni_can_afford_spell = { BASE = 50 }
+				omni_caster_any_school_t2 = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 50 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 MORALE = 1.5 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
 			}
 		}
 		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 50 } }
-			omni_spell_mana_cost_effect = { BASE = 50 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_rally_spell_mod DAYS = 1825 }
+			limit = {
+				omni_can_afford_spell = { BASE = 25 }
+				omni_caster_any_school_t2 = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 25 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_rally_spell_mod DAYS = 30 MORALE = 0.75 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -98,9 +130,12 @@ omni_ai_cast_combat_buff_effect = {
 			}
 		}
 		if = {
-			limit = { omni_can_afford_spell = { BASE = 75 } }
-			omni_spell_mana_cost_effect = { BASE = 75 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 }
+			limit = {
+				omni_can_afford_spell = { BASE = 50 }
+				omni_caster_any_school_t2 = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 50 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 MORALE = 1.5 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -121,8 +156,11 @@ omni_ai_cast_combat_buff_effect = {
 			}
 		}
 		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 25 } }
-			omni_spell_mana_cost_effect = { BASE = 25 }
+			limit = {
+				omni_can_afford_spell = { BASE = 15 }
+				omni_caster_tier_1_any_school = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 15 }
 			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_spell_mod DAYS = 30 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
@@ -135,7 +173,7 @@ omni_ai_cast_combat_buff_effect = {
 				omni_can_afford_spell = { BASE = 75 }
 			}
 			omni_spell_mana_cost_effect = { BASE = 75 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_blessing_spell_mod DAYS = 1825 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_blessing_spell_mod DAYS = 30 MORALE = 1 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -160,9 +198,12 @@ omni_ai_cast_combat_buff_effect = {
 			}
 		}
 		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 25 } }
+			limit = {
+				omni_can_afford_spell = { BASE = 25 }
+				omni_caster_any_school_t2 = yes
+			}
 			omni_spell_mana_cost_effect = { BASE = 25 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_rally_spell_mod DAYS = 1825 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_rally_spell_mod DAYS = 30 MORALE = 0.75 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1

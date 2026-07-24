@@ -38,28 +38,69 @@ omni_perf.2 = {
 }
 
 
+# PERF: the yearly AI pass used to be ~20 heavy effects in a single immediate
+# block. Spreading it across countries (days = { 0 300 }) fixed the Jan 1 spike,
+# but each individual firing was still one big lump in a single tick.
+#
+# It is now split into three chained chunks 20 days apart. This is safe because:
+#   - create_list_of_ownable_territories builds a GLOBAL variable list that
+#     persists between events and only rebuilds when empty (omni_perf.4 already
+#     relied on this), so its consumers can run in a later chunk;
+#   - every effect below self-throttles on its own has_variable / set_variable
+#     guard with a ~1 year duration, so exact ordering within the year is not
+#     load-bearing.
+# Chunk 1 keeps list-building and caches first, so later chunks read fresh data.
 omni_perf.3 = {
 	type = country_event
 	hidden = yes
 
 	immediate = {
+		# --- chunk 1: caches, lists, economy ---
 		omni_court_arcana_yearly = yes
 		create_list_of_ownable_territories = yes
-		ai_recruit_mercenaries = yes
-		optimize_state_capitals_and_forts = { periodic = 1 }
 		cache_adjusted_research_efficiency = yes
 		ai_determine_economic_policies = yes
-		ai_revoke_free_hands = yes
-		ai_fix_character_loyalty = yes
-		ai_choose_and_enact_law = yes
-		ai_perform_divine_sacrifice = yes
+		ai_import_food_into_states_in_need = yes  # Global, food is lowest during winter
+		ai_recruit_mercenaries = yes
+
+		trigger_event = { id = omni_perf.6 days = 20 }
+	}
+
+	option = {}
+}
+
+
+# Chunk 2: territory, construction and pop management.
+omni_perf.6 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		optimize_state_capitals_and_forts = { periodic = 1 }
 		ai_manually_move_pops_to_cities = yes
 		ai_try_upgrading_city_to_metropolis = yes
 		ai_choose_territory_and_found_city = yes
 		ai_perform_custom_road_building = yes
-		ai_press_hold_games_button = yes
 		ai_choose_and_make_investment = yes
-		ai_import_food_into_states_in_need = yes  # Global, food is lowest during winter
+
+		trigger_event = { id = omni_perf.7 days = 20 }
+	}
+
+	option = {}
+}
+
+
+# Chunk 3: politics, characters, military and magic.
+omni_perf.7 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		ai_revoke_free_hands = yes
+		ai_fix_character_loyalty = yes
+		ai_choose_and_enact_law = yes
+		ai_perform_divine_sacrifice = yes
+		ai_press_hold_games_button = yes
 		ai_enshrine_social_equity = yes           # Only if Mixed Gender Rules are enabled
 		ai_destroy_leftover_navies = yes
 		omni_ai_study_magic_effect = yes          # Uses Magic Academies to train useful mages
@@ -76,6 +117,23 @@ omni_perf.4 = {
 
 	immediate = {
 		ai_colonize_unowned_territories = yes
+	}
+
+	option = {}
+}
+
+
+# PERF: racial-assimilation safety net. See disable_racial_assimilation in
+# common/scripted_effects/choo_effects.txt - the effect is dirty-flag guarded, so
+# for a country whose borders have not changed this event costs one has_variable
+# check. The full sweep runs at most once per decade per country, and is pulled
+# forward by common/on_action/omni_racial_assimilation.txt when territory changes.
+omni_perf.5 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		disable_racial_assimilation = yes
 	}
 
 	option = {}

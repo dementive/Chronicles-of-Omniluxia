@@ -82,6 +82,12 @@ optimize_state_capitals_and_forts = {
                 # Check if valid and set flags on state and country level to not loop territories in triggers
                 if = {
                     limit = {
+                        # Entries can go stale between being listed and being processed
+                        # (territory lost, decolonised, state dissolved). Without these
+                        # two guards the block below logged "Invalid province from
+                        # scope" and "Event target link 'state' returned an unset scope".
+                        exists = owner
+                        exists = state
                         # Nothing changed since acquiring it, still owned by us
                         owner = prev
                         # Time limit for fort optimization hasn't run out yet
@@ -90,7 +96,7 @@ optimize_state_capitals_and_forts = {
                         owner_at_war_with_previous_owner = no
                     }
                     state = {
-                        set_variable = ai_state_acquired_fort_territory 
+                        set_variable = ai_state_acquired_fort_territory
                     }
                     owner = {
                         set_variable = ai_country_acquired_fort_territory
@@ -98,7 +104,12 @@ optimize_state_capitals_and_forts = {
                 }
 
                 # Otherwise remove variable so we don't count it as acquired fort territory in optimization
-                else = {
+                # Guarded: remove_variable on a province carrying no variables at all
+                # logs "remove_variable effect [ This scope does not have variables ]".
+                else_if = {
+                    limit = {
+                        has_variable = ai_acquired_territory_with_fort
+                    }
                     remove_variable = ai_acquired_territory_with_fort
                 }
             }

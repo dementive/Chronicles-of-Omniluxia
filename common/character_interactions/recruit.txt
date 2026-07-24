@@ -6,7 +6,11 @@
 	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_diplomacy"
 	
 	potential_trigger = {
-		exists = scope:target 
+		# scope:actor is referenced below and again in allowed_trigger, but was
+		# never checked for existence - the UI evaluates these blocks in contexts
+		# where it is unset, logging "scope:actor trigger [ Failed context switch ]".
+		exists = scope:actor
+		exists = scope:target
 		hidden:scope:target = {
 			is_alive = yes
 			NOT = { employer = scope:actor }
@@ -18,7 +22,8 @@
 	
 	
 	allowed_trigger = {
-		hidden:scope:actor = { 
+		exists = scope:actor
+		hidden:scope:actor = {
 			can_pay_price = recruit_character
 		}
 		hidden:scope:target = {
