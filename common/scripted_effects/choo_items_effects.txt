@@ -94,6 +94,15 @@ omni_sell_character_item = {
         name = omni_item_sale_price
         value = $base_price$
     }
+    # Fixed/named items used to refund ~100% of the purchase price here (only the
+    # +/-8% variance and stability/popularity/trait multipliers below applied), while
+    # generated gear (omni_sell_current_generated_gear) has always refunded a flat
+    # 50%. That mismatch let fixed items be bought and resold at near-zero net cost -
+    # sometimes at a profit, if the multipliers below stacked favorably - undermining
+    # the "meaningful gold sink" goal far more than any shop price/threshold tuning
+    # could. Halved here so fixed items match the generated-gear baseline; the
+    # variance and trait/stability bonuses below still apply on top of that base.
+    change_variable = { name = omni_item_sale_price multiply = 0.5 }
     random_list = {
         20 = { change_variable = { name = omni_item_sale_price multiply = 0.92 } }
         20 = { change_variable = { name = omni_item_sale_price multiply = 0.96 } }
@@ -397,6 +406,34 @@ omni_roll_rare_shop_item = {
         10 = { omni_add_item_to_shop_stock = { item_ID = item_wreath_of_joy } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_dragon_slayer_spear } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_bow_of_the_hunter } }
+        10 = {
+            if = {
+                limit = { country_culture_group = high_elves }
+                omni_add_item_to_shop_stock = { item_ID = item_high_elven_trac }
+            }
+        }
+        10 = {
+            if = {
+                limit = {
+                    OR = {
+                        country_culture_group = aralans
+                        country_culture_group = aralanic_rohenoa
+                    }
+                }
+                omni_add_item_to_shop_stock = { item_ID = item_aralans_claid }
+            }
+        }
+        10 = {
+            if = {
+                limit = {
+                    OR = {
+                        country_culture_group = vetalian
+                        country_culture_group = zani_vetalian
+                    }
+                }
+                omni_add_item_to_shop_stock = { item_ID = item_vetalian_longbow }
+            }
+        }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_precious_gemstone } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_precious_jewelry } }
         10 = { omni_add_item_to_shop_stock = { item_ID = item_gift_of_the_god_of_blood } }
@@ -436,8 +473,15 @@ omni_roll_unique_shop_item = {
 }
 
 omni_roll_market_shop_item = {
+    # Market quality bands and rarity weights - "balanced first-pass" numbers from
+    # the item shop balance pass. Bands stretched from </55/89/129/130+> (was
+    # <45/74/104/105+>) and the top-band unique weight cut from 15 to 8, so a
+    # reliably top-tier shop takes meaningfully longer to reach and stays rarer once
+    # reached. See omni_build_item_shop_stock/omni_build_ai_country_item_shop_stock
+    # below for the matching max-item-count and extra-roll threshold changes - all
+    # three must move together, they're tuned as one curve.
     if = {
-        limit = { root.var:omni_market_quality < 45 }
+        limit = { root.var:omni_market_quality < 55 }
         random_list = {
             80 = { omni_roll_common_shop_item = yes }
             20 = { omni_roll_uncommon_shop_item = yes }
@@ -445,8 +489,8 @@ omni_roll_market_shop_item = {
     }
     else_if = {
         limit = {
-            root.var:omni_market_quality >= 45
-            root.var:omni_market_quality < 75
+            root.var:omni_market_quality >= 55
+            root.var:omni_market_quality < 90
         }
         random_list = {
             45 = { omni_roll_common_shop_item = yes }
@@ -456,8 +500,8 @@ omni_roll_market_shop_item = {
     }
     else_if = {
         limit = {
-            root.var:omni_market_quality >= 75
-            root.var:omni_market_quality < 105
+            root.var:omni_market_quality >= 90
+            root.var:omni_market_quality < 130
         }
         random_list = {
             20 = { omni_roll_common_shop_item = yes }
@@ -468,10 +512,10 @@ omni_roll_market_shop_item = {
     }
     else = {
         random_list = {
-            10 = { omni_roll_common_shop_item = yes }
-            35 = { omni_roll_uncommon_shop_item = yes }
-            40 = { omni_roll_rare_shop_item = yes }
-            15 = { omni_roll_unique_shop_item = yes }
+            15 = { omni_roll_common_shop_item = yes }
+            42 = { omni_roll_uncommon_shop_item = yes }
+            35 = { omni_roll_rare_shop_item = yes }
+            8 = { omni_roll_unique_shop_item = yes }
         }
     }
 }
@@ -525,22 +569,24 @@ omni_build_item_shop_stock = {
         if = { limit = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } root = { change_variable = { name = omni_market_quality add = 20 } } }
     }
     
-    # Define max items based on quality
+    # Define max items based on quality - bands raised from </45/74/104/105+>
+    # to </55/89/129/130+> to match the reweighted omni_roll_market_shop_item bands.
+    # Stock-size counts themselves (4/6/8/10) are left untouched.
     if = {
-        limit = { root.var:omni_market_quality < 45 }
+        limit = { root.var:omni_market_quality < 55 }
         set_variable = { name = omni_shop_max_items value = 4 }
     }
     else_if = {
         limit = {
-            root.var:omni_market_quality >= 45
-            root.var:omni_market_quality < 75
+            root.var:omni_market_quality >= 55
+            root.var:omni_market_quality < 90
         }
         set_variable = { name = omni_shop_max_items value = 6 }
     }
     else_if = {
         limit = {
-            root.var:omni_market_quality >= 75
-            root.var:omni_market_quality < 105
+            root.var:omni_market_quality >= 90
+            root.var:omni_market_quality < 130
         }
         set_variable = { name = omni_shop_max_items value = 8 }
     }
@@ -576,16 +622,18 @@ omni_build_item_shop_stock = {
         if = { limit = { exists = scope:omni_item_merchant scope:omni_item_merchant = { has_trait = generous } } omni_roll_common_shop_item = yes }
         if = { limit = { exists = scope:omni_item_merchant scope:omni_item_merchant = { OR = { has_trait = shrewd has_trait = crafty } } } root = { change_variable = { name = omni_market_quality add = 20 } } }
 
+        # Extra roll thresholds raised from >=55/90/120 to >=75/115/160, so the
+        # bonus rolls (not just the base 4 rolls) become a later-game reward too.
         if = {
-            limit = { root.var:omni_market_quality >= 55 }
+            limit = { root.var:omni_market_quality >= 75 }
             omni_roll_market_shop_item = yes
         }
         if = {
-            limit = { root.var:omni_market_quality >= 90 }
+            limit = { root.var:omni_market_quality >= 115 }
             omni_roll_rare_shop_item = yes
         }
         if = {
-            limit = { root.var:omni_market_quality >= 120 }
+            limit = { root.var:omni_market_quality >= 160 }
             omni_roll_unique_shop_item = yes
         }
     }
@@ -645,21 +693,22 @@ omni_build_ai_country_item_shop_stock = {
         
         # Define max items based on quality (for AI)
         root = {
+            # Kept in sync with the player-path bands above - see that comment.
             if = {
-                limit = { var:omni_market_quality < 45 }
+                limit = { var:omni_market_quality < 55 }
                 set_variable = { name = omni_shop_max_items value = 4 }
             }
             else_if = {
                 limit = {
-                    var:omni_market_quality >= 45
-                    var:omni_market_quality < 75
+                    var:omni_market_quality >= 55
+                    var:omni_market_quality < 90
                 }
                 set_variable = { name = omni_shop_max_items value = 6 }
             }
             else_if = {
                 limit = {
-                    var:omni_market_quality >= 75
-                    var:omni_market_quality < 105
+                    var:omni_market_quality >= 90
+                    var:omni_market_quality < 130
                 }
                 set_variable = { name = omni_shop_max_items value = 8 }
             }
@@ -677,16 +726,17 @@ omni_build_ai_country_item_shop_stock = {
                 if = { limit = { prev = { trade_goods = papyrus } } random_list = { 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_oratory } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_military } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_fineese } } 10 = { omni_add_item_to_shop_stock = { item_ID = item_book_of_skills_zeal } } } }
                 if = { limit = { prev = { OR = { trade_goods = precious_metals trade_goods = gems trade_goods = porcelain trade_goods = soulgems } } } omni_roll_rare_shop_item = yes }
                 
+                # Kept in sync with the player-path thresholds above - see that comment.
                 if = {
-                    limit = { root.var:omni_market_quality >= 55 }
+                    limit = { root.var:omni_market_quality >= 75 }
                     omni_roll_market_shop_item = yes
                 }
                 if = {
-                    limit = { root.var:omni_market_quality >= 90 }
+                    limit = { root.var:omni_market_quality >= 115 }
                     omni_roll_rare_shop_item = yes
                 }
                 if = {
-                    limit = { root.var:omni_market_quality >= 120 }
+                    limit = { root.var:omni_market_quality >= 160 }
                     omni_roll_unique_shop_item = yes
                 }
             }
@@ -883,6 +933,8 @@ assign_all_items_to_categories = {
     assing_item_to_category = { item_category = weapon  item_ID = item_spear }
     assing_item_to_category = { item_category = weapon  item_ID = item_long_axe }
     assing_item_to_category = { item_category = shield  item_ID = item_shield }
+    assing_item_to_category = { item_category = ring  item_ID = item_ring_1 }
+    assing_item_to_category = { item_category = ring  item_ID = item_ring_2 }
     assing_item_to_category = { item_category = trinket  item_ID = item_book_of_skills_oratory }
     assing_item_to_category = { item_category = trinket  item_ID = item_book_of_skills_military }
     assing_item_to_category = { item_category = trinket  item_ID = item_book_of_skills_fineese }
@@ -932,6 +984,9 @@ assign_all_items_to_categories = {
     assing_item_to_category = { item_category = weapon  item_ID = item_wreath_of_joy }
     assing_item_to_category = { item_category = weapon  item_ID = item_dragon_slayer_spear }
     assing_item_to_category = { item_category = weapon_ranged  item_ID = item_bow_of_the_hunter }
+    assing_item_to_category = { item_category = weapon  item_ID = item_high_elven_trac }
+    assing_item_to_category = { item_category = weapon  item_ID = item_aralans_claid }
+    assing_item_to_category = { item_category = weapon_ranged  item_ID = item_vetalian_longbow }
     assing_item_to_category = { item_category = emblem  item_ID = item_crown_of_zanis }
     assing_item_to_category = { item_category = trinket  item_ID = item_amulet_of_the_wolf }
     assing_item_to_category = { item_category = armour  item_ID = item_balthazar_cape }
@@ -1064,6 +1119,9 @@ assign_all_items_to_rarities = {
     assing_rare_item_to_rarity = { item_ID = item_wreath_of_joy }
     assing_rare_item_to_rarity = { item_ID = item_dragon_slayer_spear }
     assing_rare_item_to_rarity = { item_ID = item_bow_of_the_hunter }
+    assing_rare_item_to_rarity = { item_ID = item_high_elven_trac }
+    assing_rare_item_to_rarity = { item_ID = item_aralans_claid }
+    assing_rare_item_to_rarity = { item_ID = item_vetalian_longbow }
     assing_unique_item_to_rarity = { item_ID = item_crown_of_zanis }
     assing_unique_item_to_rarity = { item_ID = item_amulet_of_the_wolf }
     assing_unique_item_to_rarity = { item_ID = item_balthazar_cape }
@@ -1125,6 +1183,26 @@ equip_item_with_modifier = {
         }
         custom_tooltip = equiping_$item_ID$_tt
         add_character_modifier = { name = $item_ID$_modifier  duration = -1 }
+    }
+}
+
+# Keep ordinary item toggles free of dynamic country-modifier references. The
+# engine validates those references before evaluating an if-limit, which caused
+# every non-combat caller to emit a script error for its absent *_army modifier.
+# Only the explicit combat-item call sites use this wrapper.
+equip_combat_item_with_modifier = {
+    equip_item_with_modifier = { item_ID = $item_ID$ }
+    if = {
+        limit = {
+            is_ruler = yes
+            has_variable_list = equiped_item_list
+            is_target_in_variable_list = { name = equiped_item_list target = flag:$item_ID$ }
+        }
+        country = { add_country_modifier = { name = $item_ID$_army duration = -1 } }
+    }
+    else_if = {
+        limit = { is_ruler = yes }
+        country = { remove_country_modifier = $item_ID$_army }
     }
 }
 

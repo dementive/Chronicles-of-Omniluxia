@@ -117,6 +117,7 @@ me_nazani.2 = {
 		if = {
 			limit = {
 				NOT = { owns = 2187 }
+				NOT = { war_with = p:2187.owner }
 			}
 			p:2187 = {
 				owner = {
@@ -181,12 +182,18 @@ me_nazani.3 = {
 		custom_tooltip = me_nazani.3.a_tt
 
 		root = {
-            declare_war_with_wargoal = {
-                war_goal = conquer_wargoal
-                province = 2187
-                target = p:2187.owner
-            }
-        }
+			if = {
+				limit = {
+					NOT = { owns = 2187 }
+					NOT = { war_with = p:2187.owner }
+				}
+				declare_war_with_wargoal = {
+					war_goal = conquer_wargoal
+					province = 2187
+					target = p:2187.owner
+				}
+			}
+		}
 
 		# Grommash was promised the governorship of the Borderlands once the war ends.
 		# Begin watching for the war's conclusion so his reward (or revolt) can play out.
@@ -950,6 +957,30 @@ me_nazani.201 = {
 			# the new ruler as its target, so it must be called on ROOT.
 			root = {
 				set_as_ruler = char:328
+				random_character = {
+					limit = {
+						is_adult = yes
+						is_alive = yes
+						is_ruler = no
+						employer = root
+						NOT = { THIS = char:328 }
+					}
+					save_scope_as = replacement_legate
+				}
+				every_unit = {
+					limit = {
+						commander = char:328
+					}
+					if = {
+						limit = {
+							exists = scope:replacement_legate
+						}
+						set_as_commander = scope:replacement_legate
+					}
+				}
+			}
+			char:328 = {
+				remove_command = yes
 			}
 		}
 

@@ -25,6 +25,42 @@ monthly_country_pulse = {
             set_global_variable = { name = omni_artifact_categories_migrated_v1 value = 1 }
             omni_assign_artifact_item_categories = yes
         }
+        # One-time rebuild of the item category lists for saves that carry STALE
+        # combat-category membership from an older version's item categorization.
+        # Category lists are persisted in the save and normally only ever built
+        # once (at on_game_initialized, guarded by omni_item_lists_built). When an
+        # item was recategorized from a combat slot (weapon/armour/shield/helmet)
+        # to a non-combat one (trinket/emblem/ring/curse/special) in a later
+        # version, existing saves kept the old combat membership. That made
+        # is_combat_category_item wrongly return yes for ~43 non-combat items
+        # (crowns, rings, books, banners, relics...), so equipping them tried to
+        # apply a non-existent item_<id>_army country modifier every time - the
+        # dominant source of jomini_script_system.cpp spam in error.log.
+        # add_to_global_variable_list only ever appends, so we clear the ten
+        # category lists first, then rebuild them from the current (correct)
+        # assignment. assign_all_items_to_categories also re-runs
+        # omni_assign_artifact_item_categories at its end, so artifacts are
+        # restored too. Idempotent and global-guarded, exactly like the migration
+        # above; new games are unaffected (they build the correct lists at start).
+        if = {
+            limit = { NOT = { has_global_variable = omni_item_categories_rebuilt_v2 } }
+            set_global_variable = { name = omni_item_categories_rebuilt_v2 value = 1 }
+            clear_global_variable_list = item_weapon
+            clear_global_variable_list = item_weapon_ranged
+            clear_global_variable_list = item_armour
+            clear_global_variable_list = item_shield
+            clear_global_variable_list = item_helmet
+            clear_global_variable_list = item_emblem
+            clear_global_variable_list = item_trinket
+            clear_global_variable_list = item_ring
+            clear_global_variable_list = item_curse
+            clear_global_variable_list = item_special
+            random_country = {
+                limit = { always = yes }
+                assign_all_items_to_categories = yes
+                omni_assign_generated_items_categories = yes
+            }
+        }
     }
 }
 
