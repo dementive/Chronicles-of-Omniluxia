@@ -10,6 +10,10 @@
 
 choo_on_game_init_effects = {
 	every_character = {
+		limit = {
+			exists = this
+			is_alive = yes
+		}
 		set_racial_trait_effect = yes
 	}
 	bloodline_game_start_effects = yes
@@ -1361,7 +1365,7 @@ set_racial_trait_effect = {
 			limit = {
 				has_culture_group = castaway_dwarves
 			}
-			add_trait = castaway_dwarves_trait
+			add_trait = castaway_dwarf_trait
 			if = {
 				limit = {
 					OR = {
@@ -3589,9 +3593,17 @@ choose_race_converting_effect = {
 }
 
 # Race Integration Levels
+# Guarded: scope:chosen_culture is not always set by the time these are
+# called (e.g. events that offer these as options can fire after the
+# self-heal in choose_race_integrate_effect has ended the racial focus
+# without a valid culture). Without this guard every call with an unset
+# scope:chosen_culture spammed "Undefined event target" / "Failed context
+# switch" errors into error.log.
 race_integrate_positive_level_effect = {
+    if = {
+        limit = { exists = scope:chosen_culture }
 	if = {
-        limit = { 
+        limit = {
         	scope:chosen_culture = {
         		has_country_culture_modifier = race_int_1_mod
         	}
@@ -3607,7 +3619,7 @@ race_integrate_positive_level_effect = {
         }
     }
     else_if = {
-        limit = { 
+        limit = {
         	scope:chosen_culture = {
         		has_country_culture_modifier = race_int_2_mod
         	}
@@ -3623,7 +3635,7 @@ race_integrate_positive_level_effect = {
         }
     }
     else_if = {
-        limit = { 
+        limit = {
         	scope:chosen_culture = {
         		has_country_culture_modifier = race_int_3_mod
         	}
@@ -3639,7 +3651,7 @@ race_integrate_positive_level_effect = {
         }
     }
     else_if = {
-        limit = { 
+        limit = {
         	scope:chosen_culture = {
         		has_country_culture_modifier = race_int_4_mod
         	}
@@ -3653,11 +3665,14 @@ race_integrate_positive_level_effect = {
             }
         }
     }
+    }
 }
 
 race_integrate_negative_level_effect = {
+    if = {
+        limit = { exists = scope:chosen_culture }
 	if = {
-        limit = { 
+        limit = {
         	scope:chosen_culture = {
         		has_country_culture_modifier = race_int_4_mod
         	}
@@ -3673,7 +3688,7 @@ race_integrate_negative_level_effect = {
         }
     }
     else_if = {
-        limit = { 
+        limit = {
         	scope:chosen_culture = {
         		has_country_culture_modifier = race_int_3_mod
         	}
@@ -3689,7 +3704,7 @@ race_integrate_negative_level_effect = {
         }
     }
     else_if = {
-        limit = { 
+        limit = {
         	scope:chosen_culture = {
         		has_country_culture_modifier = race_int_2_mod
         	}
@@ -3705,7 +3720,7 @@ race_integrate_negative_level_effect = {
         }
     }
     else_if = {
-        limit = { 
+        limit = {
         	scope:chosen_culture = {
         		has_country_culture_modifier = race_int_1_mod
         	}
@@ -3713,6 +3728,7 @@ race_integrate_negative_level_effect = {
         scope:chosen_culture = {
             remove_country_culture_modifier = race_int_1_mod
         }
+    }
     }
 }
 

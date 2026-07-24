@@ -668,7 +668,12 @@ theme_setup_effect_1 = {
     scope:lower_ytalia_revolt = {
         add_treasury = 300
         add_manpower = 20
-        set_as_ruler = scope:rebel_scum_1
+        # Guarded: char:177 may have died of old age before this fires; keep
+        # create_country's auto-assigned ruler instead of erroring.
+        if = {
+            limit = { scope:rebel_scum_1 = { is_alive = yes } }
+            set_as_ruler = scope:rebel_scum_1
+        }
         if = {
             limit = {
                 NOR = {
@@ -784,7 +789,19 @@ theme_setup_effect_2 = {
     scope:nalia_revolt = {
         add_treasury = 300
         add_manpower = 20
-        set_as_ruler = scope:rebel_scum_2
+        # NOTE: unlike theme_setup_effect_1/3/4, this effect never defines a
+        # "char:XXX = { ... save_scope_as = rebel_scum_2 }" block, so
+        # scope:rebel_scum_2 never existed and this set_as_ruler errored on
+        # every single run ("Undefined event target 'rebel_scum_2'"). Guarded
+        # so it no longer errors; Central Geallian Republic keeps whatever
+        # ruler create_country auto-assigns. If a specific historical founder
+        # character was intended here, add a char:<id> block (matching the
+        # pattern used by the other three theme_setup_effect_N blocks above)
+        # before this line and save it as rebel_scum_2.
+        if = {
+            limit = { exists = scope:rebel_scum_2 }
+            set_as_ruler = scope:rebel_scum_2
+        }
         if = {
             limit = {
                 NOR = {
@@ -854,7 +871,15 @@ theme_setup_effect_3 = {
     scope:gunstris_revolt = {
         add_treasury = 300
         add_manpower = 20
-        set_as_ruler = scope:rebel_scum_3
+        # Guarded: char:181 is a fixed historical character who may have died
+        # of old age by the time this fires. set_as_ruler on a dead target
+        # errored and left the country's ruler in an invalid state, which
+        # cascaded into repeated "Country Nobody" errors elsewhere. If they're
+        # dead, keep whatever ruler create_country auto-assigned instead.
+        if = {
+            limit = { scope:rebel_scum_3 = { is_alive = yes } }
+            set_as_ruler = scope:rebel_scum_3
+        }
         if = {
             limit = {
                 NOR = {
@@ -935,7 +960,12 @@ theme_setup_effect_4 = {
     scope:shwi_revolt = {
         add_treasury = 300
         add_manpower = 20
-        set_as_ruler = scope:rebel_scum_4
+        # Guarded: char:183 may have died of old age before this fires; keep
+        # create_country's auto-assigned ruler instead of erroring.
+        if = {
+            limit = { scope:rebel_scum_4 = { is_alive = yes } }
+            set_as_ruler = scope:rebel_scum_4
+        }
         if = {
             limit = {
                 NOR = {
@@ -1080,12 +1110,14 @@ razani_legion_setup_effect_2 = {
 			any_character = {
 				is_alive = yes
 				is_successor = yes
+				loyalty > 20
 			}
 		}
 		random_character = {
 			limit = {
 				is_alive = yes
 				is_successor = yes
+				loyalty > 20
 			}
 			save_temporary_scope_as = razani_heir_apparent_scope
 		}

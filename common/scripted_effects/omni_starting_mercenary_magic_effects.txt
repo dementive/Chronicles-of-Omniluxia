@@ -78,29 +78,114 @@ omni_make_tier_four_magical_mercenary = {
 	refill_character_magic_to_max = yes
 }
 
-# Called directly from on_game_initialized in MER scope.
-# These commander IDs are deterministic at campaign setup. Do not replace this
-# explicit list with a random_character or every_character effect.
+# Called directly from on_game_initialized in MER scope. Mercenary character
+# IDs are generated per campaign, but their starting provinces are fixed. This
+# is therefore an explicit map-location roster, not a random selection.
+# Start: Horteon (142), Polaris (149), Arteon (660), Morrigon (1839, 2461),
+# and Luxterra (1201, 765).
 omni_seed_starting_magical_mercenaries = {
-	char:35794 = { omni_make_starting_magical_mercenary = yes }
-	char:35795 = { omni_make_starting_magical_mercenary = yes }
-	char:35796 = { omni_make_starting_magical_mercenary = yes }
+	every_character = {
+		limit = {
+			is_alive = yes
+			is_mercenary = yes
+			employer = { this = c:MER }
+		}
+		if = {
+			limit = {
+				location = {
+					OR = {
+						province_id = 142
+						province_id = 149
+						province_id = 660
+						province_id = 1839
+						province_id = 2461
+						province_id = 1201
+						province_id = 765
+					}
+				}
+			}
+			omni_make_starting_magical_mercenary = yes
+		}
+		else_if = {
+			limit = {
+				location = {
+					OR = {
+						province_id = 1253
+						province_id = 2198
+						province_id = 2788
+						province_id = 3172
+						province_id = 1062
+						province_id = 1331
+						province_id = 870
+					}
+				}
+			}
+			set_variable = omni_mercenary_tier_two_candidate
+		}
+		else_if = {
+			limit = {
+				location = {
+					OR = {
+						province_id = 1035
+						province_id = 3252
+						province_id = 3176
+						province_id = 4184
+						province_id = 2721
+						province_id = 3585
+						province_id = 2828
+					}
+				}
+			}
+			set_variable = omni_mercenary_tier_three_candidate
+		}
+		else_if = {
+			limit = {
+				location = {
+					OR = {
+						province_id = 459
+						province_id = 3808
+						province_id = 3434
+						province_id = 4721
+						province_id = 3915
+						province_id = 4216
+						province_id = 1718
+					}
+				}
+			}
+			set_variable = omni_mercenary_tier_four_candidate
+		}
+	}
 }
 
+# Later waves favour the larger landmasses: one Arteon captain, three Morrigon
+# captains, and three Luxterra captains. Horteon and Polaris retain their
+# single starting mage.
 omni_seed_tier_two_magical_mercenaries = {
-	char:35797 = { omni_make_tier_two_magical_mercenary = yes }
-	char:35798 = { omni_make_tier_two_magical_mercenary = yes }
-	char:35799 = { omni_make_tier_two_magical_mercenary = yes }
+	every_character = {
+		limit = {
+			is_alive = yes
+			has_variable = omni_mercenary_tier_two_candidate
+		}
+		omni_make_tier_two_magical_mercenary = yes
+	}
 }
 
 omni_seed_tier_three_magical_mercenaries = {
-	char:35800 = { omni_make_tier_three_magical_mercenary = yes }
-	char:35801 = { omni_make_tier_three_magical_mercenary = yes }
-	char:35802 = { omni_make_tier_three_magical_mercenary = yes }
+	every_character = {
+		limit = {
+			is_alive = yes
+			has_variable = omni_mercenary_tier_three_candidate
+		}
+		omni_make_tier_three_magical_mercenary = yes
+	}
 }
 
 omni_seed_tier_four_magical_mercenaries = {
-	char:35803 = { omni_make_tier_four_magical_mercenary = yes }
-	char:35804 = { omni_make_tier_four_magical_mercenary = yes }
-	char:35805 = { omni_make_tier_four_magical_mercenary = yes }
+	every_character = {
+		limit = {
+			is_alive = yes
+			has_variable = omni_mercenary_tier_four_candidate
+		}
+		omni_make_tier_four_magical_mercenary = yes
+	}
 }
