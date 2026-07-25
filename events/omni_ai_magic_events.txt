@@ -1,0 +1,164 @@
+﻿namespace = omni_ai_magic
+
+# ----------------------------------------------------------------------------------------------------------------------
+# AI non-combat magic drivers.
+#
+# Both events below are hidden, AI-only, and fire from the YEARLY chunked AI pulse
+# (omni_perf.7 in events/omni_perf_pulses.txt) rather than a monthly on_action -
+# neither healing nor civic buffing is time-critical, and per the performance rules
+# in MAGIC_AI_AUDIT.md we do not add new monthly ticks for the magic system.
+#
+# Trigger ordering in both is deliberately cheapest-first:
+#   is_ai -> has_variable cooldown -> the bounded any_character court scan.
+# The court scan is the only real cost and it is the last thing evaluated.
+# ----------------------------------------------------------------------------------------------------------------------
+
+omni_ai_magic.1 = { # AI: a court cleric heals the ruler / heir / commanders
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		# A caster who can actually cast a cure...
+		any_character = {
+			employer = root
+			is_alive = yes
+			NOT = { has_variable = omni_healing_spell_cooldown }
+			omni_character_is_eligible_caster = yes
+			omni_knows_spell = { SPELL = healing_light }
+			omni_caster_aldic_t1 = yes
+			omni_can_afford_spell = { BASE = 75 }
+		}
+		# ...and someone worth curing.
+		any_character = {
+			employer = root
+			is_alive = yes
+			omni_is_healing_priority_character = yes
+			OR = {
+				omni_has_curable_ailment = yes
+				omni_needs_vitality_healing = yes
+			}
+		}
+	}
+
+	immediate = {
+		save_scope_as = caster_country
+		# Patient priority: the ruler first, then anyone else who matters. A dying
+		# ruler is a succession crisis, so they outrank a sick general.
+		if = {
+			limit = {
+				current_ruler = {
+					OR = {
+						omni_has_curable_ailment = yes
+						omni_needs_vitality_healing = yes
+					}
+				}
+			}
+			current_ruler = { save_scope_as = omni_heal_target }
+		}
+		else = {
+			random_character = {
+				limit = {
+					employer = root
+					is_alive = yes
+					omni_is_healing_priority_character = yes
+					OR = {
+						omni_has_curable_ailment = yes
+						omni_needs_vitality_healing = yes
+					}
+				}
+				save_scope_as = omni_heal_target
+			}
+		}
+		# Prefer the strongest available healer so the T2 cure list is used when
+		# the court has someone who can manage it.
+		if = {
+			limit = {
+				any_character = {
+					employer = root
+					is_alive = yes
+					NOT = { has_variable = omni_healing_spell_cooldown }
+					omni_character_is_eligible_caster = yes
+					omni_knows_spell = { SPELL = healing_light }
+					has_variable = cleric_t3_unlocked_var
+					omni_can_afford_spell = { BASE = 100 }
+				}
+			}
+			random_character = {
+				limit = {
+					employer = root
+					is_alive = yes
+					NOT = { has_variable = omni_healing_spell_cooldown }
+					omni_character_is_eligible_caster = yes
+					omni_knows_spell = { SPELL = healing_light }
+					has_variable = cleric_t3_unlocked_var
+					omni_can_afford_spell = { BASE = 100 }
+				}
+				omni_ai_cast_healing_effect = yes
+			}
+		}
+		else = {
+			random_character = {
+				limit = {
+					employer = root
+					is_alive = yes
+					NOT = { has_variable = omni_healing_spell_cooldown }
+					omni_character_is_eligible_caster = yes
+					omni_knows_spell = { SPELL = healing_light }
+					omni_caster_aldic_t1 = yes
+					omni_can_afford_spell = { BASE = 75 }
+				}
+				omni_ai_cast_healing_effect = yes
+			}
+		}
+	}
+
+	option = {}
+}
+
+omni_ai_magic.2 = { # AI: a court mage casts a civic spell in peacetime
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		# Peacetime only - at war, mana belongs to the battle and siege casters,
+		# which run on the monthly pulse and have first call on it.
+		war = no
+		any_character = {
+			employer = root
+			is_alive = yes
+			NOT = { has_variable = omni_civic_spell_cooldown }
+			omni_character_is_eligible_caster = yes
+			omni_can_afford_spell = { BASE = 50 }
+			OR = {
+				has_variable = cleric_t2_unlocked_var
+				has_variable = elementalist_t2_unlocked_var
+				has_variable = hierophant_t3_unlocked_var
+				has_variable = druid_t2_unlocked_var
+			}
+		}
+	}
+
+	immediate = {
+		save_scope_as = caster_country
+		random_character = {
+			limit = {
+				employer = root
+				is_alive = yes
+				NOT = { has_variable = omni_civic_spell_cooldown }
+				omni_character_is_eligible_caster = yes
+				omni_can_afford_spell = { BASE = 50 }
+				OR = {
+					has_variable = cleric_t2_unlocked_var
+					has_variable = elementalist_t2_unlocked_var
+					has_variable = hierophant_t3_unlocked_var
+					has_variable = druid_t2_unlocked_var
+				}
+			}
+			omni_ai_cast_civic_spell_effect = yes
+		}
+	}
+
+	option = {}
+}

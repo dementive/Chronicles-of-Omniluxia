@@ -1,7 +1,201 @@
 ﻿# Deterministic study progression and prestige ladder.
+#
+# HISTORY (fixed July 2026): magic_study_progress was written here and by
+# omni_resolve_magic_study_state but never READ by anything, and the whole tuning
+# table in common/script_values/OMNI_magic_progression_values.txt
+# (RANK_THRESHOLD, PROGRESS_BASE/ACADEMY/APTITUDE, FRICTION_*) was dead code.
+# Tier unlocks came only from event options in events/magic_studying_events.txt,
+# which pick randomly for the AI - so AI mages advanced by coin-flip and the
+# academy/aptitude bonuses did nothing. omni_check_study_rank_up below closes the
+# loop: progress now converts into real tier unlocks at RANK_THRESHOLD.
+#
+# The event options still grant tiers directly. That is intentional - they are the
+# narrative fast-path, this is the reliable floor underneath them. A character can
+# reach a tier by either route; both go through omni_grant_next_school_tier, which
+# is idempotent.
 omni_add_study_progress = {
 	if = { limit = { NOT = { has_variable = magic_study_progress } } set_variable = { name = magic_study_progress value = 0 } }
-	change_variable = { name = magic_study_progress add = 8 }
+	change_variable = { name = magic_study_progress add = omni_study_progress_gain_value }
+	omni_check_study_rank_up = yes
+}
+
+# Converts accumulated study progress into tier unlocks. Loop is unrolled three
+# times rather than using a while loop: progress gain per session is far below
+# 3 x RANK_THRESHOLD, so three checks is a hard ceiling, and unrolled ifs avoid
+# any risk of a runaway loop in a script that runs on a character pulse.
+#
+# PERF: pure variable arithmetic on the character already in scope. No iteration.
+omni_check_study_rank_up = {
+	if = {
+		limit = { var:magic_study_progress >= RANK_THRESHOLD }
+		change_variable = { name = magic_study_progress subtract = RANK_THRESHOLD }
+		omni_grant_next_school_tier = yes
+	}
+	if = {
+		limit = { var:magic_study_progress >= RANK_THRESHOLD }
+		change_variable = { name = magic_study_progress subtract = RANK_THRESHOLD }
+		omni_grant_next_school_tier = yes
+	}
+	if = {
+		limit = { var:magic_study_progress >= RANK_THRESHOLD }
+		change_variable = { name = magic_study_progress subtract = RANK_THRESHOLD }
+		omni_grant_next_school_tier = yes
+	}
+}
+
+# Grants the next tier in whichever school the character is currently studying
+# (omni_studying_*_var, set by omni_ai_pick_study_school or the player's choice in
+# events/magic_menu.txt). Each school is a T2 -> T3 -> T4 chain; a character who
+# has already capped their studying school gains nothing, which is the signal to
+# the study driver that they should be re-enrolled in something else.
+#
+# Also grants the mage trait on the first tier so the character becomes a valid
+# caster under omni_character_is_eligible_caster, and the archmage trait at T4.
+# FAMILY is passed in alongside SCHOOL rather than derived from it, because script
+# parameters are literal text substitution - there is no string-comparison trigger
+# to map a school name to its family at runtime. Passing both lets
+# omni_grant_random_$FAMILY$_t$TIER$ resolve straight to the generated pool effect.
+#   Omnic    = diviner / hierophant
+#   Aldic    = cleric / illusionist
+#   Amten    = elementalist / druid
+#   Melodian = necromancer / warlock
+omni_grant_next_school_tier = {
+	if =      { limit = { has_variable = omni_studying_diviner_var }      omni_advance_school_tier = { SCHOOL = diviner      FAMILY = omnic } }
+	else_if = { limit = { has_variable = omni_studying_hierophant_var }   omni_advance_school_tier = { SCHOOL = hierophant   FAMILY = omnic } }
+	else_if = { limit = { has_variable = omni_studying_cleric_var }       omni_advance_school_tier = { SCHOOL = cleric       FAMILY = aldic } }
+	else_if = { limit = { has_variable = omni_studying_illusionist_var }  omni_advance_school_tier = { SCHOOL = illusionist  FAMILY = aldic } }
+	else_if = { limit = { has_variable = omni_studying_elementalist_var } omni_advance_school_tier = { SCHOOL = elementalist FAMILY = amten } }
+	else_if = { limit = { has_variable = omni_studying_druid_var }        omni_advance_school_tier = { SCHOOL = druid        FAMILY = amten } }
+	else_if = { limit = { has_variable = omni_studying_necromancer_var }  omni_advance_school_tier = { SCHOOL = necromancer  FAMILY = melodian } }
+	else_if = { limit = { has_variable = omni_studying_warlock_var }      omni_advance_school_tier = { SCHOOL = warlock      FAMILY = melodian } }
+}
+
+# One school's T2 -> T3 -> T4 ladder. Idempotent: re-running on a capped character
+# is a no-op. Each unlock also grants that tier's spells from the generated pools
+# so knowing a tier and knowing spells stay in sync.
+omni_advance_school_tier = {
+	if = {
+		limit = { NOT = { has_variable = $SCHOOL$_t2_unlocked_var } }
+		set_variable = $SCHOOL$_t2_unlocked_var
+		if = {
+			limit = { NOR = { has_trait = mage_trait  has_trait = archmage_trait } }
+			add_trait = mage_trait
+		}
+		omni_grant_random_$FAMILY$_t1 = yes
+	}
+	else_if = {
+		limit = { NOT = { has_variable = $SCHOOL$_t3_unlocked_var } }
+		set_variable = $SCHOOL$_t3_unlocked_var
+		omni_grant_random_$FAMILY$_t2 = yes
+	}
+	else_if = {
+		limit = { NOT = { has_variable = $SCHOOL$_t4_unlocked_var } }
+		set_variable = $SCHOOL$_t4_unlocked_var
+		set_variable = $SCHOOL$_mastered_var
+		if = {
+			limit = { NOT = { has_trait = archmage_trait } }
+			if = {
+				limit = { has_trait = mage_trait }
+				remove_trait = mage_trait
+			}
+			add_trait = archmage_trait
+		}
+		# T4 unlock grants from the t3 AND t4 pools - the t4 pools hold a single
+		# capstone spell each, so this is the only chance to receive it.
+		omni_grant_random_$FAMILY$_t3 = yes
+		omni_grant_random_$FAMILY$_t4 = yes
+	}
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Safe affinity increments.
+#
+# change_variable on a variable that was never set logs
+#   "change_variable effect [ Variable not of the 'value' scope type. Type: empty ]"
+# and silently does nothing, so the affinity is lost. That happened wherever a
+# character reached a magic event without having gone through
+# omni_resolve_magic_study_state first (which is what initialises the four
+# affinity vars). These wrappers initialise on demand, and every raw
+# change_variable on an affinity var in events/magic_studying_events.txt now
+# calls one of them instead.
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# Best-affinity bookkeeping.
+#
+# Jomini rejects variable-to-variable comparisons in triggers ("Illegal use of
+# operator >=" - only a constant or script value may sit on the right of an
+# operator). The old *_best_affinity_is_* triggers did exactly that, so the whole
+# continuity branch of omni_ai_pick_study_school was spamming errors and
+# evaluating as false.
+#
+# Instead we resolve the winner once, in effect scope, where arithmetic IS legal,
+# and store it as a small integer code in omni_best_affinity_var:
+#   1 = omnic, 2 = aldic, 3 = amten, 4 = melodian, 0 = no affinity at all.
+# Triggers then do a plain var-vs-constant compare. Ties resolve to the
+# lowest-numbered family, which is fine - it only picks the study school.
+# ----------------------------------------------------------------------------------------------------------------------
+omni_init_affinity_vars = {
+	if = { limit = { NOT = { has_variable = omnic_affinity_var } } set_variable = { name = omnic_affinity_var value = 0 } }
+	if = { limit = { NOT = { has_variable = aldic_affinity_var } } set_variable = { name = aldic_affinity_var value = 0 } }
+	if = { limit = { NOT = { has_variable = amten_affinity_var } } set_variable = { name = amten_affinity_var value = 0 } }
+	if = { limit = { NOT = { has_variable = melodian_affinity_var } } set_variable = { name = melodian_affinity_var value = 0 } }
+}
+
+omni_update_best_affinity = {
+	omni_init_affinity_vars = yes
+	set_variable = { name = omni_best_affinity_score_var value = var:omnic_affinity_var }
+	set_variable = { name = omni_best_affinity_var value = 1 }
+
+	set_variable = { name = omni_affinity_diff_var value = { value = var:aldic_affinity_var subtract = var:omni_best_affinity_score_var } }
+	if = {
+		limit = { var:omni_affinity_diff_var > 0 }
+		set_variable = { name = omni_best_affinity_score_var value = var:aldic_affinity_var }
+		set_variable = { name = omni_best_affinity_var value = 2 }
+	}
+
+	set_variable = { name = omni_affinity_diff_var value = { value = var:amten_affinity_var subtract = var:omni_best_affinity_score_var } }
+	if = {
+		limit = { var:omni_affinity_diff_var > 0 }
+		set_variable = { name = omni_best_affinity_score_var value = var:amten_affinity_var }
+		set_variable = { name = omni_best_affinity_var value = 3 }
+	}
+
+	set_variable = { name = omni_affinity_diff_var value = { value = var:melodian_affinity_var subtract = var:omni_best_affinity_score_var } }
+	if = {
+		limit = { var:omni_affinity_diff_var > 0 }
+		set_variable = { name = omni_best_affinity_score_var value = var:melodian_affinity_var }
+		set_variable = { name = omni_best_affinity_var value = 4 }
+	}
+
+	# No school studied yet - clear the code so the triggers all read false.
+	if = {
+		limit = { var:omni_best_affinity_score_var < 1 }
+		set_variable = { name = omni_best_affinity_var value = 0 }
+	}
+}
+
+omni_gain_omnic_affinity = {
+	if = { limit = { NOT = { has_variable = omnic_affinity_var } } set_variable = { name = omnic_affinity_var value = 0 } }
+	change_variable = { name = omnic_affinity_var add = 1 }
+	omni_update_best_affinity = yes
+}
+
+omni_gain_aldic_affinity = {
+	if = { limit = { NOT = { has_variable = aldic_affinity_var } } set_variable = { name = aldic_affinity_var value = 0 } }
+	change_variable = { name = aldic_affinity_var add = 1 }
+	omni_update_best_affinity = yes
+}
+
+omni_gain_amten_affinity = {
+	if = { limit = { NOT = { has_variable = amten_affinity_var } } set_variable = { name = amten_affinity_var value = 0 } }
+	change_variable = { name = amten_affinity_var add = 1 }
+	omni_update_best_affinity = yes
+}
+
+omni_gain_melodian_affinity = {
+	if = { limit = { NOT = { has_variable = melodian_affinity_var } } set_variable = { name = melodian_affinity_var value = 0 } }
+	change_variable = { name = melodian_affinity_var add = 1 }
+	omni_update_best_affinity = yes
 }
 
 omni_resolve_magic_study_state = {
@@ -10,7 +204,12 @@ omni_resolve_magic_study_state = {
 	if = { limit = { NOT = { has_variable = aldic_affinity_var } } set_variable = { name = aldic_affinity_var value = 0 } }
 	if = { limit = { NOT = { has_variable = amten_affinity_var } } set_variable = { name = amten_affinity_var value = 0 } }
 	if = { limit = { NOT = { has_variable = melodian_affinity_var } } set_variable = { name = melodian_affinity_var value = 0 } }
-	change_variable = { name = magic_study_progress add = 8 }
+	# NOTE: this effect used to also do "change_variable = { name = magic_study_progress add = 8 }".
+	# Every call site (choo_effects.txt lines ~1654, ~1783, ~2100) calls
+	# omni_add_study_progress immediately before this, so progress was being
+	# awarded twice per study session. Progress is now granted in exactly one
+	# place - omni_add_study_progress - and this effect is purely state
+	# initialisation plus affinity/mastery bookkeeping, which is what its name says.
 	if = { limit = { has_variable = omni_studying_diviner_var } change_variable = { name = omnic_affinity_var add = 1 } }
 	if = { limit = { has_variable = omni_studying_hierophant_var } change_variable = { name = omnic_affinity_var add = 1 } }
 	if = { limit = { has_variable = omni_studying_cleric_var } change_variable = { name = aldic_affinity_var add = 1 } }
@@ -27,6 +226,7 @@ omni_resolve_magic_study_state = {
 	if = { limit = { has_variable = druid_t4_unlocked_var } set_variable = druid_mastered_var }
 	if = { limit = { has_variable = necromancer_t4_unlocked_var } set_variable = necromancer_mastered_var }
 	if = { limit = { has_variable = warlock_t4_unlocked_var } set_variable = warlock_mastered_var }
+	omni_update_best_affinity = yes
 	omni_check_magic_prestige = yes
 }
 

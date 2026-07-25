@@ -1,0 +1,1454 @@
+﻿namespace = gw_effects
+
+# ----------------------------------------------------------------------------------------------------------------------
+# OMNILUXIA OVERRIDE of the vanilla file of the same path.
+#
+# Two changes, both mechanical - every tier gate and probability table below is
+# copied verbatim from the base game file:
+#
+# 1. PERF (fold): vanilla fires gw_effects.1/.2/.3/.4 as four separate events from
+#    yearly_country_pulse, i.e. four trigger passes per country per year. They are
+#    folded into one event whose immediate block runs the four original triggers as
+#    if-gates instead. common/on_action/00_yearly_country.txt now fires only
+#    gw_effects.1.
+#
+# 2. PERF + BUGFIX (scoping): every one of the 16 every_character scans in the
+#    vanilla version is GLOBAL - it walks every living character in the world.
+#    That means one country owning a Great Work with an education effect scans
+#    (and trains the children of) every other country on the map, every year.
+#    Each scan now carries `employer = root`, restricting it to the owning
+#    country's own characters. This is the bulk of the saving and also stops
+#    foreign courts being trained by someone else's monument.
+#
+#    If you ever want vanilla behaviour back, delete this file - the base game
+#    version takes over again - and restore gw_effects.2/.3/.4 in
+#    common/on_action/00_yearly_country.txt.
+# ----------------------------------------------------------------------------------------------------------------------
+
+gw_effects.1 = {
+    type = country_event
+    hidden = yes
+
+    trigger = {
+        OR = {
+            has_country_great_work_effect = gw_effect_martial_education
+            has_country_great_work_effect = gw_effect_finesse_education
+            has_country_great_work_effect = gw_effect_charisma_education
+            has_country_great_work_effect = gw_effect_zeal_education
+        }
+    }
+
+    immediate = {
+
+        # ============================================================
+        # Martial training (was gw_effects.1)
+        # ============================================================
+        if = {
+            limit = {
+            has_country_great_work_effect = gw_effect_martial_education
+
+            }
+     # EFFECT FIELD - Fires after trigger check, but before everything else
+
+            # TIER 1
+            if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_martial_education:1
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+
+                        NOT = {
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+                    random_list = {
+                        98 = {}
+                        2 = {
+                            add_character_modifier = {
+                                name = "martial_training_1"
+                                duration = -1
+                            } 
+                        }                  
+                    }
+                }
+            }
+
+            # TIER 2
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_martial_education:2
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+
+                    # No trait present
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = martial_training_1
+                                has_character_modifier = martial_training_2
+                                has_character_modifier = martial_training_3
+                                has_character_modifier = martial_training_4                         
+                            }
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                add_character_modifier = {
+                                    name = "martial_training_1"
+                                    duration = -1
+                                } 
+                            }                                             
+                        }
+                    }
+
+                    # Trait 1 present, add trait 2
+                    else_if = {
+                        limit = {
+                            has_character_modifier = martial_training_1
+
+                            NOT = {
+                                has_character_modifier = martial_training_2
+                                has_character_modifier = martial_training_3
+                                has_character_modifier = martial_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = martial_training_1 
+                                add_character_modifier = {
+                                    name = "martial_training_2"
+                                    duration = -1
+                                }
+                            }                                          
+                        }
+                    }                
+                }
+            }
+
+            # TIER 3
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_martial_education:3
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+
+                    # No trait present
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = martial_training_1
+                                has_character_modifier = martial_training_2
+                                has_character_modifier = martial_training_3
+                                has_character_modifier = martial_training_4
+                            }
+                        }
+
+                        random_list = {
+                            94 = {}
+                            6 = {
+                                add_character_modifier = {
+                                    name = "martial_training_1"
+                                    duration = -1
+                                }
+                            }
+                        }
+                    }
+
+                    # Trait 1 present, add trait 2
+                    else_if = {
+                        limit = {
+                            has_character_modifier = martial_training_1
+
+                            NOT = {
+                                has_character_modifier = martial_training_2
+                                has_character_modifier = martial_training_3
+                                has_character_modifier = martial_training_4
+                            }                                                
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                remove_character_modifier = martial_training_1
+                                    add_character_modifier = {
+                                    name = "martial_training_2"
+                                    duration = -1
+                                }
+                            }
+                        }
+                    }
+
+                    # Trait 2 present, add trait 3
+                    else_if = {
+                        limit = {
+                            has_character_modifier = martial_training_2
+
+                            NOT = {
+                                has_character_modifier = martial_training_1
+                                has_character_modifier = martial_training_3
+                                has_character_modifier = martial_training_4
+                            }                                                
+                        }
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = martial_training_2
+                                add_character_modifier = {
+                                    name = "martial_training_3"
+                                    duration = -1
+                                }
+                            }
+                        }
+                    }                               
+                }
+            }
+
+            # TIER 4
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_martial_education:4
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                                        
+                    }
+
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = martial_training_1
+                                has_character_modifier = martial_training_2
+                                has_character_modifier = martial_training_3
+                                has_character_modifier = martial_training_4
+                            }
+                        }
+
+                        random_list = {
+                            92 = {}
+                            8 = {
+                                add_character_modifier = {
+                                    name = "martial_training_1"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = martial_training_1
+
+                            NOT = {
+                                has_character_modifier = martial_training_2
+                                has_character_modifier = martial_training_3
+                                has_character_modifier = martial_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            94 = {}
+                            6 = {
+                                remove_character_modifier = martial_training_1
+                                add_character_modifier = {
+                                    name = "martial_training_2"
+                                    duration = -1
+                                } 
+                            }                      
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = martial_training_2
+
+                            NOT = {
+                                has_character_modifier = martial_training_1
+                                has_character_modifier = martial_training_3
+                                has_character_modifier = martial_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                remove_character_modifier = martial_training_2
+                                add_character_modifier = {
+                                    name = "martial_training_3"
+                                    duration = -1
+                                }
+                            }                      
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = martial_training_3
+
+                            NOT = {
+                                has_character_modifier = martial_training_1
+                                has_character_modifier = martial_training_2
+                                has_character_modifier = martial_training_4
+                            }                            
+                        }                        
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = martial_training_3
+                                add_character_modifier = {
+                                    name = "martial_training_4"
+                                    duration = -1
+                                } 
+                            }                      
+                        }
+                    }
+                }
+            }
+
+        }
+
+        # ============================================================
+        # Finesse training (was gw_effects.2)
+        # ============================================================
+        if = {
+            limit = {
+            has_country_great_work_effect = gw_effect_finesse_education
+
+            }
+     # EFFECT FIELD - Fires after trigger check, but before everything else
+
+            # TIER 1
+            if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_finesse_education:1
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+                    random_list = {
+                        98 = {}
+                        2 = {
+                            add_character_modifier = {
+                                name = "finesse_training_1"
+                                duration = -1                
+                            }
+                        }
+                    }
+                }
+            }
+
+            # TIER 2
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_finesse_education:2
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+
+                    # No trait present
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = finesse_training_1
+                                has_character_modifier = finesse_training_2
+                                has_character_modifier = finesse_training_3
+                                has_character_modifier = finesse_training_4                         
+                            }
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                add_character_modifier = {
+                                    name = "finesse_training_1"
+                                    duration = -1                
+                                }
+                            }                  
+                        }
+                    }
+
+                    # Trait 1 present, add trait 2
+                    else_if = {
+                        limit = {
+                            has_character_modifier = finesse_training_1
+
+                            NOT = {
+                                has_character_modifier = finesse_training_2
+                                has_character_modifier = finesse_training_3
+                                has_character_modifier = finesse_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = finesse_training_1
+                                add_character_modifier = {
+                                    name = "finesse_training_2"
+                                    duration = -1                
+                                }
+                            }
+                        }
+                    }                
+                }
+            }
+
+            # TIER 3
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_finesse_education:3
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+
+                    # No trait present
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = finesse_training_1
+                                has_character_modifier = finesse_training_2
+                                has_character_modifier = finesse_training_3
+                                has_character_modifier = finesse_training_4
+                            }
+                        }
+
+                        random_list = {
+                            94 = {}
+                            6 = {
+                                add_character_modifier = {
+                                    name = "finesse_training_1"
+                                    duration = -1                
+                                }
+                            }
+                        }
+                    }
+
+                    # Trait 1 present, add trait 2
+                    else_if = {
+                        limit = {
+                            has_character_modifier = finesse_training_1
+
+                            NOT = {
+                                has_character_modifier = finesse_training_2
+                                has_character_modifier = finesse_training_3
+                                has_character_modifier = finesse_training_4
+                            }                                                
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                remove_character_modifier = finesse_training_1
+                                add_character_modifier = {
+                                    name = "finesse_training_2"
+                                    duration = -1
+                                }
+                            }
+                        }
+                    }
+
+                    # Trait 2 present, add trait 3
+                    else_if = {
+                        limit = {
+                            has_character_modifier = finesse_training_2
+
+                            NOT = {
+                                has_character_modifier = finesse_training_1
+                                has_character_modifier = finesse_training_3
+                                has_character_modifier = finesse_training_4
+                            }                                                
+                        }
+
+                        random_list= {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = finesse_training_2
+                                add_character_modifier = {
+                                    name = "finesse_training_3"
+                                    duration = -1                
+                                }
+                            }
+                        }
+                    }                               
+                }
+            }
+
+            # TIER 4
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_finesse_education:4
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                                       
+                    }
+
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = finesse_training_1
+                                has_character_modifier = finesse_training_2
+                                has_character_modifier = finesse_training_3
+                                has_character_modifier = finesse_training_4
+                            }
+                        }
+
+                        random_list = {
+                            92 = {}
+                            8 = {
+                                add_character_modifier = {
+                                    name = "finesse_training_1"
+                                    duration = -1                
+                                }
+                            }
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = finesse_training_1
+
+                            NOT = {
+                                has_character_modifier = finesse_training_2
+                                has_character_modifier = finesse_training_3
+                                has_character_modifier = finesse_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            94 = {}
+                            6 = {
+                                remove_character_modifier = finesse_training_1
+                                add_character_modifier = {
+                                    name = "finesse_training_2"
+                                    duration = -1                
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = finesse_training_2
+
+                            NOT = {
+                                has_character_modifier = finesse_training_1
+                                has_character_modifier = finesse_training_3
+                                has_character_modifier = finesse_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                remove_character_modifier = finesse_training_2
+                                add_character_modifier = {
+                                    name = "finesse_training_3"
+                                    duration = -1                
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = finesse_training_3
+
+                            NOT = {
+                                has_character_modifier = finesse_training_1
+                                has_character_modifier = finesse_training_2
+                                has_character_modifier = finesse_training_4
+                            }                            
+                        }                        
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = finesse_training_3
+                                add_character_modifier = {
+                                    name = "finesse_training_4"
+                                    duration = -1                
+                                }
+                            }                        
+                        }
+                    }
+                }
+            }
+
+        }
+
+        # ============================================================
+        # Charisma training (was gw_effects.3)
+        # ============================================================
+        if = {
+            limit = {
+            has_country_great_work_effect = gw_effect_charisma_education
+
+            }
+     # EFFECT FIELD - Fires after trigger check, but before everything else
+
+            # TIER 1
+            if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_charisma_education:1
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+                    random_list = {
+                        98 = {}
+                        2 = {
+                            add_character_modifier = {
+                                name = "charisma_training_1"
+                                duration = -1                
+                            }
+                        }
+                    }
+                }
+            }
+
+            # TIER 2
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_charisma_education:2
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+
+                    # No trait present
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = charisma_training_1
+                                has_character_modifier = charisma_training_2
+                                has_character_modifier = charisma_training_3
+                                has_character_modifier = charisma_training_4                         
+                            }
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                add_character_modifier = {
+                                    name = "charisma_training_1"
+                                    duration = -1                
+                                }
+                            }                                             
+                        }
+                    }
+
+                    # Trait 1 present, add trait 2
+                    else_if = {
+                        limit = {
+                            has_character_modifier = charisma_training_1
+
+                            NOT = {
+                                has_character_modifier = charisma_training_2
+                                has_character_modifier = charisma_training_3
+                                has_character_modifier = charisma_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = charisma_training_1
+                                add_character_modifier = {
+                                    name = "charisma_training_2"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }                
+                }
+            }
+
+            # TIER 3
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_charisma_education:3
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                    
+                    }
+
+                    # No trait present
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = charisma_training_1
+                                has_character_modifier = charisma_training_2
+                                has_character_modifier = charisma_training_3
+                                has_character_modifier = charisma_training_4
+                            }
+                        }
+
+                        random_list = {
+                            94 = {}
+                            6 = {
+                                add_character_modifier = {
+                                    name = "charisma_training_1"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    # Trait 1 present, add trait 2
+                    else_if = {
+                        limit = {
+                            has_character_modifier = charisma_training_1
+
+                            NOT = {
+                                has_character_modifier = charisma_training_2
+                                has_character_modifier = charisma_training_3
+                                has_character_modifier = charisma_training_4
+                            }                                                
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                remove_character_modifier = charisma_training_1
+                                add_character_modifier = {
+                                    name = "charisma_training_2"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    # Trait 2 present, add trait 3
+                    else_if = {
+                        limit = {
+                            has_character_modifier = charisma_training_2
+
+                            NOT = {
+                                has_character_modifier = charisma_training_1
+                                has_character_modifier = charisma_training_3
+                                has_character_modifier = charisma_training_4                          
+                            }                                                
+                        }
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = charisma_training_2
+                                add_character_modifier = {
+                                    name = "charisma_training_3"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }                               
+                }
+            }
+
+            # TIER 4
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_charisma_education:4
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+                            has_character_modifier = zeal_training_1
+                            has_character_modifier = zeal_training_2
+                            has_character_modifier = zeal_training_3
+                            has_character_modifier = zeal_training_4
+                        }                                        
+                    }
+
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = charisma_training_1
+                                has_character_modifier = charisma_training_2
+                                has_character_modifier = charisma_training_3
+                                has_character_modifier = charisma_training_4
+                            }
+                        }
+
+                        random_list = {
+                            92 = {}
+                            8 = {
+                                add_character_modifier = {
+                                    name = "charisma_training_1"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = charisma_training_1
+
+                            NOT = {
+                                has_character_modifier = charisma_training_2
+                                has_character_modifier = charisma_training_3
+                                has_character_modifier = charisma_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            94 = {}
+                            6 = {
+                                remove_character_modifier = charisma_training_1
+                                add_character_modifier = {
+                                    name = "charisma_training_2"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = charisma_training_2
+
+                            NOT = {
+                                has_character_modifier = charisma_training_1
+                                has_character_modifier = charisma_training_3
+                                has_character_modifier = charisma_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                remove_character_modifier = charisma_training_2
+                                add_character_modifier = {
+                                    name = "charisma_training_3"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = charisma_training_3
+
+                            NOT = {
+                                has_character_modifier = charisma_training_1
+                                has_character_modifier = charisma_training_2
+                                has_character_modifier = charisma_training_4
+                                }                            
+                            }                        
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = charisma_training_3
+                                add_character_modifier = {
+                                    name = "charisma_training_4"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+                }
+            }
+
+        }
+
+        # ============================================================
+        # Zeal training (was gw_effects.4)
+        # ============================================================
+        if = {
+            limit = {
+            has_country_great_work_effect = gw_effect_zeal_education
+
+            }
+     # EFFECT FIELD - Fires after trigger check, but before everything else
+
+            # TIER 1
+            if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_zeal_education:1
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+                        }                    
+                    }
+                    random_list = {
+                        98 = {}
+                        2 = {
+                            add_character_modifier = {
+                                name = "zeal_training_1"
+                                duration = -1
+                            }
+                        }                    
+                    }
+                }
+            }
+
+            # TIER 2
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_zeal_education:2
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+                        }                    
+                    }
+
+                    # No trait present
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = zeal_training_1
+                                has_character_modifier = zeal_training_2
+                                has_character_modifier = zeal_training_3
+                                has_character_modifier = zeal_training_4                         
+                            }
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                add_character_modifier = {
+                                    name = "zeal_training_1"
+                                    duration = -1
+                                }
+                            }                                              
+                        }
+                    }
+
+                    # Trait 1 present, add trait 2
+                    else_if = {
+                        limit = {
+                            has_character_modifier = zeal_training_1
+
+                            NOT = {
+                                has_character_modifier = zeal_training_2
+                                has_character_modifier = zeal_training_3
+                                has_character_modifier = zeal_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = zeal_training_1
+                                add_character_modifier = {
+                                    name = "zeal_training_2"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }                
+                }
+            }
+
+            # TIER 3
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_zeal_education:3
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+                        }                    
+                    }
+
+                    # No trait present
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = zeal_training_1
+                                has_character_modifier = zeal_training_2
+                                has_character_modifier = zeal_training_3
+                                has_character_modifier = zeal_training_4
+                            }
+                        }
+
+                        random_list = {
+                            94 = {}
+                            6 = {
+                                add_character_modifier = {
+                                    name = "zeal_training_1"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    # Trait 1 present, add trait 2
+                    else_if = {
+                        limit = {
+                            has_character_modifier = zeal_training_1
+
+                            NOT = {
+                                has_character_modifier = zeal_training_2
+                                has_character_modifier = zeal_training_3
+                                has_character_modifier = zeal_training_4
+                            }                                               
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                remove_character_modifier = zeal_training_1
+                                add_character_modifier = {
+                                    name = "zeal_training_2"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    # Trait 2 present, add trait 3
+                    else_if = {
+                        limit = {
+                            has_character_modifier = zeal_training_2
+
+                            NOT = {
+                                has_character_modifier = zeal_training_1
+                                has_character_modifier = zeal_training_3
+                                has_character_modifier = zeal_training_4   
+                            }                                               
+                        }
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = zeal_training_2
+                                add_character_modifier = {
+                                    name = "zeal_training_3"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }                               
+                }
+            }
+
+            # TIER 4
+            else_if = {
+                limit = {
+                    has_country_great_work_effect = gw_effect_zeal_education:4
+                }
+
+                every_character = {
+                    limit = {
+                        employer = root # PERF/BUGFIX: was a global scan
+                        age < 16
+                        age >= 5
+
+                        NOT = {
+                            has_character_modifier = martial_training_1
+                            has_character_modifier = martial_training_2
+                            has_character_modifier = martial_training_3
+                            has_character_modifier = martial_training_4
+
+                            has_character_modifier = finesse_training_1
+                            has_character_modifier = finesse_training_2
+                            has_character_modifier = finesse_training_3
+                            has_character_modifier = finesse_training_4
+
+                            has_character_modifier = charisma_training_1
+                            has_character_modifier = charisma_training_2
+                            has_character_modifier = charisma_training_3
+                            has_character_modifier = charisma_training_4
+                        }                                        
+                    }
+
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_character_modifier = zeal_training_1
+                                has_character_modifier = zeal_training_2
+                                has_character_modifier = zeal_training_3
+                                has_character_modifier = zeal_training_4
+                            }
+                        }
+
+                        random_list = {
+                            92 = {}
+                            8 = {
+                                add_character_modifier = {
+                                    name = "zeal_training_1"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = zeal_training_1
+
+                            NOT = {
+                                has_character_modifier = zeal_training_2
+                                has_character_modifier = zeal_training_3
+                                has_character_modifier = zeal_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            94 = {}
+                            6 = {
+                                remove_character_modifier = zeal_training_1
+                                add_character_modifier = {
+                                    name = "zeal_training_2"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = zeal_training_2
+
+                            NOT = {
+                                has_character_modifier = zeal_training_1
+                                has_character_modifier = zeal_training_3
+                                has_character_modifier = zeal_training_4
+                            }                        
+                        }
+
+                        random_list = {
+                            96 = {}
+                            4 = {
+                                remove_character_modifier = zeal_training_2
+                                add_character_modifier = {
+                                    name = "zeal_training_3"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+
+                    else_if = {
+                        limit = {
+                            has_character_modifier = zeal_training_3
+
+                            NOT = {
+                                has_character_modifier = zeal_training_1
+                                has_character_modifier = zeal_training_2
+                                has_character_modifier = zeal_training_4
+                            }                            
+                        }                        
+
+                        random_list = {
+                            98 = {}
+                            2 = {
+                                remove_character_modifier = zeal_training_3
+                                add_character_modifier = {
+                                    name = "zeal_training_4"
+                                    duration = -1
+                                }
+                            }                        
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    option = {}
+}

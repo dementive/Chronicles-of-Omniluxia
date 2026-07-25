@@ -1,0 +1,46 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# OMNI - PERF: dirty-flag invalidation for disable_racial_assimilation
+#
+# disable_racial_assimilation (common/scripted_effects/choo_effects.txt) is an
+# expensive, idempotent sweep: 34 macro expansions, each wrapping an
+# every_country_culture loop, plus disable_racial_assimilation_for_humans.
+# It used to run for every country, undelayed, every Jan 1.
+#
+# It is now guarded by the country variable omni_racial_assim_done, which is set
+# with years = 10 so the sweep self-heals once a decade regardless. The hooks
+# below clear that flag at the only moments a country's set of country cultures
+# can actually change, so newly acquired cultures are covered by the next
+# yearly pulse (omni_perf.5, spread 0-300 days) instead of waiting a decade.
+#
+# remove_variable is guarded by has_variable: calling it on a scope that has no
+# variables at all logs "remove_variable effect [ This scope does not have
+# variables ]".
+# ----------------------------------------------------------------------------------------------------------------------
+
+on_ownership_change = { #province scope
+	effect = {
+		if = {
+			limit = {
+				exists = owner
+				owner = { has_variable = omni_racial_assim_done }
+			}
+			owner = {
+				remove_variable = omni_racial_assim_done
+			}
+		}
+	}
+}
+
+on_province_colonized = { #province scope
+	effect = {
+		if = {
+			limit = {
+				exists = owner
+				owner = { has_variable = omni_racial_assim_done }
+			}
+			owner = {
+				remove_variable = omni_racial_assim_done
+			}
+		}
+	}
+}

@@ -1,4 +1,18 @@
 ﻿# Central tuning table for the learning rework.
+#
+# STATUS (July 2026): RANK_THRESHOLD, PROGRESS_BASE, PROGRESS_ACADEMY and
+# PROGRESS_APTITUDE are now live - they feed omni_study_progress_gain_value below,
+# which omni_add_study_progress uses, and omni_check_study_rank_up compares
+# accumulated progress against RANK_THRESHOLD to grant real tier unlocks. See
+# common/scripted_effects/OMNI_magic_progression.txt.
+#
+# Still unused, kept for the features they were written for:
+#   STUDY_SESSION_INTERVAL - the study chain currently self-schedules with
+#     trigger_event days = { 30 180 } in choo_effects.txt rather than a fixed interval.
+#   FRICTION_CROSS_STEP / FRICTION_FAMILIARITY - intended to penalise switching
+#     schools and reward staying in one. omni_ai_pick_study_school now handles
+#     school continuity on the AI side by preference instead of by cost.
+#   CATCHUP_*_PRICE - for a gold-for-progress catch-up purchase that does not exist yet.
 STUDY_SESSION_INTERVAL = { value = 60 }
 RANK_THRESHOLD = { value = 40 }
 PROGRESS_BASE = { value = 8 }
@@ -9,3 +23,29 @@ FRICTION_FAMILIARITY = { value = -0.5 }
 CATCHUP_BEGINNER_PRICE = { value = 25 }
 CATCHUP_INTERMEDIATE_PRICE = { value = 60 }
 CATCHUP_ADVANCED_PRICE = { value = 120 }
+
+# Progress earned per completed study session. Evaluated in CHARACTER scope.
+#
+# At PROGRESS_BASE = 8 and RANK_THRESHOLD = 40, a plain courtier needs 5 sessions
+# per tier. A finesse-13 mage in a country with an academy earns
+# 8 + 2 + (13 x 0.15) = ~11.95, so ~3.3 sessions per tier - roughly one tier every
+# 1.5-2 years given the 30-180 day session scheduling. That puts a dedicated AI
+# mage at T4 within a normal reign, which is the point of the rework.
+omni_study_progress_gain_value = {
+	value = PROGRESS_BASE
+	# Court academy bonus: the study driver already requires an academy for AI
+	# study, but player-initiated study does not, so check rather than assume.
+	if = {
+		limit = {
+			exists = employer
+			employer = { any_owned_province = { has_building = magic_academy_building } }
+		}
+		add = PROGRESS_ACADEMY
+	}
+	# Aptitude: finesse is the mod's scholarly stat and is what the study
+	# eligibility checks already read.
+	add = {
+		value = finesse
+		multiply = PROGRESS_APTITUDE
+	}
+}

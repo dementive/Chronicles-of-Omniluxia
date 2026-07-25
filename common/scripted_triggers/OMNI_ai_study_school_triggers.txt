@@ -1,0 +1,54 @@
+﻿# ---------------------------------------------------------------------------
+# School-preference triggers for AI magic study.
+# Evaluated in CHARACTER scope. Used by omni_ai_pick_study_school in
+# common/scripted_effects/omni_ai_magic_study_effects.txt.
+#
+# The four *_affinity_var counters are incremented by omni_resolve_magic_study_state
+# every time a character completes a study session in a school of that family, so
+# "best affinity" is a cheap proxy for "the school this character has invested in".
+#
+# PERF: every check below is a has_variable or a var comparison on the character
+# already in scope. No scope iteration, no list walks.
+#
+# The affinity vars are only initialised by omni_resolve_magic_study_state, so
+# every read is guarded by has_variable first - reading an unset variable logs
+# "Variable not of the 'value' scope type" and silently returns nothing.
+# ---------------------------------------------------------------------------
+
+omni_ai_has_any_magic_affinity = {
+	OR = {
+		AND = { has_variable = omnic_affinity_var     var:omnic_affinity_var > 0 }
+		AND = { has_variable = aldic_affinity_var     var:aldic_affinity_var > 0 }
+		AND = { has_variable = amten_affinity_var     var:amten_affinity_var > 0 }
+		AND = { has_variable = melodian_affinity_var  var:melodian_affinity_var > 0 }
+	}
+}
+
+# Each of the four below reads the pre-computed omni_best_affinity_var code set by
+# omni_update_best_affinity (common/scripted_effects/OMNI_magic_progression.txt).
+# They used to compare one affinity var against another directly, which Jomini
+# rejects outright ("Illegal use of operator >=" - only constants and script
+# values are legal on the right of an operator), so the whole continuity branch
+# was erroring and evaluating false. The comparison now happens in effect scope,
+# where arithmetic is legal, and the triggers are a single var-vs-constant read.
+#   1 = omnic, 2 = aldic, 3 = amten, 4 = melodian.
+
+omni_ai_best_affinity_is_omnic = {
+	has_variable = omni_best_affinity_var
+	var:omni_best_affinity_var = 1
+}
+
+omni_ai_best_affinity_is_aldic = {
+	has_variable = omni_best_affinity_var
+	var:omni_best_affinity_var = 2
+}
+
+omni_ai_best_affinity_is_amten = {
+	has_variable = omni_best_affinity_var
+	var:omni_best_affinity_var = 3
+}
+
+omni_ai_best_affinity_is_melodian = {
+	has_variable = omni_best_affinity_var
+	var:omni_best_affinity_var = 4
+}

@@ -98,6 +98,21 @@ scheme_purge_court.1 = {
 				save_scope_as = purge_destination
 			}
 		}
+		# The pick above finds nothing for an isolated court with no one in
+		# diplomatic range, and the banish/finesse options then used an unset
+		# scope:purge_destination - "Undefined event target 'purge_destination'"
+		# followed by "set_home_country (target) was null". Fall back to any
+		# other country so every option stays valid rather than gating the
+		# options away and risking an event with nothing to click.
+		if = {
+			limit = { NOT = { exists = scope:purge_destination } }
+			random_country = {
+				limit = {
+					NOT = { this = root.employer }
+				}
+				save_scope_as = purge_destination
+			}
+		}
 	}
 	option = {
 		name = scheme_purge_court.banish

@@ -31,6 +31,169 @@ omni_apply_unit_buff_effect = {
 	}
 }
 
+# Apply a player-equivalent morale battle spell to every army or navy led by
+# this character. The player battle menu applies the modifier and the current
+# morale burst together, so the AI must do both as well.
+#   $MOD$ = the unit modifier name to apply.
+#   $DAYS$ = how long the modifier should last.
+#   $MORALE$ = immediate current morale to add.
+omni_apply_unit_buff_with_morale_effect = {
+	every_character_unit = {
+		limit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+		}
+		if = {
+			limit = { has_unit_modifier = $MOD$ }
+			remove_unit_modifier = $MOD$
+		}
+		add_unit_modifier = {
+			name = $MOD$
+			duration = $DAYS$
+		}
+		add_morale = $MORALE$
+	}
+}
+
+# Apply (or refresh) a hostile unit modifier on every enemy army/navy stacked in
+# the same province as one of this general's units.
+#   $MOD$  = the unit modifier to apply.
+#   $DAYS$ = how long it should last.
+#   $UNITTYPE$ = is_army or is_navy - which enemy stacks to hit. Naval modifiers on
+#            an army (and vice versa) do nothing, so the caller picks the right
+#            target set. Passed as the trigger KEY rather than as a yes/no value
+#            because "is_army = no" is not attested anywhere in the base game or
+#            Invictus, whereas both "is_army = yes" and "is_navy = yes" are.
+#
+# PERF: this is the only new scope walk in the AI magic code, and it only runs
+# after omni_ai_cast_offensive_debuff_effect has already confirmed - via triggers
+# the mobility branch was paying for anyway - that a hostile stack is co-located.
+omni_apply_enemy_debuff_effect = {
+	every_character_unit = {
+		limit = {
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+		}
+		unit_location = {
+			every_unit_in_province = {
+				limit = {
+					$UNITTYPE$ = yes
+					unit_owner = { war_with = scope:caster_country }
+					NOT = { has_unit_modifier = $MOD$ }
+				}
+				add_unit_modifier = {
+					name = $MOD$
+					duration = $DAYS$
+				}
+			}
+		}
+	}
+}
+
+# OFFENSIVE cast: debuff the enemy stack we are fighting or about to fight.
+#
+# This whole branch did not exist before - the five offensive spells in
+# SPELLS_mods.txt (Fear Hex, Mudbind, Storm Wrack, Cursed Rigging, Blighted
+# Ground) plus Panic Rout and Command Confusion were reachable only from
+# player-clicked options in events/zorgo_magic_events.txt, so an AI archmage
+# leading an army never once debuffed an enemy.
+#
+# Ladder order is by strength-per-mana, strongest first, and every branch requires
+# the same school tier the equivalent player option requires:
+#   Fear Hex      75 mana, Melodian T1 (necromancer_t2) - broadest morale hit, land+sea
+#   Storm Wrack   50 mana, Melodian T3 (warlock_t3)     - land+sea, movement + morale
+#   Cursed Rigging 50 mana, Melodian T1                 - naval only, big
+#   Mudbind       25 mana, Amten T1 (elementalist_t2)   - land only, pins a stack
+#   Blighted Ground 25 mana, Amten T1                   - land only, weaker Mudbind
+#
+# DURATION: 30 days, matching the friendly battle buffs. Note the player's own
+# versions of these spells apply for 365 days - see the balance note in
+# MAGIC_AI_AUDIT.md; a one-year -35% movement debuff is very sticky and the
+# asymmetry currently favours the player.
+omni_ai_cast_offensive_debuff_effect = {
+	if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 75 }
+			omni_caster_melodian_t1 = yes
+			OR = {
+				omni_ai_enemy_debuffable_trigger = { MOD = omni_fear_hex_spell_mod UNITTYPE = is_army }
+				omni_ai_enemy_debuffable_trigger = { MOD = omni_fear_hex_spell_mod UNITTYPE = is_navy }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 75 }
+		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_army }
+		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		set_variable = {
+			name = omni_battle_spell_cooldown
+			days = 1
+		}
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_melodian_t3 = yes
+			OR = {
+				omni_ai_enemy_debuffable_trigger = { MOD = omni_storm_wrack_spell_mod UNITTYPE = is_army }
+				omni_ai_enemy_debuffable_trigger = { MOD = omni_storm_wrack_spell_mod UNITTYPE = is_navy }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_army }
+		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		set_variable = {
+			name = omni_battle_spell_cooldown
+			days = 1
+		}
+	}
+	else_if = {
+		# Naval specialist - only worth casting if there is actually a fleet to hex.
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_melodian_t1 = yes
+			any_character_unit = { is_navy = yes }
+			omni_ai_enemy_debuffable_trigger = { MOD = omni_cursed_rigging_spell_mod UNITTYPE = is_navy }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		omni_apply_enemy_debuff_effect = { MOD = omni_cursed_rigging_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		set_variable = {
+			name = omni_battle_spell_cooldown
+			days = 1
+		}
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 25 }
+			omni_caster_amten_t1 = yes
+			any_character_unit = { is_army = yes }
+			omni_ai_enemy_debuffable_trigger = { MOD = omni_mudbind_spell_mod UNITTYPE = is_army }
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		omni_apply_enemy_debuff_effect = { MOD = omni_mudbind_spell_mod DAYS = 30 UNITTYPE = is_army }
+		set_variable = {
+			name = omni_battle_spell_cooldown
+			days = 1
+		}
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 25 }
+			omni_caster_amten_t1 = yes
+			any_character_unit = { is_army = yes }
+			omni_ai_enemy_debuffable_trigger = { MOD = omni_blighted_ground_mod UNITTYPE = is_army }
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		omni_apply_enemy_debuff_effect = { MOD = omni_blighted_ground_mod DAYS = 30 UNITTYPE = is_army }
+		set_variable = {
+			name = omni_battle_spell_cooldown
+			days = 1
+		}
+	}
+}
+
 # MORALE cast: best affordable positive battle morale spell on the general's own
 # force. Used when danger is near but battle has not yet started or as a fallback
 # in combat if stronger support options are unavailable.
@@ -53,18 +216,26 @@ omni_ai_cast_mobility_buff_effect = {
 			}
 		}
 		if = {
-			limit = { omni_can_afford_spell = { BASE = 75 } }
-			omni_spell_mana_cost_effect = { BASE = 75 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 }
+			limit = {
+				omni_can_afford_spell = { BASE = 50 }
+				# Heroic Resonance belongs to the Melodian warlock tradition.
+				omni_caster_melodian_t3 = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 50 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 MORALE = 1.5 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
 			}
 		}
 		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 50 } }
-			omni_spell_mana_cost_effect = { BASE = 50 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_rally_spell_mod DAYS = 1825 }
+			limit = {
+				omni_can_afford_spell = { BASE = 25 }
+				# Battle Hymn is a hierophant working.
+				omni_caster_omnic_t2 = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 25 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_rally_spell_mod DAYS = 30 MORALE = 0.75 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -98,9 +269,13 @@ omni_ai_cast_combat_buff_effect = {
 			}
 		}
 		if = {
-			limit = { omni_can_afford_spell = { BASE = 75 } }
-			omni_spell_mana_cost_effect = { BASE = 75 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 }
+			limit = {
+				omni_can_afford_spell = { BASE = 50 }
+				# Heroic Resonance belongs to the Melodian warlock tradition.
+				omni_caster_melodian_t3 = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 50 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_haste_3_spell_mod DAYS = 30 MORALE = 1.5 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -112,17 +287,23 @@ omni_ai_cast_combat_buff_effect = {
 					is_navy = yes
 				}
 				omni_can_afford_spell = { BASE = 50 }
+				# Spectral Boarders are a necromancer summoning.
+				omni_caster_melodian_t1 = yes
 			}
 			omni_spell_mana_cost_effect = { BASE = 50 }
-			omni_apply_unit_buff_effect = { MOD = omni_spectral_boarders_spell_mod DAYS = 1825 }
+			omni_apply_unit_buff_effect = { MOD = omni_spectral_boarders_spell_mod DAYS = 30 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
 			}
 		}
 		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 25 } }
-			omni_spell_mana_cost_effect = { BASE = 25 }
+			limit = {
+				omni_can_afford_spell = { BASE = 15 }
+				# Battle Surge is warlock battle magic.
+				omni_caster_melodian_t1 = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 15 }
 			omni_apply_unit_buff_effect = { MOD = omni_battle_haste_spell_mod DAYS = 30 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
@@ -133,36 +314,50 @@ omni_ai_cast_combat_buff_effect = {
 			limit = {
 				has_trait = archmage_trait
 				omni_can_afford_spell = { BASE = 75 }
+				# Blessing of War is the Omnic capstone blessing.
+				omni_caster_omnic_t3 = yes
 			}
 			omni_spell_mana_cost_effect = { BASE = 75 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_blessing_spell_mod DAYS = 1825 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_blessing_spell_mod DAYS = 30 MORALE = 1 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
 			}
 		}
 		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 25 } }
+			limit = {
+				omni_can_afford_spell = { BASE = 25 }
+				# Arcane Aegis is Aldic warding magic.
+				omni_caster_aldic_t1 = yes
+			}
 			omni_spell_mana_cost_effect = { BASE = 25 }
-			omni_apply_unit_buff_effect = { MOD = omni_arcane_aegis_spell_mod DAYS = 1825 }
+			omni_apply_unit_buff_effect = { MOD = omni_arcane_aegis_spell_mod DAYS = 30 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
 			}
 		}
 		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 25 } }
+			limit = {
+				omni_can_afford_spell = { BASE = 25 }
+				# Battle Clarity is Omnic diviner magic.
+				omni_caster_omnic_t1 = yes
+			}
 			omni_spell_mana_cost_effect = { BASE = 25 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod DAYS = 1825 }
+			omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod DAYS = 30 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
 			}
 		}
 		else_if = {
-			limit = { omni_can_afford_spell = { BASE = 25 } }
+			limit = {
+				omni_can_afford_spell = { BASE = 25 }
+				# Battle Hymn is a hierophant working.
+				omni_caster_omnic_t2 = yes
+			}
 			omni_spell_mana_cost_effect = { BASE = 25 }
-			omni_apply_unit_buff_effect = { MOD = omni_battle_rally_spell_mod DAYS = 1825 }
+			omni_apply_unit_buff_with_morale_effect = { MOD = omni_battle_rally_spell_mod DAYS = 30 MORALE = 0.75 }
 			set_variable = {
 				name = omni_battle_spell_cooldown
 				days = 1
@@ -183,6 +378,8 @@ omni_ai_cast_support_buff_effect = {
 				}
 			}
 			omni_can_afford_spell = { BASE = 50 }
+			# Conjured Supply is druidic magic.
+			omni_caster_amten_t1 = yes
 		}
 		omni_spell_mana_cost_effect = { BASE = 50 }
 		scope:caster_country = {
@@ -199,6 +396,8 @@ omni_ai_cast_support_buff_effect = {
 	else_if = {
 		limit = {
 			omni_can_afford_spell = { BASE = 25 }
+			# Battle Clarity is Omnic diviner magic.
+			omni_caster_omnic_t1 = yes
 			NOT = {
 				any_character_unit = {
 					OR = {
@@ -216,7 +415,7 @@ omni_ai_cast_support_buff_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 25 }
-		omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod DAYS = 1825 }
+		omni_apply_unit_buff_effect = { MOD = omni_battle_clarity_spell_mod DAYS = 30 }
 		set_variable = {
 			name = omni_battle_spell_cooldown
 			days = 1
@@ -226,9 +425,23 @@ omni_ai_cast_support_buff_effect = {
 
 # Top-level decision for one eligible mage-general. Expects scope:caster_country to
 # be the general's country (used to identify hostile armies).
-#   1) Already fighting        -> combat buff (can't out-run a joined battle).
-#   2) Hostile stack co-located-> mobility buff (the escape window).
-#   3) Hostile stack adjacent  -> mobility buff (evade / concentrate).
+#
+#   1) In combat, enemy reachable -> offensive debuff (best swing available:
+#      hitting the enemy's morale is worth more than topping up our own, and the
+#      debuffs are cheaper per point of effect than the buffs).
+#   2) In combat, no debuff cast  -> combat buff (can't out-run a joined battle).
+#   3) Hostile stack co-located   -> offensive debuff if we can, else mobility buff.
+#   4) Hostile stack adjacent     -> mobility buff (evade / concentrate).
+#   5) Nothing nearby             -> support buff (spare mana into logistics).
+#
+# The scope walks that used to be inlined here twice are now
+# omni_ai_enemy_stack_colocated_trigger / omni_ai_enemy_stack_adjacent_trigger /
+# omni_ai_in_combat_trigger in common/scripted_triggers/OMNI_ai_battle_magic_triggers.txt.
+#
+# PERF: the offensive branches reuse the co-location trigger the mobility branch
+# was already paying for, so adding enemy-targeted casting costs no new scope
+# iteration in the common (nothing-nearby) case - the cheap
+# has_variable cooldown check still short-circuits everything first.
 omni_ai_battlecast_effect = {
 	if = {
 		limit = {
@@ -238,56 +451,31 @@ omni_ai_battlecast_effect = {
 		}
 		if = {
 			limit = {
-				any_character_unit = {
-					OR = {
-						is_army = yes
-						is_navy = yes
-					}
-					in_combat = yes
-				}
+				omni_ai_in_combat_trigger = yes
+				omni_ai_enemy_stack_colocated_trigger = yes
 			}
+			omni_ai_cast_offensive_debuff_effect = yes
+			# Debuff ladder may find nothing affordable / unlocked - in that case
+			# no cooldown was set, so fall through to buffing ourselves instead.
+			if = {
+				limit = { NOT = { has_variable = omni_battle_spell_cooldown } }
+				omni_ai_cast_combat_buff_effect = yes
+			}
+		}
+		else_if = {
+			limit = { omni_ai_in_combat_trigger = yes }
 			omni_ai_cast_combat_buff_effect = yes
 		}
 		else_if = {
-			limit = {
-				any_character_unit = {
-					OR = {
-						is_army = yes
-						is_navy = yes
-					}
-					unit_location = {
-						any_unit_in_province = {
-							OR = {
-								is_army = yes
-								is_navy = yes
-							}
-							unit_owner = { war_with = scope:caster_country }
-						}
-					}
-				}
+			limit = { omni_ai_enemy_stack_colocated_trigger = yes }
+			omni_ai_cast_offensive_debuff_effect = yes
+			if = {
+				limit = { NOT = { has_variable = omni_battle_spell_cooldown } }
+				omni_ai_cast_mobility_buff_effect = yes
 			}
-			omni_ai_cast_mobility_buff_effect = yes
 		}
 		else_if = {
-			limit = {
-				any_character_unit = {
-					OR = {
-						is_army = yes
-						is_navy = yes
-					}
-					unit_location = {
-						any_neighbor_province = {
-							any_unit_in_province = {
-								OR = {
-									is_army = yes
-									is_navy = yes
-								}
-								unit_owner = { war_with = scope:caster_country }
-							}
-						}
-					}
-				}
-			}
+			limit = { omni_ai_enemy_stack_adjacent_trigger = yes }
 			omni_ai_cast_mobility_buff_effect = yes
 		}
 		else_if = {

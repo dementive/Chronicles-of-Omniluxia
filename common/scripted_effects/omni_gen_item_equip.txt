@@ -1,0 +1,145 @@
+﻿# Generic equip path for the generated item catalogue (item_gen_*).
+#
+# The hand-authored choo_items each have their own literal equip effect
+# (equip_item_with_modifier = { item_ID = item_sword } and friends), because the
+# engine needs a literal modifier name at script-parse time. That approach does
+# not scale to the ~1,600 generated items, so every generated-item grant path
+# used to just push the flag into item_list and stop - the item was owned but
+# could never be worn, which is why AI characters looked so underdressed.
+#
+# This file closes that gap with one equip effect that serves the whole generated
+# catalogue. The literal-modifier problem is solved the same way the shop already
+# solves it: stash the item flag in a slot variable and hand off to the
+# auto-generated two-stage dispatch in omni_gen_item_modifier_dispatch.txt.
+#
+# Everything here is keyed on a VARIABLE (var:omni_shop_slot_$SLOT$), not on a
+# saved scope, because that is what the dispatch reads and because an item flag
+# is a value, not a scope you can step into. Callers holding the item as a scope
+# use omni_equip_scoped_gen_item, which copies it into the scratch slot first.
+#
+# Choke-point principle: every generated-item grant should route through one of
+# the effects here rather than hand-rolling add_to_variable_list plus
+# omni_gen_slot_apply_modifier, so the category slot rules stay in one place.
+#
+# NOTE ON _army MODIFIERS: combat-category choo_items also grant the wearer's
+# country an item_<key>_army modifier (see the addendum in agent.md). Generated
+# items deliberately do NOT do this - omniluxia_generated_items.txt defines only
+# item_gen_<x>_modifier, with no _army counterpart, and referencing a modifier
+# that does not exist is a load-time error. If _army modifiers are ever generated
+# for the item_gen_* range, add the country-modifier call to
+# omni_equip_var_gen_item_in_category and it will apply to the whole catalogue.
+
+# Equips var:omni_shop_slot_$SLOT$ into whichever category it belongs to.
+# Scope: CHARACTER. The chain exits on the first match, so an item in the first
+# category costs one check and the worst case is ten.
+omni_equip_var_gen_item = {
+	if = {
+		limit = { is_target_in_global_variable_list = { name = item_weapon target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = weapon }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_weapon_ranged target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = weapon_ranged }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_armour target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = armour }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_helmet target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = helmet }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_shield target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = shield }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_emblem target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = emblem }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_trinket target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = trinket }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_ring target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = ring }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_curse target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = curse }
+	}
+	else_if = {
+		limit = { is_target_in_global_variable_list = { name = item_special target = var:omni_shop_slot_$SLOT$ } }
+		omni_equip_var_gen_item_in_category = { SLOT = $SLOT$ CAT = special }
+	}
+	# No else: a flag in no category list is a hand-authored choo_item (handled by
+	# its own literal equip effect) or an unregistered item. Nothing to do, and
+	# nothing to raise an error about.
+}
+
+# Equips var:omni_shop_slot_$SLOT$ if and only if the character owns it, is not
+# already wearing it, and has nothing else in category $CAT$.
+#
+# The slot check is written as NOT = { any_in_list = { ... } } rather than
+# any_in_list = { ... count < 1 }. Those are not equivalent in Jomini: the count
+# form evaluates false against a list that does not exist yet, so a character who
+# had never equipped anything - i.e. exactly the character we are trying to dress
+# - could never pass it. The NOT form is correct for the empty and missing cases.
+#
+# Inside any_in_list the scope is the list element (a bare flag), which cannot
+# host a trigger, so we step back to the owning character with prev = { ... } and
+# refer to the element as PREV from there. This is the same shape used by the
+# shop's every_in_list slot fill in events/omni_item_menu.txt.
+omni_equip_var_gen_item_in_category = {
+	if = {
+		limit = {
+			has_variable = omni_shop_slot_$SLOT$
+			is_target_in_variable_list = { name = item_list target = var:omni_shop_slot_$SLOT$ }
+			NOT = { is_target_in_variable_list = { name = equiped_item_list target = var:omni_shop_slot_$SLOT$ } }
+			NOT = {
+				any_in_list = {
+					variable = equiped_item_list
+					prev = { is_target_in_global_variable_list = { name = item_$CAT$ target = PREV } }
+				}
+			}
+		}
+		add_to_variable_list = { name = equiped_item_list target = var:omni_shop_slot_$SLOT$ }
+		# omni_gen_slot_apply_modifier is the generated ~1,600-item dispatch
+		# table. Calling it here would inline that whole table once per category
+		# and once again at every caller. Queue the selected item and cross an
+		# event boundary so the table compiles exactly once. trigger_event is
+		# queued by the engine, so this list must persist until the event drains it.
+		add_to_variable_list = {
+			name = omni_gen_item_dispatch_queue
+			target = var:omni_shop_slot_$SLOT$
+		}
+		trigger_event = { id = omni_item_dispatch.1 }
+	}
+}
+
+# Scope-holding entry point. Scope: CHARACTER, with scope:omni_gen_item_pick set.
+# Copies the pick into the shared scratch slot and runs the variable-keyed path.
+# omni_shop_slot_autoequip is scratch only and never survives this effect, so it
+# cannot collide with the numbered shop slots 1-10.
+omni_equip_scoped_gen_item = {
+	if = {
+		limit = { exists = scope:omni_gen_item_pick }
+		set_variable = { name = omni_shop_slot_autoequip value = scope:omni_gen_item_pick }
+		omni_equip_var_gen_item = { SLOT = autoequip }
+		remove_variable = omni_shop_slot_autoequip
+	}
+}
+
+# Grant + equip in one step. This is what generated-item grant paths should call.
+# Scope: CHARACTER, with scope:omni_gen_item_pick already set.
+omni_give_and_equip_scoped_gen_item = {
+	if = {
+		limit = { exists = scope:omni_gen_item_pick }
+		if = {
+			limit = { NOT = { is_target_in_variable_list = { name = item_list target = scope:omni_gen_item_pick } } }
+			add_to_variable_list = { name = item_list target = scope:omni_gen_item_pick }
+		}
+		omni_equip_scoped_gen_item = yes
+	}
+}

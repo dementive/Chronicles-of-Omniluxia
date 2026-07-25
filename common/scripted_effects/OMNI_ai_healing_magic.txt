@@ -1,0 +1,96 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# Omniluxia - AI healing magic
+#
+# The cure logic exists in the Aldic support menu (me_zorgo_magic_focus.18):
+# Healing Light removes invalid/gangrene, Healing Light II removes a long list of
+# chronic and terminal ailments, Vitality grants add_health. None of it was
+# reachable by the AI, so an AI ruler could rot to death from a curable disease
+# while their own court cleric sat on a full mana pool.
+#
+# Runs in the CASTER (character) scope. scope:omni_heal_target is the patient.
+# Costs and tier gates match the player options exactly:
+#   Healing Light     75 mana, cleric T1 (any Aldic T1) - clears invalid/gangrene
+#   Healing Light II 100 mana, cleric_t3_unlocked_var   - clears the full list
+#   Vitality         100 mana, cleric_t3_unlocked_var   - add_health = 3
+#
+# PERF: no scope iteration. The calling event does the (bounded) court scan once
+# and hands this effect a single caster and a single target.
+# ----------------------------------------------------------------------------------------------------------------------
+
+omni_ai_cast_healing_effect = {
+	if = {
+		# Best case: the full cure list. One ailment per cast, matching the
+		# player's else_if chain - the AI simply comes back next year for the rest.
+		limit = {
+			omni_can_afford_spell = { BASE = 100 }
+			has_variable = cleric_t3_unlocked_var
+			omni_knows_spell = { SPELL = healing_light }
+			scope:omni_heal_target = { omni_has_curable_ailment = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 100 }
+		scope:omni_heal_target = { omni_remove_one_curable_ailment = yes }
+		omni_set_healing_cooldown = yes
+	}
+	else_if = {
+		# Tier 1 fallback: only the two ailments Healing Light can touch.
+		limit = {
+			omni_can_afford_spell = { BASE = 75 }
+			omni_caster_aldic_t1 = yes
+			omni_knows_spell = { SPELL = healing_light }
+			scope:omni_heal_target = { omni_has_minor_curable_ailment = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 75 }
+		scope:omni_heal_target = {
+			if = {
+				limit = { has_trait = invalid }
+				remove_trait = invalid
+			}
+			else_if = {
+				limit = { has_trait = gangrene }
+				remove_trait = gangrene
+			}
+		}
+		omni_set_healing_cooldown = yes
+	}
+	else_if = {
+		# Nothing chronic to cure, but the patient is hurt or ill - top them up.
+		limit = {
+			omni_can_afford_spell = { BASE = 100 }
+			has_variable = cleric_t3_unlocked_var
+			omni_knows_spell = { SPELL = vitality }
+			scope:omni_heal_target = { omni_needs_vitality_healing = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 100 }
+		scope:omni_heal_target = { add_health = 3 }
+		omni_set_healing_cooldown = yes
+	}
+}
+
+# Mirrors the Healing Light II removal chain in me_zorgo_magic_focus.18.
+# One ailment per cast, worst-first so the AI clears the things that actually
+# kill or incapacitate before the merely inconvenient ones. (The player option's
+# chain is in menu order and checks "cancer" twice; this is the same set, ordered
+# by severity, without the duplicate.)
+omni_remove_one_curable_ailment = {
+	if =      { limit = { has_trait = cancer }        remove_trait = cancer }
+	else_if = { limit = { has_trait = gangrene }      remove_trait = gangrene }
+	else_if = { limit = { has_trait = diphtheria }    remove_trait = diphtheria }
+	else_if = { limit = { has_trait = leper }         remove_trait = leper }
+	else_if = { limit = { has_trait = brain_damaged } remove_trait = brain_damaged }
+	else_if = { limit = { has_trait = dementia }      remove_trait = dementia }
+	else_if = { limit = { has_trait = paralysis }     remove_trait = paralysis }
+	else_if = { limit = { has_trait = invalid }       remove_trait = invalid }
+	else_if = { limit = { has_trait = blind }         remove_trait = blind }
+	else_if = { limit = { has_trait = arthritis }     remove_trait = arthritis }
+	else_if = { limit = { has_trait = gout }          remove_trait = gout }
+	else_if = { limit = { has_trait = drow_mushroom_spots_trait } remove_trait = drow_mushroom_spots_trait }
+}
+
+# One healing cast per country per year. Healing is not time-critical the way
+# battle magic is, and a yearly cadence keeps the court scan cheap.
+omni_set_healing_cooldown = {
+	set_variable = {
+		name = omni_healing_spell_cooldown
+		days = 365
+	}
+}

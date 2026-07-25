@@ -1,0 +1,26 @@
+﻿namespace = omni_item_dispatch
+
+# Single compile site for the generated ~1,600-item modifier dispatcher.
+# Callers append selected items to the character's dispatch queue. The first
+# queued event drains the whole list; any additional wakeups safely do nothing.
+omni_item_dispatch.1 = {
+	type = character_event
+	hidden = yes
+
+	immediate = {
+		if = {
+			limit = { has_variable_list = omni_gen_item_dispatch_queue }
+			every_in_list = {
+				variable = omni_gen_item_dispatch_queue
+				prev = {
+					set_variable = { name = omni_shop_slot_dispatch value = prev }
+					omni_gen_slot_apply_modifier = { SLOT = dispatch }
+					remove_variable = omni_shop_slot_dispatch
+				}
+			}
+			clear_variable_list = omni_gen_item_dispatch_queue
+		}
+	}
+
+	option = {}
+}

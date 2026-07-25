@@ -1268,8 +1268,13 @@ omni_disaster.10 = { #Snowstorm Extreme - fires wherever it's currently winter, 
 		hidden_effect = {
 			random = {
 				chance = 50
-				scope:not_snowden = {
-					clear_saved_scope = not_snowden
+				# Guarded: the scope may already be gone, which logged
+				# "Undefined event target 'not_snowden'".
+				if = {
+					limit = { exists = scope:not_snowden }
+					scope:not_snowden = {
+						clear_saved_scope = not_snowden
+					}
 				}
 				random_owned_province = {
 					limit = {
@@ -1293,10 +1298,19 @@ omni_disaster.10 = { #Snowstorm Extreme - fires wherever it's currently winter, 
 						}
 					}
 				}
-				scope:not_snowden.owner = {
-					trigger_event = {
-						id = omni_disaster.10
-						days = { 2 6 }
+				# Guarded: if no new spread province was found the scope stays
+				# cleared, and firing on its owner passed a 'none' root into the
+				# omni_disaster.10 trigger ("Wrong scope for trigger: none").
+				if = {
+					limit = {
+						exists = scope:not_snowden
+						scope:not_snowden = { exists = owner }
+					}
+					scope:not_snowden.owner = {
+						trigger_event = {
+							id = omni_disaster.10
+							days = { 2 6 }
+						}
 					}
 				}
 			}

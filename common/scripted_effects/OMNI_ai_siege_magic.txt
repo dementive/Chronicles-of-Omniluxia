@@ -1,0 +1,160 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# Omniluxia - AI siege-magic auto-cast
+#
+# Before this file existed, AI siege magic was a single hardcoded block inside
+# me_zorgo_magic_focus.31 that only ever cast Breaching Tremor, and applied it with
+# a 365-day province modifier. Because the event also skipped any province that
+# already carried that modifier, a besieging AI mage cast once per province per
+# YEAR and then sat on full mana for the rest of the siege. The other five siege
+# spells in common/modifiers/SPELLS_mods.txt were player-only, and defensive siege
+# magic did not exist for the AI at all.
+#
+# All effects run in the CASTER (general / character) scope and pay mana through
+# omni_spell_mana_cost_effect, so the AI obeys the same mana rules, cost scaling
+# and school-tier gating as the player's siege menu (me_zorgo_magic_focus.30).
+#
+# DURATIONS: siege-scaled at 90 days rather than the player menu's 365. A siege
+# rarely runs a year; a 90-day window means a mage with mana can meaningfully
+# re-cast to sustain pressure, which is the behaviour we want, without the
+# modifier outliving the siege it was cast for.
+#
+# PERF: called from the monthly omni_monthly_flavor_pulse via
+# me_zorgo_magic_focus.31, which pre-filters on is_ai + war + a besieging
+# castable general before any of this runs. Each ladder below is a chain of
+# has_province_modifier / affordability checks on one already-scoped province.
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# BESIEGER ladder. Runs in CASTER scope with scope:omni_siege_province set to the
+# province being besieged. Strongest-per-mana first; each branch is skipped if its
+# modifier is already active, so a mage works down the list across casts instead
+# of re-applying the same spell.
+#   Wasting Rot     25 mana, Melodian T1 - garrison -50%, food -75%. Best value by far.
+#   Burning Pitch   25 mana, Amten T1 - garrison -25%, food -25%, defence -5%.
+#   Counterward     50 mana, Aldic T2 - defence -15%, garrison -10%, food -10%.
+#   Breaching Tremor 50 mana, Amten T2 - defence -5% AND +1 breach (the only
+#                                      instant-progress spell, so it is worth
+#                                      keeping even though its modifier is weak).
+#   Storm of the Siege 75 mana, Melodian T3 - unit buff: +25% assault and siege ability.
+# ---------------------------------------------------------------------------
+omni_ai_cast_siege_spell_effect = {
+	if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 25 }
+			omni_caster_melodian_t1 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_siege_rot_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_siege_rot_spell_mod
+				duration = 90
+			}
+		}
+		omni_set_siege_spell_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 25 }
+			omni_caster_amten_t1 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_siege_burning_pitch_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_siege_burning_pitch_spell_mod
+				duration = 90
+			}
+		}
+		omni_set_siege_spell_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_aldic_t2 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_siege_counterward_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_siege_counterward_spell_mod
+				duration = 90
+			}
+		}
+		omni_set_siege_spell_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_amten_t2 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_siege_breach_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_siege_breach_spell_mod
+				duration = 90
+			}
+			siege = { add_breach = 1 }
+		}
+		omni_set_siege_spell_cooldown = yes
+	}
+	else_if = {
+		# Assault blessing is a UNIT modifier on the besieging army, not a province
+		# modifier, so it is gated on the unit rather than the settlement.
+		limit = {
+			omni_can_afford_spell = { BASE = 75 }
+			omni_caster_melodian_t3 = yes
+			any_character_unit = {
+				is_army = yes
+				NOT = { has_unit_modifier = omni_siege_assault_blessing_spell_mod }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 75 }
+		every_character_unit = {
+			limit = {
+				is_army = yes
+				NOT = { has_unit_modifier = omni_siege_assault_blessing_spell_mod }
+			}
+			add_unit_modifier = {
+				name = omni_siege_assault_blessing_spell_mod
+				duration = 90
+			}
+		}
+		omni_set_siege_spell_cooldown = yes
+	}
+}
+
+# ---------------------------------------------------------------------------
+# DEFENDER ladder. Illusion Walls is the only defensive siege spell in the set
+# (+15% local defence, +25% garrison). A mage sitting in a settlement that is
+# under siege should obviously be using it - the AI never did.
+# Runs in CASTER scope with scope:omni_siege_province set to the mage's own
+# besieged province.
+# ---------------------------------------------------------------------------
+omni_ai_cast_siege_defence_spell_effect = {
+	if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_aldic_t2 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_siege_illusion_walls_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_siege_illusion_walls_spell_mod
+				duration = 90
+			}
+		}
+		omni_set_siege_spell_cooldown = yes
+	}
+}
+
+# Shared cooldown stamp. 30 days, so a besieging mage adds roughly one layer of
+# siege magic per month rather than dumping their whole mana pool in one tick.
+omni_set_siege_spell_cooldown = {
+	set_variable = {
+		name = omni_siege_spell_cooldown
+		days = 30
+	}
+}

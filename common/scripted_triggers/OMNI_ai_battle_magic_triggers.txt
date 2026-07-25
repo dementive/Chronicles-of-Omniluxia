@@ -1,0 +1,90 @@
+﻿# ---------------------------------------------------------------------------
+# Target-detection triggers for AI battle magic.
+# Evaluated in the CASTER (general / character) scope.
+# Expects scope:caster_country to be set to the general's country - the calling
+# events (me_zorgo_magic_focus.35 / .37) save it before calling into the AI
+# battle-magic effects.
+#
+# These were previously inlined - the same any_character_unit / unit_location /
+# any_unit_in_province walk appeared twice inside omni_ai_battlecast_effect. The
+# offensive debuff branch needs the co-location check too, so it lives here once
+# rather than being pasted a third time.
+# ---------------------------------------------------------------------------
+
+# A hostile army or fleet shares a province with one of this general's units, so
+# an enemy-targeted spell has something to land on.
+omni_ai_enemy_stack_colocated_trigger = {
+	any_character_unit = {
+		OR = {
+			is_army = yes
+			is_navy = yes
+		}
+		unit_location = {
+			any_unit_in_province = {
+				OR = {
+					is_army = yes
+					is_navy = yes
+				}
+				unit_owner = { war_with = scope:caster_country }
+			}
+		}
+	}
+}
+
+# A hostile stack is one province away - the window for a mobility buff to either
+# evade or concentrate before contact.
+omni_ai_enemy_stack_adjacent_trigger = {
+	any_character_unit = {
+		OR = {
+			is_army = yes
+			is_navy = yes
+		}
+		unit_location = {
+			any_neighbor_province = {
+				any_unit_in_province = {
+					OR = {
+						is_army = yes
+						is_navy = yes
+					}
+					unit_owner = { war_with = scope:caster_country }
+				}
+			}
+		}
+	}
+}
+
+# This general has a unit currently locked in combat.
+omni_ai_in_combat_trigger = {
+	any_character_unit = {
+		OR = {
+			is_army = yes
+			is_navy = yes
+		}
+		in_combat = yes
+	}
+}
+
+# There is a co-located hostile stack of type $UNITTYPE$ (is_army / is_navy) that
+# does NOT already carry $MOD$ - i.e. casting that debuff would actually do
+# something.
+#
+# Without this, the offensive ladder would pay full mana whenever a hostile stack
+# was present and then apply nothing because every target already had the
+# modifier. With a 1-day battle cooldown that drains a caster's entire pool in
+# under a week for zero effect. Each branch of
+# omni_ai_cast_offensive_debuff_effect gates on this before spending.
+omni_ai_enemy_debuffable_trigger = {
+	any_character_unit = {
+		OR = {
+			is_army = yes
+			is_navy = yes
+		}
+		unit_location = {
+			any_unit_in_province = {
+				$UNITTYPE$ = yes
+				unit_owner = { war_with = scope:caster_country }
+				NOT = { has_unit_modifier = $MOD$ }
+			}
+		}
+	}
+}

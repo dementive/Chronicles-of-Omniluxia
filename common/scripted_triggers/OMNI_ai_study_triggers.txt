@@ -1,0 +1,69 @@
+﻿# ---------------------------------------------------------------------------
+# Eligibility for AI-driven magic study.
+# Evaluated in CHARACTER scope. The caller supplies "employer = root" itself, so
+# these triggers stay reusable from any country scope.
+#
+# This was previously a ~20-line block copy-pasted three times inside
+# omni_ai_study_magic_effect (outer limit + both random_character branches). The
+# copies had already begun to drift - the outer limit checked the full OR list
+# while one inner branch silently checked only commanders. Keeping it in one
+# place is both a maintenance and a cost fix.
+#
+# PERF: ordered cheapest-first - has_variable and trait checks before the
+# office/stat reads. All checks are on the single character in scope.
+# ---------------------------------------------------------------------------
+
+# Shared disqualifiers: characters who must never be enrolled.
+omni_ai_study_blocked_trigger = {
+	OR = {
+		has_variable = omni_studying_magic_cooldown
+		has_variable = is_the_revant
+		has_variable = on_orc_adventure
+		has_trait = brain_damaged
+		has_trait = incapable
+		has_trait = goblin_trait
+	}
+}
+
+# The full candidate pool: anyone worth spending 50 gold and a study slot on.
+omni_ai_study_candidate_trigger = {
+	is_mercenary = no
+	is_alive = yes
+	is_adult = yes
+	NOT = { omni_ai_study_blocked_trigger = yes }
+	OR = {
+		is_ruler = yes
+		is_general = yes
+		is_admiral = yes
+		is_governor = yes
+		has_trait = mage_trait
+		has_trait = archmage_trait
+		has_office = office_marshal
+		has_office = office_high_priest_monarchy
+		has_office = office_high_priest
+		has_office = office_augur
+		has_office = office_pontifex
+		prominence >= 60
+		martial >= 8
+		zeal >= 8
+		finesse >= 8
+	}
+}
+
+# Preferred subset: characters who command troops or run provinces, i.e. the ones
+# whose spells the AI auto-cast code can actually put to use. Also includes
+# existing mages, so the AI deepens a caster it already has rather than always
+# starting someone new from scratch.
+omni_ai_study_priority_candidate_trigger = {
+	is_mercenary = no
+	is_alive = yes
+	is_adult = yes
+	NOT = { omni_ai_study_blocked_trigger = yes }
+	OR = {
+		is_general = yes
+		is_admiral = yes
+		is_governor = yes
+		has_trait = mage_trait
+		has_trait = archmage_trait
+	}
+}

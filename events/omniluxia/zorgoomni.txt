@@ -2903,8 +2903,22 @@ me_zorgoomni.64 = { # Fai Attack a Village
                         }
                     }
                     order_by = pop_hapiness
+                    # Cap by the number of pops that actually match the limit above.
+                    # Using total_population/4 overshot whenever non-forest-elf pops
+                    # were fewer than a quarter of the province, logging
+                    # "Given max value was bigger than the list, capping at list size".
                     max = {
-                        value = total_population
+                        value = 0
+                        every_pops_in_province = {
+                            limit = {
+                                NOR = {
+                                    pop_culture_group = forest_elves
+                                    pop_culture_group = morrigon_forest_elves
+                                    pop_culture_group = southern_forest_elves
+                                }
+                            }
+                            add = 1
+                        }
                         divide = 4
                     }
                     min = {
@@ -3217,7 +3231,7 @@ me_zorgoomni.70 = { # Shedding Malfunction
             save_scope_as = bad_shedder
         }
         if = {
-            limit = { exists = scope:bad_shedder }
+            limit = { scope:bad_shedder = { is_alive = yes } }
             scope:bad_shedder = {
                 add_trait = shedding_disorder_trait
             }
@@ -3227,7 +3241,7 @@ me_zorgoomni.70 = { # Shedding Malfunction
     option = {
         name = "me_zorgoomni.70.a"
         if = {
-            limit = { exists = scope:bad_shedder }
+            limit = { scope:bad_shedder = { is_alive = yes } }
             scope:bad_shedder = {
                 add_popularity = -8
                 add_prominence = -12
@@ -3251,7 +3265,7 @@ me_zorgoomni.71 = { # Cured of Shedding
     option = {
         name = "me_zorgoomni.71.a"
         if = {
-            limit = { exists = scope:bad_shedder }
+            limit = { scope:bad_shedder = { is_alive = yes } }
             scope:bad_shedder = {
                 add_popularity = 5
                 add_loyalty = dishonored_by_ruler
@@ -3300,7 +3314,7 @@ me_zorgoomni.72 = { # Draconic Madness 1
         }
 
         if = {
-            limit = { exists = scope:insane_guy }
+            limit = { scope:insane_guy = { is_alive = yes } }
             scope:insane_guy = {
                 add_trait = dragkhanic_insanity_trait
             }
@@ -3375,7 +3389,7 @@ me_zorgoomni.73 = { # Saved from Insanity
         name = "me_zorgoomni.73.a"
         add_stability = 3
         if = {
-            limit = { exists = scope:insane_guy }
+            limit = { scope:insane_guy = { is_alive = yes } }
             scope:insane_guy = {
                 remove_trait = dragkhanic_insanity_trait
             }
@@ -3395,7 +3409,7 @@ me_zorgoomni.74 = { # Goes Insane
         name = "me_zorgoomni.74.a"
         add_stability = -2
         if = {
-            limit = { exists = scope:insane_guy }
+            limit = { scope:insane_guy = { is_alive = yes } }
             scope:insane_guy = {
                 death = {
                     death_reason = death_dragkhanic_madness
