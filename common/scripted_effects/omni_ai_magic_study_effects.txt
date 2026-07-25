@@ -1,30 +1,35 @@
 ﻿# ---------------------------------------------------------------------------
 # AI magic study driver. Called yearly from omni_perf.7 (events/omni_perf_pulses.txt).
 #
-# Eligibility used to be a ~20-line block duplicated three times in this effect
-# (once in the outer limit, twice inside the branches). It now lives in
-# omni_ai_study_candidate_trigger / omni_ai_study_priority_candidate_trigger in
-# common/scripted_triggers/OMNI_ai_study_triggers.txt so the three copies cannot
-# drift apart.
+# Eligibility lives in omni_ai_study_*_candidate_trigger in
+# common/scripted_triggers/OMNI_ai_study_triggers.txt rather than being inlined
+# here three times, so the copies cannot drift apart.
 #
-# Throughput: the old version rolled 85/45 (65%) with a flat 365-day country
-# cooldown, capping the whole world at 0.65 new study sessions per country per
-# year - and because omni_studying_magic_cooldown never expired, each character
-# could only ever be enrolled once. Together those two limits meant AI countries
-# essentially never produced a mage above the first rank. The roll is now 90%,
-# and a country that has actually invested in magic (2+ academies) re-rolls every
-# 180 days instead of yearly.
+# ENROLMENT MODEL: a country funds up to OMNI_STUDY_MAX_SLOTS students per cycle -
+# the ruler first, then the highest-finesse governors/commanders it can still
+# afford. Each slot costs OMNI_STUDY_SLOT_COST, and every slot after the ruler
+# additionally requires the treasury to stay above OMNI_STUDY_RESERVE, so a rich
+# empire trains a magical court while a poor one still gets its ruler schooled and
+# does not bankrupt itself doing it. The budget check reads the treasury *after*
+# the previous slot was paid for, so the loop self-limits with no counter.
 #
-# PERF: the cheap country-level checks (is_ai, has_variable, treasury) are
-# deliberately ordered before the any_owned_province building scan, which is
-# itself before the any_character court scan.
+# PERF: this is cheaper than the single-student version it replaces. Per country
+# per cycle the scans are:
+#   1. any_owned_province (short-circuits on the first academy)
+#   2. any_character      (short-circuits on the first candidate)
+#   3. current_ruler       - a direct scope link, not a scan
+#   4. ordered_character   - ONE court pass, capped at max = 2
+# The old version did an any_character priority pre-check AND a random_character
+# roll on top of the outer any_character, i.e. three full court passes. This does
+# one. The order_by sort is over an already-filtered court list of a few dozen at
+# most, once per country per year.
 # ---------------------------------------------------------------------------
 omni_ai_study_magic_effect = {
 	if = {
 		limit = {
 			is_ai = yes
 			NOT = { has_variable = omni_ai_magic_study_cooldown }
-			treasury >= 50
+			treasury >= OMNI_STUDY_SLOT_COST
 			any_owned_province = {
 				has_building = magic_academy_building
 			}
@@ -54,37 +59,59 @@ omni_ai_study_magic_effect = {
 						days = 365
 					}
 				}
-				add_treasury = -50
-				# Prefer commanders and governors - they are the characters whose
-				# spells the AI can actually put to use on a battlefield or in a
-				# province. Fall back to the wider candidate pool otherwise.
+
+				# --- Slot 1: the ruler. Always first when eligible. A magically
+				# capable ruler is the visible, playable outcome of this whole
+				# system, and current_ruler is a direct link so this costs nothing.
 				if = {
+					limit = { current_ruler = { omni_ai_study_ruler_candidate_trigger = yes } }
+					current_ruler = { omni_ai_enrol_magic_student = yes }
+				}
+
+				# --- Slots 2-3: the best governors and commanders the treasury can
+				# still cover. Ordered by finesse because finesse is what drives
+				# omni_study_progress_gain_value, so these are the characters who
+				# actually rank up rather than idling at T1 forever.
+				#
+				# The ruler may still appear in this list (the list is built before
+				# the body runs), but omni_ai_enrol_magic_student re-checks
+				# omni_ai_study_blocked_trigger and the ruler now carries a fresh
+				# omni_studying_magic_cooldown, so they are skipped rather than
+				# double-charged.
+				ordered_character = {
 					limit = {
-						any_character = {
-							employer = root
-							omni_ai_study_priority_candidate_trigger = yes
-						}
+						employer = root
+						omni_ai_study_priority_candidate_trigger = yes
 					}
-					random_character = {
+					order_by = finesse
+					# Literal, not a script value: no vanilla ordered_ list passes a
+					# script value to max, and a silent parse failure here would
+					# quietly enrol the whole court.
+					max = 2
+					if = {
 						limit = {
-							employer = root
-							omni_ai_study_priority_candidate_trigger = yes
+							employer = { treasury >= OMNI_STUDY_RESERVE }
 						}
-						omni_ai_prepare_magic_study_character = yes
+						omni_ai_enrol_magic_student = yes
 					}
 				}
-				else = {
+
+				# --- Fallback: if neither the ruler nor any priority candidate was
+				# enrolled, spend the one slot on the wider pool so the cycle is not
+				# wasted. The outer limit already guaranteed a candidate exists.
+				if = {
+					limit = { NOT = { has_variable = omni_ai_study_enrolled_this_cycle } }
 					random_character = {
 						limit = {
 							employer = root
 							omni_ai_study_candidate_trigger = yes
 						}
-						omni_ai_prepare_magic_study_character = yes
+						omni_ai_enrol_magic_student = yes
 					}
 				}
-				trigger_event = {
-					id = me_magic_studying.1
-					days = { 15 45 }
+				if = {
+					limit = { has_variable = omni_ai_study_enrolled_this_cycle }
+					remove_variable = omni_ai_study_enrolled_this_cycle
 				}
 			}
 			10 = {}
@@ -92,7 +119,42 @@ omni_ai_study_magic_effect = {
 	}
 }
 
+# Enrols ONE character. Evaluated in CHARACTER scope; the employer pays.
+#
+# The event is fired with no delay on purpose. Saved scopes are per event-chain,
+# not per loop iteration, so queueing several delayed me_magic_studying.1 events
+# from inside a loop would leave every one of them resolving against whichever
+# student happened to be saved last - which is a fresh instance of exactly the
+# scattering bug that made this system produce no mages at all. Firing inline
+# means check_mage_effect reads scope:omni_study_target while it still points at
+# this student. The 15-45 day cosmetic delay is not worth reintroducing that.
+omni_ai_enrol_magic_student = {
+	if = {
+		limit = { NOT = { omni_ai_study_blocked_trigger = yes } }
+		employer = {
+			add_treasury = {
+				value = 0
+				subtract = OMNI_STUDY_SLOT_COST
+			}
+			set_variable = omni_ai_study_enrolled_this_cycle
+		}
+		omni_ai_prepare_magic_study_character = yes
+		employer = {
+			trigger_event = { id = me_magic_studying.1 }
+		}
+		clear_saved_scope = omni_study_target
+	}
+}
+
 omni_ai_prepare_magic_study_character = {
+	# CRITICAL: hand the enrolled character to the study event chain explicitly.
+	# me_magic_studying.1 resolves its subject through check_mage_effect, which
+	# used to re-roll a random flagged character on EVERY event in the chain. The
+	# enrolled character therefore almost never received their own study progress,
+	# and progress was smeared one point at a time across every character who had
+	# ever been flagged - so nobody reached RANK_THRESHOLD and nobody got
+	# mage_trait. check_mage_effect now prefers this scope.
+	save_scope_as = omni_study_target
 	# The cooldown MUST have a duration. It used to be a bare set_variable, and
 	# nothing in the mod ever removed it, so a character enrolled in study once
 	# became permanently ineligible for any further AI-driven study - AI mages

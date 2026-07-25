@@ -2742,28 +2742,67 @@ magic_studying_graduation_effect = {
     }
 }
 
+# ---------------------------------------------------------------------------
+# Resolves scope:target for the magic study event chain.
+#
+# BUG (fixed): this used to be an unconditional random_character roll over every
+# character in the country carrying ANY omni_studying_*_var. Those vars are only
+# cleared on a few graduation branches, so a country accumulates study flags
+# permanently - including on dead characters, which have no is_alive filter here.
+# Every event in a study chain therefore re-rolled a DIFFERENT target, so the
+# +progress from each session was scattered one point at a time across a growing
+# pool and no single character ever accumulated RANK_THRESHOLD (40).
+#
+# This is why raising the enrolment rate made things WORSE: more enrolments meant
+# a bigger dilution pool, so fewer characters ever ranked up.
+#
+# The enroller now saves scope:omni_study_target and we honour it. The random
+# roll survives only as a fallback for legacy chains already in flight in an
+# existing save, and is now restricted to living, employed characters.
+# ---------------------------------------------------------------------------
 check_mage_effect = {
-	random_character = {
-	    	limit = {
-	    		OR = {
-		    		has_variable = omni_studying_diviner_var
-	    		has_variable = omni_studying_hierophant_var
-	    		has_variable = omni_studying_warlock_var
-	    		has_variable = omni_studying_necromancer_var
-	    		has_variable = omni_studying_druid_var
-	    		has_variable = omni_studying_elementalist_var
-	    		has_variable = omni_studying_cleric_var
-	    		has_variable = omni_studying_illusionist_var
-	    		has_variable = omni_studying_diviner_var
-	    		has_variable = omni_studying_magonis_var
-	    		has_variable = omni_studying_taanka_var
-	    		has_variable = omni_studying_dragonscale_var
-	    		has_variable = omni_studying_silver_dwarf_magic_var
-	    		has_variable = omni_studying_palpan_curse_var
-	    	}
-	    }
-	    save_scope_as = target
-    }
+	if = {
+		limit = {
+			exists = scope:omni_study_target
+			scope:omni_study_target = { is_alive = yes }
+		}
+		scope:omni_study_target = { save_scope_as = target }
+	}
+	else_if = {
+		limit = {
+			NOR = {
+				AND = {
+					exists = scope:target
+					scope:target = {
+						is_alive = yes
+						has_variable = magic_study_progress
+					}
+				}
+			}
+		}
+		random_character = {
+			limit = {
+				is_alive = yes
+				employer = root
+				OR = {
+					has_variable = omni_studying_diviner_var
+					has_variable = omni_studying_hierophant_var
+					has_variable = omni_studying_warlock_var
+					has_variable = omni_studying_necromancer_var
+					has_variable = omni_studying_druid_var
+					has_variable = omni_studying_elementalist_var
+					has_variable = omni_studying_cleric_var
+					has_variable = omni_studying_illusionist_var
+					has_variable = omni_studying_magonis_var
+					has_variable = omni_studying_taanka_var
+					has_variable = omni_studying_dragonscale_var
+					has_variable = omni_studying_silver_dwarf_magic_var
+					has_variable = omni_studying_palpan_curse_var
+				}
+			}
+			save_scope_as = target
+		}
+	}
 }
 
 remove_15_mana_effect = {
