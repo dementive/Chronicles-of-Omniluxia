@@ -1,4 +1,25 @@
-﻿omni_ai_study_magic_effect = {
+﻿# ---------------------------------------------------------------------------
+# AI magic study driver. Called yearly from omni_perf.7 (events/omni_perf_pulses.txt).
+#
+# Eligibility used to be a ~20-line block duplicated three times in this effect
+# (once in the outer limit, twice inside the branches). It now lives in
+# omni_ai_study_candidate_trigger / omni_ai_study_priority_candidate_trigger in
+# common/scripted_triggers/OMNI_ai_study_triggers.txt so the three copies cannot
+# drift apart.
+#
+# Throughput: the old version rolled 85/45 (65%) with a flat 365-day country
+# cooldown, capping the whole world at 0.65 new study sessions per country per
+# year - and because omni_studying_magic_cooldown never expired, each character
+# could only ever be enrolled once. Together those two limits meant AI countries
+# essentially never produced a mage above the first rank. The roll is now 90%,
+# and a country that has actually invested in magic (2+ academies) re-rolls every
+# 180 days instead of yearly.
+#
+# PERF: the cheap country-level checks (is_ai, has_variable, treasury) are
+# deliberately ordered before the any_owned_province building scan, which is
+# itself before the any_character court scan.
+# ---------------------------------------------------------------------------
+omni_ai_study_magic_effect = {
 	if = {
 		limit = {
 			is_ai = yes
@@ -9,84 +30,45 @@
 			}
 			any_character = {
 				employer = root
-				is_mercenary = no
-				is_alive = yes
-				is_adult = yes
-				NOT = { has_variable = omni_studying_magic_cooldown }
-				NOT = { has_variable = is_the_revant }
-				NOR = {
-					has_trait = brain_damaged
-					has_trait = incapable
-					has_trait = goblin_trait
-					has_variable = on_orc_adventure
-				}
-				OR = {
-					is_ruler = yes
-					is_general = yes
-					is_admiral = yes
-					is_governor = yes
-					has_office = office_marshal
-					has_office = office_high_priest_monarchy
-					has_office = office_high_priest
-					has_office = office_augur
-					has_office = office_pontifex
-					has_trait = mage_trait
-					has_trait = archmage_trait
-					prominence >= 60
-					martial >= 8
-					zeal >= 8
-					finesse >= 8
-				}
+				omni_ai_study_candidate_trigger = yes
 			}
 		}
 		random_list = {
-				85 = {
-				set_variable = {
-					name = omni_ai_magic_study_cooldown
-					days = 365
+			90 = {
+				# Magic-invested countries (2+ academies) study twice as often.
+				if = {
+					limit = {
+						any_owned_province = {
+							count >= 2
+							has_building = magic_academy_building
+						}
+					}
+					set_variable = {
+						name = omni_ai_magic_study_cooldown
+						days = 180
+					}
+				}
+				else = {
+					set_variable = {
+						name = omni_ai_magic_study_cooldown
+						days = 365
+					}
 				}
 				add_treasury = -50
+				# Prefer commanders and governors - they are the characters whose
+				# spells the AI can actually put to use on a battlefield or in a
+				# province. Fall back to the wider candidate pool otherwise.
 				if = {
 					limit = {
 						any_character = {
 							employer = root
-							is_mercenary = no
-							is_alive = yes
-							is_adult = yes
-							NOT = { has_variable = omni_studying_magic_cooldown }
-							NOT = { has_variable = is_the_revant }
-							NOR = {
-								has_trait = brain_damaged
-								has_trait = incapable
-								has_trait = goblin_trait
-								has_variable = on_orc_adventure
-							}
-							OR = {
-								is_general = yes
-								is_admiral = yes
-								is_governor = yes
-							}
+							omni_ai_study_priority_candidate_trigger = yes
 						}
 					}
-						random_character = {
-							limit = {
-								employer = root
-								is_mercenary = no
-							is_alive = yes
-							is_adult = yes
-							NOT = { has_variable = omni_studying_magic_cooldown }
-							NOT = { has_variable = is_the_revant }
-							NOR = {
-								has_trait = brain_damaged
-								has_trait = incapable
-								has_trait = goblin_trait
-								has_variable = on_orc_adventure
-							}
-							OR = {
-								is_general = yes
-								is_admiral = yes
-								is_governor = yes
-							}
+					random_character = {
+						limit = {
+							employer = root
+							omni_ai_study_priority_candidate_trigger = yes
 						}
 						omni_ai_prepare_magic_study_character = yes
 					}
@@ -95,34 +77,7 @@
 					random_character = {
 						limit = {
 							employer = root
-							is_mercenary = no
-							is_alive = yes
-							is_adult = yes
-							NOT = { has_variable = omni_studying_magic_cooldown }
-							NOT = { has_variable = is_the_revant }
-							NOR = {
-								has_trait = brain_damaged
-								has_trait = incapable
-								has_trait = goblin_trait
-								has_variable = on_orc_adventure
-							}
-							OR = {
-								is_ruler = yes
-								is_general = yes
-								is_admiral = yes
-								is_governor = yes
-								has_office = office_marshal
-								has_office = office_high_priest_monarchy
-								has_office = office_high_priest
-								has_office = office_augur
-								has_office = office_pontifex
-								has_trait = mage_trait
-								has_trait = archmage_trait
-								prominence >= 60
-								martial >= 8
-								zeal >= 8
-								finesse >= 8
-							}
+							omni_ai_study_candidate_trigger = yes
 						}
 						omni_ai_prepare_magic_study_character = yes
 					}
@@ -132,13 +87,23 @@
 					days = { 15 45 }
 				}
 			}
-			45 = {}
+			10 = {}
 		}
 	}
 }
 
 omni_ai_prepare_magic_study_character = {
-	set_variable = omni_studying_magic_cooldown
+	# The cooldown MUST have a duration. It used to be a bare set_variable, and
+	# nothing in the mod ever removed it, so a character enrolled in study once
+	# became permanently ineligible for any further AI-driven study - AI mages
+	# could never be re-enrolled to climb past their first school rank. Two years
+	# is long enough that the AI spreads study across its court rather than
+	# drilling one prodigy, and short enough that a long-lived mage can plausibly
+	# reach T4 within a reign.
+	set_variable = {
+		name = omni_studying_magic_cooldown
+		days = 730
+	}
 	if = {
 		limit = {
 			NOT = { has_trait = mage_trait }
@@ -146,10 +111,106 @@ omni_ai_prepare_magic_study_character = {
 		}
 		set_variable = first_time_mage_var
 	}
-	random_list = {
-		35 = { set_variable = omni_studying_diviner_var }
-		25 = { set_variable = omni_studying_hierophant_var }
-		25 = { set_variable = omni_studying_elementalist_var }
-		15 = { set_variable = omni_studying_cleric_var }
+	omni_ai_pick_study_school = yes
+}
+
+# School selection for AI study. Previously a flat 35/25/25/15 random roll that
+# ignored the character entirely, so AI mages scattered across schools and rarely
+# deepened one. Now it prefers continuity first (keep advancing a school the
+# character already has affinity in), then aptitude, and only falls back to a
+# random roll for blank-slate characters.
+#
+# PERF: all triggers here are has_variable / stat reads on a single already-scoped
+# character - no scope iteration. Cost is a handful of comparisons, once per
+# enrolment, at most a few times per country per decade.
+omni_ai_pick_study_school = {
+	# Refresh omni_best_affinity_var first: characters who accumulated affinity
+	# before this bookkeeping existed (or in an older save) have the four raw
+	# affinity vars but no resolved code yet.
+	omni_update_best_affinity = yes
+	if = {
+		# --- 1. Continuity: deepen the school this character already leans into.
+		limit = { omni_ai_has_any_magic_affinity = yes }
+		random_list = {
+			10 = {
+				trigger = { omni_ai_best_affinity_is_omnic = yes }
+				random_list = {
+					1 = { set_variable = omni_studying_diviner_var }
+					1 = { set_variable = omni_studying_hierophant_var }
+				}
+			}
+			10 = {
+				trigger = { omni_ai_best_affinity_is_aldic = yes }
+				random_list = {
+					1 = { set_variable = omni_studying_cleric_var }
+					1 = { set_variable = omni_studying_illusionist_var }
+				}
+			}
+			10 = {
+				trigger = { omni_ai_best_affinity_is_amten = yes }
+				random_list = {
+					1 = { set_variable = omni_studying_elementalist_var }
+					1 = { set_variable = omni_studying_druid_var }
+				}
+			}
+			10 = {
+				trigger = { omni_ai_best_affinity_is_melodian = yes }
+				random_list = {
+					1 = { set_variable = omni_studying_necromancer_var }
+					1 = { set_variable = omni_studying_warlock_var }
+				}
+			}
+		}
+	}
+	else = {
+		# --- 2. Aptitude: match the school to what the character is good at.
+		# Weights stay soft so the AI still produces some variety.
+		random_list = {
+			30 = {
+				# Zealous / priestly -> healing and blessing schools.
+				trigger = {
+					OR = {
+						zeal >= 8
+						has_office = office_high_priest
+						has_office = office_high_priest_monarchy
+						has_office = office_augur
+						has_office = office_pontifex
+					}
+				}
+				random_list = {
+					6 = { set_variable = omni_studying_cleric_var }
+					4 = { set_variable = omni_studying_hierophant_var }
+				}
+			}
+			30 = {
+				# Martial commanders -> battlefield elementalism.
+				trigger = {
+					OR = {
+						martial >= 8
+						is_general = yes
+						is_admiral = yes
+						has_office = office_marshal
+					}
+				}
+				set_variable = omni_studying_elementalist_var
+			}
+			30 = {
+				# Finesse / administrators -> divination and illusion.
+				trigger = { finesse >= 8 }
+				random_list = {
+					6 = { set_variable = omni_studying_diviner_var }
+					4 = { set_variable = omni_studying_illusionist_var }
+				}
+			}
+			20 = {
+				# --- 3. Blank slate fallback: the old flat roll.
+				random_list = {
+					35 = { set_variable = omni_studying_diviner_var }
+					25 = { set_variable = omni_studying_hierophant_var }
+					25 = { set_variable = omni_studying_elementalist_var }
+					15 = { set_variable = omni_studying_cleric_var }
+				}
+			}
+		}
 	}
 }

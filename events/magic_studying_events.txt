@@ -768,18 +768,23 @@ me_magic_studying.19 = {
             name = magic_burnt_out_mod
             duration = 90
         }
-        scope:target = {
-            if = {
-                limit = { NOT = { has_trait = stressed } }
-                add_trait = stressed
-            }
-            else_if = {
-                limit = { NOT = { has_trait = infection } }
-                add_trait = infection
-            }
-            else = {
-                add_health = -0.025
-            }
+        # Guarded: the target can die between the event firing and the option
+        # being taken, which logged "scope was dead" for the effects below.
+        if = {
+        	limit = { scope:target = { is_alive = yes } }
+        	scope:target = {
+        	    if = {
+        	        limit = { NOT = { has_trait = stressed } }
+        	        add_trait = stressed
+        	    }
+        	    else_if = {
+        	        limit = { NOT = { has_trait = infection } }
+        	        add_trait = infection
+        	    }
+        	    else = {
+        	        add_health = -0.025
+        	    }
+        	}
         }
         custom_tooltip = me_magic_studying_bad_tooltip
 
@@ -802,8 +807,13 @@ me_magic_studying.20 = {
 
     immediate = {
         check_mage_effect = yes
-        scope:target = {
-            add_gold = -50
+        # Guarded: the target can die between the event firing and the option
+        # being taken, which logged "scope was dead" for the effects below.
+        if = {
+        	limit = { scope:target = { is_alive = yes } }
+        	scope:target = {
+        	    add_gold = -50
+        	}
         }
         random_character = {
             limit = {
@@ -843,11 +853,19 @@ me_magic_studying.20 = {
             name = magic_embezzlement_mod
             duration = 182
         }
-        scope:target = {
-            add_gold = 50
+        # Guarded: the target can die between the event firing and the option
+        # being taken, which logged "scope was dead" for the effects below.
+        if = {
+        	limit = { scope:target = { is_alive = yes } }
+        	scope:target = {
+        	    add_gold = 50
+        	}
         }
-        scope:political_friend = {
-            add_gold = -50
+        if = {
+            limit = { scope:political_friend = { is_alive = yes } }
+            scope:political_friend = {
+                add_gold = -50
+            }
         }
 
         custom_tooltip = me_magic_studying_good_tooltip
@@ -860,8 +878,13 @@ me_magic_studying.20 = {
         name = "me_magic_studying.20.b"
         add_treasury = -50
         add_political_influence = -8
-        scope:target = {
-            add_gold = 50
+        # Guarded: the target can die between the event firing and the option
+        # being taken, which logged "scope was dead" for the effects below.
+        if = {
+        	limit = { scope:target = { is_alive = yes } }
+        	scope:target = {
+        	    add_gold = 50
+        	}
         }
         custom_tooltip = me_magic_studying_bad_tooltip
         
@@ -912,15 +935,20 @@ me_magic_studying.22 = {
 
     option = {
         name = "me_magic_studying.22.a"
-        scope:target = {
-            if = {
-                limit = { NOT = { has_trait = blind } }
-                add_trait = blind
-            }
-            else = {
-                death = { death_reason = death_magic }
-            }
-            add_loyalty = magic_victim_loyalty
+        # Guarded: the target can die between the event firing and the option
+        # being taken, which logged "scope was dead" for the effects below.
+        if = {
+        	limit = { scope:target = { is_alive = yes } }
+        	scope:target = {
+        	    if = {
+        	        limit = { NOT = { has_trait = blind } }
+        	        add_trait = blind
+        	    }
+        	    else = {
+        	        death = { death_reason = death_magic }
+        	    }
+        	    add_loyalty = magic_victim_loyalty
+        	}
         }
         add_stability = -3
         custom_tooltip = me_magic_studying_bad_tooltip

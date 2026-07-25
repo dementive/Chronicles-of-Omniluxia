@@ -4970,7 +4970,15 @@ ip_monarchy.39 = {
 		hidden_effect = { 
 			scope:affair_strumpet = { divorce_character = scope:affair_strumpet.spouse }
 		}
-		scope:bastard_ruler = { marry_character = scope:affair_strumpet }
+		# Guarded: either party could be dead or still married at this point,
+		# which logged "Tried to arrange a marriage for an invalid character".
+		if = {
+			limit = {
+				scope:bastard_ruler = { is_alive = yes NOT = { exists = spouse } }
+				scope:affair_strumpet = { is_alive = yes NOT = { exists = spouse } }
+			}
+			scope:bastard_ruler = { marry_character = scope:affair_strumpet }
+		}
 		hidden_effect = { 
 			if = { # Rulers other children unhappy
 				limit = {

@@ -60,60 +60,69 @@ is_item_in_item_category = {
 }
 
 has_any_other_same_category_item_equipped = {
-       
-        # is_target_in_global_variable_list = {
-        #     name = item_$item_category$
-        #     target = flag:$item_ID$
-    
-        # }
 
-        # is_target_in_variable_list = {
-        #     name = equiped_item_list
-        #     target = flag:$item_ID$
-        # }
-        
+        # True when the character has NOTHING else occupying category
+        # $item_category$, i.e. the slot is free for $item_ID$. Also true (with a
+        # different tooltip) when $item_ID$ is already worn, because in that case
+        # the caller is offering an unequip and there is nothing to block.
+
         trigger_if = {
 
-            limit = {  
-                
-                root = {
-                    
-                    NOT = {
-    
-                        is_target_in_variable_list = {
-                            name = equiped_item_list
-                            target = flag:$item_ID$
-                        }
+            limit = {
+
+                NOT = {
+                    is_target_in_variable_list = {
+                        name = equiped_item_list
+                        target = flag:$item_ID$
                     }
-    
                 }
-    
-            
+
             }
             custom_tooltip = {
                 text = no_other_same_category_item_equipped
             }
-        any_in_list = {
-                variable = equiped_item_list
-                count < $amount_per_category$
-                root = {
-                    is_target_in_global_variable_list = {
-                        name = item_$item_category$
-                        target = PREV
+
+            # FIXED: this was
+            #     root = { NOT = { is_target_in_variable_list = ... } }
+            # in the limit above, and
+            #     any_in_list = { ... count < $amount_per_category$ }
+            # here. Both were wrong.
+            #
+            # 1) ROOT is the caller's root, not this character. From the GUI that
+            #    happens to be the same thing, but from a mission reward it is
+            #    the country, so the check silently evaluated against a scope
+            #    that has no equiped_item_list at all.
+            # 2) any_in_list with "count < 1" evaluates false when the list does
+            #    not exist yet. Handle that case explicitly, then use the caller's
+            #    amount_per_category argument for existing lists. Keeping that
+            #    argument in the scripted trigger's body is also required by the
+            #    Jomini argument compiler; all item-menu and auto-equip callers
+            #    pass it.
+            #
+            # Inside any_in_list the scope is the list element (a bare flag),
+            # which cannot host a trigger, so step back to the owning character
+            # with prev = { ... } and refer to the element as PREV from there.
+            OR = {
+                NOT = { has_variable_list = equiped_item_list }
+                any_in_list = {
+                    variable = equiped_item_list
+                    count < $amount_per_category$
+                    prev = {
+                        is_target_in_global_variable_list = {
+                            name = item_$item_category$
+                            target = PREV
+                        }
                     }
                 }
             }
         }
         trigger_else = {
-            
+
             custom_tooltip = {
                 text = item_always_can_be_unequiped
                 always = yes
             }
-            
-    
+
         }
-
-
 
 }

@@ -1,0 +1,81 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# OMNILUXIA - DEDICATED BUILDING EVENT PULSE
+# ----------------------------------------------------------------------------------------------------------------------
+# These events used to live inside main_event_pulse_country, competing against a ~26500 weight pool. That gave the whole
+# set of 45 building events a ~3.4% chance per country-year of even being rolled, so the AI almost never saw them.
+# They now live here with their own pool, and the pulse trigger short-circuits before any province scan happens.
+#
+# PERF: every one of these events opens with NOT = { has_variable = <category>_building_cooldown } and only then runs an
+# any_owned_province scan. The pulse-level trigger below checks all three cooldowns first, so a country that is on
+# cooldown for every category never enters the random_events block at all - no province iteration, no event triggers.
+# ----------------------------------------------------------------------------------------------------------------------
+
+omni_building_event_pulse = {
+	trigger = {
+		num_of_cities >= 1
+		NOR = {
+			tag = REB
+			tag = BAR
+		}
+		# Cheap gate: if all three category cooldowns are running, every event below would fail anyway.
+		NOT = {
+			AND = {
+				has_variable = military_building_cooldown
+				has_variable = economy_building_cooldown
+				has_variable = population_building_cooldown
+			}
+		}
+	}
+
+	random_events = {
+		# ~33% chance per year to attempt a building event. Category cooldowns are 25 years, so this is deliberately
+		# generous - most rolls that get through the gate will still bounce off a cooldown or a failed trigger.
+		1800 = 0
+
+		20 = inv_building_events.1
+		20 = inv_building_events.2
+		20 = inv_building_events.3
+		20 = inv_building_events.4
+		20 = inv_building_events.5
+		20 = inv_building_events.6
+		20 = inv_building_events.7
+		20 = inv_building_events.8
+		20 = inv_building_events.9
+		20 = inv_building_events.10
+		20 = inv_building_events.11
+		20 = inv_building_events.12
+		20 = inv_building_events.13
+		20 = inv_building_events.14
+		20 = inv_building_events.15
+		20 = inv_building_events.16
+		20 = inv_building_events.17
+		20 = inv_building_events.18
+		20 = inv_building_events.26
+		20 = inv_building_events.27
+		20 = inv_building_events.28
+		20 = inv_building_events.29
+		20 = inv_building_events.30
+		20 = inv_building_events.31
+		20 = inv_building_events.32
+		20 = inv_building_events.33
+		20 = inv_building_events.34
+		20 = inv_building_events.41
+		20 = inv_building_events.42
+		20 = inv_building_events.43
+		20 = inv_building_events.44
+		20 = inv_building_events.45
+		20 = inv_building_events.46
+		20 = inv_building_events.47
+		20 = inv_building_events.48
+		20 = inv_building_events.49
+		20 = inv_building_events.50
+		20 = inv_building_events.51
+		20 = inv_building_events.52
+		20 = inv_building_events.53
+		20 = inv_building_events.54
+		20 = inv_building_events.55
+		20 = inv_building_events.56
+		20 = inv_building_events.57
+		20 = inv_building_events.58
+	}
+}

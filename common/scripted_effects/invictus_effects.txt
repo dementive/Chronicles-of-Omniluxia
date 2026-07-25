@@ -1591,8 +1591,13 @@ revant_legion_setup_effect = {
 				add_subunit = heavy_cavalry
 				add_subunit = supply_train
 			}
-			scope:revant_scope = { add_to_legion = PREV }
-			random_legion_unit = { set_as_commander = scope:revant_scope }
+			# Guarded: if Revant has become the ruler he can only lead levies, and
+			# add_to_legion logged "Cannot add commander to legion: ... is a ruler".
+			if = {
+				limit = { scope:revant_scope = { is_ruler = no } }
+				scope:revant_scope = { add_to_legion = PREV }
+				random_legion_unit = { set_as_commander = scope:revant_scope }
+			}
 			if = {
 				limit = { has_dlc = "Heirs of Alexander" }
 				add_distinction = distinction_imperial

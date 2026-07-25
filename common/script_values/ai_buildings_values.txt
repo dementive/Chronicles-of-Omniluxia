@@ -411,12 +411,20 @@ brc_magic_academy = {
         }
         value = 0
     }
+    # HARD REQUIREMENT: the capital always gets a Magic Academy first. max_amount = 1 so this fires once and then the
+    # building is no longer offered. Sits after the prohibition checks above so no-slot / must-destroy cases still win.
+    else_if = {
+        limit = {
+            is_capital = yes
+            NOT = { has_building = magic_academy_building }
+        }
+        value = brc_100
+    }
     else = {
         value = brc_territory_importance
         if = {
             limit = {
                 OR = {
-                    is_capital = yes
                     has_building = academy_building
                     has_building = library_building
                     total_population >= 50
@@ -513,12 +521,21 @@ brc_mage_tower = {
         }
         value = 0
     }
+    # HARD REQUIREMENT: capital always gets a Mage Tower. The building's own allow block already requires a
+    # magic_academy_building in the same territory, so this naturally resolves after brc_magic_academy has fired.
+    else_if = {
+        limit = {
+            is_capital = yes
+            has_building = magic_academy_building
+            NOT = { has_building = mage_tower_building }
+        }
+        value = brc_100
+    }
     else = {
         value = brc_territory_importance
         if = {
             limit = {
                 OR = {
-                    is_capital = yes
                     fort_level_projected > 0
                     ai_territory_is_good_for_defense = yes
                     total_population >= 50
@@ -583,6 +600,14 @@ brc_palace = {
     else = {
         value = brc_territory_importance
         if = {
+            # Palace-before-Academies: brc_academy zeroes itself out while this holds, so the Palace needs to
+            # outrank the rest of the queue or the slot just goes to something unrelated instead.
+            limit = {
+                brc_wants_palace_before_academies = yes
+            }
+            multiply = brc_90
+        }
+        else_if = {
             limit = {
                 OR = {
                     is_capital = yes
@@ -611,6 +636,8 @@ brc_slum = {
                 ai_prohibited_to_build_in_city = yes
                 state = { state_has_close_to_low_food = yes }
                 total_population < population_cap_minus_5
+                # AI-only ceiling, well below the building's own max_amount = 10
+                num_of_slum_building >= ai_slum_soft_cap
             }
         }
         value = 0
@@ -764,6 +791,9 @@ brc_academy = {
             OR = {
                 ai_prohibited_to_build_in_city = yes
                 brc_wants_academy = no
+                # Take the Palace first - one slot, max_amount = 1, and it covers the nobles ratio this Academy
+                # would have been built for. Once the Palace exists this stops applying and Academies resume.
+                brc_wants_palace_before_academies = yes
             }
         }
         value = 0
@@ -794,11 +824,27 @@ brc_commerce = {
         }
         value = -1
     }
+    # Never build where we physically can't - checked first so the capital rule below can't override a hard block.
+    else_if = {
+        limit = {
+            ai_prohibited_to_build_in_city = yes
+        }
+        value = 0
+    }
+    # CAPITAL: max out Markets. Deliberately skips the ratio-building and academy gates below, which is what previously
+    # zeroed this out in capitals almost permanently. Waits until the two mage buildings are down so they aren't starved.
+    else_if = {
+        limit = {
+            is_capital = yes
+            brc_capital_mage_buildings_done = yes
+        }
+        value = brc_territory_importance
+        multiply = brc_95
+    }
     # Don't build
     else_if = {
         limit = {
             OR = {
-                ai_prohibited_to_build_in_city = yes
                 brc_wants_any_ratio_building = yes
                 territory_has_more_than_one_academy = no
                 # Don't build too much of the same, unless there's too much of everything
@@ -1324,6 +1370,9 @@ brc_local_forum = {
 # ----------------- #
 
 brc_ratio_building_weight_per_level = 0.25
+
+# AI-only ceiling on slums. The building itself allows 10; the AI stops at 3 so capitals don't become slum farms.
+ai_slum_soft_cap = 3
 
 brc_territory_importance = {
     value = 1

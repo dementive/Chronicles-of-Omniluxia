@@ -9,16 +9,36 @@
 # engine, so their values are STORED divided by 100 (see
 # common/modifiers/0000_magic_modifiers.txt). Always read them through these
 # two script values so the x100 is applied in exactly one place.
+#
+# REGEN RATE (rebalanced July 2026): the multipliers here carry a x5 rate factor
+# on top of the x100 percent-decode. Before the mana-tick fix in
+# change_country_scope_magic_vars, the quarterly sweep ran once PER COUNTRY
+# (~750x per quarter), so every caster sat pinned at magic_max and the rate was
+# irrelevant. With the sweep correctly running once per quarter, the raw trait
+# values would have given a mage_trait caster (0.01) just 3 mana per quarter -
+# two years to afford a single 25-mana tier-1 spell.
+#
+# The x5 lives here rather than on the traits because
+# great_work_*_workrate_character_modifier are real engine modifiers used
+# elsewhere; scaling at the reader keeps trait balance untouched and keeps the
+# monthly display value exactly 1/3 of the quarterly grant, so the tooltip stays
+# truthful. Resulting rates (max mana is 100 + freemen bonus):
+#   mage_trait      0.01 -> 5/month,  15/quarter   (60/yr)
+#   diviner/etc.    0.02 -> 10/month, 30/quarter  (120/yr)
+#   archmage_trait  0.03 -> 15/month, 45/quarter  (180/yr)
+# Battle spells cost 15-75 and have a 1-day cooldown, so mana - not the
+# cooldown - is now the real limiter on AI and player casting. That is intended.
+# To retune the whole system's pace, change the x5 in both values together.
 omni_character_monthly_mana_value = {
 	value = modifier:great_work_tribals_workrate_character_modifier
-	multiply = 100
+	multiply = 500
 }
 
 # Quarterly regen: three months of mana delivered in one tick (see the
 # quarterly character loop in change_country_scope_magic_vars).
 omni_character_quarterly_mana_value = {
 	value = modifier:great_work_tribals_workrate_character_modifier
-	multiply = 300
+	multiply = 1500
 }
 
 omni_character_max_mana_bonus_value = {

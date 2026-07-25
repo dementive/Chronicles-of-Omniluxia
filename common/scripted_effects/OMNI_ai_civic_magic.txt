@@ -1,0 +1,130 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# Omniluxia - AI peacetime / civic magic
+#
+# me_zorgo_magic_focus.35 requires war = yes, so AI mages did literally nothing in
+# peacetime while sitting at full mana. The four civic spells (Harbor Ward,
+# Unrest Cleansing, Migration Beacon, Weathercall Growth) and the Divine Blessings
+# country buffs in me_zorgo_magic_focus.38 were all player-only.
+#
+# Runs in the CASTER (character) scope; the caster's country is scope:caster_country.
+# Costs and tier gates match the player options in me_zorgo_magic_focus.17/.18/.19:
+#   Unrest Cleansing 50 mana, cleric_t2      - country modifier, unrest/happiness
+#   Weathercall      50 mana, elementalist_t2 - capital, food + pop growth
+#   Migration Beacon 50 mana, druid_t2       - capital, migration + pop growth
+#   Harbor Ward      50 mana, hierophant_t3  - capital, defence + garrison + food
+#
+# DESIGN: every branch is need-gated, so a mage with nothing useful to do spends
+# nothing. This is deliberate - it keeps mana banked for war, and it means the
+# effect is a no-op (a few cheap checks) for the majority of countries.
+#
+# PERF: the need checks are the only scope work here. Unrest is the one that
+# needs a province scan, so it is checked last among the province-scanning
+# branches... in fact all of them are gated behind the calling event's yearly
+# cooldown, so the whole ladder runs at most once per country per year.
+# ----------------------------------------------------------------------------------------------------------------------
+
+omni_ai_cast_civic_spell_effect = {
+	if = {
+		# Unrest is the most dangerous civic problem - revolts lose provinces.
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			has_variable = cleric_t2_unlocked_var
+			scope:caster_country = {
+				NOT = { has_country_modifier = omni_unrest_cleansing_mod }
+				# province_unrest is the province-scope trigger name in this engine
+				# version (see Invictus inv_pop_events.txt / inv_building_events.txt,
+				# which use "province_unrest > 2"). Plain "unrest" does not exist.
+				any_owned_province = { province_unrest >= 4 }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = {
+			add_country_modifier = {
+				name = omni_unrest_cleansing_mod
+				duration = 365
+			}
+		}
+		omni_set_civic_spell_cooldown = yes
+	}
+	else_if = {
+		# Food trouble: starvation stalls growth and can shrink the capital.
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			has_variable = elementalist_t2_unlocked_var
+			scope:caster_country = {
+				# Food is a STATE-level concept here. state_has_low_food is the
+				# existing shared trigger (common/scripted_triggers/ai_trade_triggers.txt)
+				# and is reached from a province via .state, the same way
+				# ai_buildings_values.txt does it with "root.state = { state_has_low_food = yes }".
+				# Checking the capital's own state is both the cheapest option and
+				# the right one - the capital is where the spell lands.
+				capital_scope = {
+					NOT = { has_province_modifier = omni_weathercall_growth_mod }
+					state = { state_has_low_food = yes }
+				}
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = {
+			capital_scope = {
+				add_province_modifier = {
+					name = omni_weathercall_growth_mod
+					duration = 365
+				}
+			}
+		}
+		omni_set_civic_spell_cooldown = yes
+	}
+	else_if = {
+		# Coastal capital that could be attacked - shore up the home port.
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			has_variable = hierophant_t3_unlocked_var
+			scope:caster_country = {
+				capital_scope = {
+					is_coastal = yes
+					NOT = { has_province_modifier = omni_harbor_ward_mod }
+				}
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = {
+			capital_scope = {
+				add_province_modifier = {
+					name = omni_harbor_ward_mod
+					duration = 365
+				}
+			}
+		}
+		omni_set_civic_spell_cooldown = yes
+	}
+	else_if = {
+		# Nothing urgent - grow the capital.
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			has_variable = druid_t2_unlocked_var
+			scope:caster_country = {
+				capital_scope = { NOT = { has_province_modifier = omni_migration_beacon_mod } }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = {
+			capital_scope = {
+				add_province_modifier = {
+					name = omni_migration_beacon_mod
+					duration = 365
+				}
+			}
+		}
+		omni_set_civic_spell_cooldown = yes
+	}
+}
+
+# One civic cast per country per year. Civic modifiers all last 365 days, so a
+# faster cadence would only ever re-apply something already active.
+omni_set_civic_spell_cooldown = {
+	set_variable = {
+		name = omni_civic_spell_cooldown
+		days = 365
+	}
+}

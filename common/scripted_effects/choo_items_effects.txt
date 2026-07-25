@@ -37,11 +37,13 @@ else = {
 
 
 
-    # AI-run characters auto-equip whatever they can whenever they gain an item,
-    # so the AI actually uses the item system. Human players equip via the menu.
+    # Keep the large auto-equip dispatcher behind an event boundary. Scripted
+    # effects are expanded at every call site; expanding omni_ai_auto_equip_items
+    # here duplicated its full item catalogue into every generated reward branch
+    # and exhausted memory while loading omniluxia_adventure_events.txt.
     if = {
         limit = { employer = { is_ai = yes } }
-        omni_ai_auto_equip_items = yes
+        trigger_event = { id = omni_item_autoequip.1 }
     }
 }
 

@@ -242,12 +242,23 @@ optimize_state_capitals_and_forts = {
         remove_local_variable = fort_maintenance_without_modifiers
 
         # Clear everything related to recently acquired fort territories
+        # Guarded: list entries can go stale (territory decolonised or its state
+        # dissolved) between being added and this cleanup pass. Touching them
+        # unguarded logged "Invalid province from scope",
+        # "Event target link 'state' returned an unset scope" and
+        # "remove_variable effect [ This scope does not have variables ]".
         every_in_list = {
             variable = ai_acquired_territories_with_fort
-            state = {
-                remove_variable = ai_state_acquired_fort_territory
+            if = {
+                limit = { exists = state }
+                state = {
+                    remove_variable = ai_state_acquired_fort_territory
+                }
             }
-            remove_variable = ai_acquired_territory_with_fort
+            if = {
+                limit = { has_variable = ai_acquired_territory_with_fort }
+                remove_variable = ai_acquired_territory_with_fort
+            }
         }
         clear_variable_list = ai_acquired_territories_with_fort
         remove_variable = ai_country_acquired_fort_territory

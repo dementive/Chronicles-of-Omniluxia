@@ -54,7 +54,14 @@ omni_buy_generated_slot_item = {
 		}
 		remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
 		remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
-		hidden_effect = { omni_gen_slot_apply_modifier = { SLOT = $SLOT$ } }
+		# Route through the shared equip choke-point instead of calling
+		# omni_gen_slot_apply_modifier directly. The old direct call granted the
+		# character modifier without ever touching equiped_item_list, so a bought
+		# generated item did not occupy its category slot and never appeared in
+		# the Items-button tooltip - the same double-dip bug the artifact system
+		# was fixed for. If the slot is already taken the item is now bought and
+		# carried unequipped, which is the correct and consistent outcome.
+		hidden_effect = { omni_equip_var_gen_item = { SLOT = $SLOT$ } }
 		remove_variable = omni_shop_slot_$SLOT$
 	}
 }
@@ -71,9 +78,8 @@ omni_adventure_pick_gen_item = {
 	}
 }
 
+# Adventure loot. Grants AND equips - see omni_gen_item_equip.txt. This used to
+# only add the flag to item_list, so adventure loot was permanently unwearable.
 omni_give_scoped_gen_item = {
-	if = {
-		limit = { NOT = { is_target_in_variable_list = { name = item_list target = scope:omni_gen_item_pick } } }
-		add_to_variable_list = { name = item_list target = scope:omni_gen_item_pick }
-	}
+	omni_give_and_equip_scoped_gen_item = yes
 }

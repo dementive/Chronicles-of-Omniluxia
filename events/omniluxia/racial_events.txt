@@ -4143,7 +4143,14 @@ me_racial_events.24 = {
             subtract = six_months_income_root
         }
         if = {
-            limit = { exists = scope:conversion_city }
+            # Guarded: the country_culture scopes can be gone by the time the
+            # option is taken, which logged "Invalid country culture from scope"
+            # and "pop_culture trigger [ culture was null ]".
+            limit = {
+                exists = scope:conversion_city
+                exists = scope:converting_culture
+                exists = scope:chosen_culture
+            }
             scope:conversion_city = {
                 while = {
                     count = 2

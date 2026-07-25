@@ -49,6 +49,21 @@ brc_wants_port = {
     has_or_is_building_port = no
 }
 
+# Magic buildings - used to hold Market spam in the capital until the mage buildings are secured.
+# Both are max_amount = 1, and both are gated behind organized_mage_guilds_inv, so a country without the invention
+# counts as "done" and goes straight to Markets rather than sitting on empty slots forever.
+brc_capital_mage_buildings_done = {
+    OR = {
+        owner = {
+            NOT = { invention = organized_mage_guilds_inv }
+        }
+        AND = {
+            has_building = magic_academy_building
+            has_building = mage_tower_building
+        }
+    }
+}
+
 # Academy
 brc_wants_academy = {
     num_of_academy_building < 3
@@ -195,7 +210,28 @@ brc_wants_any_ratio_building = {
         brc_wants_court_of_law = yes
         brc_wants_forum = yes
         brc_wants_mill = yes
+        brc_wants_slum = yes
     }
+}
+
+# Slums give serfs + slaves ratio. Gated on the same overcrowding condition brc_slum itself uses, so the AI only
+# reaches for them once a territory is actually near its population cap.
+brc_wants_slum = {
+    num_of_slum_building < ai_slum_soft_cap
+    total_population >= population_cap_minus_5
+    NOT = {
+        state = { state_has_close_to_low_food = yes }
+    }
+}
+
+# Palace is max_amount = 1 and grants a nobles ratio for a single slot, which is a better deal than the first
+# academy. Where a palace is still available the AI takes it before spending further slots on academies.
+# Capital only - elsewhere the AI keeps using Academies for nobles, so ordinary cities don't turn palace-heavy.
+brc_wants_palace_before_academies = {
+    is_capital = yes
+    brc_wants_nobles = yes
+    NOT = { has_building = palace_building }
+    owner = { war = no }
 }
 
 brc_wants_more_research_modifier_buildings = {
@@ -223,6 +259,17 @@ territory_has_high_num_of_military_building = {
 territory_has_high_num_of_town_hall_building = {
     num_of_town_hall_building >= 5
 }
+# Omniluxia additions. These three are capped at 3 by the building definitions, not 5, so the saturation
+# threshold matches their real max_amount rather than the vanilla 5.
+territory_has_high_num_of_brewery_building = {
+    num_of_brewery_building >= 3
+}
+territory_has_high_num_of_public_works_building = {
+    num_of_public_works_building >= 3
+}
+territory_has_high_num_of_circus_building = {
+    num_of_circus_building >= 3
+}
 territory_has_high_num_of_all_modifier_buildings = {
     OR = {
         territory_has_high_num_of_library_building = yes
@@ -236,6 +283,20 @@ territory_has_high_num_of_all_modifier_buildings = {
     }
     territory_has_high_num_of_military_building = yes
     territory_has_high_num_of_town_hall_building = yes
+    # Omniluxia buildings. Each is paired with its "won't be built anyway" escape so that adding them to this
+    # AND-gate can't permanently strand it - otherwise a territory that will never want a brewery could never
+    # read as saturated, which would keep brc_commerce pinned at 0 forever in non-capitals.
+    OR = {
+        territory_has_high_num_of_brewery_building = yes
+        state = { state_has_close_to_low_food = yes }
+    }
+    OR = {
+        territory_has_high_num_of_circus_building = yes
+        state = { state_has_close_to_low_food = yes }
+    }
+    # public_works has no zero-out condition of its own beyond ai_prohibited_to_build_in_city, which is already
+    # checked before this trigger is ever reached - so a plain count is correct here.
+    territory_has_high_num_of_public_works_building = yes
 }
 
 # ------------------- #
@@ -622,6 +683,9 @@ has_any_city_ratio_building_maxed_out = {
         num_of_court_building >= 3
         num_of_forum_building >= 3
         num_of_workshop_building >= 3
+        # Slums are max_amount = 10 for the player, but the AI treats 3 as its ceiling. Left uncapped the AI
+        # would happily fill a capital with them, since they are cheap and always satisfy a serf/slave ratio.
+        num_of_slum_building >= ai_slum_soft_cap
     }
 }
 

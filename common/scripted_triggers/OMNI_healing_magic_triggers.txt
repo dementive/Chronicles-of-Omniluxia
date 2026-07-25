@@ -1,0 +1,60 @@
+﻿# ---------------------------------------------------------------------------
+# Curable-ailment checks for healing magic. CHARACTER scope.
+#
+# The trait lists here mirror exactly what the Healing Light / Healing Light II
+# options in me_zorgo_magic_focus.18 actually remove. They were previously only
+# expressed as an inline else_if chain inside those options, so nothing else -
+# including the AI - could ask "does this character need healing?".
+#
+# Keep these in sync with the removal chains in events/zorgo_magic_events.txt.
+# ---------------------------------------------------------------------------
+
+# Removable by Healing Light (tier 1).
+omni_has_minor_curable_ailment = {
+	OR = {
+		has_trait = invalid
+		has_trait = gangrene
+	}
+}
+
+# Removable by Healing Light II (tier 2). Superset of the tier 1 list.
+omni_has_curable_ailment = {
+	OR = {
+		has_trait = invalid
+		has_trait = gangrene
+		has_trait = arthritis
+		has_trait = leper
+		has_trait = blind
+		has_trait = paralysis
+		has_trait = brain_damaged
+		has_trait = dementia
+		has_trait = cancer
+		has_trait = diphtheria
+		has_trait = gout
+		has_trait = drow_mushroom_spots_trait
+	}
+}
+
+# Worth spending Vitality (add_health) on: hurt or sick rather than maimed.
+# health is a 0-100 scale in this engine version - compare retire.txt's
+# "health < 15" and 00_generic.txt's "health <= 25". Vitality grants add_health = 3,
+# so 75 is the point where a 3-point top-up is still meaningful.
+omni_needs_vitality_healing = {
+	OR = {
+		has_trait = wounded
+		has_trait = infection
+		health < 75
+	}
+}
+
+# The characters an AI ruler should care about keeping alive and functional, in the
+# order the healing event prioritises them.
+omni_is_healing_priority_character = {
+	OR = {
+		is_ruler = yes
+		is_primary_heir = yes
+		is_general = yes
+		is_admiral = yes
+		prominence >= 60
+	}
+}

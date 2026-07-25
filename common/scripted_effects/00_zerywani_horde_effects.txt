@@ -53,15 +53,20 @@ zerywani_horde_formation_effect = {
 
 	# Raise the great horde army under a single warlord.
 	create_character = {
-		culture = root.culture
-		religion = root.religion
+	# This effect is also invoked from inside an ordered_country block, where
+	# ROOT is the on_action country rather than the horde leader. root.* then
+	# yielded a null culture/religion and resolved the capital to province 1
+	# (a sea tile), logging "culture was null", "religion was null" and
+	# "Trying to create land unit where it does not belong".
+		culture = scope:zerywani_horde_leader_scope.culture
+		religion = scope:zerywani_horde_leader_scope.religion
 		female = no
 		age = 25
 		save_scope_as = zerywani_horde_commander
 	}
 	create_unit = {
 		name = "The Zerywani Horde"
-		location = root.capital_scope
+		location = scope:zerywani_horde_leader_scope.capital_scope
 		set_as_commander = scope:zerywani_horde_commander
 		save_scope_as = zerywani_horde_army_scope
 		add_subunit = light_cavalry
