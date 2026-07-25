@@ -118,6 +118,27 @@ omni_equip_var_gen_item_in_category = {
 	}
 }
 
+# Takes var:omni_shop_slot_$SLOT$ back off, freeing its category slot.
+# Scope: CHARACTER. The counterpart to omni_equip_var_gen_item_in_category, which
+# never had one: an item that entered equiped_item_list could never leave it, so
+# the "nothing else in this category" check above permanently refused every later
+# item of that category. Same queue-and-cross-an-event-boundary shape as the
+# equip side, for the same compile-size reason.
+omni_unequip_var_gen_item = {
+	if = {
+		limit = {
+			has_variable = omni_shop_slot_$SLOT$
+			is_target_in_variable_list = { name = equiped_item_list target = var:omni_shop_slot_$SLOT$ }
+		}
+		remove_list_variable = { name = equiped_item_list target = var:omni_shop_slot_$SLOT$ }
+		add_to_variable_list = {
+			name = omni_gen_layer_strip_queue
+			target = var:omni_shop_slot_$SLOT$
+		}
+		trigger_event = { id = omni_item_dispatch.2 }
+	}
+}
+
 # Scope-holding entry point. Scope: CHARACTER, with scope:omni_gen_item_pick set.
 # Copies the pick into the shared scratch slot and runs the variable-keyed path.
 # omni_shop_slot_autoequip is scratch only and never survives this effect, so it

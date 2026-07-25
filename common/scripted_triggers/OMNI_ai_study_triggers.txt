@@ -54,16 +54,35 @@ omni_ai_study_candidate_trigger = {
 # whose spells the AI auto-cast code can actually put to use. Also includes
 # existing mages, so the AI deepens a caster it already has rather than always
 # starting someone new from scratch.
+#
+# BUG (fixed): rulers and heirs were absent from this list while being present in
+# the wide candidate pool. The driver takes the priority branch whenever ANY
+# priority candidate exists - and every country always has a general or governor -
+# so the wide pool was effectively dead code and a ruler could never be enrolled.
+# That is why 100 years of observation produced zero ruler mages.
 omni_ai_study_priority_candidate_trigger = {
 	is_mercenary = no
 	is_alive = yes
 	is_adult = yes
 	NOT = { omni_ai_study_blocked_trigger = yes }
 	OR = {
+		is_ruler = yes
+		is_heir = yes
 		is_general = yes
 		is_admiral = yes
 		is_governor = yes
 		has_trait = mage_trait
 		has_trait = archmage_trait
 	}
+}
+
+# The ruler specifically. Used for the dedicated ruler-first branch in
+# omni_ai_study_magic_effect so that "the AI encourages its rulers to study magic"
+# is an explicit weighted preference rather than an accident of pool membership.
+omni_ai_study_ruler_candidate_trigger = {
+	is_ruler = yes
+	is_mercenary = no
+	is_alive = yes
+	is_adult = yes
+	NOT = { omni_ai_study_blocked_trigger = yes }
 }

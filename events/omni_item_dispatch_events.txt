@@ -24,3 +24,54 @@ omni_item_dispatch.1 = {
 
 	option = {}
 }
+
+# Mirror of .1 for taking generated items off. Same reasoning: one compile site
+# for the remove dispatch, drained from the character's own queue.
+omni_item_dispatch.2 = {
+	type = character_event
+	hidden = yes
+
+	immediate = {
+		if = {
+			limit = { has_variable_list = omni_gen_layer_strip_queue }
+			every_in_list = {
+				variable = omni_gen_layer_strip_queue
+				prev = {
+					set_variable = { name = omni_shop_slot_dispatch value = prev }
+					omni_gen_slot_remove_modifier = { SLOT = dispatch }
+					remove_variable = omni_shop_slot_dispatch
+				}
+			}
+			clear_variable_list = omni_gen_layer_strip_queue
+		}
+	}
+
+	option = {}
+}
+
+# Resync: remove-then-apply, so running it on a ruler who is already correctly
+# layered is a no-op rather than a second stack of the same modifier. This is what
+# makes the succession transfer and the self-heal in omni_items.1 safe to fire as
+# often as we like.
+omni_item_dispatch.3 = {
+	type = character_event
+	hidden = yes
+
+	immediate = {
+		if = {
+			limit = { has_variable_list = omni_gen_layer_sync_queue }
+			every_in_list = {
+				variable = omni_gen_layer_sync_queue
+				prev = {
+					set_variable = { name = omni_shop_slot_dispatch value = prev }
+					omni_gen_slot_remove_modifier = { SLOT = dispatch }
+					omni_gen_slot_apply_modifier = { SLOT = dispatch }
+					remove_variable = omni_shop_slot_dispatch
+				}
+			}
+			clear_variable_list = omni_gen_layer_sync_queue
+		}
+	}
+
+	option = {}
+}

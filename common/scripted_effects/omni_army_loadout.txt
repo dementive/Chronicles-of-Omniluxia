@@ -146,9 +146,61 @@ omni_army_replace_slot = {
 	set_variable = { name = $SLOTVAR$ value = var:omni_gen_fx_item }
 }
 
+# COUNTRY scope. Hands the national loadout from the outgoing ruler to the
+# incoming one. Called from on_ruler_change, where scope:former_ruler is the
+# outgoing ruler and current_ruler is already the successor.
+#
+# This replaces a call to omni_army_clear_all, which was wrong twice over. It
+# wiped the realm's whole armoury on every succession - gear the country paid for
+# out of the treasury, described in its own tooltips as an "Army Standard" - and
+# it stripped the personal layers via current_ruler, which at on_ruler_change is
+# the NEW ruler. So the outgoing ruler kept every item's stat bonus for the rest
+# of their life while the incoming one got nothing.
+#
+# The country _army layers are left alone: they belong to the realm, not to a
+# person, and re-adding them here would stack a second copy.
+omni_army_transfer_loadout = {
+	if = {
+		limit = { exists = scope:former_ruler }
+		omni_army_queue_slots_on = { WHO = scope:former_ruler QUEUE = omni_gen_layer_strip_queue EVT = 2 }
+	}
+	if = {
+		limit = { exists = current_ruler }
+		omni_army_queue_slots_on = { WHO = current_ruler QUEUE = omni_gen_layer_sync_queue EVT = 3 }
+	}
+}
+
+# COUNTRY scope. Re-asserts the current ruler's personal layers against whatever
+# the realm actually has in its slots. Cheap to call and idempotent - the drain
+# event removes before it applies - so it doubles as a repair for any save whose
+# ruler and loadout have drifted apart.
+omni_army_sync_ruler_layers = {
+	if = {
+		limit = { exists = current_ruler }
+		omni_army_queue_slots_on = { WHO = current_ruler QUEUE = omni_gen_layer_sync_queue EVT = 3 }
+	}
+}
+
+# COUNTRY scope. Copies every filled slot onto $WHO$'s $QUEUE$ and wakes the
+# drain event. Queueing rather than dispatching inline matters here: the
+# generated dispatch is a ~1,600-branch table, and calling it per slot per caller
+# would inline it a dozen times over.
+omni_army_queue_slots_on = {
+	save_scope_as = omni_layer_realm
+	$WHO$ = {
+		if = { limit = { scope:omni_layer_realm = { has_variable = omni_army_slot_weapon } } add_to_variable_list = { name = $QUEUE$ target = scope:omni_layer_realm.var:omni_army_slot_weapon } }
+		if = { limit = { scope:omni_layer_realm = { has_variable = omni_army_slot_ranged } } add_to_variable_list = { name = $QUEUE$ target = scope:omni_layer_realm.var:omni_army_slot_ranged } }
+		if = { limit = { scope:omni_layer_realm = { has_variable = omni_army_slot_armour } } add_to_variable_list = { name = $QUEUE$ target = scope:omni_layer_realm.var:omni_army_slot_armour } }
+		if = { limit = { scope:omni_layer_realm = { has_variable = omni_army_slot_shield } } add_to_variable_list = { name = $QUEUE$ target = scope:omni_layer_realm.var:omni_army_slot_shield } }
+		if = { limit = { scope:omni_layer_realm = { has_variable = omni_personal_slot_emblem } } add_to_variable_list = { name = $QUEUE$ target = scope:omni_layer_realm.var:omni_personal_slot_emblem } }
+		if = { limit = { scope:omni_layer_realm = { has_variable = omni_personal_slot_trinket } } add_to_variable_list = { name = $QUEUE$ target = scope:omni_layer_realm.var:omni_personal_slot_trinket } }
+		if = { limit = { has_variable_list = $QUEUE$ } trigger_event = { id = omni_item_dispatch.$EVT$ } }
+	}
+}
+
 # COUNTRY scope. Clears the whole loadout and strips the army modifiers.
-# Used on ruler death/succession (the dead ruler's personal modifiers vanish
-# with them; the new ruler starts empty).
+# No longer used on succession (see omni_army_transfer_loadout above); kept for
+# callers that really do want the realm disarmed outright.
 omni_army_clear_all = {
 	if = { limit = { has_variable = omni_army_slot_weapon } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_weapon } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_weapon }
 	if = { limit = { has_variable = omni_army_slot_ranged } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_ranged } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_ranged }

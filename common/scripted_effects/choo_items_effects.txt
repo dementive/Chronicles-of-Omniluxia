@@ -1192,19 +1192,53 @@ equip_item_with_modifier = {
 # engine validates those references before evaluating an if-limit, which caused
 # every non-combat caller to emit a script error for its absent *_army modifier.
 # Only the explicit combat-item call sites use this wrapper.
+#
+# This is a full toggle rather than a wrapper around equip_item_with_modifier,
+# because a combat item does NOT apply the same modifier a non-combat one does.
+# A combat item's $item_ID$_modifier mixes character stats (martial, health) with
+# country/unit stats (heavy_infantry_offensive, discipline) in a single entry.
+# The split into $item_ID$_personal (character half, full value) and
+# $item_ID$_army (country half) lives in common/modifiers/omni_fixed_gear_split.txt,
+# and every shop tooltip in events/omni_item_menu.txt has advertised that pair
+# since it was introduced - but the equip path went on applying the combined
+# $item_ID$_modifier, so the promise and the effect were two different things.
+# Non-combat items keep $item_ID$_modifier: theirs is already character-only,
+# and they have no _personal/_army entries to reference.
 equip_combat_item_with_modifier = {
-    equip_item_with_modifier = { item_ID = $item_ID$ }
     if = {
         limit = {
-            is_ruler = yes
             has_variable_list = equiped_item_list
             is_target_in_variable_list = { name = equiped_item_list target = flag:$item_ID$ }
         }
-        country = { add_country_modifier = { name = $item_ID$_army duration = -1 } }
+        remove_list_variable = {
+            name = equiped_item_list
+            target = flag:$item_ID$
+        }
+        custom_tooltip = unequiping_$item_ID$_tt
+        remove_character_modifier = $item_ID$_personal
+        # Saves made before the split carry the combined modifier instead. Both
+        # removes are static references to modifiers that exist, so the unused
+        # one is a harmless no-op rather than a script error.
+        remove_character_modifier = $item_ID$_modifier
+        if = {
+            limit = { is_ruler = yes }
+            country = { remove_country_modifier = $item_ID$_army }
+        }
     }
-    else_if = {
-        limit = { is_ruler = yes }
-        country = { remove_country_modifier = $item_ID$_army }
+    else = {
+        add_to_variable_list = {
+            name = equiped_item_list
+            target = flag:$item_ID$
+        }
+        custom_tooltip = equiping_$item_ID$_tt
+        # Legacy cleanup: strip the combined modifier a pre-split save may have
+        # left on this character before granting the personal half.
+        remove_character_modifier = $item_ID$_modifier
+        add_character_modifier = { name = $item_ID$_personal duration = -1 }
+        if = {
+            limit = { is_ruler = yes }
+            country = { add_country_modifier = { name = $item_ID$_army duration = -1 } }
+        }
     }
 }
 
