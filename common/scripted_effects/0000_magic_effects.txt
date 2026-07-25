@@ -9,7 +9,7 @@
 # and never has a mechanical effect (see PERFORMANCE_AUDIT.md). They must stay
 # STORED because this Imperator version's data system has no ScriptValue loc
 # function - the mana tooltips can only read Var('magic_monthly')/Var('magic_max').
-# They now refresh QUARTERLY (with the mana tick) instead of monthly.
+# They refresh monthly with the mana tick.
 recalculate_character_magic_vars = {
 	if = {
 		limit = { NOT = { has_variable = magic } }
@@ -220,70 +220,42 @@ change_country_scope_magic_vars = {
 		}
 	}
 	# ------------------------------------------------------------------
-	# PERF (fixed July 2026): the character mana sweep below uses
-	# every_character, a GLOBAL iterator - it walks every living character in
-	# the world, not just this country's court. But change_country_scope_magic_vars
-	# is called from omni_perf.1, a COUNTRY event fired monthly for every country.
-	#
-	# The old guard was a country-scoped counter variable (omni_mana_tick_counter),
-	# so each of the ~750 countries kept its own counter and each one independently
-	# ran the whole-world sweep every third month. That cost
-	#     ~750 countries x every character in the world x 2 script values + clamp
-	# per quarter, and - because the regen was applied once per country-tick -
-	# it also pinned every caster in the game at magic_max permanently, which
-	# made mana a non-constraint and rendered the spell cost scaling in
-	# omni_spell_mana_cost_effect decorative.
-	#
-	# It now uses a GLOBAL cooldown, matching the pattern already used by the
-	# racial-trait sweep in common/on_action/00_biyearly_country.txt: the first
-	# country to reach the pulse performs the sweep for the whole world and
-	# every other country skips it on a single has_global_variable check.
-	# Cost drops by ~3 orders of magnitude and each character now receives
-	# exactly one quarter of regen per quarter.
-	#
-	# NOTE: omni_mana_tick_counter / omni_mana_desync_done are no longer read.
-	# They are deliberately left unset rather than migrated - stale copies on
-	# old saves are harmless dead variables.
+	# This effect runs from each country's monthly pulse. every_character is scoped
+	# to that country, so its mana tick must not be behind a global cooldown: the
+	# first country to claim one otherwise blocks every other country's casters.
 	# ------------------------------------------------------------------
-	if = {
-		limit = { NOT = { has_global_variable = omni_mana_tick_cd } }
-		set_global_variable = {
-			name = omni_mana_tick_cd
-			months = 3
+	every_character = {
+		limit = {
+			is_alive = yes
 		}
-		every_character = {
+		if = {
 			limit = {
-				is_alive = yes
-			}
-			if = {
-				limit = {
-					NOT = { has_variable = magic }
-				}
-				set_variable = {
-					name = magic
-					value = 0
-				}
-			}
-			# Refresh the display copies (tooltips can only read stored vars in
-			# this engine version), apply a quarter's regen, clamp.
-			set_variable = {
-				name = magic_monthly
-				value = omni_character_monthly_mana_value
+				NOT = { has_variable = magic }
 			}
 			set_variable = {
-				name = magic_max
-				value = omni_character_magic_max_value
-			}
-			change_variable = {
 				name = magic
-				add = omni_character_quarterly_mana_value
+				value = 0
 			}
-			if = {
-				limit = { var:magic > omni_character_magic_max_value }
-				set_variable = {
-					name = magic
-					value = omni_character_magic_max_value
-				}
+		}
+		# Refresh the display copies (tooltips can only read stored vars in
+		# this engine version), apply one month's regen, clamp.
+		set_variable = {
+			name = magic_monthly
+			value = omni_character_monthly_mana_value
+		}
+		set_variable = {
+			name = magic_max
+			value = omni_character_magic_max_value
+		}
+		change_variable = {
+			name = magic
+			add = omni_character_monthly_mana_value
+		}
+		if = {
+			limit = { var:magic > omni_character_magic_max_value }
+			set_variable = {
+				name = magic
+				value = omni_character_magic_max_value
 			}
 		}
 	}
@@ -330,5 +302,5 @@ omni_add_province_magic_effect = {
 #
 # The live path is: omni_monthly_magic_pulse -> omni_perf.1 ->
 # magic_monthly_effects -> change_country_scope_magic_vars (above), which handles
-# country mana monthly and character mana quarterly behind a global cooldown.
+# country and character mana monthly.
 # ---------------------------------------------------------------------------
