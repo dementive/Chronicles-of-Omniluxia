@@ -83,7 +83,10 @@ omni_army_buy_fixed = {
 	else_if = {
 		limit = { is_ruler = yes OR = { employer = { is_ai = yes } country = { is_ai = yes } } }
 		country = { add_treasury = -$PRICE$ }
-		give_character_an_item = { item_ID = $item_ID$ }
+		# National gear must not call give_character_an_item here: that effect
+		# wakes AI personal auto-equip, which would add the combat item's country
+		# layer once before the national layer dispatcher adds it again.
+		add_to_variable_list = { name = item_list target = flag:$item_ID$ }
 		country = {
 			set_variable = { name = omni_gen_fx_item value = flag:$item_ID$ }
 			omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
@@ -126,7 +129,7 @@ omni_army_equip_current = {
 	}
 	else = {
 		# emblem / trinket: personal-only, no national slot
-		omni_gen_apply_item_layers = yes
+		omni_apply_army_item_layers = yes
 	}
 }
 
@@ -138,11 +141,11 @@ omni_army_replace_slot = {
 		limit = { has_variable = $SLOTVAR$ }
 		set_variable = { name = omni_gen_fx_new value = var:omni_gen_fx_item }
 		set_variable = { name = omni_gen_fx_item value = var:$SLOTVAR$ }
-		omni_gen_remove_item_layers = yes
+		omni_remove_army_item_layers = yes
 		set_variable = { name = omni_gen_fx_item value = var:omni_gen_fx_new }
 		remove_variable = omni_gen_fx_new
 	}
-	omni_gen_apply_item_layers = yes
+	omni_apply_army_item_layers = yes
 	set_variable = { name = $SLOTVAR$ value = var:omni_gen_fx_item }
 }
 
@@ -202,12 +205,12 @@ omni_army_queue_slots_on = {
 # No longer used on succession (see omni_army_transfer_loadout above); kept for
 # callers that really do want the realm disarmed outright.
 omni_army_clear_all = {
-	if = { limit = { has_variable = omni_army_slot_weapon } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_weapon } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_weapon }
-	if = { limit = { has_variable = omni_army_slot_ranged } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_ranged } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_ranged }
-	if = { limit = { has_variable = omni_army_slot_armour } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_armour } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_armour }
-	if = { limit = { has_variable = omni_army_slot_shield } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_shield } omni_gen_remove_item_layers = yes remove_variable = omni_army_slot_shield }
-	if = { limit = { has_variable = omni_personal_slot_emblem } set_variable = { name = omni_gen_fx_item value = var:omni_personal_slot_emblem } omni_gen_remove_item_layers = yes remove_variable = omni_personal_slot_emblem }
-	if = { limit = { has_variable = omni_personal_slot_trinket } set_variable = { name = omni_gen_fx_item value = var:omni_personal_slot_trinket } omni_gen_remove_item_layers = yes remove_variable = omni_personal_slot_trinket }
+	if = { limit = { has_variable = omni_army_slot_weapon } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_weapon } omni_remove_army_item_layers = yes remove_variable = omni_army_slot_weapon }
+	if = { limit = { has_variable = omni_army_slot_ranged } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_ranged } omni_remove_army_item_layers = yes remove_variable = omni_army_slot_ranged }
+	if = { limit = { has_variable = omni_army_slot_armour } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_armour } omni_remove_army_item_layers = yes remove_variable = omni_army_slot_armour }
+	if = { limit = { has_variable = omni_army_slot_shield } set_variable = { name = omni_gen_fx_item value = var:omni_army_slot_shield } omni_remove_army_item_layers = yes remove_variable = omni_army_slot_shield }
+	if = { limit = { has_variable = omni_personal_slot_emblem } set_variable = { name = omni_gen_fx_item value = var:omni_personal_slot_emblem } omni_remove_army_item_layers = yes remove_variable = omni_personal_slot_emblem }
+	if = { limit = { has_variable = omni_personal_slot_trinket } set_variable = { name = omni_gen_fx_item value = var:omni_personal_slot_trinket } omni_remove_army_item_layers = yes remove_variable = omni_personal_slot_trinket }
 	remove_variable = omni_army_price_weapon
 	remove_variable = omni_army_price_ranged
 	remove_variable = omni_army_price_armour
@@ -256,7 +259,7 @@ omni_army_ai_equip_pick = {
 omni_character_unequip_army_slot = {
 	country = {
 		set_variable = { name = omni_gen_fx_item value = var:$SLOTVAR$ }
-		omni_gen_remove_item_layers = yes
+		omni_remove_army_item_layers = yes
 		set_variable = { name = $CARRYVAR$ value = var:$SLOTVAR$ }
 		if = { limit = { has_variable = $SLOTPRICE$ } set_variable = { name = $CARRYPRICE$ value = var:$SLOTPRICE$ } remove_variable = $SLOTPRICE$ }
 		remove_variable = $SLOTVAR$
@@ -288,7 +291,7 @@ omni_sell_current_generated_gear = {
 omni_character_sell_equipped_army_slot = {
 	country = {
 		set_variable = { name = omni_gen_fx_item value = var:$SLOTVAR$ }
-		omni_gen_remove_item_layers = yes
+		omni_remove_army_item_layers = yes
 		if = { limit = { has_variable = $SLOTPRICE$ } add_treasury = { value = var:$SLOTPRICE$ multiply = 0.5 } remove_variable = $SLOTPRICE$ }
 		else = { omni_sell_current_generated_gear = yes }
 		remove_variable = $SLOTVAR$
