@@ -1,5 +1,5 @@
 ﻿##UPDATE THIS IF CHANGED
-## First available character id is: 331
+## First available character id is: 332
 ##
 ## HOW CHARACTER IDS WORK (do not break this):
 ## The game instantiates characters in ascending numeric ID order, globally,
