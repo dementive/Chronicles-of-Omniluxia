@@ -330,7 +330,10 @@ ai_treasury_is_enough_for_building = {
         limit = {
             is_advanced_ai_enabled = yes
         }
-        treasury >= ai_wartime_fund_with_medium_buffer
+        # Keep the small wartime reserve, but allow the AI to spend surplus
+        # income on ordinary buildings instead of waiting for the larger fort
+        # construction buffer.
+        treasury >= ai_wartime_fund_with_small_buffer
     }
     trigger_else = {
         always = yes
@@ -342,11 +345,7 @@ ai_prohibited_to_build_in_territory = {
         owner = {
             ai_treasury_is_enough_for_building = no
         }
-        NOT = {
-            ai_has_enough_building_slots_for_fort = {
-                and_some_more = 1
-            }
-        }
+        free_building_slots <= 0
     }
 }
 
