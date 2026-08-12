@@ -329,11 +329,11 @@ ai_treasury_is_enough_for_building = {
     trigger_if = {
         limit = {
             is_advanced_ai_enabled = yes
+            NOT = {
+                has_global_variable = game_rule_advanced_ai_mercenaries
+            }
         }
-        # Keep the small wartime reserve, but allow the AI to spend surplus
-        # income on ordinary buildings instead of waiting for the larger fort
-        # construction buffer.
-        treasury >= ai_wartime_fund_with_small_buffer
+        treasury >= ai_wartime_fund_with_medium_buffer
     }
     trigger_else = {
         always = yes
@@ -345,7 +345,11 @@ ai_prohibited_to_build_in_territory = {
         owner = {
             ai_treasury_is_enough_for_building = no
         }
-        free_building_slots <= 0
+        NOT = {
+            ai_has_enough_building_slots_for_fort = {
+                and_some_more = 1
+            }
+        }
     }
 }
 
@@ -465,13 +469,14 @@ territory_state_has_enough_ports = {
 
 territory_state_has_more_than_enough_ports = {
     save_temporary_scope_as = territory
-    OR = {
-        num_of_ports_wanted_in_territory_state = 0
-        state = {
-            any_state_province = {
-                count > scope:territory.num_of_ports_wanted_in_territory_state
-                port_level_including_construction > 0
-            }
+    # A target of zero means that the state has no special port requirement,
+    # not that every existing port is surplus.  The old zero-target shortcut
+    # made every port eligible for destruction for most AI states.
+    num_of_ports_wanted_in_territory_state > 0
+    state = {
+        any_state_province = {
+            count > scope:territory.num_of_ports_wanted_in_territory_state
+            port_level_including_construction > 0
         }
     }
 }
