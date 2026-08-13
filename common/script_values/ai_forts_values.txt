@@ -42,21 +42,17 @@ state_fort_limit_projected = {
         value = 0
         every_state_province = {
             limit = {
-                OR = {
-                    fort_level > 0
-                    has_specific_construction = fortress_building
-                }
+                # `has_specific_construction` is not valid while this script
+                # value is evaluated from the state cache.  A queued fort is
+                # deliberately excluded here; the next cache refresh counts
+                # it after completion, avoiding an invalid-scope error for
+                # every province examined by the AI.
+                fort_level > 0
             }
             add = define:NCountry|FIRST_FORT_COST_IN_POINTS
             subtract = 1
             min = 0
             add = fort_level
-            if = {
-                limit = {
-                    has_specific_construction = fortress_building
-                }
-                add = 1
-            }
         }
     }
 }

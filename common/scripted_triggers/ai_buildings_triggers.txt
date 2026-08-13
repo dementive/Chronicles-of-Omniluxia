@@ -67,7 +67,76 @@ brc_capital_mage_buildings_done = {
 # Academy
 brc_wants_academy = {
     num_of_academy_building < 3
-    brc_wants_nobles = yes
+    OR = {
+        brc_wants_nobles = yes
+        brc_is_research_city = yes
+    }
+}
+
+# A small, intentional class of cities receives research infrastructure. This
+# gives capitals, state capitals, mature metropoles and magical hubs a scholarly
+# identity without making Libraries and Academies the default everywhere.
+brc_is_research_city = {
+    has_city_status = yes
+    OR = {
+        is_capital = yes
+        has_building = magic_academy_building
+        has_building = mage_tower_building
+        AND = {
+            is_state_capital = yes
+            total_population >= 25
+            civilization_value >= 35
+        }
+        AND = {
+            total_population >= 45
+            civilization_value >= 50
+        }
+    }
+}
+
+# Local city identities. These deliberately use only territory/state values
+# already queried by building scoring: no country-wide candidate search, saved
+# flags, or extra AI pulse is needed. Identities are preferences, not locks.
+brc_is_trade_city = {
+    has_city_status = yes
+    OR = {
+        has_or_is_building_port = yes
+        has_building = commerce_building
+        has_trade_good_of_high_priority = yes
+        has_trade_good_of_extreme_priority = yes
+    }
+}
+
+brc_is_military_city = {
+    has_city_status = yes
+    fort_level_projected > 0
+}
+
+brc_is_cultural_city = {
+    has_city_status = yes
+    OR = {
+        is_dominant_territory_culture_integrated = no
+        state = { state_level_loyalty < 75 }
+    }
+}
+
+brc_is_growth_city = {
+    has_city_status = yes
+    state = { state_has_close_to_low_food = no }
+    total_population < population_cap_75_percent
+    OR = {
+        is_state_capital = yes
+        AND = {
+            total_population >= 25
+            civilization_value >= 40
+        }
+    }
+}
+
+brc_is_dense_labour_city = {
+    has_city_status = yes
+    state = { state_has_close_to_low_food = no }
+    total_population >= population_cap_minus_10
 }
 brc_wants_nobles = {
     OR = {
@@ -768,8 +837,9 @@ territory_prefers_slave_estate = {
         has_trade_good_of_medium_priority = yes
         has_trade_good_of_high_priority = yes
         has_trade_good_of_extreme_priority = yes
-        # Has mine or farm, wants to double down
-        has_building = slave_mine_building
-        has_building = basic_settlement_infratructure_building
+        # Do not inspect existing buildings here. This trigger is also used
+        # by cached AI scoring where `has_building` lacks a province scope;
+        # trade-good priority retains the intended estate preference without
+        # generating one error per construction candidate.
     }
 }

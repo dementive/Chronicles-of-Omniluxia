@@ -237,8 +237,16 @@ ai_needs_mega_fort_in_territory = {
     exists = state
 
     OR = {
-        # Fallback for country capitals that don't meet requirements to want giga forts
-        is_capital = yes
+        # A capital gets a level-3 fort only when the country is large enough
+        # to warrant it and the city can still develop around it. Small and
+        # medium capitals retain their protected level-1 redoubt instead.
+        AND = {
+            is_capital = yes
+            owner = {
+                rank_by_num_territories >= regional_power
+            }
+            num_of_total_building_slots >= 12
+        }
         # Only build mega forts in perimeter state redoubts with high fort importance
         AND = {
             ai_territory_is_redoubt_of_state = yes
@@ -533,6 +541,11 @@ ai_should_reduce_territory_fort = {
     }
 
     OR = {
+        # Reconcile old blanket capital mega-forts and any other surplus
+        # levels with the current strategic target. The protected last level
+        # in the capital redoubt above still cannot be removed.
+        ai_fort_level_is_higher_than_wanted = yes
+
         # State is above fort limit - often problematic with vanilla AI, so avoid entirely
         state = {
             state_fort_limit_projected > state_fort_limit_svalue

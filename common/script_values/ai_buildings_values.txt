@@ -51,16 +51,9 @@ brc_port = {
         }
         value = -1
     }
-    # Ports are permanent infrastructure in Omniluxia. A zero AI weight is
-    # existing valid ports should retain a positive keep score regardless of
-    # treasury or current demand. Those conditions govern new construction.
-    else_if = {
-        limit = {
-            has_or_is_building_port = yes
-        }
-        value = brc_territory_importance
-        multiply = brc_10
-    }
+    # The native AI treats 0 as "do not build" rather than "destroy" (see
+    # DESTROY_THRESHOLD). Respect the construction budget before assigning a
+    # positive construction weight.
     else_if = {
         limit = {
             owner = {
@@ -69,25 +62,20 @@ brc_port = {
         }
         value = 0
     }
-    # Build... unless?
+    # State coverage and the limited mega/giga port programme are the only
+    # reasons to add another port level. The old fallback made every eligible
+    # coastal city build one, consuming the civilian building landscape.
+    else_if = {
+        limit = {
+            brc_needs_port = yes
+        }
+        value = brc_territory_importance
+        multiply = brc_100
+    }
+    # Existing valid ports are retained, but without a state or high-tier need
+    # they no longer receive a weight that can upgrade them further.
     else = {
-        if = {
-            limit = {
-                brc_needs_port = yes
-            }
-            value = brc_territory_importance
-            multiply = brc_100
-        }
-        else_if = {
-            limit = {
-                brc_wants_port = yes
-            }
-            value = brc_territory_importance
-            multiply = brc_80
-        }
-        else = {
-            value = 0
-        }
+        value = 0
     }
 }
 
@@ -315,30 +303,46 @@ brc_magic_academy = {
         }
         value = 0
     }
-    # HARD REQUIREMENT: the capital always gets a Magic Academy first. max_amount = 1 so this fires once and then the
-    # building is no longer offered. Sits after the prohibition checks above so no-slot / must-destroy cases still win.
+    # COUNTRY MAGIC BOOTSTRAP: once the invention exists, establish the first
+    # Magic Academy wherever the AI has an eligible city. It is deliberately
+    # country-wide rather than capital-only: the academy unlocks the practical
+    # magic system, and a non-city or slot-starved capital must not block it.
     else_if = {
         limit = {
-            is_capital = yes
-            NOT = { has_building = magic_academy_building }
+            owner = {
+                NOT = {
+                    any_owned_province = {
+                        OR = {
+                            has_building = magic_academy_building
+                            has_specific_construction = magic_academy_building
+                        }
+                    }
+                }
+            }
         }
         value = brc_100
     }
+    # Additional academies create deliberate magical centres only after they
+    # have a real scholarly or metropolitan base.
     else = {
         value = brc_territory_importance
         if = {
             limit = {
-                OR = {
-                    has_building = academy_building
-                    has_building = library_building
-                    total_population >= 50
-                    civilization_value >= 75
+                AND = {
+                    OR = {
+                        has_building = academy_building
+                        has_building = library_building
+                    }
+                    OR = {
+                        total_population >= 50
+                        civilization_value >= 75
+                    }
                 }
             }
-            multiply = brc_90
+            multiply = brc_75
         }
         else = {
-            multiply = brc_60
+            multiply = brc_30
         }
     }
 }
@@ -362,12 +366,12 @@ brc_adventurer_guild = {
         if = {
             limit = {
                 OR = {
-                    is_capital = yes
-                    territory_has_more_than_one_forum = yes
+                    owner = { war = yes }
+                    brc_is_military_city = yes
                     territory_has_high_num_of_military_building = yes
                 }
             }
-            multiply = brc_50
+            multiply = brc_65
         }
         else = {
             multiply = brc_35
@@ -396,12 +400,15 @@ brc_brewery = {
         value = brc_territory_importance
         if = {
             limit = {
-                state = { state_level_loyalty < 65 }
+                OR = {
+                    brc_is_trade_city = yes
+                    state = { state_level_loyalty < 70 }
+                }
             }
-            multiply = brc_55
+            multiply = brc_60
         }
         else = {
-            multiply = brc_30
+            multiply = brc_35
         }
     }
 }
@@ -425,31 +432,40 @@ brc_mage_tower = {
         }
         value = 0
     }
-    # HARD REQUIREMENT: capital always gets a Mage Tower. The building's own allow block already requires a
-    # magic_academy_building in the same territory, so this naturally resolves after brc_magic_academy has fired.
+    # COUNTRY MAGIC BOOTSTRAP: immediately follow the first academy with a
+    # Mage Tower. The building's own allow block requires that academy in the
+    # same territory, so only the academy city can satisfy this rush.
     else_if = {
         limit = {
-            is_capital = yes
             has_building = magic_academy_building
-            NOT = { has_building = mage_tower_building }
+            owner = {
+                NOT = {
+                    any_owned_province = {
+                        OR = {
+                            has_building = mage_tower_building
+                            has_specific_construction = mage_tower_building
+                        }
+                    }
+                }
+            }
         }
         value = brc_100
     }
-    else = {
-        value = brc_territory_importance
-        if = {
-            limit = {
-                OR = {
-                    fort_level_projected > 0
-                    ai_territory_is_good_for_defense = yes
-                    total_population >= 50
-                }
+    # Towers are defensive magical infrastructure, not a mandatory second
+    # building in every city that has managed to construct an academy.
+    else_if = {
+        limit = {
+            OR = {
+                fort_level_projected > 0
+                ai_territory_is_good_for_defense = yes
+                total_population >= 50
             }
-            multiply = brc_75
         }
-        else = {
-            multiply = brc_25
-        }
+        value = brc_territory_importance
+        multiply = brc_70
+    }
+    else = {
+        value = 0
     }
 }
 
@@ -472,11 +488,12 @@ brc_public_works = {
         if = {
             limit = {
                 OR = {
-                    state = { state_level_loyalty < 75 }
-                    total_population >= population_cap_minus_10
+                    brc_is_cultural_city = yes
+                    brc_is_dense_labour_city = yes
+                    brc_is_growth_city = yes
                 }
             }
-            multiply = brc_55
+            multiply = brc_65
         }
         else = {
             multiply = brc_35
@@ -548,7 +565,7 @@ brc_slum = {
     }
     else = {
         value = brc_territory_importance
-        multiply = brc_25
+        multiply = brc_35
     }
 }
 
@@ -574,11 +591,10 @@ brc_circus = {
         if = {
             limit = {
                 OR = {
-                    is_dominant_territory_culture_integrated = no
-                    state = { state_level_loyalty < 75 }
+                    brc_is_cultural_city = yes
                 }
             }
-            multiply = brc_55
+            multiply = brc_70
         }
         else = {
             multiply = brc_35
@@ -638,7 +654,10 @@ brc_library = {
             OR = {
                 ai_prohibited_to_build_in_city = yes
                 # No need for more libraries if we are reading enough already
-                brc_wants_more_research_modifier_buildings = no
+                AND = {
+                    brc_is_research_city = no
+                    brc_wants_more_research_modifier_buildings = no
+                }
                 # Don't build too much of the same, unless there's too much of everything
                 AND = {
                     territory_has_high_num_of_library_building = yes
@@ -652,15 +671,20 @@ brc_library = {
         value = brc_territory_importance
         if = {
             limit = {
-                OR = {
-                    territory_has_more_than_one_academy = yes
-                    territory_has_more_than_one_court_of_law = yes
-                }
+                brc_is_research_city = yes
             }
-            multiply = brc_35
+            # The first Library establishes a research city; further copies
+            # remain possible but must compete normally for slots.
+            if = {
+                limit = { num_of_library_building = 0 }
+                multiply = brc_85
+            }
+            else = {
+                multiply = brc_55
+            }
         }
         else = {
-            multiply = brc_35
+            multiply = brc_25
         }
     }
 }
@@ -678,6 +702,7 @@ brc_academy = {
                 AND = {
                     # Capital should always have Academy
                     is_capital = no
+                    brc_is_research_city = no
                     territory_has_more_than_one_academy = no
                     OR = {
                         territory_has_more_than_one_court_of_law = yes
@@ -703,7 +728,16 @@ brc_academy = {
     }
     else = {
         value = brc_territory_importance
-        multiply = brc_70
+        if = {
+            limit = {
+                brc_is_research_city = yes
+                num_of_academy_building = 0
+            }
+            multiply = brc_85
+        }
+        else = {
+            multiply = brc_70
+        }
         multiply = {
             value = 1.00
             add = {
@@ -758,6 +792,13 @@ brc_commerce = {
             }
         }
         value = 0
+    }
+    else_if = {
+        limit = {
+            brc_is_trade_city = yes
+        }
+        value = brc_territory_importance
+        multiply = brc_65
     }
     else = {
         value = brc_territory_importance
@@ -840,11 +881,11 @@ brc_military = {
         if = {
             limit = {
                 OR = {
-                    territory_has_more_than_one_court_of_law = yes
-                    territory_has_more_than_one_forum = yes
+                    brc_is_military_city = yes
+                    owner = { war = yes }
                 }
             }
-            multiply = brc_35
+            multiply = brc_65
         }
         else = {
             multiply = brc_35
@@ -1277,6 +1318,13 @@ ai_slum_soft_cap = 3
 
 brc_territory_importance = {
     value = 1
+    # The native building picker otherwise keeps preferring the largest cities
+    # forever. Give a bounded catch-up bonus to a city with an undeveloped
+    # building grid so a prosperous country establishes a basic civic base
+    # across its cities before continuing to concentrate every project in a
+    # handful of metropolises. This applies only while slots are genuinely
+    # free; construction and the normal treasury/eligibility gates still win.
+    add = brc_undeveloped_city_catchup
     add = {
         value = total_population
         # Treat capital same as regular cities with 25 more pops
@@ -1287,6 +1335,31 @@ brc_territory_importance = {
             add = 25
         }
         multiply = 0.01
+    }
+}
+
+brc_undeveloped_city_catchup = {
+    value = 0
+    if = {
+        limit = {
+            has_city_status = yes
+            free_building_slots >= 5
+        }
+        add = 1.00
+    }
+    if = {
+        limit = {
+            has_city_status = yes
+            free_building_slots >= 3
+        }
+        add = 0.50
+    }
+    if = {
+        limit = {
+            has_city_status = yes
+            free_building_slots >= 2
+        }
+        add = 0.25
     }
 }
 
@@ -1322,6 +1395,10 @@ population_cap_minus_10 = {
 	subtract = 5
 }
 
+# Queued construction is intentionally not projected here. These script values
+# are also evaluated from non-province cache scopes, where
+# `has_specific_construction` produces a runtime error for every AI candidate.
+# The completed building is picked up on the next AI pass.
 port_level_including_construction = {
     if = {
         limit = {
@@ -1331,33 +1408,15 @@ port_level_including_construction = {
     }
     else = {
         value = num_of_port_building
-        if = {
-            limit = {
-                has_specific_construction = port_building
-            }
-            add = 1
-        }
     }
 }
 
 num_of_fortress_building_projected = {
     value = num_of_fortress_building
-    if = {
-        limit = {
-            has_specific_construction = fortress_building
-        }
-        add = 1
-    }
 }
 
 fort_level_projected = {
     value = fort_level
-    if = {
-        limit = {
-            has_specific_construction = fortress_building
-        }
-        add = 1
-    }
 }
 
 num_of_ports_wanted_in_territory_state = {
