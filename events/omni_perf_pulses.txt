@@ -23,15 +23,6 @@ omni_perf.2 = {
 
 	immediate = {
 		omni_build_ai_country_item_shop_stock = yes
-		omni_army_ai_purchase = yes
-		# Scroll shopping only where it can do anything: cheapest checks first.
-		if = {
-			limit = {
-				treasury >= 60 # price of the cheapest scroll
-				any_owned_province = { has_building = library_building }
-			}
-			omni_ai_buy_library_scrolls_effect = yes
-		}
 	}
 
 	option = {}
@@ -82,6 +73,20 @@ omni_perf.6 = {
 		ai_choose_territory_and_found_city = yes
 		ai_perform_custom_road_building = yes
 		ai_choose_and_make_investment = yes
+
+		# Knowledge and national gear are luxury purchases.  Keep both after cities,
+		# metropolises, roads and investments so civic development gets first use of
+		# the year's treasury.  Scroll stock is capped to one item for AI countries;
+		# requiring the rare-scroll price here means any rolled scroll can be bought
+		# without touching the protected reserve.
+		if = {
+			limit = {
+				omni_ai_luxury_spendable_treasury >= 240
+				any_owned_province = { has_building = library_building }
+			}
+			omni_ai_buy_library_scrolls_effect = yes
+		}
+		omni_army_ai_purchase = yes
 
 		trigger_event = { id = omni_perf.7 days = 20 }
 	}

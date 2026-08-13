@@ -1659,8 +1659,13 @@ magic_studying_t1_effect = {
         omni_resolve_magic_study_state = yes
         omni_migrate_legacy_magic = yes
 		omni_grant_two_beginner_spells = yes
+		omni_finish_capped_magic_study_course = yes
     }
-    random_list = {
+	# A tier-up clears the course flags. Do not queue another event after that:
+	# one enrolment may award at most one school tier.
+	if = {
+		limit = { scope:target = { omni_has_active_magic_study_course = yes } }
+		random_list = {
         5 = {
             if = {
                 limit = {
@@ -1779,7 +1784,8 @@ magic_studying_t1_effect = {
                 }
             }
         }
-    }
+		}
+	}
 }
 
 magic_studying_t2_effect = {
@@ -1787,8 +1793,12 @@ magic_studying_t2_effect = {
         omni_add_study_progress = yes
         omni_resolve_magic_study_state = yes
         omni_migrate_legacy_magic = yes
+		omni_finish_capped_magic_study_course = yes
     }
+	# Preserve the narrative chain only while the course is still active.
 	if = {
+		limit = { scope:target = { omni_has_active_magic_study_course = yes } }
+		if = {
         limit = {
             scope:target = {
                 AND = {
@@ -1796,8 +1806,8 @@ magic_studying_t2_effect = {
                     has_variable = necromancer_t2_unlocked_var
                     scope:target = {
                         NOT = { has_trait = melodian_pact_trait }
-                    }
-                }
+					}
+				}
             }
         }
         trigger_event = {
@@ -2096,7 +2106,8 @@ magic_studying_t2_effect = {
 	            }
 	        }
 	    }
-    }
+		}
+	}
 }
 
 magic_studying_t3_effect = {
@@ -2104,8 +2115,12 @@ magic_studying_t3_effect = {
         omni_add_study_progress = yes
         omni_resolve_magic_study_state = yes
         omni_migrate_legacy_magic = yes
+		omni_finish_capped_magic_study_course = yes
     }
-    random_list = {
+	# Preserve the narrative chain only while the course is still active.
+	if = {
+		limit = { scope:target = { omni_has_active_magic_study_course = yes } }
+		random_list = {
         5 = {
             if = {
                 limit = {
@@ -2300,7 +2315,8 @@ magic_studying_t3_effect = {
                 }
             }
         }
-    }
+		}
+	}
 }
 
 magic_studying_graduation_effect = {

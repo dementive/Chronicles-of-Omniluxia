@@ -1007,6 +1007,14 @@ me_nazani.201 = {
 				}
 				root = {
 					start_civil_war = char:328
+					set_variable = {
+						name = nazani_exile_watch_count
+						value = 0
+					}
+					trigger_event = {
+						id = me_nazani.204
+						days = 90
+					}
 				}
 			}
 		}
@@ -1134,6 +1142,118 @@ me_nazani.203 = {
 					add_claim = ROOT
 				}
 			}
+		}
+	}
+}
+
+# Hidden watcher for the Martios-Renos civil war. If both claimants lose every
+# province in Morrigon while Martios still holds the Dunzpon bridgehead, the
+# western struggle is abandoned and the surviving empire withdraws to Luxterra.
+me_nazani.204 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		if = {
+			limit = {
+				OR = {
+					NOT = { tag = WGA }
+					NOT = { has_variable = nazani_exile_watch_count }
+					NOT = { has_civil_war = yes }
+					NOT = {
+						char:326 = {
+							is_alive = yes
+							is_ruler = yes
+							employer = ROOT
+						}
+					}
+					NOT = {
+						char:328 = {
+							is_alive = yes
+							exists = employer
+							employer = { civil_war_with = ROOT }
+						}
+					}
+				}
+			}
+			remove_variable = nazani_exile_watch_count
+		}
+		else = {
+			change_variable = {
+				name = nazani_exile_watch_count
+				add = 1
+			}
+
+			if = {
+				limit = {
+					var:nazani_exile_watch_count >= 12
+					owns = 2348
+					NOT = {
+						any_owned_province = { is_in_morrigon = yes }
+					}
+					char:328.employer = {
+						NOT = {
+							any_owned_province = { is_in_morrigon = yes }
+						}
+					}
+				}
+				char:328.employer = { save_scope_as = renos_rebel_country }
+				remove_variable = nazani_exile_watch_count
+				trigger_event = { id = me_nazani.205 }
+			}
+			else_if = {
+				# Stop checking after ten years. By then any surviving civil war is
+				# outside the intended opening succession-crisis window.
+				limit = { var:nazani_exile_watch_count >= 40 }
+				remove_variable = nazani_exile_watch_count
+			}
+			else = {
+				trigger_event = {
+					id = me_nazani.204
+					days = 90
+				}
+			}
+		}
+	}
+}
+
+me_nazani.205 = {
+	type = country_event
+	title = "me_nazani.205.t"
+	desc = "me_nazani.205.desc"
+	picture = event_boat_storm
+
+	left_portrait = char:326
+	right_portrait = char:328
+
+	trigger = {
+		tag = WGA
+		owns = 2348
+		exists = scope:renos_rebel_country
+		scope:renos_rebel_country = { civil_war_with = ROOT }
+	}
+
+	option = {
+		name = "me_nazani.205.a"
+		custom_tooltip = "me_nazani.205.a.tt"
+		ai_chance = { factor = 100 }
+
+		hidden_effect = {
+			# Removing the rebel side's final territories lets the engine close the
+			# civil war normally, preserving Martios, WGA, and its historical data.
+			scope:renos_rebel_country = {
+				every_owned_province = {
+					set_owned_by = ROOT
+				}
+			}
+			set_capital = p:2348
+			p:2348 = {
+				state = { set_state_capital = p:2348 }
+			}
+			add_stability = 10
+			add_legitimacy = 15
+			add_treasury = 100
+			set_variable = nazani_empire_in_exile
 		}
 	}
 }

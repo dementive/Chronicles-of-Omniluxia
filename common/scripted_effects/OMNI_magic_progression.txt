@@ -19,10 +19,9 @@ omni_add_study_progress = {
 	omni_check_study_rank_up = yes
 }
 
-# Converts accumulated study progress into tier unlocks. Loop is unrolled three
-# times rather than using a while loop: progress gain per session is far below
-# 3 x RANK_THRESHOLD, so three checks is a hard ceiling, and unrolled ifs avoid
-# any risk of a runaway loop in a script that runs on a character pulse.
+# Converts accumulated study progress into one tier unlock. A course must never
+# award more than one tier: omni_advance_school_tier finishes the course as soon
+# as this check succeeds, and the two-year study cooldown gates the next course.
 #
 # PERF: pure variable arithmetic on the character already in scope. No iteration.
 omni_check_study_rank_up = {
@@ -31,15 +30,54 @@ omni_check_study_rank_up = {
 		change_variable = { name = magic_study_progress subtract = RANK_THRESHOLD }
 		omni_grant_next_school_tier = yes
 	}
-	if = {
-		limit = { var:magic_study_progress >= RANK_THRESHOLD }
-		change_variable = { name = magic_study_progress subtract = RANK_THRESHOLD }
-		omni_grant_next_school_tier = yes
+}
+
+# Ends one course and starts the full interval before this character can enrol
+# again. Graduation events use this too, so neither the deterministic route nor
+# the narrative route can bypass the cooldown. Treasury consequences in the
+# study events are deliberately untouched.
+omni_finish_magic_study_course = {
+	remove_variable = omni_studying_diviner_var
+	remove_variable = omni_studying_hierophant_var
+	remove_variable = omni_studying_cleric_var
+	remove_variable = omni_studying_illusionist_var
+	remove_variable = omni_studying_elementalist_var
+	remove_variable = omni_studying_druid_var
+	remove_variable = omni_studying_necromancer_var
+	remove_variable = omni_studying_warlock_var
+	remove_variable = omni_studying_magonis_var
+	remove_variable = omni_studying_taanka_var
+	remove_variable = omni_studying_dragonscale_var
+	remove_variable = omni_studying_helluvian_holy_var
+	remove_variable = omni_studying_charm_magic_var
+	remove_variable = omni_studying_silver_dwarf_magic_var
+	remove_variable = omni_studying_palpan_curse_var
+	remove_variable = omni_studying_soul_magic_var
+	set_variable = {
+		name = omni_studying_magic_cooldown
+		days = 730
 	}
+}
+
+# Save-compatibility and bad-selection cleanup. Older saves can contain a T4
+# character whose original course is still running; the AI can also inherit a
+# stale study flag from an older script version. End that course on its next
+# event instead of waiting for another 40 progress to discover that it is capped.
+omni_finish_capped_magic_study_course = {
 	if = {
-		limit = { var:magic_study_progress >= RANK_THRESHOLD }
-		change_variable = { name = magic_study_progress subtract = RANK_THRESHOLD }
-		omni_grant_next_school_tier = yes
+		limit = {
+			OR = {
+				AND = { has_variable = omni_studying_diviner_var has_variable = diviner_t4_unlocked_var }
+				AND = { has_variable = omni_studying_hierophant_var has_variable = hierophant_t4_unlocked_var }
+				AND = { has_variable = omni_studying_cleric_var has_variable = cleric_t4_unlocked_var }
+				AND = { has_variable = omni_studying_illusionist_var has_variable = illusionist_t4_unlocked_var }
+				AND = { has_variable = omni_studying_elementalist_var has_variable = elementalist_t4_unlocked_var }
+				AND = { has_variable = omni_studying_druid_var has_variable = druid_t4_unlocked_var }
+				AND = { has_variable = omni_studying_necromancer_var has_variable = necromancer_t4_unlocked_var }
+				AND = { has_variable = omni_studying_warlock_var has_variable = warlock_t4_unlocked_var }
+			}
+		}
+		omni_finish_magic_study_course = yes
 	}
 }
 
@@ -50,7 +88,8 @@ omni_check_study_rank_up = {
 # the study driver that they should be re-enrolled in something else.
 #
 # Also grants the mage trait on the first tier so the character becomes a valid
-# caster under omni_character_is_eligible_caster, and the archmage trait at T4.
+# caster under omni_character_is_eligible_caster. Archmage rank is awarded only
+# by omni_check_magic_prestige after both schools in one family are mastered.
 # FAMILY is passed in alongside SCHOOL rather than derived from it, because script
 # parameters are literal text substitution - there is no string-comparison trigger
 # to map a school name to its family at runtime. Passing both lets
@@ -78,32 +117,36 @@ omni_advance_school_tier = {
 		limit = { NOT = { has_variable = $SCHOOL$_t2_unlocked_var } }
 		set_variable = $SCHOOL$_t2_unlocked_var
 		if = {
-			limit = { NOR = { has_trait = mage_trait  has_trait = archmage_trait } }
+			limit = { NOR = { has_trait = mage_trait has_trait = archmage_trait } }
 			add_trait = mage_trait
 		}
+		if = { limit = { has_variable = first_time_mage_var } remove_variable = first_time_mage_var }
 		omni_grant_random_$FAMILY$_t1 = yes
+		omni_finish_magic_study_course = yes
 	}
 	else_if = {
 		limit = { NOT = { has_variable = $SCHOOL$_t3_unlocked_var } }
 		set_variable = $SCHOOL$_t3_unlocked_var
 		omni_grant_random_$FAMILY$_t2 = yes
+		omni_finish_magic_study_course = yes
 	}
 	else_if = {
 		limit = { NOT = { has_variable = $SCHOOL$_t4_unlocked_var } }
 		set_variable = $SCHOOL$_t4_unlocked_var
 		set_variable = $SCHOOL$_mastered_var
-		if = {
-			limit = { NOT = { has_trait = archmage_trait } }
-			if = {
-				limit = { has_trait = mage_trait }
-				remove_trait = mage_trait
-			}
-			add_trait = archmage_trait
-		}
 		# T4 unlock grants from the t3 AND t4 pools - the t4 pools hold a single
 		# capstone spell each, so this is the only chance to receive it.
 		omni_grant_random_$FAMILY$_t3 = yes
 		omni_grant_random_$FAMILY$_t4 = yes
+		# A single mastered school is not Archmage rank. The central prestige
+		# ladder grants that trait only after both schools in one family are mastered.
+		omni_check_magic_prestige = yes
+		omni_finish_magic_study_course = yes
+	}
+	else = {
+		# A legacy or already-capped course has nothing left to teach. Clean it up
+		# instead of allowing its 30-180 day event chain to run forever.
+		omni_finish_magic_study_course = yes
 	}
 }
 
@@ -276,7 +319,10 @@ omni_check_magic_prestige = {
 		AND = { has_variable = cleric_mastered_var has_variable = illusionist_mastered_var }
 		AND = { has_variable = elementalist_mastered_var has_variable = druid_mastered_var }
 		AND = { has_variable = necromancer_mastered_var has_variable = warlock_mastered_var }
-	} } add_trait = archmage_trait }
+	} }
+		if = { limit = { has_trait = mage_trait } remove_trait = mage_trait }
+		add_trait = archmage_trait
+	}
 	if = { limit = { has_variable = diviner_mastered_var has_variable = hierophant_mastered_var has_variable = cleric_mastered_var has_variable = illusionist_mastered_var has_variable = elementalist_mastered_var has_variable = druid_mastered_var } add_trait = grand_archmage_trait }
 	if = {
 		limit = {

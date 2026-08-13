@@ -275,4 +275,43 @@ omni_ai_pick_study_school = {
 			}
 		}
 	}
+	# Family affinity can point at a family where one school is already capped.
+	# Redirect that selection to any unfinished school so the AI never pays 50
+	# gold and starts a two-year cooldown for a course with no tier left to earn.
+	omni_ai_redirect_capped_study_school = yes
+}
+
+omni_ai_redirect_capped_study_school = {
+	if = {
+		limit = {
+			OR = {
+				AND = { has_variable = omni_studying_diviner_var has_variable = diviner_mastered_var }
+				AND = { has_variable = omni_studying_hierophant_var has_variable = hierophant_mastered_var }
+				AND = { has_variable = omni_studying_cleric_var has_variable = cleric_mastered_var }
+				AND = { has_variable = omni_studying_illusionist_var has_variable = illusionist_mastered_var }
+				AND = { has_variable = omni_studying_elementalist_var has_variable = elementalist_mastered_var }
+				AND = { has_variable = omni_studying_druid_var has_variable = druid_mastered_var }
+				AND = { has_variable = omni_studying_necromancer_var has_variable = necromancer_mastered_var }
+				AND = { has_variable = omni_studying_warlock_var has_variable = warlock_mastered_var }
+			}
+		}
+		remove_variable = omni_studying_diviner_var
+		remove_variable = omni_studying_hierophant_var
+		remove_variable = omni_studying_cleric_var
+		remove_variable = omni_studying_illusionist_var
+		remove_variable = omni_studying_elementalist_var
+		remove_variable = omni_studying_druid_var
+		remove_variable = omni_studying_necromancer_var
+		remove_variable = omni_studying_warlock_var
+		random_list = {
+			1 = { trigger = { NOT = { has_variable = diviner_mastered_var } } set_variable = omni_studying_diviner_var }
+			1 = { trigger = { NOT = { has_variable = hierophant_mastered_var } } set_variable = omni_studying_hierophant_var }
+			1 = { trigger = { NOT = { has_variable = cleric_mastered_var } } set_variable = omni_studying_cleric_var }
+			1 = { trigger = { NOT = { has_variable = illusionist_mastered_var } } set_variable = omni_studying_illusionist_var }
+			1 = { trigger = { NOT = { has_variable = elementalist_mastered_var } } set_variable = omni_studying_elementalist_var }
+			1 = { trigger = { NOT = { has_variable = druid_mastered_var } } set_variable = omni_studying_druid_var }
+			1 = { trigger = { NOT = { has_variable = necromancer_mastered_var } } set_variable = omni_studying_necromancer_var }
+			1 = { trigger = { NOT = { has_variable = warlock_mastered_var } } set_variable = omni_studying_warlock_var }
+		}
+	}
 }
