@@ -54,6 +54,18 @@ jobs:
             --out docs \
             --base "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
+      # These asset collections are maintained alongside the wiki content.
+      # Merge them after the generator writes the mod-owned asset bundle so a
+      # wiki edit can add an icon or map without requiring a mod-repo commit.
+      - name: Copy wiki-owned assets
+        run: |
+          for asset_dir in flags icons maps; do
+            if [ -d ".wiki/site/assets/${asset_dir}" ]; then
+              mkdir -p "docs/assets/${asset_dir}"
+              cp -R ".wiki/site/assets/${asset_dir}/." "docs/assets/${asset_dir}/"
+            fi
+          done
+
       - name: Check generated links and assets
         run: python tools/wiki_site/check_site.py docs
 
