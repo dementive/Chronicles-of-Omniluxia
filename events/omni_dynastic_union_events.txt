@@ -289,6 +289,8 @@ omni_dynastic_union.5 = {
 			save_scope_as = dynastic_union_subject
 		}
 		save_scope_as = dynastic_senior_country
+		current_ruler = { save_scope_as = dynastic_new_senior_ruler }
+		scope:former_ruler = { save_scope_as = dynastic_dead_senior_ruler }
 	}
 	
 	option = {
@@ -296,25 +298,45 @@ omni_dynastic_union.5 = {
 		ai_chance = {
 			factor = 70
 		}
-		scope:dynastic_union_subject = {
+		every_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:dynastic_dead_senior_ruler
+			}
 			omni_dynastic_union_renew_subject_effect = yes
+			trigger_event = { id = omni_dynastic_union.10 }
 		}
 	}
 	
 	option = {
 		name = omni_dynastic_union.5.b
 		trigger = {
+			war = no
 			OR = {
 				stability < 35
-				scope:dynastic_union_subject = { has_subject_loyalty < 50 }
+				any_subject = {
+					is_subject_type = dynastic_union_subject
+					has_land = yes
+					has_variable = dynastic_union_senior_spouse
+					var:dynastic_union_senior_spouse = scope:former_ruler
+					has_subject_loyalty < 50
+					war = no
+				}
 			}
-			war = no
-			scope:dynastic_union_subject = { war = no }
 		}
 		ai_chance = {
 			factor = 20
 		}
-		scope:dynastic_union_subject = {
+		every_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:dynastic_dead_senior_ruler
+			}
+			trigger_event = { id = omni_dynastic_union.11 }
 			omni_dynastic_union_dissolve_subject_effect = yes
 		}
 	}
@@ -323,7 +345,11 @@ omni_dynastic_union.5 = {
 		name = omni_dynastic_union.5.c
 		trigger = {
 			war = no
-			scope:dynastic_union_subject = {
+			any_subject = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:former_ruler
 				war = no
 				num_of_cohorts >= root.num_of_cohorts
 			}
@@ -331,10 +357,114 @@ omni_dynastic_union.5 = {
 		ai_chance = {
 			factor = 10
 		}
-		scope:dynastic_union_subject = {
-			omni_dynastic_union_reverse_claim_war_effect = yes
+		every_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:dynastic_dead_senior_ruler
+			}
+			if = {
+				limit = {
+					war = no
+					num_of_cohorts >= scope:dynastic_senior_country.num_of_cohorts
+				}
+				trigger_event = { id = omni_dynastic_union.12 }
+				omni_dynastic_union_reverse_claim_war_effect = yes
+			}
+			else = {
+				omni_dynastic_union_renew_subject_effect = yes
+				trigger_event = { id = omni_dynastic_union.10 }
+			}
 		}
 	}
+}
+
+# The senior court chooses its succession policy in .5. These follow-up events
+# make that outcome visible to every junior crown and give a player junior a
+# measured opportunity to contest an otherwise routine renewal.
+omni_dynastic_union.10 = {
+	type = country_event
+	title = omni_dynastic_union.10.t
+	desc = omni_dynastic_union.10.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_new_senior_ruler
+	goto_location = capital_scope
+
+	trigger = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		exists = scope:dynastic_senior_country
+		scope:dynastic_senior_country = { has_land = yes }
+	}
+
+	option = {
+		name = omni_dynastic_union.10.a
+		ai_chance = { factor = 70 }
+	}
+
+	option = {
+		name = omni_dynastic_union.10.b
+		ai_chance = { factor = 25 }
+		add_country_modifier = {
+			name = dynastic_union_succession_concessions
+			duration = 1825
+		}
+		add_opinion = {
+			modifier = opinion_dynastic_union_concessions
+			target = scope:dynastic_senior_country
+		}
+		scope:dynastic_senior_country = {
+			add_legitimacy = -5
+			add_opinion = {
+				modifier = opinion_dynastic_union_concessions
+				target = root
+			}
+		}
+	}
+
+	option = {
+		name = omni_dynastic_union.10.c
+		trigger = {
+			war = no
+			scope:dynastic_senior_country = { war = no }
+			OR = {
+				has_subject_loyalty < 50
+				scope:dynastic_senior_country = { stability < 35 }
+				num_of_cohorts >= scope:dynastic_senior_country.num_of_cohorts
+			}
+		}
+		ai_chance = { factor = 5 }
+		omni_dynastic_union_independence_war_effect = yes
+	}
+}
+
+omni_dynastic_union.11 = {
+	type = country_event
+	title = omni_dynastic_union.11.t
+	desc = omni_dynastic_union.11.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_new_senior_ruler
+	goto_location = capital_scope
+
+	option = { name = omni_dynastic_union.11.a }
+}
+
+omni_dynastic_union.12 = {
+	type = country_event
+	title = omni_dynastic_union.12.t
+	desc = omni_dynastic_union.12.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_new_senior_ruler
+	goto_location = capital_scope
+
+	option = { name = omni_dynastic_union.12.a }
 }
 
 omni_dynastic_union.6 = {
@@ -350,12 +480,8 @@ omni_dynastic_union.6 = {
 	trigger = {
 		is_subject_type = dynastic_union_subject
 		has_land = yes
-		has_variable = dynastic_union_senior_spouse
-		has_variable = dynastic_union_junior_spouse
-		current_ruler = {
-			is_child_of = var:dynastic_union_senior_spouse
-			is_child_of = var:dynastic_union_junior_spouse
-		}
+		exists = scope:dynastic_shared_heir_ruler
+		current_ruler = scope:dynastic_shared_heir_ruler
 		overlord = {
 			has_land = yes
 			is_monarchy = yes
@@ -424,32 +550,17 @@ omni_dynastic_union.7 = {
 	trigger = {
 		is_monarchy = yes
 		has_land = yes
-		any_subject = {
+		exists = scope:dynastic_shared_heir_ruler
+		current_ruler = scope:dynastic_shared_heir_ruler
+		exists = scope:dynastic_union_subject
+		scope:dynastic_union_subject = {
 			is_subject_type = dynastic_union_subject
 			has_land = yes
-			has_variable = dynastic_union_senior_spouse
-			has_variable = dynastic_union_junior_spouse
-			root.current_ruler = {
-				is_child_of = prev.var:dynastic_union_senior_spouse
-				is_child_of = prev.var:dynastic_union_junior_spouse
-			}
+			overlord = root
 		}
 	}
 	
 	immediate = {
-		random_subject = {
-			limit = {
-				is_subject_type = dynastic_union_subject
-				has_land = yes
-				has_variable = dynastic_union_senior_spouse
-				has_variable = dynastic_union_junior_spouse
-				root.current_ruler = {
-					is_child_of = prev.var:dynastic_union_senior_spouse
-					is_child_of = prev.var:dynastic_union_junior_spouse
-				}
-			}
-			save_scope_as = dynastic_union_subject
-		}
 		save_scope_as = dynastic_senior_country
 	}
 	
@@ -551,7 +662,10 @@ omni_dynastic_union.3 = {
 	
 	option = {
 		name = omni_dynastic_union.3.a
-		omni_dynastic_union_integrate_subject_effect = yes
+		custom_tooltip = omni_dynastic_union.3.a.tt
+		hidden_effect = {
+			omni_dynastic_union_integrate_subject_effect = yes
+		}
 	}
 	
 	option = {

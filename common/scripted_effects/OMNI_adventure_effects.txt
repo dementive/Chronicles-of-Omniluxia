@@ -117,6 +117,7 @@ omni_adventure_clear_variables_effect = {
 	remove_variable = generic_adventure
 	remove_variable = adventure_grants_item
 	remove_variable = adventure_item_given
+	remove_variable = adventure_silver_bargain
 	remove_variable = adventure_contract_rescue
 	remove_variable = adventure_contract_ruin
 	remove_variable = adventure_contract_monster
@@ -127,6 +128,13 @@ omni_adventure_clear_variables_effect = {
 	remove_variable = adventure_outcome_success
 	remove_variable = adventure_outcome_mixed
 	remove_variable = adventure_outcome_failure
+	remove_variable = adventure_party_warrior
+	remove_variable = adventure_party_scout
+	remove_variable = adventure_party_scholar
+	remove_variable = adventure_party_diplomat
+	remove_variable = adventure_attribute_gained
+	remove_variable = cautious_reward_4000_taken
+	remove_variable = brave_reward_4000_taken
 }
 
 omni_adventure_mark_party_busy_effect = {
@@ -182,6 +190,112 @@ omni_adventure_add_score_effect = {
 	}
 }
 
+# Imperator character attributes are permanent, so an expedition can grant at
+# most one point across Martial, Finesse, Charisma, and Zeal.
+omni_adventure_gain_martial_effect = {
+	if = {
+		limit = { NOT = { has_variable = adventure_attribute_gained } }
+		set_variable = adventure_attribute_gained
+		add_martial = 1
+	}
+	else = { add_popularity = 2 }
+}
+
+omni_adventure_gain_finesse_effect = {
+	if = {
+		limit = { NOT = { has_variable = adventure_attribute_gained } }
+		set_variable = adventure_attribute_gained
+		add_finesse = 1
+	}
+	else = { add_popularity = 2 }
+}
+
+omni_adventure_gain_charisma_effect = {
+	if = {
+		limit = { NOT = { has_variable = adventure_attribute_gained } }
+		set_variable = adventure_attribute_gained
+		add_charisma = 1
+	}
+	else = { add_popularity = 2 }
+}
+
+omni_adventure_gain_zeal_effect = {
+	if = {
+		limit = { NOT = { has_variable = adventure_attribute_gained } }
+		set_variable = adventure_attribute_gained
+		add_zeal = 1
+	}
+	else = { add_popularity = 2 }
+}
+
+omni_adventure_candidate_role_tooltips_effect = {
+	if = { limit = { scope:$SCOPE$ = { OR = { martial >= 9 has_trait = brave } } } custom_tooltip = adventure_candidate_warrior_tt }
+	if = { limit = { scope:$SCOPE$ = { OR = { finesse >= 9 has_trait = cautious has_trait = suspicious } } } custom_tooltip = adventure_candidate_scout_tt }
+	if = { limit = { scope:$SCOPE$ = { OR = { zeal >= 9 has_trait = scholar has_trait = pious has_trait = mage_trait has_trait = cleric_trait } } } custom_tooltip = adventure_candidate_scholar_tt }
+	if = { limit = { scope:$SCOPE$ = { charisma >= 9 } } custom_tooltip = adventure_candidate_diplomat_tt }
+}
+
+# Recalculate specialties once all three companions have been chosen.
+omni_adventure_calculate_party_roles_effect = {
+	remove_variable = adventure_party_warrior
+	remove_variable = adventure_party_scout
+	remove_variable = adventure_party_scholar
+	remove_variable = adventure_party_diplomat
+	if = {
+		limit = { OR = {
+			var:adventure_party_1 = { OR = { martial >= 9 has_trait = brave } }
+			var:adventure_party_2 = { OR = { martial >= 9 has_trait = brave } }
+			var:adventure_party_3 = { OR = { martial >= 9 has_trait = brave } }
+		} }
+		set_variable = adventure_party_warrior
+	}
+	if = {
+		limit = { OR = {
+			var:adventure_party_1 = { OR = { finesse >= 9 has_trait = cautious has_trait = suspicious } }
+			var:adventure_party_2 = { OR = { finesse >= 9 has_trait = cautious has_trait = suspicious } }
+			var:adventure_party_3 = { OR = { finesse >= 9 has_trait = cautious has_trait = suspicious } }
+		} }
+		set_variable = adventure_party_scout
+	}
+	if = {
+		limit = { OR = {
+			var:adventure_party_1 = { OR = { zeal >= 9 has_trait = scholar has_trait = pious has_trait = mage_trait has_trait = cleric_trait } }
+			var:adventure_party_2 = { OR = { zeal >= 9 has_trait = scholar has_trait = pious has_trait = mage_trait has_trait = cleric_trait } }
+			var:adventure_party_3 = { OR = { zeal >= 9 has_trait = scholar has_trait = pious has_trait = mage_trait has_trait = cleric_trait } }
+		} }
+		set_variable = adventure_party_scholar
+	}
+	if = {
+		limit = { OR = {
+			var:adventure_party_1 = { charisma >= 9 }
+			var:adventure_party_2 = { charisma >= 9 }
+			var:adventure_party_3 = { charisma >= 9 }
+		} }
+		set_variable = adventure_party_diplomat
+	}
+}
+
+omni_adventure_reward_companions_effect = {
+	if = { limit = { exists = var:adventure_party_1 var:adventure_party_1 = { is_alive = yes } } var:adventure_party_1 = { add_popularity = 6 } }
+	if = { limit = { exists = var:adventure_party_2 var:adventure_party_2 = { is_alive = yes } } var:adventure_party_2 = { add_popularity = 6 } }
+	if = { limit = { exists = var:adventure_party_3 var:adventure_party_3 = { is_alive = yes } } var:adventure_party_3 = { add_popularity = 6 } }
+}
+
+omni_adventure_risk_companion_wound_effect = {
+	random_list = {
+		1 = { trigger = { var:adventure_party_1 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_1 = { add_trait = wounded } }
+		1 = { trigger = { var:adventure_party_2 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_2 = { add_trait = wounded } }
+		1 = { trigger = { var:adventure_party_3 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_3 = { add_trait = wounded } }
+	}
+}
+
+omni_adventure_advance_encounter_effect = {
+	if = { limit = { NOT = { has_variable = adventure_encounter_1_done } } set_variable = adventure_encounter_1_done }
+	else_if = { limit = { NOT = { has_variable = adventure_encounter_2_done } } set_variable = adventure_encounter_2_done }
+	else_if = { limit = { NOT = { has_variable = adventure_encounter_3_done } } set_variable = adventure_encounter_3_done }
+	else = { set_variable = adventure_encounter_4_done }
+}
+
 omni_adventure_release_party_effect = {
 	remove_variable = on_omni_adventure
 	set_variable = {
@@ -208,20 +322,30 @@ omni_adventure_release_party_effect = {
 	}
 }
 
+# Emergency cleanup for death, succession, or other hard interruption. Unlike a
+# completed expedition this does not impose a cooldown on a dead/former ruler.
+omni_adventure_abort_effect = {
+	remove_variable = on_omni_adventure
+	if = { limit = { exists = var:adventure_party_1 } var:adventure_party_1 = { remove_variable = on_omni_adventure } }
+	if = { limit = { exists = var:adventure_party_2 } var:adventure_party_2 = { remove_variable = on_omni_adventure } }
+	if = { limit = { exists = var:adventure_party_3 } var:adventure_party_3 = { remove_variable = on_omni_adventure } }
+	omni_adventure_clear_variables_effect = yes
+}
+
 # Shared bookkeeping for the new destination scenes. The existing legacy
 # encounters keep their individual seen flags, while all arrival scenes use
 # this one state machine to avoid duplicating reward and return plumbing.
 omni_adventure_finish_contract_effect = {
 	if = {
-		limit = { var:adventure_score >= 105 }
+		limit = { var:adventure_score >= 90 }
 		set_variable = adventure_outcome_legendary
 	}
 	else_if = {
-		limit = { var:adventure_score >= 82 }
+		limit = { var:adventure_score >= 70 }
 		set_variable = adventure_outcome_success
 	}
 	else_if = {
-		limit = { var:adventure_score >= 62 }
+		limit = { var:adventure_score >= 50 }
 		set_variable = adventure_outcome_mixed
 	}
 	else = { set_variable = adventure_outcome_failure }
@@ -232,33 +356,35 @@ omni_adventure_finish_contract_effect = {
 omni_adventure_apply_contract_bonus_effect = {
 	if = {
 		limit = { has_variable = adventure_contract_rescue }
-		omni_adventure_add_score_effect = { VALUE = 8 }
+		omni_adventure_add_score_effect = { VALUE = 3 }
 		add_popularity = 3
+		if = { limit = { has_variable = adventure_party_diplomat } omni_adventure_add_score_effect = { VALUE = 8 } }
 	}
 	else_if = {
 		limit = { has_variable = adventure_contract_ruin }
-		omni_adventure_add_score_effect = { VALUE = 10 }
-		add_finesse = 1
+		omni_adventure_add_score_effect = { VALUE = 4 }
+		if = { limit = { has_variable = adventure_party_scout } omni_adventure_add_score_effect = { VALUE = 8 } }
 	}
 	else_if = {
 		limit = { has_variable = adventure_contract_monster }
-		omni_adventure_add_score_effect = { VALUE = 8 }
-		add_martial = 1
+		omni_adventure_add_score_effect = { VALUE = 3 }
+		if = { limit = { has_variable = adventure_party_warrior } omni_adventure_add_score_effect = { VALUE = 8 } }
 	}
 	else_if = {
 		limit = { has_variable = adventure_contract_relic }
-		omni_adventure_add_score_effect = { VALUE = 10 }
-		add_zeal = 1
+		omni_adventure_add_score_effect = { VALUE = 4 }
+		if = { limit = { has_variable = adventure_party_scholar } omni_adventure_add_score_effect = { VALUE = 8 } }
 	}
 	else_if = {
 		limit = { has_variable = adventure_contract_escort }
-		omni_adventure_add_score_effect = { VALUE = 6 }
+		omni_adventure_add_score_effect = { VALUE = 3 }
 		add_popularity = 5
+		if = { limit = { has_variable = adventure_party_warrior } omni_adventure_add_score_effect = { VALUE = 5 } }
 	}
 	else_if = {
 		limit = { has_variable = adventure_contract_intrigue }
-		omni_adventure_add_score_effect = { VALUE = 8 }
-		add_finesse = 1
+		omni_adventure_add_score_effect = { VALUE = 3 }
+		if = { limit = { has_variable = adventure_party_diplomat } omni_adventure_add_score_effect = { VALUE = 8 } }
 	}
 }
 
@@ -299,6 +425,7 @@ omni_adventure_roll_magic_encounter_effect = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6007 } } trigger_event = adventure.6007 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6008 } } trigger_event = adventure.6008 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6017 } } trigger_event = adventure.6017 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6020 } } trigger_event = adventure.6020 }
 	}
 }
 
@@ -308,6 +435,7 @@ omni_adventure_roll_city_encounter_effect = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6014 } } trigger_event = adventure.6014 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6015 } } trigger_event = adventure.6015 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6022 } } trigger_event = adventure.6022 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6019 } } trigger_event = adventure.6019 }
 	}
 }
 
@@ -344,6 +472,8 @@ omni_adventure_roll_generic_encounter_effect = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6011 } } trigger_event = adventure.6011 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6016 } } trigger_event = adventure.6016 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6030 } } trigger_event = adventure.6030 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6025 } } trigger_event = adventure.6025 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6029 } } trigger_event = adventure.6029 }
 	}
 }
 
@@ -416,16 +546,16 @@ omni_adventure_roll_generated_item_effect = {
 	if = {
 		limit = { var:adventure_score >= 90 }
 		random_list = {
-			40 = { omni_adventure_roll_generated_common_item_effect = yes }
-			35 = { omni_adventure_roll_generated_uncommon_item_effect = yes }
-			25 = { omni_adventure_roll_generated_rare_item_effect = yes }
+			40 = { var:adventure_province.owner = { omni_adventure_roll_local_common_item_effect = yes } }
+			35 = { var:adventure_province.owner = { omni_adventure_roll_local_uncommon_item_effect = yes } }
+			25 = { var:adventure_province.owner = { omni_adventure_roll_local_rare_item_effect = yes } }
 		}
 	}
 	else = {
 		random_list = {
-			65 = { omni_adventure_roll_generated_common_item_effect = yes }
-			25 = { omni_adventure_roll_generated_uncommon_item_effect = yes }
-			10 = { omni_adventure_roll_generated_rare_item_effect = yes }
+			65 = { var:adventure_province.owner = { omni_adventure_roll_local_common_item_effect = yes } }
+			25 = { var:adventure_province.owner = { omni_adventure_roll_local_uncommon_item_effect = yes } }
+			10 = { var:adventure_province.owner = { omni_adventure_roll_local_rare_item_effect = yes } }
 		}
 	}
 }
