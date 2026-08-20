@@ -23,11 +23,32 @@
 # cooldown, so the whole ladder runs at most once per country per year.
 # ----------------------------------------------------------------------------------------------------------------------
 
+# COUNTRY-scope selector: decide the need before choosing a caster.
+omni_ai_choose_civic_spell_effect = {
+	if = {
+		limit = { any_owned_province = { province_unrest >= 4 } any_character = { employer = root is_alive = yes NOT = { has_variable = omni_civic_spell_cooldown } omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = unrest_cleansing } has_variable = cleric_t2_unlocked_var omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes NOT = { has_variable = omni_civic_spell_cooldown } omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = unrest_cleansing } has_variable = cleric_t2_unlocked_var omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_civic_spell_effect = yes }
+	}
+	else_if = {
+		limit = { capital_scope = { state = { state_has_low_food = yes } } any_character = { employer = root is_alive = yes NOT = { has_variable = omni_civic_spell_cooldown } omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = weathercall_growth } has_variable = elementalist_t2_unlocked_var omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes NOT = { has_variable = omni_civic_spell_cooldown } omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = weathercall_growth } has_variable = elementalist_t2_unlocked_var omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_civic_spell_effect = yes }
+	}
+	else_if = {
+		limit = { capital_scope = { is_coastal = yes } any_character = { employer = root is_alive = yes NOT = { has_variable = omni_civic_spell_cooldown } omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = harbor_ward } has_variable = hierophant_t3_unlocked_var omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes NOT = { has_variable = omni_civic_spell_cooldown } omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = harbor_ward } has_variable = hierophant_t3_unlocked_var omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_civic_spell_effect = yes }
+	}
+	else_if = {
+		limit = { any_character = { employer = root is_alive = yes NOT = { has_variable = omni_civic_spell_cooldown } omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = migration_beacon } has_variable = druid_t2_unlocked_var omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes NOT = { has_variable = omni_civic_spell_cooldown } omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = migration_beacon } has_variable = druid_t2_unlocked_var omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_civic_spell_effect = yes }
+	}
+}
+
 omni_ai_cast_civic_spell_effect = {
 	if = {
 		# Unrest is the most dangerous civic problem - revolts lose provinces.
 		limit = {
 			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = unrest_cleansing }
 			has_variable = cleric_t2_unlocked_var
 			scope:caster_country = {
 				NOT = { has_country_modifier = omni_unrest_cleansing_mod }
@@ -50,6 +71,7 @@ omni_ai_cast_civic_spell_effect = {
 		# Food trouble: starvation stalls growth and can shrink the capital.
 		limit = {
 			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = weathercall_growth }
 			has_variable = elementalist_t2_unlocked_var
 			scope:caster_country = {
 				# Food is a STATE-level concept here. state_has_low_food is the
@@ -79,6 +101,7 @@ omni_ai_cast_civic_spell_effect = {
 		# Coastal capital that could be attacked - shore up the home port.
 		limit = {
 			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = harbor_ward }
 			has_variable = hierophant_t3_unlocked_var
 			scope:caster_country = {
 				capital_scope = {
@@ -102,6 +125,7 @@ omni_ai_cast_civic_spell_effect = {
 		# Nothing urgent - grow the capital.
 		limit = {
 			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = migration_beacon }
 			has_variable = druid_t2_unlocked_var
 			scope:caster_country = {
 				capital_scope = { NOT = { has_province_modifier = omni_migration_beacon_mod } }
@@ -127,4 +151,187 @@ omni_set_civic_spell_cooldown = {
 		name = omni_civic_spell_cooldown
 		days = 365
 	}
+}
+
+# Country-wide Divine Blessings. These use the same modifiers, costs, tiers and
+# individual spell knowledge as the player menu (me_zorgo_magic_focus.38).
+# The peace ladder is need-first and then falls back to broadly useful growth or
+# income. The war ladder preserves 25 base mana for tactical battle/siege magic.
+omni_ai_choose_peace_country_blessing_effect = {
+	if = {
+		limit = { any_country_state = { state_has_low_food = yes } any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = feast_of_ugone } omni_caster_amten_t2 = yes omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = feast_of_ugone } omni_caster_amten_t2 = yes omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_peace_country_blessing_effect = yes }
+	}
+	else_if = {
+		limit = { any_owned_province = { province_unrest >= 2 } any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = divine_ceremonies } omni_caster_omnic_t3 = yes omni_can_afford_spell = { BASE = 75 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = divine_ceremonies } omni_caster_omnic_t3 = yes omni_can_afford_spell = { BASE = 75 } } omni_ai_cast_peace_country_blessing_effect = yes }
+	}
+	else_if = {
+		limit = { treasury >= 500 any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = magical_construction } omni_caster_amten_t3 = yes omni_can_afford_spell = { BASE = 75 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = magical_construction } omni_caster_amten_t3 = yes omni_can_afford_spell = { BASE = 75 } } omni_ai_cast_peace_country_blessing_effect = yes }
+	}
+	else_if = {
+		limit = { any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = light_of_true_faith } omni_caster_omnic_t2 = yes omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = light_of_true_faith } omni_caster_omnic_t2 = yes omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_peace_country_blessing_effect = yes }
+	}
+	else_if = {
+		limit = { any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = hand_of_adaralu } omni_caster_aldic_t1 = yes omni_can_afford_spell = { BASE = 25 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = hand_of_adaralu } omni_caster_aldic_t1 = yes omni_can_afford_spell = { BASE = 25 } } omni_ai_cast_peace_country_blessing_effect = yes }
+	}
+	else_if = {
+		limit = { any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = golden_fingers_of_the_pharon } omni_caster_aldic_t2 = yes omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = golden_fingers_of_the_pharon } omni_caster_aldic_t2 = yes omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_peace_country_blessing_effect = yes }
+	}
+}
+
+omni_ai_choose_war_country_blessing_effect = {
+	if = {
+		limit = { any_army = { unit_location = { has_siege = yes } } any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = hammer_of_melodias } omni_caster_melodian_t2 = yes omni_can_afford_spell = { BASE = 75 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = hammer_of_melodias } omni_caster_melodian_t2 = yes omni_can_afford_spell = { BASE = 75 } } omni_ai_cast_war_country_blessing_effect = yes }
+	}
+	else_if = {
+		limit = { any_navy = { is_navy = yes } any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = winds_of_pedentrutzu } omni_caster_amten_t1 = yes omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = winds_of_pedentrutzu } omni_caster_amten_t1 = yes omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_war_country_blessing_effect = yes }
+	}
+	else_if = {
+		limit = { any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = sword_of_zanis } omni_caster_omnic_t1 = yes omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = sword_of_zanis } omni_caster_omnic_t1 = yes omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_war_country_blessing_effect = yes }
+	}
+	else_if = {
+		limit = { any_character = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = arrows_of_lavas } omni_caster_amten_t1 = yes omni_can_afford_spell = { BASE = 50 } } }
+		random_character = { limit = { employer = root is_alive = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = arrows_of_lavas } omni_caster_amten_t1 = yes omni_can_afford_spell = { BASE = 50 } } omni_ai_cast_war_country_blessing_effect = yes }
+	}
+}
+
+omni_ai_cast_peace_country_blessing_effect = {
+	if = {
+		limit = {
+			omni_knows_spell = { SPELL = feast_of_ugone }
+			omni_caster_amten_t2 = yes
+			omni_can_afford_spell = { BASE = 50 }
+			scope:caster_country = {
+				NOT = { has_country_modifier = feast_of_ugone_spell_mod }
+				any_country_state = { state_has_low_food = yes }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = { add_country_modifier = { name = feast_of_ugone_spell_mod duration = 365 } }
+		omni_set_country_blessing_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = divine_ceremonies }
+			omni_caster_omnic_t3 = yes
+			omni_can_afford_spell = { BASE = 75 }
+			scope:caster_country = {
+				NOT = { has_country_modifier = divine_ceremonies_spell_mod }
+				any_owned_province = { province_unrest >= 2 }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 75 }
+		scope:caster_country = { add_country_modifier = { name = divine_ceremonies_spell_mod duration = 365 } }
+		omni_set_country_blessing_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = magical_construction }
+			omni_caster_amten_t3 = yes
+			omni_can_afford_spell = { BASE = 75 }
+			scope:caster_country = { treasury >= 500 NOT = { has_country_modifier = magical_construction_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 75 }
+		scope:caster_country = { add_country_modifier = { name = magical_construction_spell_mod duration = 365 } }
+		omni_set_country_blessing_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = light_of_true_faith }
+			omni_caster_omnic_t2 = yes
+			omni_can_afford_spell = { BASE = 50 }
+			scope:caster_country = { NOT = { has_country_modifier = light_of_true_faith_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = { add_country_modifier = { name = light_of_true_faith_spell_mod duration = 365 } }
+		omni_set_country_blessing_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = hand_of_adaralu }
+			omni_caster_aldic_t1 = yes
+			omni_can_afford_spell = { BASE = 25 }
+			scope:caster_country = { NOT = { has_country_modifier = hand_of_adaralu_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		scope:caster_country = { add_country_modifier = { name = hand_of_adaralu_spell_mod duration = 365 } }
+		omni_set_country_blessing_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = golden_fingers_of_the_pharon }
+			omni_caster_aldic_t2 = yes
+			omni_can_afford_spell = { BASE = 50 }
+			scope:caster_country = { NOT = { has_country_modifier = golden_fingers_of_the_pharon_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = { add_country_modifier = { name = golden_fingers_of_the_pharon_spell_mod duration = 365 } }
+		omni_set_country_blessing_cooldown = yes
+	}
+}
+
+omni_ai_cast_war_country_blessing_effect = {
+	if = {
+		limit = {
+			omni_knows_spell = { SPELL = hammer_of_melodias }
+			omni_caster_melodian_t2 = yes
+			omni_can_afford_spell = { BASE = 75 }
+			scope:caster_country = {
+				NOT = { has_country_modifier = hammer_of_melodias_spell_mod }
+				any_army = { unit_location = { has_siege = yes } }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = { add_country_modifier = { name = hammer_of_melodias_spell_mod duration = 365 } }
+		omni_set_war_blessing_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = winds_of_pedentrutzu }
+			omni_caster_amten_t1 = yes
+			omni_can_afford_spell = { BASE = 50 }
+			scope:caster_country = { NOT = { has_country_modifier = winds_of_pedentrutzu_spell_mod } any_navy = { is_navy = yes } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		scope:caster_country = { add_country_modifier = { name = winds_of_pedentrutzu_spell_mod duration = 365 } }
+		omni_set_war_blessing_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = sword_of_zanis }
+			omni_caster_omnic_t1 = yes
+			omni_can_afford_spell = { BASE = 50 }
+			scope:caster_country = { NOT = { has_country_modifier = sword_of_zanis_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		scope:caster_country = { add_country_modifier = { name = sword_of_zanis_spell_mod duration = 365 } }
+		omni_set_war_blessing_cooldown = yes
+	}
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = arrows_of_lavas }
+			omni_caster_amten_t1 = yes
+			omni_can_afford_spell = { BASE = 50 }
+			scope:caster_country = { NOT = { has_country_modifier = arrows_of_lavas_spell_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 25 }
+		scope:caster_country = { add_country_modifier = { name = arrows_of_lavas_spell_mod duration = 365 } }
+		omni_set_war_blessing_cooldown = yes
+	}
+}
+
+omni_set_country_blessing_cooldown = {
+	scope:caster_country = { set_variable = { name = omni_country_blessing_cooldown days = 365 } }
+}
+
+omni_set_war_blessing_cooldown = {
+	scope:caster_country = { set_variable = { name = omni_war_blessing_cooldown days = 120 } }
 }

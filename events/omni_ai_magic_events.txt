@@ -25,7 +25,11 @@ omni_ai_magic.1 = { # AI: a court cleric heals the ruler / heir / commanders
 			is_alive = yes
 			NOT = { has_variable = omni_healing_spell_cooldown }
 			omni_character_is_eligible_caster = yes
-			omni_knows_spell = { SPELL = healing_light }
+			OR = {
+				omni_knows_spell = { SPELL = healing_light }
+				omni_knows_spell = { SPELL = healing_light_ii }
+				omni_knows_spell = { SPELL = vitality }
+			}
 			omni_caster_aldic_t1 = yes
 			omni_can_afford_spell = { BASE = 75 }
 		}
@@ -79,7 +83,7 @@ omni_ai_magic.1 = { # AI: a court cleric heals the ruler / heir / commanders
 					is_alive = yes
 					NOT = { has_variable = omni_healing_spell_cooldown }
 					omni_character_is_eligible_caster = yes
-					omni_knows_spell = { SPELL = healing_light }
+					omni_knows_spell = { SPELL = healing_light_ii }
 					has_variable = cleric_t3_unlocked_var
 					omni_can_afford_spell = { BASE = 100 }
 				}
@@ -90,7 +94,10 @@ omni_ai_magic.1 = { # AI: a court cleric heals the ruler / heir / commanders
 					is_alive = yes
 					NOT = { has_variable = omni_healing_spell_cooldown }
 					omni_character_is_eligible_caster = yes
-					omni_knows_spell = { SPELL = healing_light }
+					OR = {
+						omni_knows_spell = { SPELL = healing_light_ii }
+						omni_knows_spell = { SPELL = vitality }
+					}
 					has_variable = cleric_t3_unlocked_var
 					omni_can_afford_spell = { BASE = 100 }
 				}
@@ -104,7 +111,10 @@ omni_ai_magic.1 = { # AI: a court cleric heals the ruler / heir / commanders
 					is_alive = yes
 					NOT = { has_variable = omni_healing_spell_cooldown }
 					omni_character_is_eligible_caster = yes
-					omni_knows_spell = { SPELL = healing_light }
+					OR = {
+						omni_knows_spell = { SPELL = healing_light }
+						omni_knows_spell = { SPELL = vitality }
+					}
 					omni_caster_aldic_t1 = yes
 					omni_can_afford_spell = { BASE = 75 }
 				}
@@ -132,32 +142,79 @@ omni_ai_magic.2 = { # AI: a court mage casts a civic spell in peacetime
 			omni_character_is_eligible_caster = yes
 			omni_can_afford_spell = { BASE = 50 }
 			OR = {
-				has_variable = cleric_t2_unlocked_var
-				has_variable = elementalist_t2_unlocked_var
-				has_variable = hierophant_t3_unlocked_var
-				has_variable = druid_t2_unlocked_var
+				omni_knows_spell = { SPELL = unrest_cleansing }
+				omni_knows_spell = { SPELL = weathercall_growth }
+				omni_knows_spell = { SPELL = harbor_ward }
+				omni_knows_spell = { SPELL = migration_beacon }
 			}
 		}
 	}
 
 	immediate = {
 		save_scope_as = caster_country
-		random_character = {
-			limit = {
-				employer = root
-				is_alive = yes
-				NOT = { has_variable = omni_civic_spell_cooldown }
-				omni_character_is_eligible_caster = yes
-				omni_can_afford_spell = { BASE = 50 }
-				OR = {
-					has_variable = cleric_t2_unlocked_var
-					has_variable = elementalist_t2_unlocked_var
-					has_variable = hierophant_t3_unlocked_var
-					has_variable = druid_t2_unlocked_var
-				}
+		omni_ai_choose_civic_spell_effect = yes
+	}
+
+	option = {}
+}
+
+omni_ai_magic.3 = { # AI: a court mage casts a country-wide peacetime blessing
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		war = no
+		NOT = { has_variable = omni_country_blessing_cooldown }
+		any_character = {
+			employer = root
+			is_alive = yes
+			omni_character_is_eligible_caster = yes
+			omni_can_afford_spell = { BASE = 25 }
+			OR = {
+				omni_knows_spell = { SPELL = feast_of_ugone }
+				omni_knows_spell = { SPELL = divine_ceremonies }
+				omni_knows_spell = { SPELL = magical_construction }
+				omni_knows_spell = { SPELL = light_of_true_faith }
+				omni_knows_spell = { SPELL = hand_of_adaralu }
+				omni_knows_spell = { SPELL = golden_fingers_of_the_pharon }
 			}
-			omni_ai_cast_civic_spell_effect = yes
 		}
+	}
+
+	immediate = {
+		save_scope_as = caster_country
+		omni_ai_choose_peace_country_blessing_effect = yes
+	}
+
+	option = {}
+}
+
+omni_ai_magic.4 = { # AI: a court mage casts a wartime country blessing
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		war = yes
+		NOT = { has_variable = omni_war_blessing_cooldown }
+		any_character = {
+			employer = root
+			is_alive = yes
+			omni_character_is_eligible_caster = yes
+			omni_can_afford_spell = { BASE = 50 } # cost plus a 25-base tactical reserve
+			OR = {
+				omni_knows_spell = { SPELL = hammer_of_melodias }
+				omni_knows_spell = { SPELL = winds_of_pedentrutzu }
+				omni_knows_spell = { SPELL = sword_of_zanis }
+				omni_knows_spell = { SPELL = arrows_of_lavas }
+			}
+		}
+	}
+
+	immediate = {
+		save_scope_as = caster_country
+		omni_ai_choose_war_country_blessing_effect = yes
 	}
 
 	option = {}
