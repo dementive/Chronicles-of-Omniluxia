@@ -180,45 +180,6 @@ change_country_scope_magic_vars = {
 			value = 100
 		}
 	}
-	if = {
-		# Guard also silences the "Variable 'omni_magic_provinces' is used but is
-		# never set" lint warning while nothing grants province magic yet.
-		# STATUS (checked whole-mod-tree): omni_add_province_magic_effect (below) is the
-		# only place that adds to this global list, and it is currently never called by
-		# any event/effect/decision - no content grants province magic yet, so this list
-		# stays empty and the guard is expected/harmless. When a future feature calls
-		# omni_add_province_magic_effect, this guard starts passing automatically.
-		limit = { has_global_variable_list = omni_magic_provinces }
-		every_in_global_list = {
-			variable = omni_magic_provinces
-			if = {
-				limit = {
-					exists = owner
-					owner = root
-				}
-				if = {
-					limit = {
-						NOT = { has_variable = magic }
-					}
-					set_variable = {
-						name = magic
-						value = 0
-					}
-				}
-				change_variable = {
-					name = magic
-					add = modifier:local_cohort_recruit_speed
-				}
-				if = {
-					limit = { var:magic > 100 }
-					set_variable = {
-						name = magic
-						value = 100
-					}
-				}
-			}
-		}
-	}
 	# ------------------------------------------------------------------
 	# This effect runs from each country's monthly pulse. every_character is scoped
 	# to that country, so its mana tick must not be behind a global cooldown: the
@@ -257,35 +218,6 @@ change_country_scope_magic_vars = {
 				name = magic
 				value = omni_character_magic_max_value
 			}
-		}
-	}
-}
-
-# ---------------------------------------------------------------------------
-# PROVINCE MANA CHOKE-POINT
-# Always grant province mana regen through this effect, never with a bare
-# add_province_modifier - it keeps the omni_magic_provinces global list in sync,
-# and the monthly tick above ONLY regenerates provinces in that list.
-# Call in PROVINCE scope with MOD = province_magic_1 .. province_magic_4.
-# Removal note: if you later remove a province's magic modifier, the province
-# can safely stay in the list - with zero regen the tick is a no-op for it.
-omni_add_province_magic_effect = {
-	add_province_modifier = {
-		name = $MOD$
-		duration = -1
-	}
-	if = {
-		limit = {
-			NOT = {
-				is_target_in_global_variable_list = {
-					name = omni_magic_provinces
-					target = THIS
-				}
-			}
-		}
-		add_to_global_variable_list = {
-			name = omni_magic_provinces
-			target = THIS
 		}
 	}
 }
