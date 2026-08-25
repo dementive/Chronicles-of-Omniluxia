@@ -4,26 +4,6 @@ omni_knows_spell = {
 	has_variable = $SPELL$_known_var
 }
 
-# Jomini's variable audit does not connect the parameter-expanded setter in
-# omni_learn_spell with parameter-expanded consumers. These literal consumers
-# keep the audit accurate and are ready for the eventual spell options.
-omni_knows_bloodlust = { has_variable = bloodlust_known_var }
-omni_knows_berserker_rage = { has_variable = berserker_rage_known_var }
-omni_knows_water_walker = { has_variable = water_walker_known_var }
-omni_knows_dreaming = { has_variable = dreaming_known_var }
-omni_knows_summon_eagle_of_zanis = { has_variable = summon_eagle_of_zanis_known_var }
-omni_knows_helluvius_peace = { has_variable = helluvius_peace_known_var }
-omni_knows_hellas_providence = { has_variable = hellas_providence_known_var }
-omni_knows_palpan = { has_variable = palpan_known_var }
-
-# NOTE: palpan_known_var is intentionally not gated by any omni_knows_spell = { SPELL = palpan }
-# check. "palpan" is granted (omni_learn_spell) in folk_travel_events.txt, magic_studying_events.txt
-# and zorgoomni.txt, but it has no dedicated spell-effect option in the Melodian School event chain
-# (unlike mended_anima_soul/astral_search_soul/silver_tongue_charm, which now correctly gate their
-# _school options via the bare id). Learning palpan currently only flips palpan_unlocked_var (a
-# separate, already-used school-access flag) and this lore flag; treat palpan_known_var as a
-# lore-only placeholder until a real Melodian spell effect is designed for it. Do not delete.
-
 omni_discipline_mastered = {
 	has_variable = $DISCIPLINE$_mastered_var
 }
@@ -52,4 +32,62 @@ omni_school_entered = {
 omni_primary_school = {
 	has_variable = omni_best_affinity_var
 	var:omni_best_affinity_var = $FAMILY_CODE$
+}
+
+# Keeps the parent "Divine Blessings" menu hidden unless at least one option
+# in me_zorgo_magic_focus.38 is currently castable. Keep these gates synchronized
+# with that event's individual spell triggers.
+omni_can_cast_any_divine_blessing = {
+	OR = {
+		AND = {
+			has_variable = sword_of_zanis_known_var
+			omni_can_afford_spell = { BASE = 25 }
+			omni_caster_omnic_t1 = yes
+		}
+		AND = {
+			has_variable = light_of_true_faith_known_var
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_omnic_t2 = yes
+		}
+		AND = {
+			has_variable = divine_ceremonies_known_var
+			omni_can_afford_spell = { BASE = 75 }
+			omni_caster_omnic_t3 = yes
+		}
+		AND = {
+			has_variable = hand_of_adaralu_known_var
+			omni_can_afford_spell = { BASE = 25 }
+			omni_caster_aldic_t1 = yes
+		}
+		AND = {
+			has_variable = golden_fingers_of_the_pharon_known_var
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_aldic_t2 = yes
+		}
+		AND = {
+			has_variable = arrows_of_lavas_known_var
+			omni_can_afford_spell = { BASE = 25 }
+			omni_caster_amten_t1 = yes
+		}
+		AND = {
+			has_variable = feast_of_ugone_known_var
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_amten_t2 = yes
+		}
+		AND = {
+			has_variable = magical_construction_known_var
+			omni_can_afford_spell = { BASE = 75 }
+			omni_caster_amten_t3 = yes
+		}
+		AND = {
+			has_variable = winds_of_pedentrutzu_known_var
+			omni_can_afford_spell = { BASE = 25 }
+			omni_caster_amten_t1 = yes
+		}
+		AND = {
+			has_variable = hammer_of_melodias_known_var
+			omni_can_afford_spell = { BASE = 50 }
+			omni_caster_melodian_t2 = yes
+		}
+	}
 }
