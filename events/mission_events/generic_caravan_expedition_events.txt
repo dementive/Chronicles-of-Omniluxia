@@ -1,0 +1,269 @@
+﻿namespace = generic_caravan_expedition
+
+# Overland caravan events. The Charter ending (generic_trade_expedition.300),
+# the envoy choice (.4) and the homecoming (.310) are shared with the sea
+# expedition - the scope names are identical by design.
+
+generic_caravan_expedition.1 = {
+	type = country_event
+	title = "generic_caravan_expedition.1.t"
+	desc = "generic_caravan_expedition.1.desc"
+	picture = council_country
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+	right_portrait = current_ruler
+
+	option = {
+		name = "generic_caravan_expedition.1.a"
+	}
+}
+
+generic_caravan_expedition.2 = {
+	type = country_event
+	title = "generic_caravan_expedition.2.t"
+	desc = "generic_caravan_expedition.2.desc"
+	picture = greek_city_market
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	option = {
+		name = "generic_caravan_expedition.2.a"
+	}
+}
+
+generic_caravan_expedition.3 = {
+	type = country_event
+	title = "generic_caravan_expedition.3.t"
+	desc = "generic_caravan_expedition.3.desc"
+	picture = event_bread_basket
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+	right_portrait = current_ruler
+
+	option = {
+		name = "generic_caravan_expedition.3.a"
+	}
+}
+
+########################################
+# Road risk
+########################################
+
+# Hard country: waterless stages, lost beasts, a route that was a good idea
+# in a warmer month.
+generic_caravan_expedition.400 = {
+	type = country_event
+	title = "generic_caravan_expedition.400.t"
+	desc = "generic_caravan_expedition.400.desc"
+	picture = event_bread_basket
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	option = {
+		name = "generic_caravan_expedition.400.a"
+		add_country_modifier = {
+			name = generic_trade_expedition_storm_damage_cmod
+			duration = 730
+		}
+		add_treasury = generic_trade_expedition_event_loss_svalue
+	}
+}
+
+# Bandits. The overland equivalent of a strange sail, and rather more common.
+generic_caravan_expedition.401 = {
+	type = country_event
+	title = "generic_caravan_expedition.401.t"
+	desc = "generic_caravan_expedition.401.desc"
+	picture = war_council
+
+	goto_location = scope:generic_trade_expedition_stopover_port_scope
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	# A. Pay the toll. It is cheaper than the alternative and everyone knows it.
+	option = {
+		name = "generic_caravan_expedition.401.a"
+		trigger = { treasury >= generic_trade_expedition_small_cost_svalue }
+		add_treasury = generic_trade_expedition_small_pay_svalue
+	}
+
+	# B. Refuse, and lose part of the load proving the point.
+	option = {
+		name = "generic_caravan_expedition.401.b"
+		set_variable = generic_trade_expedition_cargo_lost
+		add_country_modifier = {
+			name = generic_trade_expedition_pirate_losses_cmod
+			duration = 730
+		}
+		if = {
+			limit = { has_country_modifier = generic_trade_expedition_full_holds }
+			remove_country_modifier = generic_trade_expedition_full_holds
+		}
+	}
+}
+
+# The drovers have opinions about the pace and the pay.
+generic_caravan_expedition.402 = {
+	type = country_event
+	title = "generic_caravan_expedition.402.t"
+	desc = "generic_caravan_expedition.402.desc"
+	picture = greek_court
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	option = {
+		name = "generic_caravan_expedition.402.a"
+		trigger = { treasury >= generic_trade_expedition_small_cost_svalue }
+		add_treasury = generic_trade_expedition_small_pay_svalue
+	}
+
+	option = {
+		name = "generic_caravan_expedition.402.b"
+		add_country_modifier = {
+			name = generic_trade_expedition_mutinous_crew_cmod
+			duration = 730
+		}
+		if = {
+			limit = { exists = var:generic_trade_expedition_envoy_character }
+			var:generic_trade_expedition_envoy_character = {
+				add_popularity = -5
+			}
+		}
+	}
+}
+
+# The waystation on the road.
+generic_caravan_expedition.450 = {
+	type = country_event
+	title = "generic_caravan_expedition.450.t"
+	desc = "generic_caravan_expedition.450.desc"
+	picture = trade_port
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_caravan_expedition_on_the_road_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_caravan_expedition.450.a"
+		ai_chance = { factor = 3 }
+		trigger = { treasury >= generic_trade_expedition_small_cost_svalue }
+		add_treasury = generic_trade_expedition_small_pay_svalue
+		set_variable = generic_trade_expedition_stopover_secured
+		add_country_modifier = {
+			name = generic_trade_expedition_stopover_cmod
+			duration = 1095
+		}
+	}
+
+	option = {
+		name = "generic_caravan_expedition.450.b"
+		ai_chance = { factor = 1 }
+		set_variable = generic_trade_expedition_stopover_secured
+		set_variable = generic_trade_expedition_stopover_refused
+		add_aggressive_expansion = 2
+	}
+
+	option = {
+		name = "generic_caravan_expedition.450.c"
+		ai_chance = { factor = 1 }
+	}
+}
+
+################################################################
+# THE ROAD POOL
+################################################################
+
+# Hidden dispatcher; one risk roll per month actually spent travelling.
+generic_caravan_expedition.405 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_home_port
+		exists = scope:generic_trade_expedition_partner_port
+		generic_caravan_expedition_on_the_road_trigger = yes
+		has_variable = generic_trade_expedition_envoy_character
+		var:generic_trade_expedition_envoy_character = {
+			exists = this
+			has_character_modifier = generic_trade_expedition_envoy_charmod
+		}
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+		generic_caravan_expedition_risk_check_effect = yes
+	}
+}
+
+generic_caravan_expedition.410 = {
+	type = country_event
+	title = "generic_caravan_expedition.410.t"
+	desc = "generic_caravan_expedition.410.desc"
+	picture = event_bread_basket
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_caravan_expedition_on_the_road_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_caravan_expedition.410.a"
+	}
+}
+
+generic_caravan_expedition.411 = {
+	type = country_event
+	title = "generic_caravan_expedition.411.t"
+	desc = "generic_caravan_expedition.411.desc"
+	picture = greek_city_market
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_caravan_expedition_on_the_road_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	# A. Trade with them; their goods are cheap and their news is cheaper.
+	option = {
+		name = "generic_caravan_expedition.411.a"
+		ai_chance = { factor = 3 }
+		add_treasury = generic_trade_expedition_event_profit_svalue
+	}
+
+	# B. Keep the caravan moving and the strangers at a distance.
+	option = {
+		name = "generic_caravan_expedition.411.b"
+		ai_chance = { factor = 1 }
+	}
+}

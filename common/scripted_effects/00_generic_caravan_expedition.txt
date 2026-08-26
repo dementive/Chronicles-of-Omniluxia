@@ -1,0 +1,30 @@
+﻿# Overland caravan variant - scripted effects.
+#
+# The Charter effects themselves are deliberately NOT duplicated. The caravan
+# uses exactly the same scope and variable names as the sea expedition, so it
+# calls generic_trade_expedition_grant_*_charter_effect directly. That means a
+# country holds ONE Charter across both missions - it cannot run a sea venture
+# and a caravan venture to collect two.
+
+generic_caravan_expedition_risk_roll_effect = {
+	random = {
+		chance = generic_trade_expedition_risk_svalue
+		random_list = {
+			30 = { trigger_event = { id = generic_caravan_expedition.400 } }
+			25 = {
+				trigger = { NOT = { has_variable = generic_trade_expedition_escort_assigned } }
+				trigger_event = { id = generic_caravan_expedition.401 }
+			}
+			20 = { trigger_event = { id = generic_caravan_expedition.402 } }
+			15 = { trigger_event = { id = generic_trade_expedition.403 } }
+			10 = {
+				trigger = { exists = var:generic_trade_expedition_envoy_character }
+				trigger_event = { id = generic_trade_expedition.404 }
+			}
+		}
+	}
+}
+
+generic_caravan_expedition_risk_check_effect = {
+	generic_caravan_expedition_risk_roll_effect = yes
+}

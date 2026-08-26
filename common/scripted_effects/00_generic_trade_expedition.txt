@@ -101,6 +101,34 @@
 	remove_variable = generic_trade_expedition_port_event_28
 	remove_variable = generic_trade_expedition_port_event_29
 	remove_variable = generic_trade_expedition_port_event_30
+	# Expanded voyage, risk, partner and envoy variables.
+	# NOTE: Charter variables are deliberately NOT cleaned here - they are the
+	# persistent state that survives between expeditions.
+	remove_variable = generic_trade_expedition_escort_assigned
+	remove_variable = generic_trade_expedition_stopover_secured
+	remove_variable = generic_trade_expedition_stopover_port
+	remove_variable = generic_trade_expedition_stopover_refused
+	remove_variable = generic_trade_expedition_guild_favour
+	remove_variable = generic_trade_expedition_customs_bribed
+	remove_variable = generic_trade_expedition_customs_refused
+	remove_variable = generic_trade_expedition_rival_present
+	remove_variable = generic_trade_expedition_rival_beaten
+	remove_variable = generic_trade_expedition_partner_tariffs
+	remove_variable = generic_trade_expedition_partner_demanded_more
+	remove_variable = generic_trade_expedition_partner_appeased
+	remove_variable = generic_trade_expedition_envoy_rival
+	remove_variable = generic_trade_expedition_envoy_client
+	remove_variable = generic_trade_expedition_envoy_kin
+	remove_variable = generic_trade_expedition_envoy_lowborn
+	remove_variable = generic_trade_expedition_envoy_defected
+	remove_variable = generic_trade_expedition_envoy_sidelined
+	remove_variable = generic_trade_expedition_cargo_lost
+	remove_variable = generic_trade_expedition_voyage_disaster
+	remove_variable = generic_trade_expedition_outbound_risk_done
+	remove_variable = generic_trade_expedition_return_risk_done
+	remove_variable = generic_trade_expedition_funding_crown
+	remove_variable = generic_trade_expedition_funding_merchant
+	remove_variable = generic_trade_expedition_funding_temple
 }
 
 generic_trade_expedition_random_port_event_effect = {
@@ -254,6 +282,336 @@ generic_trade_expedition_random_port_event_effect = {
 			trigger = { NOT = { has_variable = generic_trade_expedition_port_event_30 } }
 			set_variable = generic_trade_expedition_port_event_30
 			trigger_event = { id = generic_trade_expedition.139 }
+		}
+	}
+}
+
+
+########################################
+# CHARTER SYSTEM
+#
+# The anti-cheese keystone. A country holds exactly one Charter. Granting a
+# new one of a different type first revokes the old one at a real cost, so
+# repeat expeditions let the player PIVOT their trade posture rather than
+# stack rewards. Granting the same type again refreshes it and adds a small,
+# capped deepening.
+########################################
+
+# Strip whichever Charter is currently held and charge for tearing it up.
+generic_trade_expedition_revoke_charter_effect = {
+	if = {
+		limit = { has_variable = generic_trade_expedition_charter }
+		if = {
+			limit = { has_country_modifier = generic_trade_expedition_charter_company_cmod }
+			remove_country_modifier = generic_trade_expedition_charter_company_cmod
+		}
+		if = {
+			limit = { has_country_modifier = generic_trade_expedition_crown_monopoly_cmod }
+			remove_country_modifier = generic_trade_expedition_crown_monopoly_cmod
+		}
+		if = {
+			limit = { has_country_modifier = generic_trade_expedition_factor_colony_cmod }
+			remove_country_modifier = generic_trade_expedition_factor_colony_cmod
+		}
+		if = {
+			limit = { exists = var:generic_trade_expedition_charter_seat }
+			var:generic_trade_expedition_charter_seat = {
+				if = {
+					limit = { has_province_modifier = generic_trade_expedition_charter_company_pmod }
+					remove_province_modifier = generic_trade_expedition_charter_company_pmod
+				}
+				if = {
+					limit = { has_province_modifier = generic_trade_expedition_crown_monopoly_pmod }
+					remove_province_modifier = generic_trade_expedition_crown_monopoly_pmod
+				}
+				if = {
+					limit = { has_province_modifier = generic_trade_expedition_factor_colony_pmod }
+					remove_province_modifier = generic_trade_expedition_factor_colony_pmod
+				}
+			}
+		}
+		add_country_modifier = {
+			name = generic_trade_expedition_charter_dissolved_cmod
+			duration = 1825
+		}
+		add_stability = -10
+		remove_variable = generic_trade_expedition_charter
+		remove_variable = generic_trade_expedition_charter_seat
+	}
+}
+
+# Shared bookkeeping for every Charter grant.
+generic_trade_expedition_set_charter_seat_effect = {
+	if = {
+		limit = { exists = scope:generic_trade_expedition_charter_seat }
+		set_variable = {
+			name = generic_trade_expedition_charter_seat
+			value = scope:generic_trade_expedition_charter_seat
+		}
+	}
+}
+
+# 1. THE CHARTERED COMPANY
+# Strong commerce, permanently. Paid for in internal politics: the venture is
+# granted to the envoy's house, which grows into a power of its own.
+generic_trade_expedition_grant_company_charter_effect = {
+	# The men who funded the venture get the venture they paid for; matching
+	# the Charter to its financiers costs us less trouble than overruling them.
+	if = {
+		limit = { has_variable = generic_trade_expedition_funding_merchant }
+		add_political_influence = 15
+		add_stability = 5
+	}
+	if = {
+		limit = {
+			has_variable = generic_trade_expedition_charter
+			NOT = { var:generic_trade_expedition_charter = 1 }
+		}
+		generic_trade_expedition_revoke_charter_effect = yes
+	}
+	set_variable = {
+		name = generic_trade_expedition_charter
+		value = 1
+	}
+	generic_trade_expedition_set_charter_seat_effect = yes
+	add_country_modifier = {
+		name = generic_trade_expedition_charter_company_cmod
+		duration = -1
+	}
+	if = {
+		limit = { exists = scope:generic_trade_expedition_charter_seat }
+		scope:generic_trade_expedition_charter_seat = {
+			if = {
+				limit = { has_province_modifier = generic_trade_expedition_charter_company_pmod }
+				remove_province_modifier = generic_trade_expedition_charter_company_pmod
+			}
+			add_province_modifier = {
+				name = generic_trade_expedition_charter_company_pmod
+				duration = -1
+			}
+		}
+	}
+	# The cost: a merchant house with money, standing and its own agenda.
+	if = {
+		limit = { exists = var:generic_trade_expedition_envoy_character }
+		var:generic_trade_expedition_envoy_character = {
+			add_prominence = 30
+			add_popularity = popularity_medium
+			add_corruption = 1
+			if = {
+				limit = { has_character_modifier = generic_trade_expedition_envoy_client_charmod }
+				remove_character_modifier = generic_trade_expedition_envoy_client_charmod
+			}
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_kin_charmod
+				duration = -1
+			}
+		}
+	}
+	add_political_influence = -25
+}
+
+# 2. THE CROWN MONOPOLY
+# The state takes the trade. Excellent revenue, paid for in legitimacy.
+generic_trade_expedition_grant_monopoly_charter_effect = {
+	# The men who funded the venture get the venture they paid for; matching
+	# the Charter to its financiers costs us less trouble than overruling them.
+	if = {
+		limit = { has_variable = generic_trade_expedition_funding_crown }
+		add_political_influence = 15
+		add_stability = 5
+	}
+	if = {
+		limit = {
+			has_variable = generic_trade_expedition_charter
+			NOT = { var:generic_trade_expedition_charter = 2 }
+		}
+		generic_trade_expedition_revoke_charter_effect = yes
+	}
+	set_variable = {
+		name = generic_trade_expedition_charter
+		value = 2
+	}
+	generic_trade_expedition_set_charter_seat_effect = yes
+	add_country_modifier = {
+		name = generic_trade_expedition_crown_monopoly_cmod
+		duration = -1
+	}
+	if = {
+		limit = { exists = scope:generic_trade_expedition_charter_seat }
+		scope:generic_trade_expedition_charter_seat = {
+			if = {
+				limit = { has_province_modifier = generic_trade_expedition_crown_monopoly_pmod }
+				remove_province_modifier = generic_trade_expedition_crown_monopoly_pmod
+			}
+			add_province_modifier = {
+				name = generic_trade_expedition_crown_monopoly_pmod
+				duration = -1
+			}
+		}
+	}
+	# The cost: seizing a trade the merchants built is an act of tyranny, and
+	# the partner now deals with a state cartel instead of traders.
+	add_tyranny = 5
+	if = {
+		limit = { exists = scope:generic_trade_expedition_partner }
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_monopoly_resented
+				target = ROOT
+			}
+		}
+	}
+	add_treasury = generic_trade_expedition_profit_svalue
+}
+
+# 3. THE FACTOR COLONY
+# A permanent foothold on a foreign shore. Paid for in diplomacy.
+generic_trade_expedition_grant_colony_charter_effect = {
+	# The men who funded the venture get the venture they paid for; matching
+	# the Charter to its financiers costs us less trouble than overruling them.
+	if = {
+		limit = { has_variable = generic_trade_expedition_funding_temple }
+		add_political_influence = 15
+		add_stability = 5
+	}
+	if = {
+		limit = {
+			has_variable = generic_trade_expedition_charter
+			NOT = { var:generic_trade_expedition_charter = 3 }
+		}
+		generic_trade_expedition_revoke_charter_effect = yes
+	}
+	set_variable = {
+		name = generic_trade_expedition_charter
+		value = 3
+	}
+	add_country_modifier = {
+		name = generic_trade_expedition_factor_colony_cmod
+		duration = -1
+	}
+	if = {
+		limit = { exists = scope:generic_trade_expedition_partner_port }
+		scope:generic_trade_expedition_partner_port = {
+			save_scope_as = generic_trade_expedition_charter_seat
+			if = {
+				limit = { has_province_modifier = generic_trade_expedition_factor_colony_pmod }
+				remove_province_modifier = generic_trade_expedition_factor_colony_pmod
+			}
+			add_province_modifier = {
+				name = generic_trade_expedition_factor_colony_pmod
+				duration = -1
+			}
+			if = {
+				limit = { NOT = { has_claim = ROOT } }
+				add_claim = ROOT
+			}
+		}
+	}
+	generic_trade_expedition_set_charter_seat_effect = yes
+	# The cost: everyone can see what a foreign quarter with a claim on it is
+	# the beginning of.
+	add_aggressive_expansion = 8
+	if = {
+		limit = { exists = scope:generic_trade_expedition_partner }
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_colony_alarm
+				target = ROOT
+			}
+		}
+	}
+	add_political_influence = -15
+}
+
+########################################
+# ANTI-STACK GUARDS
+########################################
+
+# Factor houses are the worst stacking vector in the original design: the
+# province modifier lands on the PARTNER's port, a different province every
+# run, so nothing overwrites anything. Hard cap the number that can exist.
+generic_trade_expedition_factor_house_cap_trigger_effect = {
+	if = {
+		limit = { NOT = { has_variable = generic_trade_expedition_factor_houses } }
+		set_variable = {
+			name = generic_trade_expedition_factor_houses
+			value = 0
+		}
+	}
+}
+
+generic_trade_expedition_add_factor_house_effect = {
+	generic_trade_expedition_factor_house_cap_trigger_effect = yes
+	change_variable = {
+		name = generic_trade_expedition_factor_houses
+		add = 1
+	}
+}
+
+# Called once per completed expedition. Drives the diminishing-returns curve
+# on every cash payout in this mission.
+generic_trade_expedition_count_run_effect = {
+	if = {
+		limit = { NOT = { has_variable = generic_trade_expedition_runs } }
+		set_variable = {
+			name = generic_trade_expedition_runs
+			value = 0
+		}
+	}
+	change_variable = {
+		name = generic_trade_expedition_runs
+		add = 1
+	}
+}
+
+########################################
+# RISK
+########################################
+
+# One risk check. Rolls generic_trade_expedition_risk_svalue against 100 and
+# fires a misfortune event on a hit. Mitigation tasks buy the number down.
+# The raw roll. NEVER call this directly from a mission task - it has no
+# tooltip of its own and the random_list would print "Nothing happens" once
+# per branch in the task window. Use the two wrappers below.
+generic_trade_expedition_risk_roll_effect = {
+	random = {
+		chance = generic_trade_expedition_risk_svalue
+		random_list = {
+			25 = { trigger_event = { id = generic_trade_expedition.400 } }
+			25 = { trigger_event = { id = generic_trade_expedition.401 } }
+			20 = {
+				trigger = { NOT = { has_variable = generic_trade_expedition_escort_assigned } }
+				trigger_event = { id = generic_trade_expedition.402 }
+			}
+			15 = { trigger_event = { id = generic_trade_expedition.403 } }
+			15 = {
+				trigger = { exists = var:generic_trade_expedition_envoy_character }
+				trigger_event = { id = generic_trade_expedition.404 }
+			}
+		}
+	}
+}
+
+# One risk check, shown to the player as a single written warning.
+# Called once per month at sea by generic_trade_expedition.405. Because it
+# rolls every month the fleet is under way, a long voyage is genuinely more
+# dangerous than a short one without any distance multiplier having to say so.
+generic_trade_expedition_risk_check_effect = {
+	random = {
+		chance = generic_trade_expedition_risk_svalue
+		random_list = {
+			25 = { trigger_event = { id = generic_trade_expedition.400 } }
+			25 = { trigger_event = { id = generic_trade_expedition.401 } }
+			20 = {
+				trigger = { NOT = { has_variable = generic_trade_expedition_escort_assigned } }
+				trigger_event = { id = generic_trade_expedition.402 }
+			}
+			15 = { trigger_event = { id = generic_trade_expedition.403 } }
+			15 = {
+				trigger = { exists = var:generic_trade_expedition_envoy_character }
+				trigger_event = { id = generic_trade_expedition.404 }
+			}
 		}
 	}
 }

@@ -1,0 +1,81 @@
+﻿# Overland caravan variant - scripted triggers.
+#
+# The sea expedition was gated behind num_of_ports >= 1, which quietly locked
+# out every nomadic, Ulus and landlocked country in the mod. This is the same
+# venture conducted on land.
+
+generic_caravan_expedition_valid_home_market_trigger = {
+	owner = ROOT
+	OR = {
+		has_building = commerce_building
+		is_capital = yes
+	}
+}
+
+generic_caravan_expedition_valid_partner_market_trigger = {
+	has_building = commerce_building
+}
+
+generic_caravan_expedition_valid_partner_trigger = {
+	has_land = yes
+	has_civil_war = no
+	NOT = { this = ROOT }
+	NOT = { is_subject_of = ROOT }
+	NOT = { war_with = ROOT }
+	in_diplomatic_range = ROOT
+	opinion = {
+		target = ROOT
+		value >= 0
+	}
+	any_owned_province = {
+		generic_caravan_expedition_valid_partner_market_trigger = yes
+	}
+}
+
+generic_caravan_expedition_valid_waystation_trigger = {
+	NOT = { owner = ROOT }
+	NOT = { owner = scope:generic_trade_expedition_partner }
+}
+
+generic_caravan_expedition_valid_waystation_country_trigger = {
+	has_land = yes
+	NOT = { this = ROOT }
+	NOT = { this = scope:generic_trade_expedition_partner }
+	NOT = { war_with = ROOT }
+	in_diplomatic_range = ROOT
+	any_owned_province = {
+		generic_caravan_expedition_valid_waystation_trigger = yes
+	}
+}
+
+# The caravan is an army, not a fleet.
+generic_caravan_expedition_commanded_by_envoy_trigger = {
+	is_navy = no
+	has_commander = yes
+	commander = {
+		has_character_modifier = generic_trade_expedition_envoy_charmod
+	}
+	any_sub_unit = {
+		count >= 5
+	}
+}
+
+# Countries that should be offered the overland venture: anyone without a
+# coast to sail from, plus the nomadic governments regardless of coastline.
+generic_caravan_expedition_eligible_country_trigger = {
+	OR = {
+		num_of_ports <= 0
+		government = ulus
+		government = ulus_monarchy
+	}
+}
+
+# True while the caravan is neither at home nor at the market - that is, while
+# it is actually somewhere on the road between them.
+generic_caravan_expedition_on_the_road_trigger = {
+	any_unit = {
+		generic_caravan_expedition_commanded_by_envoy_trigger = yes
+		NOT = { unit_location = scope:generic_trade_expedition_home_port }
+		NOT = { unit_location = scope:generic_trade_expedition_partner_port }
+	}
+}

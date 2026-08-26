@@ -1,19 +1,20 @@
-﻿# THE TRADE EXPEDITION
+﻿# THE OVERLAND CARAVAN
 #
 # SHAPE: a short trunk, then three parallel tracks (The Ship, The Purse, The
 # Court) that run at the same time and converge on the convoy, then the market,
 # then home, then the Charter.
 #
-# FLEET GATES: only three tasks care where the fleet is - assemble it, arrive
-# with it, come home with it. Those are the three moments the player actually
-# moves something. Everything else is court and market work, and does not
-# pretend the fleet's location matters.
+# CARAVAN GATES: only three tasks care where the caravan is - assemble it,
+# arrive with it, come home with it. Everything else is court and market work.
 #
-# EVENTS: storms, pirates and market incidents are NOT tasks. They fire from
-# monthly_on_action pulses attached to the sailing and trading tasks, so they
-# happen while the player is genuinely at sea or genuinely in the market.
+# This mission reuses the sea expedition's scopes, variables and Charter
+# effects on purpose, so a country holds ONE Charter across both.
+#
+# EVENTS: bandits, dry wells and market incidents are NOT tasks. They fire
+# from monthly_on_action pulses attached to the travelling and trading tasks,
+# so they happen while the caravan is genuinely on the road or in the market.
 
-generic_trade_expedition = {
+generic_caravan_expedition = {
 	header = "lotr_generic_mission_ships_headers"
 	icon = lotr_generic_ship_mission_icon
 
@@ -29,13 +30,13 @@ generic_trade_expedition = {
 		choo_generic_mission_blocker = yes
 		has_civil_war = no
 		civic_tech >= 2
-		num_of_ports >= 1
+		generic_caravan_expedition_eligible_country_trigger = yes
 		NOT = { has_variable = generic_trade_expedition_cooldown }
 		any_owned_province = {
-			generic_trade_expedition_valid_home_port_trigger = yes
+			generic_caravan_expedition_valid_home_market_trigger = yes
 		}
 		any_country = {
-			generic_trade_expedition_valid_partner_trigger = yes
+			generic_caravan_expedition_valid_partner_trigger = yes
 		}
 	}
 
@@ -56,7 +57,6 @@ generic_trade_expedition = {
 			scope:generic_trade_expedition_partner_port = {
 				OR = {
 					NOT = { owner = scope:generic_trade_expedition_partner }
-					NOT = { is_port = yes }
 					NOT = { has_building = commerce_building }
 				}
 			}
@@ -83,18 +83,18 @@ generic_trade_expedition = {
 	on_potential = {
 		random_owned_province = {
 			limit = {
-				generic_trade_expedition_valid_home_port_trigger = yes
+				generic_caravan_expedition_valid_home_market_trigger = yes
 			}
 			save_scope_as = generic_trade_expedition_home_port
 		}
 		random_country = {
 			limit = {
-				generic_trade_expedition_valid_partner_trigger = yes
+				generic_caravan_expedition_valid_partner_trigger = yes
 			}
 			save_scope_as = generic_trade_expedition_partner
 			random_owned_province = {
 				limit = {
-					generic_trade_expedition_valid_partner_port_trigger = yes
+					generic_caravan_expedition_valid_partner_market_trigger = yes
 				}
 				save_scope_as = generic_trade_expedition_partner_port
 			}
@@ -126,7 +126,7 @@ generic_trade_expedition = {
 	# TRUNK
 	########################################
 
-	generic_trade_expedition_open_contacts = {
+	generic_caravan_expedition_open_contacts = {
 		icon = "task_diplomatic"
 
 		duration = 30
@@ -181,10 +181,10 @@ generic_trade_expedition = {
 	# Hulls, stores, routes and the men who guard them.
 	########################################
 
-	generic_trade_expedition_provision_convoy = {
+	generic_caravan_expedition_provision_caravan = {
 		icon = "task_economical"
 
-		requires = { generic_trade_expedition_open_contacts }
+		requires = { generic_caravan_expedition_open_contacts }
 
 		allow = {
 			treasury >= generic_trade_expedition_provision_cost_svalue
@@ -212,10 +212,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_chart_course = {
+	generic_caravan_expedition_chart_route = {
 		icon = "task_expansion"
 
-		requires = { generic_trade_expedition_provision_convoy }
+		requires = { generic_caravan_expedition_provision_caravan }
 
 		duration = 30
 
@@ -246,10 +246,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_appoint_escort = {
+	generic_caravan_expedition_appoint_escort = {
 		icon = "task_battle"
 
-		requires = { generic_trade_expedition_chart_course }
+		requires = { generic_caravan_expedition_chart_route }
 
 		duration = 30
 
@@ -279,10 +279,10 @@ generic_trade_expedition = {
 	# Who pays for this, and what we expect to sell.
 	########################################
 
-	generic_trade_expedition_survey_home_market = {
+	generic_caravan_expedition_survey_home_market = {
 		icon = "task_economical"
 
-		requires = { generic_trade_expedition_open_contacts }
+		requires = { generic_caravan_expedition_open_contacts }
 
 		duration = 30
 
@@ -313,10 +313,10 @@ generic_trade_expedition = {
 
 	# Who funds the venture decides who owns it. The choice made here makes one
 	# of the three Charters cheaper at the end of the mission.
-	generic_trade_expedition_raise_capital = {
+	generic_caravan_expedition_raise_capital = {
 		icon = "task_political"
 
-		requires = { generic_trade_expedition_survey_home_market }
+		requires = { generic_caravan_expedition_survey_home_market }
 
 		duration = 30
 
@@ -340,10 +340,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_commission_merchants = {
+	generic_caravan_expedition_commission_merchants = {
 		icon = "task_economical"
 
-		requires = { generic_trade_expedition_raise_capital }
+		requires = { generic_caravan_expedition_raise_capital }
 
 		allow = {
 			treasury >= generic_trade_expedition_small_cost_svalue
@@ -370,10 +370,10 @@ generic_trade_expedition = {
 	# Being expected, being understood, and being allowed in.
 	########################################
 
-	generic_trade_expedition_exchange_gifts = {
+	generic_caravan_expedition_exchange_gifts = {
 		icon = "task_diplomatic"
 
-		requires = { generic_trade_expedition_open_contacts }
+		requires = { generic_caravan_expedition_open_contacts }
 
 		allow = {
 			treasury >= generic_trade_expedition_gift_cost_svalue
@@ -397,10 +397,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_hire_interpreters = {
+	generic_caravan_expedition_hire_guides = {
 		icon = "task_diplomatic"
 
-		requires = { generic_trade_expedition_exchange_gifts }
+		requires = { generic_caravan_expedition_exchange_gifts }
 
 		allow = {
 			custom_tooltip = {
@@ -432,10 +432,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_harbor_rights = {
+	generic_caravan_expedition_secure_passage = {
 		icon = "task_diplomatic"
 
-		requires = { generic_trade_expedition_hire_interpreters }
+		requires = { generic_caravan_expedition_hire_guides }
 
 		duration = 30
 
@@ -480,7 +480,7 @@ generic_trade_expedition = {
 					trigger_event = { id = generic_trade_expedition.203 days = 1 }
 				}
 			}
-			trigger_event = { id = generic_trade_expedition.1 }
+			trigger_event = { id = generic_caravan_expedition.1 }
 		}
 	}
 
@@ -488,21 +488,21 @@ generic_trade_expedition = {
 	# CONVERGENCE - the three tracks meet
 	########################################
 
-	# FLEET GATE 1 of 3. The player genuinely builds and moves a fleet here.
-	generic_trade_expedition_assemble_convoy = {
+	# CARAVAN GATE 1 of 3.
+	generic_caravan_expedition_assemble_caravan = {
 		icon = "task_economical"
 
 		requires = {
-			generic_trade_expedition_appoint_escort
-			generic_trade_expedition_commission_merchants
-			generic_trade_expedition_harbor_rights
+			generic_caravan_expedition_appoint_escort
+			generic_caravan_expedition_commission_merchants
+			generic_caravan_expedition_secure_passage
 		}
 
 		allow = {
 			custom_tooltip = {
-				text = generic_trade_expedition_assemble_convoy_tt
+				text = generic_caravan_expedition_assemble_tt
 				any_unit = {
-					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					generic_caravan_expedition_commanded_by_envoy_trigger = yes
 					unit_location = scope:generic_trade_expedition_home_port
 				}
 			}
@@ -516,13 +516,13 @@ generic_trade_expedition = {
 	}
 
 	# Optional send-off. Costs money, buys popularity and goodwill.
-	generic_trade_expedition_departure_feast = {
+	generic_caravan_expedition_departure_feast = {
 		icon = "task_political"
 
 		requires = {
-			generic_trade_expedition_appoint_escort
-			generic_trade_expedition_commission_merchants
-			generic_trade_expedition_harbor_rights
+			generic_caravan_expedition_appoint_escort
+			generic_caravan_expedition_commission_merchants
+			generic_caravan_expedition_secure_passage
 		}
 
 		allow = {
@@ -565,22 +565,21 @@ generic_trade_expedition = {
 	########################################
 	# THE VOYAGE OUT
 	#
-	# FLEET GATE 2 of 3. While this task is open the player is actually
-	# sailing, so the voyage pulse fires here and nowhere else.
+	# CARAVAN GATE 2 of 3. Open while the caravan is actually walking.
 	########################################
 
-	generic_trade_expedition_reach_partner_port = {
+	generic_caravan_expedition_reach_partner_market = {
 		icon = "task_expansion"
 
-		requires = { generic_trade_expedition_assemble_convoy }
+		requires = { generic_caravan_expedition_assemble_caravan }
 
-		monthly_on_action = generic_trade_expedition_voyage_pulse
+		monthly_on_action = generic_caravan_expedition_road_pulse
 
 		allow = {
 			custom_tooltip = {
-				text = generic_trade_expedition_reach_partner_port_tt
+				text = generic_caravan_expedition_reach_market_tt
 				any_unit = {
-					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					generic_caravan_expedition_commanded_by_envoy_trigger = yes
 					unit_location = scope:generic_trade_expedition_partner_port
 				}
 			}
@@ -599,7 +598,7 @@ generic_trade_expedition = {
 					trigger_event = { id = generic_trade_expedition.204 days = 1 }
 				}
 			}
-			trigger_event = { id = generic_trade_expedition.2 }
+			trigger_event = { id = generic_caravan_expedition.2 }
 		}
 	}
 
@@ -610,10 +609,10 @@ generic_trade_expedition = {
 	# already there, and asking again was the thing that felt silly.
 	########################################
 
-	generic_trade_expedition_register_harbor_master = {
+	generic_caravan_expedition_register_with_warden = {
 		icon = "task_diplomatic"
 
-		requires = { generic_trade_expedition_reach_partner_port }
+		requires = { generic_caravan_expedition_reach_partner_market }
 
 		duration = 30
 
@@ -636,10 +635,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_meet_market_guilds = {
+	generic_caravan_expedition_meet_market_guilds = {
 		icon = "task_economical"
 
-		requires = { generic_trade_expedition_reach_partner_port }
+		requires = { generic_caravan_expedition_reach_partner_market }
 
 		duration = 30
 
@@ -654,10 +653,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_settle_customs = {
+	generic_caravan_expedition_settle_customs = {
 		icon = "task_diplomatic"
 
-		requires = { generic_trade_expedition_reach_partner_port }
+		requires = { generic_caravan_expedition_reach_partner_market }
 
 		duration = 30
 
@@ -680,18 +679,18 @@ generic_trade_expedition = {
 	# is where the old port events now live.
 	########################################
 
-	generic_trade_expedition_load_cargo = {
+	generic_caravan_expedition_load_cargo = {
 		icon = "task_economical"
 
 		requires = {
-			generic_trade_expedition_register_harbor_master
-			generic_trade_expedition_meet_market_guilds
-			generic_trade_expedition_settle_customs
+			generic_caravan_expedition_register_with_warden
+			generic_caravan_expedition_meet_market_guilds
+			generic_caravan_expedition_settle_customs
 		}
 
 		duration = 120
 
-		monthly_on_action = generic_trade_expedition_market_pulse
+		monthly_on_action = generic_caravan_expedition_market_pulse
 
 		highlight = {
 			scope:province = {
@@ -749,10 +748,10 @@ generic_trade_expedition = {
 	}
 
 	# Optional. Capped at three worldwide, and required for the Colony Charter.
-	generic_trade_expedition_plant_factor_house = {
+	generic_caravan_expedition_plant_factor_house = {
 		icon = "task_economical"
 
-		requires = { generic_trade_expedition_load_cargo }
+		requires = { generic_caravan_expedition_load_cargo }
 
 		allow = {
 			political_influence >= 10
@@ -800,23 +799,22 @@ generic_trade_expedition = {
 	########################################
 	# THE VOYAGE HOME
 	#
-	# FLEET GATE 3 of 3. The voyage pulse fires here too, and the events it
-	# draws on know the holds are full.
+	# CARAVAN GATE 3 of 3, and the loaded road home is the dangerous one.
 	########################################
 
-	generic_trade_expedition_return_home = {
+	generic_caravan_expedition_return_home = {
 		icon = "task_expansion"
 
-		requires = { generic_trade_expedition_load_cargo }
+		requires = { generic_caravan_expedition_load_cargo }
 
-		monthly_on_action = generic_trade_expedition_voyage_pulse
+		monthly_on_action = generic_caravan_expedition_road_pulse
 
 		allow = {
 			has_country_modifier = generic_trade_expedition_full_holds
 			custom_tooltip = {
-				text = generic_trade_expedition_return_home_tt
+				text = generic_caravan_expedition_return_home_tt
 				any_unit = {
-					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					generic_caravan_expedition_commanded_by_envoy_trigger = yes
 					unit_location = scope:generic_trade_expedition_home_port
 				}
 			}
@@ -848,10 +846,10 @@ generic_trade_expedition = {
 	# HOMECOMING
 	########################################
 
-	generic_trade_expedition_honor_envoy = {
+	generic_caravan_expedition_honor_envoy = {
 		icon = "task_political"
 
-		requires = { generic_trade_expedition_return_home }
+		requires = { generic_caravan_expedition_return_home }
 
 		allow = {
 			political_influence >= 10
@@ -874,10 +872,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_publish_charts = {
+	generic_caravan_expedition_publish_charts = {
 		icon = "task_expansion"
 
-		requires = { generic_trade_expedition_return_home }
+		requires = { generic_caravan_expedition_return_home }
 
 		potential = {
 			has_variable = generic_trade_expedition_charts_prepared
@@ -908,10 +906,10 @@ generic_trade_expedition = {
 		}
 	}
 
-	generic_trade_expedition_count_profits = {
+	generic_caravan_expedition_count_profits = {
 		icon = "task_economical"
 
-		requires = { generic_trade_expedition_return_home }
+		requires = { generic_caravan_expedition_return_home }
 
 		final = yes
 
@@ -1004,7 +1002,7 @@ generic_trade_expedition = {
 			scope:generic_trade_expedition_home_port = {
 				save_scope_as = generic_trade_expedition_charter_seat
 			}
-			trigger_event = { id = generic_trade_expedition.3 }
+			trigger_event = { id = generic_caravan_expedition.3 }
 			trigger_event = { id = generic_trade_expedition.300 days = 3 }
 		}
 	}

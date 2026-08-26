@@ -1,5 +1,9 @@
 ﻿namespace = generic_trade_expedition
 
+# Choosing the envoy. The four candidates are no longer "the four most
+# charismatic courtiers" but four different political bets: a governor you
+# would like out of the country, a relative of the ruler, a loyal client, and
+# a merchant with no family behind him.
 generic_trade_expedition.4 = {
 	type = country_event
 	title = "generic_trade_expedition.4.t"
@@ -15,23 +19,23 @@ generic_trade_expedition.4 = {
 	trigger = {
 		exists = scope:generic_trade_expedition_home_port
 		NOT = { has_variable = generic_trade_expedition_envoy_selected }
-		any_character = {
-			generic_trade_expedition_eligible_envoy_trigger = yes
+		OR = {
+			any_character = { generic_trade_expedition_envoy_rival_trigger = yes }
+			any_character = { generic_trade_expedition_envoy_kin_trigger = yes }
+			any_character = { generic_trade_expedition_eligible_envoy_trigger = yes }
 		}
 	}
 
 	immediate = {
 		ordered_character = {
-			order_by = charisma
-			limit = {
-				generic_trade_expedition_eligible_envoy_trigger = yes
-			}
+			order_by = prominence
+			limit = { generic_trade_expedition_envoy_rival_trigger = yes }
 			save_scope_as = generic_trade_expedition_envoy_1
 		}
 		ordered_character = {
 			order_by = charisma
 			limit = {
-				generic_trade_expedition_eligible_envoy_trigger = yes
+				generic_trade_expedition_envoy_kin_trigger = yes
 				NOT = { this = scope:generic_trade_expedition_envoy_1 }
 			}
 			save_scope_as = generic_trade_expedition_envoy_2
@@ -39,24 +43,43 @@ generic_trade_expedition.4 = {
 		ordered_character = {
 			order_by = charisma
 			limit = {
-				generic_trade_expedition_eligible_envoy_trigger = yes
+				generic_trade_expedition_envoy_client_trigger = yes
 				NOT = { this = scope:generic_trade_expedition_envoy_1 }
 				NOT = { this = scope:generic_trade_expedition_envoy_2 }
 			}
 			save_scope_as = generic_trade_expedition_envoy_3
 		}
 		ordered_character = {
-			order_by = charisma
+			order_by = finesse
 			limit = {
-				generic_trade_expedition_eligible_envoy_trigger = yes
+				generic_trade_expedition_envoy_lowborn_trigger = yes
 				NOT = { this = scope:generic_trade_expedition_envoy_1 }
 				NOT = { this = scope:generic_trade_expedition_envoy_2 }
 				NOT = { this = scope:generic_trade_expedition_envoy_3 }
 			}
 			save_scope_as = generic_trade_expedition_envoy_4
 		}
+		# Fallback so the event can never dead-end with no options.
+		if = {
+			limit = {
+				NOT = { exists = scope:generic_trade_expedition_envoy_3 }
+				NOT = { exists = scope:generic_trade_expedition_envoy_4 }
+			}
+			ordered_character = {
+				order_by = charisma
+				limit = {
+					generic_trade_expedition_eligible_envoy_trigger = yes
+					NOT = { this = scope:generic_trade_expedition_envoy_1 }
+					NOT = { this = scope:generic_trade_expedition_envoy_2 }
+				}
+				save_scope_as = generic_trade_expedition_envoy_3
+			}
+		}
 	}
 
+	# A. The overmighty governor. Four years abroad is four years his
+	# powerbase does not grow at home - but a man that far away, holding our
+	# cargo and our charts, has options.
 	option = {
 		name = "generic_trade_expedition.4.a"
 		trigger = { exists = scope:generic_trade_expedition_envoy_1 }
@@ -66,8 +89,11 @@ generic_trade_expedition.4 = {
 				name = generic_trade_expedition_envoy_charmod
 				duration = 1825
 			}
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_rival_charmod
+				duration = 1825
+			}
 			add_prominence = prominence_small
-			add_popularity = popularity_small
 		}
 		set_variable = {
 			name = generic_trade_expedition_envoy_character
@@ -75,8 +101,13 @@ generic_trade_expedition.4 = {
 			days = -1
 		}
 		set_variable = generic_trade_expedition_envoy_selected
+		set_variable = generic_trade_expedition_envoy_rival
+		# The faction he was building goes quiet while he is at sea.
+		add_political_influence = 10
 	}
 
+	# B. The ruler's kin. Prestige at court, and a dynasty with a merchant
+	# fortune of its own when he gets back.
 	option = {
 		name = "generic_trade_expedition.4.b"
 		trigger = { exists = scope:generic_trade_expedition_envoy_2 }
@@ -84,6 +115,10 @@ generic_trade_expedition.4 = {
 			save_scope_as = generic_trade_expedition_envoy
 			add_character_modifier = {
 				name = generic_trade_expedition_envoy_charmod
+				duration = 1825
+			}
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_kin_charmod
 				duration = 1825
 			}
 			add_prominence = prominence_small
@@ -95,8 +130,13 @@ generic_trade_expedition.4 = {
 			days = -1
 		}
 		set_variable = generic_trade_expedition_envoy_selected
+		set_variable = generic_trade_expedition_envoy_kin
+		current_ruler = {
+			add_popularity = popularity_small
+		}
 	}
 
+	# C. The loyal client. Nothing surprising will happen, in either direction.
 	option = {
 		name = "generic_trade_expedition.4.c"
 		trigger = { exists = scope:generic_trade_expedition_envoy_3 }
@@ -104,6 +144,10 @@ generic_trade_expedition.4 = {
 			save_scope_as = generic_trade_expedition_envoy
 			add_character_modifier = {
 				name = generic_trade_expedition_envoy_charmod
+				duration = 1825
+			}
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_client_charmod
 				duration = 1825
 			}
 			add_prominence = prominence_small
@@ -115,8 +159,11 @@ generic_trade_expedition.4 = {
 			days = -1
 		}
 		set_variable = generic_trade_expedition_envoy_selected
+		set_variable = generic_trade_expedition_envoy_client
 	}
 
+	# D. The merchant. No house behind him, so no house grows off this - but
+	# he will not be received as an equal in a foreign court either.
 	option = {
 		name = "generic_trade_expedition.4.d"
 		trigger = { exists = scope:generic_trade_expedition_envoy_4 }
@@ -126,7 +173,10 @@ generic_trade_expedition.4 = {
 				name = generic_trade_expedition_envoy_charmod
 				duration = 1825
 			}
-			add_prominence = prominence_small
+			add_character_modifier = {
+				name = generic_trade_expedition_envoy_lowborn_charmod
+				duration = 1825
+			}
 			add_popularity = popularity_small
 		}
 		set_variable = {
@@ -135,6 +185,7 @@ generic_trade_expedition.4 = {
 			days = -1
 		}
 		set_variable = generic_trade_expedition_envoy_selected
+		set_variable = generic_trade_expedition_envoy_lowborn
 	}
 }
 
@@ -1136,7 +1187,7 @@ generic_trade_expedition.130 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.130.a"
 		if = {
 			limit = {
 				scope:generic_trade_expedition_sender = {
@@ -1207,7 +1258,7 @@ generic_trade_expedition.131 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.131.a"
 		add_treasury = generic_trade_expedition_event_loss_svalue
 		add_country_modifier = {
 			name = generic_trade_expedition_market_confusion_cmod
@@ -1249,7 +1300,7 @@ generic_trade_expedition.132 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.132.a"
 		add_military_experience = 3
 		add_country_modifier = {
 			name = generic_trade_expedition_foreign_charts_cmod
@@ -1308,7 +1359,7 @@ generic_trade_expedition.133 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.133.a"
 		if = {
 			limit = {
 				scope:generic_trade_expedition_sender = {
@@ -1370,7 +1421,7 @@ generic_trade_expedition.134 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.134.a"
 		add_treasury = generic_trade_expedition_event_loss_svalue
 		add_country_modifier = {
 			name = generic_trade_expedition_guarded_cargo_cmod
@@ -1401,7 +1452,7 @@ generic_trade_expedition.135 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.135.a"
 		add_country_modifier = {
 			name = generic_trade_expedition_dockside_contacts_cmod
 			duration = 365
@@ -1432,7 +1483,7 @@ generic_trade_expedition.136 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.136.a"
 		add_treasury = generic_trade_expedition_event_loss_svalue
 		add_country_modifier = {
 			name = generic_trade_expedition_market_confusion_cmod
@@ -1484,7 +1535,7 @@ generic_trade_expedition.137 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.137.a"
 		add_research = {
 			technology = civic_tech
 			value = 3
@@ -1518,7 +1569,7 @@ generic_trade_expedition.138 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.138.a"
 		add_treasury = generic_trade_expedition_large_event_profit_svalue
 		add_country_modifier = {
 			name = generic_trade_expedition_market_confusion_cmod
@@ -1549,7 +1600,7 @@ generic_trade_expedition.139 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.139.a"
 		add_treasury = generic_trade_expedition_event_profit_svalue
 		scope:generic_trade_expedition_partner = {
 			add_opinion = {
@@ -1646,7 +1697,7 @@ generic_trade_expedition.200 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.200.a"
 	}
 }
 
@@ -1782,7 +1833,7 @@ generic_trade_expedition.205 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.205.a"
 	}
 }
 
@@ -1830,7 +1881,7 @@ generic_trade_expedition.206 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.206.a"
 	}
 }
 
@@ -1878,7 +1929,7 @@ generic_trade_expedition.207 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.207.a"
 	}
 }
 
@@ -1898,7 +1949,7 @@ generic_trade_expedition.208 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.208.a"
 	}
 }
 
@@ -1918,7 +1969,7 @@ generic_trade_expedition.209 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.209.a"
 	}
 }
 
@@ -1938,7 +1989,7 @@ generic_trade_expedition.210 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.210.a"
 	}
 }
 
@@ -2044,7 +2095,7 @@ generic_trade_expedition.215 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.215.a"
 		add_research = {
 			technology = oratory_tech
 			value = 3
@@ -2074,7 +2125,7 @@ generic_trade_expedition.216 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.216.a"
 		add_research = {
 			technology = civic_tech
 			value = 1
@@ -2104,7 +2155,7 @@ generic_trade_expedition.217 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.217.a"
 		add_military_experience = 2
 	}
 }
@@ -2131,7 +2182,7 @@ generic_trade_expedition.218 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.218.a"
 		add_treasury = generic_trade_expedition_small_pay_svalue
 	}
 }
@@ -2158,7 +2209,7 @@ generic_trade_expedition.219 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.219.a"
 	}
 }
 
@@ -2184,7 +2235,7 @@ generic_trade_expedition.220 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.220.a"
 		add_research = {
 			technology = oratory_tech
 			value = 1
@@ -2215,7 +2266,7 @@ generic_trade_expedition.221 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.221.a"
 		add_country_modifier = {
 			name = generic_trade_expedition_dockside_contacts_cmod
 			duration = 365
@@ -2245,7 +2296,7 @@ generic_trade_expedition.222 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.222.a"
 		add_country_modifier = {
 			name = generic_trade_expedition_chartered_venture_cmod
 			duration = 365
@@ -2275,7 +2326,7 @@ generic_trade_expedition.223 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.223.a"
 		add_research = {
 			technology = civic_tech
 			value = 1
@@ -2305,7 +2356,7 @@ generic_trade_expedition.224 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.224.a"
 		add_political_influence = 5
 	}
 }
@@ -2332,7 +2383,7 @@ generic_trade_expedition.225 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.225.a"
 	}
 }
 
@@ -2358,10 +2409,1026 @@ generic_trade_expedition.226 = {
 	}
 
 	option = {
-		name = "generic_trade_expedition.host.a"
+		name = "generic_trade_expedition.226.a"
 		add_research = {
 			technology = civic_tech
 			value = 3
 		}
+	}
+}
+
+################################################################
+# THE CHARTER - the terminal choice
+#
+# Three permanent, mutually exclusive endings. Each converts the work of the
+# expedition into a different permanent institution, and each is paid for in
+# a different currency: the Company costs internal politics, the Monopoly
+# costs legitimacy, the Colony costs diplomacy.
+#
+# A country holds exactly ONE Charter. Choosing a different one on a later
+# expedition tears up the old one at real cost. That is what stops a
+# repeatable mission from compounding into a broken economy.
+################################################################
+
+generic_trade_expedition.300 = {
+	type = country_event
+	title = "generic_trade_expedition.300.t"
+	desc = "generic_trade_expedition.300.desc"
+	picture = council_country
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = current_ruler
+	right_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_home_port
+	}
+
+	immediate = {
+		if = {
+			limit = { NOT = { exists = scope:generic_trade_expedition_charter_seat } }
+			scope:generic_trade_expedition_home_port = {
+				save_scope_as = generic_trade_expedition_charter_seat
+			}
+		}
+	}
+
+	# A. THE CHARTERED COMPANY
+	option = {
+		name = "generic_trade_expedition.300.a"
+		ai_chance = { factor = 4 }
+		custom_tooltip = generic_trade_expedition_charter_company_tt
+		if = {
+			limit = {
+				has_variable = generic_trade_expedition_charter
+				NOT = { var:generic_trade_expedition_charter = 1 }
+			}
+			custom_tooltip = generic_trade_expedition_charter_replace_tt
+		}
+		generic_trade_expedition_grant_company_charter_effect = yes
+		if = {
+			limit = { exists = scope:generic_trade_expedition_partner }
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_company_respected
+					target = ROOT
+				}
+			}
+		}
+	}
+
+	# B. THE CROWN MONOPOLY
+	option = {
+		name = "generic_trade_expedition.300.b"
+		ai_chance = { factor = 3 }
+		custom_tooltip = generic_trade_expedition_charter_monopoly_tt
+		if = {
+			limit = {
+				has_variable = generic_trade_expedition_charter
+				NOT = { var:generic_trade_expedition_charter = 2 }
+			}
+			custom_tooltip = generic_trade_expedition_charter_replace_tt
+		}
+		generic_trade_expedition_grant_monopoly_charter_effect = yes
+	}
+
+	# C. THE FACTOR COLONY
+	option = {
+		name = "generic_trade_expedition.300.c"
+		ai_chance = { factor = 2 }
+		trigger = {
+			has_variable = generic_trade_expedition_factor_house_planted
+		}
+		custom_tooltip = generic_trade_expedition_charter_colony_tt
+		if = {
+			limit = {
+				has_variable = generic_trade_expedition_charter
+				NOT = { var:generic_trade_expedition_charter = 3 }
+			}
+			custom_tooltip = generic_trade_expedition_charter_replace_tt
+		}
+		generic_trade_expedition_grant_colony_charter_effect = yes
+	}
+
+	# D. Take the profit and let the venture disperse. Always available, so a
+	# player who likes the Charter they already hold is never forced to
+	# trade it away just to finish the mission.
+	option = {
+		name = "generic_trade_expedition.300.d"
+		ai_chance = { factor = 1 }
+		add_treasury = generic_trade_expedition_profit_svalue
+		add_political_influence = 10
+	}
+}
+
+################################################################
+# The returning envoy - honour him, or make sure he stays small
+################################################################
+
+generic_trade_expedition.310 = {
+	type = country_event
+	title = "generic_trade_expedition.310.t"
+	desc = "generic_trade_expedition.310.desc"
+	picture = greek_court
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+	right_portrait = current_ruler
+
+	trigger = {
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	# A. A triumph. Popular, loyal - and a great deal larger than he was.
+	option = {
+		name = "generic_trade_expedition.310.a"
+		ai_chance = { factor = 3 }
+		set_variable = generic_trade_expedition_envoy_honored
+		var:generic_trade_expedition_envoy_character = {
+			add_prominence = prominence_medium
+			add_popularity = popularity_medium
+		}
+		add_country_modifier = {
+			name = generic_trade_expedition_honored_envoy_cmod
+			duration = 1095
+		}
+		trigger_event = { id = generic_trade_expedition.225 }
+	}
+
+	# B. Thank him quietly and give the credit to the treasury. He notices.
+	option = {
+		name = "generic_trade_expedition.310.b"
+		ai_chance = { factor = 2 }
+		set_variable = generic_trade_expedition_envoy_sidelined
+		var:generic_trade_expedition_envoy_character = {
+			add_prominence = -15
+			add_loyalty = dishonored_by_ruler
+		}
+		add_country_modifier = {
+			name = generic_trade_expedition_sidelined_envoy_cmod
+			duration = 1825
+		}
+		add_political_influence = 15
+	}
+}
+
+################################################################
+# Flavour: escort appointed, passage home begun
+################################################################
+
+generic_trade_expedition.230 = {
+	type = country_event
+	title = "generic_trade_expedition.230.t"
+	desc = "generic_trade_expedition.230.desc"
+	picture = grand_ship
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	option = {
+		name = "generic_trade_expedition.230.a"
+	}
+}
+
+generic_trade_expedition.231 = {
+	type = country_event
+	title = "generic_trade_expedition.231.t"
+	desc = "generic_trade_expedition.231.desc"
+	picture = grand_ship
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	option = {
+		name = "generic_trade_expedition.231.a"
+	}
+}
+
+################################################################
+# VOYAGE RISK
+#
+# Fired by generic_trade_expedition_risk_check_effect. The mitigation tasks
+# (escort, provisioning, charts, stopover) buy the chance of reaching these
+# down; distance, hostile tariffs and a rival push it up. Nothing is ever
+# perfectly safe and nothing is ever hopeless.
+################################################################
+
+# A storm. Slower, and expensive.
+generic_trade_expedition.400 = {
+	type = country_event
+	title = "generic_trade_expedition.400.t"
+	desc = "generic_trade_expedition.400.desc"
+	picture = ship_in_storm
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	option = {
+		name = "generic_trade_expedition.400.a"
+		add_country_modifier = {
+			name = generic_trade_expedition_storm_damage_cmod
+			duration = 730
+		}
+		add_treasury = generic_trade_expedition_event_loss_svalue
+	}
+}
+
+# Pirates. If the holds are full, this is where the profit goes.
+generic_trade_expedition.401 = {
+	type = country_event
+	title = "generic_trade_expedition.401.t"
+	desc = "generic_trade_expedition.401.desc"
+	picture = ship_in_storm
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	# A. Fight them off. Better odds with an escort aboard.
+	option = {
+		name = "generic_trade_expedition.401.a"
+		trigger = { has_variable = generic_trade_expedition_escort_assigned }
+		add_country_modifier = {
+			name = generic_trade_expedition_pirate_losses_cmod
+			duration = 365
+		}
+		add_military_experience = 5
+	}
+
+	# B. Undefended. The cargo is the ransom.
+	option = {
+		name = "generic_trade_expedition.401.b"
+		trigger = { NOT = { has_variable = generic_trade_expedition_escort_assigned } }
+		set_variable = generic_trade_expedition_cargo_lost
+		add_country_modifier = {
+			name = generic_trade_expedition_pirate_losses_cmod
+			duration = 730
+		}
+		if = {
+			limit = { has_country_modifier = generic_trade_expedition_full_holds }
+			remove_country_modifier = generic_trade_expedition_full_holds
+		}
+	}
+}
+
+# Mutiny on a long, badly provisioned crossing.
+generic_trade_expedition.402 = {
+	type = country_event
+	title = "generic_trade_expedition.402.t"
+	desc = "generic_trade_expedition.402.desc"
+	picture = grand_ship
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	# A. Pay them off out of the expedition purse.
+	option = {
+		name = "generic_trade_expedition.402.a"
+		trigger = { treasury >= generic_trade_expedition_small_cost_svalue }
+		add_treasury = generic_trade_expedition_small_pay_svalue
+	}
+
+	# B. Hang the ringleaders and sail on short-handed.
+	option = {
+		name = "generic_trade_expedition.402.b"
+		add_country_modifier = {
+			name = generic_trade_expedition_mutinous_crew_cmod
+			duration = 730
+		}
+		if = {
+			limit = { exists = var:generic_trade_expedition_envoy_character }
+			var:generic_trade_expedition_envoy_character = {
+				add_popularity = -5
+			}
+		}
+	}
+}
+
+# The partner closes the harbour mid-voyage.
+generic_trade_expedition.403 = {
+	type = country_event
+	title = "generic_trade_expedition.403.t"
+	desc = "generic_trade_expedition.403.desc"
+	picture = trade_port
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+
+	option = {
+		name = "generic_trade_expedition.403.a"
+		set_variable = generic_trade_expedition_partner_tariffs
+		add_country_modifier = {
+			name = generic_trade_expedition_partner_tariffs_cmod
+			duration = 1095
+		}
+	}
+}
+
+# The envoy falls ill far from home.
+generic_trade_expedition.404 = {
+	type = country_event
+	title = "generic_trade_expedition.404.t"
+	desc = "generic_trade_expedition.404.desc"
+	picture = greek_court
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	# A. He recovers, slowly, and the expedition waits.
+	option = {
+		name = "generic_trade_expedition.404.a"
+		add_treasury = generic_trade_expedition_event_loss_svalue
+		if = {
+			limit = { exists = var:generic_trade_expedition_envoy_character }
+			var:generic_trade_expedition_envoy_character = {
+				add_health = -0.1
+			}
+		}
+	}
+
+	# B. Press on without waiting for him.
+	option = {
+		name = "generic_trade_expedition.404.b"
+		add_country_modifier = {
+			name = generic_trade_expedition_lost_envoy_cmod
+			duration = 1095
+		}
+		if = {
+			limit = { exists = var:generic_trade_expedition_envoy_character }
+			var:generic_trade_expedition_envoy_character = {
+				add_loyalty = dishonored_by_ruler
+				add_health = -0.25
+			}
+		}
+	}
+}
+
+################################################################
+# THE PARTNER AND THE WORLD AS ACTORS
+################################################################
+
+# The stopover harbour. Pay the host, or take what we need.
+generic_trade_expedition.450 = {
+	type = country_event
+	title = "generic_trade_expedition.450.t"
+	desc = "generic_trade_expedition.450.desc"
+	picture = trade_port
+
+	goto_location = scope:generic_trade_expedition_stopover_port_scope
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		exists = scope:generic_trade_expedition_stopover_country
+		exists = scope:generic_trade_expedition_stopover_port_scope
+	}
+
+	# A. Pay the harbour dues like honest traders.
+	option = {
+		name = "generic_trade_expedition.450.a"
+		ai_chance = { factor = 3 }
+		trigger = { treasury >= generic_trade_expedition_small_cost_svalue }
+		add_treasury = generic_trade_expedition_small_pay_svalue
+		set_variable = generic_trade_expedition_stopover_secured
+		add_country_modifier = {
+			name = generic_trade_expedition_stopover_cmod
+			duration = 1095
+		}
+		scope:generic_trade_expedition_stopover_country = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_stopover_paid
+				target = ROOT
+			}
+		}
+	}
+
+	# B. Water and refit without asking. Cheaper now, remembered later.
+	option = {
+		name = "generic_trade_expedition.450.b"
+		ai_chance = { factor = 1 }
+		set_variable = generic_trade_expedition_stopover_secured
+		set_variable = generic_trade_expedition_stopover_refused
+		add_aggressive_expansion = 2
+		scope:generic_trade_expedition_stopover_country = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_stopover_forced
+				target = ROOT
+			}
+		}
+	}
+
+	# C. Stand off the coast and press on. No shelter, no risk of an incident.
+	option = {
+		name = "generic_trade_expedition.450.c"
+		ai_chance = { factor = 1 }
+	}
+}
+
+# Customs at the marketplace. The ledger can be paid, or bought.
+generic_trade_expedition.451 = {
+	type = country_event
+	title = "generic_trade_expedition.451.t"
+	desc = "generic_trade_expedition.451.desc"
+	picture = greek_marketplace
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	# A. Pay the duties in full.
+	option = {
+		name = "generic_trade_expedition.451.a"
+		ai_chance = { factor = 3 }
+		trigger = { treasury >= generic_trade_expedition_small_cost_svalue }
+		add_treasury = generic_trade_expedition_small_pay_svalue
+		set_variable = generic_trade_expedition_customs_refused
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_customs_honest
+				target = ROOT
+			}
+		}
+	}
+
+	# B. Buy the harbour master. Cheaper trade, and a hold over us if it comes out.
+	option = {
+		name = "generic_trade_expedition.451.b"
+		ai_chance = { factor = 2 }
+		trigger = { treasury >= generic_trade_expedition_bribe_cost_svalue }
+		add_treasury = generic_trade_expedition_bribe_pay_svalue
+		set_variable = generic_trade_expedition_customs_bribed
+		add_country_modifier = {
+			name = generic_trade_expedition_customs_bribed_cmod
+			duration = 1825
+		}
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_customs_bribed
+				target = ROOT
+			}
+		}
+	}
+}
+
+# A rival's merchants already have the guilds' ear.
+generic_trade_expedition.452 = {
+	type = country_event
+	title = "generic_trade_expedition.452.t"
+	desc = "generic_trade_expedition.452.desc"
+	picture = greek_city_market
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		exists = scope:generic_trade_expedition_rival
+	}
+
+	# A. Undercut them. Expensive, and it works.
+	option = {
+		name = "generic_trade_expedition.452.a"
+		ai_chance = { factor = 3 }
+		trigger = { treasury >= generic_trade_expedition_gift_cost_svalue }
+		add_treasury = generic_trade_expedition_gift_pay_svalue
+		set_variable = generic_trade_expedition_rival_beaten
+		add_country_modifier = {
+			name = generic_trade_expedition_guild_favour_cmod
+			duration = 1825
+		}
+		scope:generic_trade_expedition_rival = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_bad_port_conduct
+				target = ROOT
+			}
+		}
+	}
+
+	# B. Divide the market with them and keep the peace.
+	option = {
+		name = "generic_trade_expedition.452.b"
+		ai_chance = { factor = 2 }
+		add_country_modifier = {
+			name = generic_trade_expedition_rival_undercut_cmod
+			duration = 1095
+		}
+		scope:generic_trade_expedition_rival = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_good_port_conduct
+				target = ROOT
+			}
+		}
+	}
+
+	# C. Let the guilds choose. They choose whoever is already there.
+	option = {
+		name = "generic_trade_expedition.452.c"
+		ai_chance = { factor = 1 }
+		add_country_modifier = {
+			name = generic_trade_expedition_rival_undercut_cmod
+			duration = 1825
+		}
+	}
+}
+
+# The partner raises its price before granting harbour rights. Fired from the
+# gift exchange, so the negotiation is no longer a one-way transaction.
+generic_trade_expedition.453 = {
+	type = country_event
+	title = "generic_trade_expedition.453.t"
+	desc = "generic_trade_expedition.453.desc"
+	picture = greek_court
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = current_ruler
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		NOT = { has_variable = generic_trade_expedition_partner_demanded_more }
+	}
+
+	immediate = {
+		set_variable = generic_trade_expedition_partner_demanded_more
+	}
+
+	# A. Meet the new price.
+	option = {
+		name = "generic_trade_expedition.453.a"
+		ai_chance = { factor = 3 }
+		trigger = { treasury >= generic_trade_expedition_gift_cost_svalue }
+		add_treasury = generic_trade_expedition_gift_pay_svalue
+		set_variable = generic_trade_expedition_partner_appeased
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_demand_met
+				target = ROOT
+			}
+		}
+	}
+
+	# B. Refuse. The harbour will be colder for it.
+	option = {
+		name = "generic_trade_expedition.453.b"
+		ai_chance = { factor = 1 }
+		set_variable = generic_trade_expedition_partner_tariffs
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_demand_refused
+				target = ROOT
+			}
+		}
+	}
+}
+
+# The partner offers exclusivity: better terms, at the price of not doing
+# this anywhere else for a decade. A real opportunity cost, and a deliberate
+# brake on running the mission back to back.
+generic_trade_expedition.454 = {
+	type = country_event
+	title = "generic_trade_expedition.454.t"
+	desc = "generic_trade_expedition.454.desc"
+	picture = hellenic_marketplace
+
+	goto_location = scope:generic_trade_expedition_partner_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+	}
+
+	# A. Accept. Strong terms, and no other expedition for ten years.
+	option = {
+		name = "generic_trade_expedition.454.a"
+		ai_chance = { factor = 2 }
+		add_country_modifier = {
+			name = generic_trade_expedition_exclusivity_cmod
+			duration = 3650
+		}
+		set_variable = {
+			name = generic_trade_expedition_cooldown
+			days = 3650
+		}
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_exclusive_partner
+				target = ROOT
+			}
+		}
+	}
+
+	# B. Keep our ships free.
+	option = {
+		name = "generic_trade_expedition.454.b"
+		ai_chance = { factor = 2 }
+		scope:generic_trade_expedition_partner = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_exclusivity_refused
+				target = ROOT
+			}
+		}
+	}
+}
+
+################################################################
+# THE VOYAGE POOL
+#
+# Everything below fires from generic_trade_expedition_voyage_pulse, which is
+# attached to the two sailing tasks. Every event here checks that the fleet is
+# actually at sea, so none of it can happen while the ships sit at a quay.
+################################################################
+
+# Hidden dispatcher. Once a month at sea, roll against the risk score; the
+# mitigation tasks bought that number down long before this fires.
+generic_trade_expedition.405 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		exists = scope:generic_trade_expedition_partner
+		exists = scope:generic_trade_expedition_home_port
+		exists = scope:generic_trade_expedition_partner_port
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		has_variable = generic_trade_expedition_envoy_character
+		var:generic_trade_expedition_envoy_character = {
+			exists = this
+			has_character_modifier = generic_trade_expedition_envoy_charmod
+		}
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+		generic_trade_expedition_risk_check_effect = yes
+	}
+}
+
+# --- Flavour at sea. No stakes, or very small ones. ---
+
+generic_trade_expedition.410 = {
+	type = country_event
+	title = "generic_trade_expedition.410.t"
+	desc = "generic_trade_expedition.410.desc"
+	picture = grand_ship
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.410.a"
+	}
+}
+
+generic_trade_expedition.411 = {
+	type = country_event
+	title = "generic_trade_expedition.411.t"
+	desc = "generic_trade_expedition.411.desc"
+	picture = grand_ship
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.411.a"
+		if = {
+			limit = { exists = var:generic_trade_expedition_envoy_character }
+			var:generic_trade_expedition_envoy_character = {
+				add_popularity = popularity_small
+			}
+		}
+	}
+}
+
+generic_trade_expedition.412 = {
+	type = country_event
+	title = "generic_trade_expedition.412.t"
+	desc = "generic_trade_expedition.412.desc"
+	picture = ship_in_storm
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	# A. Put in and wait it out. Slow, safe.
+	option = {
+		name = "generic_trade_expedition.412.a"
+		ai_chance = { factor = 2 }
+	}
+
+	# B. Run before it and make up the days. Faster, and a gamble.
+	option = {
+		name = "generic_trade_expedition.412.b"
+		ai_chance = { factor = 1 }
+		random = {
+			chance = 35
+			trigger_event = { id = generic_trade_expedition.400 }
+		}
+	}
+}
+
+generic_trade_expedition.413 = {
+	type = country_event
+	title = "generic_trade_expedition.413.t"
+	desc = "generic_trade_expedition.413.desc"
+	picture = trade_port
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	# A. Pay for water and shelter like guests.
+	option = {
+		name = "generic_trade_expedition.413.a"
+		ai_chance = { factor = 3 }
+		trigger = { treasury >= generic_trade_expedition_small_cost_svalue }
+		add_treasury = generic_trade_expedition_small_pay_svalue
+		set_variable = generic_trade_expedition_stopover_secured
+		add_country_modifier = {
+			name = generic_trade_expedition_stopover_cmod
+			duration = 1095
+		}
+	}
+
+	# B. Take the water and go.
+	option = {
+		name = "generic_trade_expedition.413.b"
+		ai_chance = { factor = 1 }
+		set_variable = generic_trade_expedition_stopover_secured
+		add_aggressive_expansion = 2
+	}
+
+	# C. Stay off the coast entirely.
+	option = {
+		name = "generic_trade_expedition.413.c"
+		ai_chance = { factor = 1 }
+	}
+}
+
+generic_trade_expedition.414 = {
+	type = country_event
+	title = "generic_trade_expedition.414.t"
+	desc = "generic_trade_expedition.414.desc"
+	picture = grand_ship
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	# A. Take them aboard.
+	option = {
+		name = "generic_trade_expedition.414.a"
+		ai_chance = { factor = 3 }
+		add_country_modifier = {
+			name = generic_trade_expedition_foreign_charts_cmod
+			duration = 1095
+		}
+	}
+
+	# B. Leave them to whoever finds them next.
+	option = {
+		name = "generic_trade_expedition.414.b"
+		ai_chance = { factor = 1 }
+		if = {
+			limit = { exists = var:generic_trade_expedition_envoy_character }
+			var:generic_trade_expedition_envoy_character = {
+				add_popularity = -3
+			}
+		}
+	}
+}
+
+generic_trade_expedition.415 = {
+	type = country_event
+	title = "generic_trade_expedition.415.t"
+	desc = "generic_trade_expedition.415.desc"
+	picture = great_library
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	option = {
+		name = "generic_trade_expedition.415.a"
+		add_research = {
+			technology = civic_tech
+			value = 2
+		}
+	}
+}
+
+generic_trade_expedition.416 = {
+	type = country_event
+	title = "generic_trade_expedition.416.t"
+	desc = "generic_trade_expedition.416.desc"
+	picture = grand_ship
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		has_country_modifier = generic_trade_expedition_full_holds
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	# A. Throw the spoiled cargo over the side.
+	option = {
+		name = "generic_trade_expedition.416.a"
+		ai_chance = { factor = 3 }
+		add_treasury = generic_trade_expedition_event_loss_svalue
+	}
+
+	# B. Keep it and sell it quietly at home.
+	option = {
+		name = "generic_trade_expedition.416.b"
+		ai_chance = { factor = 1 }
+		add_country_modifier = {
+			name = generic_trade_expedition_market_confusion_cmod
+			duration = 730
+		}
+		capital_scope = {
+			add_province_modifier = {
+				name = generic_trade_expedition_quayside_storage_pmod
+				duration = 730
+			}
+		}
+	}
+}
+
+generic_trade_expedition.417 = {
+	type = country_event
+	title = "generic_trade_expedition.417.t"
+	desc = "generic_trade_expedition.417.desc"
+	picture = war_council
+
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	trigger = {
+		generic_trade_expedition_fleet_at_sea_trigger = yes
+		exists = scope:generic_trade_expedition_rival
+		exists = var:generic_trade_expedition_envoy_character
+	}
+
+	immediate = {
+		var:generic_trade_expedition_envoy_character = {
+			save_scope_as = generic_trade_expedition_envoy
+		}
+	}
+
+	# A. Salute them and hold our course.
+	option = {
+		name = "generic_trade_expedition.417.a"
+		ai_chance = { factor = 3 }
+		scope:generic_trade_expedition_rival = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_good_port_conduct
+				target = ROOT
+			}
+		}
+	}
+
+	# B. Crowd them off the wind and let them remember it.
+	option = {
+		name = "generic_trade_expedition.417.b"
+		ai_chance = { factor = 1 }
+		scope:generic_trade_expedition_rival = {
+			add_opinion = {
+				modifier = opinion_trade_expedition_bad_port_conduct
+				target = ROOT
+			}
+		}
+		if = {
+			limit = { exists = var:generic_trade_expedition_envoy_character }
+			var:generic_trade_expedition_envoy_character = {
+				add_popularity = popularity_small
+			}
+		}
+	}
+}
+
+################################################################
+# THE PURSE - who pays for the venture
+################################################################
+
+generic_trade_expedition.320 = {
+	type = country_event
+	title = "generic_trade_expedition.320.t"
+	desc = "generic_trade_expedition.320.desc"
+	picture = council_country
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = current_ruler
+
+	# A. The treasury pays. The crown owns it.
+	option = {
+		name = "generic_trade_expedition.320.a"
+		ai_chance = { factor = 2 }
+		trigger = { treasury >= generic_trade_expedition_gift_cost_svalue }
+		add_treasury = generic_trade_expedition_gift_pay_svalue
+		set_variable = generic_trade_expedition_funding_crown
+		add_country_modifier = {
+			name = generic_trade_expedition_crown_funded_cmod
+			duration = 1825
+		}
+	}
+
+	# B. Merchant investors. Cheap now, and they will want their say later.
+	option = {
+		name = "generic_trade_expedition.320.b"
+		ai_chance = { factor = 2 }
+		set_variable = generic_trade_expedition_funding_merchant
+		add_country_modifier = {
+			name = generic_trade_expedition_merchant_funded_cmod
+			duration = 1825
+		}
+		add_political_influence = -10
+	}
+
+	# C. A temple loan. Respectable, and watched.
+	option = {
+		name = "generic_trade_expedition.320.c"
+		ai_chance = { factor = 1 }
+		set_variable = generic_trade_expedition_funding_temple
+		add_country_modifier = {
+			name = generic_trade_expedition_temple_funded_cmod
+			duration = 1825
+		}
+		add_stability = 5
+	}
+}
+
+generic_trade_expedition.321 = {
+	type = country_event
+	title = "generic_trade_expedition.321.t"
+	desc = "generic_trade_expedition.321.desc"
+	picture = greek_marketplace
+
+	goto_location = scope:generic_trade_expedition_home_port
+	left_portrait = scope:generic_trade_expedition_envoy
+
+	option = {
+		name = "generic_trade_expedition.321.a"
 	}
 }

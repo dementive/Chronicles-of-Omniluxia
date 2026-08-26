@@ -1,8 +1,94 @@
-﻿generic_trade_expedition_gift_cost_svalue = {
+﻿# Generic Trade Expedition - script values
+#
+# Design notes:
+#   Costs scale with OUR income (a large empire should feel the outlay).
+#   Profits scale with the PARTNER's wealth and the DISTANCE sailed, so the
+#   interesting decision is "where do we sail", not "how rich are we".
+#   Every payout is multiplied by generic_trade_expedition_repeat_mult_svalue,
+#   which decays with each completed expedition. The mission is repeatable, so
+#   the cash must not be farmable; the Charter is the real reward.
+
+########################################
+# Scaling helpers
+########################################
+
+# 0.75 near / 1.0 same region / 1.5 far. Distance is the main profit lever.
+generic_trade_expedition_distance_mult_svalue = {
+	value = 1.0
+	if = {
+		limit = {
+			exists = scope:generic_trade_expedition_home_port
+			exists = scope:generic_trade_expedition_partner_port
+			scope:generic_trade_expedition_home_port = {
+				exists = area
+				area = scope:generic_trade_expedition_partner_port.area
+			}
+		}
+		multiply = 0.75
+	}
+	else_if = {
+		limit = {
+			exists = scope:generic_trade_expedition_home_port
+			exists = scope:generic_trade_expedition_partner_port
+			scope:generic_trade_expedition_home_port = {
+				exists = region
+				region = scope:generic_trade_expedition_partner_port.region
+			}
+		}
+		multiply = 1.0
+	}
+	else = {
+		multiply = 1.5
+	}
+}
+
+# Diminishing returns across repeat runs. -15% per completed expedition,
+# floored at 40%. This is the primary anti-farm guard on cash rewards.
+generic_trade_expedition_repeat_mult_svalue = {
+	value = 1
+	if = {
+		limit = { has_variable = generic_trade_expedition_runs }
+		subtract = {
+			value = var:generic_trade_expedition_runs
+			multiply = 0.15
+		}
+	}
+	min = 0.4
+	max = 1
+}
+
+# How rich the destination is. Bounded so a superpower partner cannot be milked.
+generic_trade_expedition_partner_wealth_svalue = {
+	value = 0
+	if = {
+		limit = { exists = scope:generic_trade_expedition_partner }
+		add = scope:generic_trade_expedition_partner.has_monthly_income
+	}
+	min = 10
+	max = 400
+}
+
+########################################
+# Costs - scale with OUR income, generous caps so they stay felt at scale
+########################################
+
+generic_trade_expedition_small_cost_svalue = {
+	value = root.has_monthly_income
+	multiply = 0.5
+	min = 15
+	max = 150
+}
+
+generic_trade_expedition_small_pay_svalue = {
+	value = generic_trade_expedition_small_cost_svalue
+	multiply = -1
+}
+
+generic_trade_expedition_gift_cost_svalue = {
 	value = root.has_monthly_income
 	multiply = 1.25
 	min = 35
-	max = 100
+	max = 300
 }
 
 generic_trade_expedition_gift_pay_svalue = {
@@ -14,7 +100,7 @@ generic_trade_expedition_lavish_gift_cost_svalue = {
 	value = root.has_monthly_income
 	multiply = 2
 	min = 60
-	max = 175
+	max = 500
 }
 
 generic_trade_expedition_lavish_gift_pay_svalue = {
@@ -22,23 +108,11 @@ generic_trade_expedition_lavish_gift_pay_svalue = {
 	multiply = -1
 }
 
-generic_trade_expedition_small_cost_svalue = {
-	value = root.has_monthly_income
-	multiply = 0.5
-	min = 15
-	max = 45
-}
-
-generic_trade_expedition_small_pay_svalue = {
-	value = generic_trade_expedition_small_cost_svalue
-	multiply = -1
-}
-
 generic_trade_expedition_provision_cost_svalue = {
 	value = root.has_monthly_income
 	multiply = 1.25
 	min = 35
-	max = 100
+	max = 300
 }
 
 generic_trade_expedition_provision_pay_svalue = {
@@ -50,7 +124,7 @@ generic_trade_expedition_feast_cost_svalue = {
 	value = root.has_monthly_income
 	multiply = 0.6
 	min = 20
-	max = 60
+	max = 180
 }
 
 generic_trade_expedition_feast_pay_svalue = {
@@ -62,7 +136,7 @@ generic_trade_expedition_factor_house_cost_svalue = {
 	value = root.has_monthly_income
 	multiply = 2
 	min = 75
-	max = 200
+	max = 600
 }
 
 generic_trade_expedition_factor_house_pay_svalue = {
@@ -70,38 +144,120 @@ generic_trade_expedition_factor_house_pay_svalue = {
 	multiply = -1
 }
 
-generic_trade_expedition_profit_svalue = {
+generic_trade_expedition_escort_cost_svalue = {
 	value = root.has_monthly_income
-	multiply = 5
+	multiply = 0.9
+	min = 25
+	max = 220
+}
+
+generic_trade_expedition_escort_pay_svalue = {
+	value = generic_trade_expedition_escort_cost_svalue
+	multiply = -1
+}
+
+generic_trade_expedition_bribe_cost_svalue = {
+	value = root.has_monthly_income
+	multiply = 0.75
+	min = 20
+	max = 200
+}
+
+generic_trade_expedition_bribe_pay_svalue = {
+	value = generic_trade_expedition_bribe_cost_svalue
+	multiply = -1
+}
+
+########################################
+# Profits - scale with the PARTNER and the DISTANCE, decay with repeats
+########################################
+
+generic_trade_expedition_profit_svalue = {
+	value = generic_trade_expedition_partner_wealth_svalue
+	multiply = 3
+	multiply = generic_trade_expedition_distance_mult_svalue
+	multiply = generic_trade_expedition_repeat_mult_svalue
 	min = 100
-	max = 300
 }
 
 generic_trade_expedition_large_profit_svalue = {
-	value = root.has_monthly_income
-	multiply = 7
-	min = 150
-	max = 475
+	value = generic_trade_expedition_profit_svalue
+	multiply = 1.5
 }
 
 generic_trade_expedition_event_profit_svalue = {
-	value = root.has_monthly_income
-	multiply = 1.25
+	value = generic_trade_expedition_partner_wealth_svalue
+	multiply = 0.75
+	multiply = generic_trade_expedition_distance_mult_svalue
+	multiply = generic_trade_expedition_repeat_mult_svalue
 	min = 25
-	max = 90
+	max = 250
 }
 
 generic_trade_expedition_large_event_profit_svalue = {
-	value = root.has_monthly_income
-	multiply = 2.5
-	min = 50
-	max = 180
+	value = generic_trade_expedition_event_profit_svalue
+	multiply = 2
 }
 
 generic_trade_expedition_event_loss_svalue = {
 	value = generic_trade_expedition_event_profit_svalue
 	multiply = -0.75
 }
+
+# Paid out when a voyage disaster destroys part of the cargo.
+generic_trade_expedition_cargo_loss_svalue = {
+	value = generic_trade_expedition_profit_svalue
+	multiply = -0.5
+}
+
+########################################
+# Risk
+########################################
+
+# Rolled against 100 at each voyage risk check. Mitigation tasks buy this down;
+# distance and a hostile partner push it up. Floored at 3 so nothing is ever
+# perfectly safe, capped at 60 so a long voyage is never hopeless.
+generic_trade_expedition_risk_svalue = {
+	value = 20
+	multiply = generic_trade_expedition_distance_mult_svalue
+	if = {
+		limit = { has_country_modifier = generic_trade_expedition_provisioned_convoy_cmod }
+		subtract = 5
+	}
+	if = {
+		limit = { has_variable = generic_trade_expedition_charts_prepared }
+		subtract = 4
+	}
+	if = {
+		limit = { has_variable = generic_trade_expedition_escort_assigned }
+		subtract = 8
+	}
+	if = {
+		limit = { has_variable = generic_trade_expedition_stopover_secured }
+		subtract = 4
+	}
+	if = {
+		limit = { has_variable = generic_trade_expedition_partner_tariffs }
+		add = 6
+	}
+	if = {
+		limit = { has_variable = generic_trade_expedition_rival_present }
+		add = 5
+	}
+	if = {
+		limit = {
+			exists = var:generic_trade_expedition_envoy_character
+			var:generic_trade_expedition_envoy_character = { martial >= 8 }
+		}
+		subtract = 3
+	}
+	min = 3
+	max = 60
+}
+
+########################################
+# Convoy counting (unchanged)
+########################################
 
 generic_trade_expedition_home_convoys_svalue = {
 	value = 0
@@ -122,5 +278,13 @@ generic_trade_expedition_partner_convoys_svalue = {
 			unit_location = scope:generic_trade_expedition_partner_port
 		}
 		add = 1
+	}
+}
+
+generic_trade_expedition_factor_house_count_svalue = {
+	value = 0
+	if = {
+		limit = { has_variable = generic_trade_expedition_factor_houses }
+		add = var:generic_trade_expedition_factor_houses
 	}
 }

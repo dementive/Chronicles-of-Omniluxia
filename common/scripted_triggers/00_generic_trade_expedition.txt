@@ -56,3 +56,99 @@ generic_trade_expedition_commanded_by_envoy_trigger = {
 		count >= 10
 	}
 }
+
+########################################
+# Expanded voyage
+########################################
+
+generic_trade_expedition_valid_stopover_port_trigger = {
+	is_port = yes
+	any_neighbor_province = {
+		is_sea = yes
+	}
+}
+
+generic_trade_expedition_valid_stopover_country_trigger = {
+	has_land = yes
+	NOT = { this = ROOT }
+	NOT = { this = scope:generic_trade_expedition_partner }
+	NOT = { war_with = ROOT }
+	in_diplomatic_range = ROOT
+	any_owned_province = {
+		generic_trade_expedition_valid_stopover_port_trigger = yes
+	}
+}
+
+# A third country with its own merchants working the same marketplace.
+generic_trade_expedition_valid_rival_trigger = {
+	has_land = yes
+	NOT = { this = ROOT }
+	NOT = { this = scope:generic_trade_expedition_partner }
+	NOT = { is_subject_of = ROOT }
+	in_diplomatic_range = ROOT
+	any_owned_province = {
+		generic_trade_expedition_valid_partner_port_trigger = yes
+	}
+}
+
+########################################
+# Envoy archetypes
+#
+# The original mission excluded governors outright, which meant the one
+# character the player most wants to send abroad was the one character
+# ineligible. Each archetype below is a different political bet.
+########################################
+
+# The safe institutional choice: an unoccupied courtier.
+generic_trade_expedition_envoy_client_trigger = {
+	generic_trade_expedition_eligible_envoy_trigger = yes
+	loyalty >= 60
+}
+
+# A relative of the ruler. Prestige, and dynastic complications.
+generic_trade_expedition_envoy_kin_trigger = {
+	generic_trade_expedition_eligible_envoy_trigger = yes
+	OR = {
+		is_child_of = root.current_ruler
+		is_sibling_of = root.current_ruler
+		is_spouse_of = root.current_ruler
+	}
+}
+
+# A powerful governor you would rather have out of the country for four years.
+# Deliberately NOT filtered by is_governor - this is the whole point.
+generic_trade_expedition_envoy_rival_trigger = {
+	is_ruler = no
+	is_adult = yes
+	is_alive = yes
+	prisoner = no
+	home_country = ROOT
+	is_admiral = no
+	is_general = no
+	OR = {
+		is_governor = yes
+		prominence >= 50
+	}
+	trigger_if = {
+		limit = { ROOT = { gender_equality = no } }
+		is_male = yes
+	}
+}
+
+# A merchant with no family behind him. No powerbase risk, weaker results.
+generic_trade_expedition_envoy_lowborn_trigger = {
+	generic_trade_expedition_eligible_envoy_trigger = yes
+	prominence < 25
+	NOT = { is_from_ruler_family = root }
+}
+
+# True while the envoy's fleet is neither at home nor at the destination - in
+# other words, while it is genuinely somewhere in between. Sea events check
+# this so that a storm cannot strike a fleet sitting at a quay.
+generic_trade_expedition_fleet_at_sea_trigger = {
+	any_unit = {
+		generic_trade_expedition_commanded_by_envoy_trigger = yes
+		NOT = { unit_location = scope:generic_trade_expedition_home_port }
+		NOT = { unit_location = scope:generic_trade_expedition_partner_port }
+	}
+}
