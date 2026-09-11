@@ -326,9 +326,16 @@ omni_check_magic_prestige = {
 	if = { limit = { has_variable = cleric_mastered_var has_variable = illusionist_mastered_var } add_trait = aldic_master_trait }
 	if = { limit = { has_variable = elementalist_mastered_var has_variable = druid_mastered_var } add_trait = amten_master_trait }
 	if = { limit = { has_variable = necromancer_mastered_var has_variable = warlock_mastered_var } add_trait = melodian_master_trait }
-	if = { limit = { var:omni_mastered_school_count_var >= 2 } }
+	if = {
+		limit = { var:omni_mastered_school_count_var >= 2 }
 		if = { limit = { has_trait = mage_trait } remove_trait = mage_trait }
 		add_trait = archmage_trait
+	}
+	else_if = {
+		limit = { has_trait = archmage_trait }
+		# Repairs saves affected by the malformed 1/2/4/8 condition, without
+		# touching characters who have actually mastered two schools.
+		remove_trait = archmage_trait
 	}
 	if = { limit = { var:omni_mastered_school_count_var >= 4 } add_trait = grand_archmage_trait }
 	if = {
