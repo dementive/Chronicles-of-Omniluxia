@@ -274,6 +274,18 @@ omni_resolve_magic_study_state = {
 }
 
 omni_check_magic_prestige = {
+	# Count mastered schools so prestige ranks can use the intended 1/2/4/8
+	# progression without depending on particular school-family combinations.
+	set_variable = { name = omni_mastered_school_count_var value = 0 }
+	if = { limit = { has_variable = diviner_mastered_var } change_variable = { name = omni_mastered_school_count_var add = 1 } }
+	if = { limit = { has_variable = hierophant_mastered_var } change_variable = { name = omni_mastered_school_count_var add = 1 } }
+	if = { limit = { has_variable = cleric_mastered_var } change_variable = { name = omni_mastered_school_count_var add = 1 } }
+	if = { limit = { has_variable = illusionist_mastered_var } change_variable = { name = omni_mastered_school_count_var add = 1 } }
+	if = { limit = { has_variable = elementalist_mastered_var } change_variable = { name = omni_mastered_school_count_var add = 1 } }
+	if = { limit = { has_variable = druid_mastered_var } change_variable = { name = omni_mastered_school_count_var add = 1 } }
+	if = { limit = { has_variable = necromancer_mastered_var } change_variable = { name = omni_mastered_school_count_var add = 1 } }
+	if = { limit = { has_variable = warlock_mastered_var } change_variable = { name = omni_mastered_school_count_var add = 1 } }
+
 	if = {
 		limit = { has_trait = magus_supreme_trait }
 		set_variable = diviner_t2_unlocked_var
@@ -314,16 +326,11 @@ omni_check_magic_prestige = {
 	if = { limit = { has_variable = cleric_mastered_var has_variable = illusionist_mastered_var } add_trait = aldic_master_trait }
 	if = { limit = { has_variable = elementalist_mastered_var has_variable = druid_mastered_var } add_trait = amten_master_trait }
 	if = { limit = { has_variable = necromancer_mastered_var has_variable = warlock_mastered_var } add_trait = melodian_master_trait }
-	if = { limit = { OR = {
-		AND = { has_variable = diviner_mastered_var has_variable = hierophant_mastered_var }
-		AND = { has_variable = cleric_mastered_var has_variable = illusionist_mastered_var }
-		AND = { has_variable = elementalist_mastered_var has_variable = druid_mastered_var }
-		AND = { has_variable = necromancer_mastered_var has_variable = warlock_mastered_var }
-	} }
+	if = { limit = { var:omni_mastered_school_count_var >= 2 } }
 		if = { limit = { has_trait = mage_trait } remove_trait = mage_trait }
 		add_trait = archmage_trait
 	}
-	if = { limit = { has_variable = diviner_mastered_var has_variable = hierophant_mastered_var has_variable = cleric_mastered_var has_variable = illusionist_mastered_var has_variable = elementalist_mastered_var has_variable = druid_mastered_var } add_trait = grand_archmage_trait }
+	if = { limit = { var:omni_mastered_school_count_var >= 4 } add_trait = grand_archmage_trait }
 	if = {
 		limit = {
 			has_variable = diviner_mastered_var
