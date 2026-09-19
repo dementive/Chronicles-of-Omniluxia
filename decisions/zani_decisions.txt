@@ -1,0 +1,135 @@
+﻿country_decisions = {
+	
+	remove_theon_system = {
+	
+		potential = {
+			num_of_cities >= 1
+			tag = EGA
+			has_country_modifier = razani_theon_mod
+		}
+		highlight = {
+			scope:province = {
+				owner = c:EGA
+			}
+		}
+		allow = {
+			stability >= 70
+			NOT = {
+				random_character = {
+					limit = {
+						is_governor = yes
+					}
+					loyalty <= 65
+				}
+			}
+			political_influence = 50
+		}
+		
+		effect = {
+			add_legitimacy = 50
+			add_political_influence = -50	
+			remove_country_modifier = razani_theon_mod
+		}
+	}
+	remove_amsinenne = {
+	
+		potential = {
+			num_of_cities >= 1
+			tag = EGA
+			has_country_modifier = razani_slavery_mod
+		}
+		highlight = {
+			scope:province = {
+				owner = c:EGA
+			}
+		}
+		allow = {
+			political_influence = 75
+		}
+		
+		effect = {
+			add_political_influence = -75
+			add_war_exhaustion = 1
+			remove_country_modifier = razani_slavery_mod
+			custom_tooltip = remove_razani_slavery_ttp
+			trigger_event = razani_civil_war.23
+		}
+	}
+	gain_imperial_council_approval = {
+	
+		potential = {
+			num_of_cities >= 1
+			tag = EGA
+			has_country_modifier = razani_council_bad_mod
+		}
+		highlight = {
+			scope:province = {
+				OR = { 
+					province_id = 2478
+				}
+			}
+		}
+		allow = {
+			owns = 2478
+			legitimacy >= 35
+			tyranny <= 25
+			political_influence >= 25
+			treasury >= two_years_income_svalue
+		}
+		
+		effect = {
+			add_legitimacy = 25
+			add_tyranny = -12
+			add_political_influence = -25
+			add_treasury = {
+	            value = 0
+	            subtract = two_years_income_svalue
+	        }
+            remove_country_modifier = razani_council_bad_mod
+            add_country_modifier = {
+                name = razani_council_good_mod
+                duration = -1
+            }
+            trigger_event = razani_civil_war.21
+		}
+	}
+	remove_imperial_council = {
+	
+		potential = {
+			num_of_cities >= 1
+			tag = EGA
+			OR = {
+				has_country_modifier = razani_council_good_mod
+				has_country_modifier = razani_council_bad_mod
+			}
+		}
+		highlight = {
+			scope:province = {
+				OR = { 
+					province_id = 2478
+				}
+			}
+		}
+		allow = {
+			owns = 2478
+			legitimacy >= 50
+			political_influence >= 100
+		}
+		
+		effect = {
+			add_legitimacy = -50
+			add_stability = -25
+			add_tyranny = 100
+			add_political_influence = -100
+            if = {
+                limit = { has_country_modifier = razani_council_bad_mod }
+                remove_country_modifier = razani_council_bad_mod
+            }
+            else = {
+                remove_country_modifier = razani_council_good_mod
+            }
+            custom_tooltip = remove_razani_council_ttp
+		}
+		trigger_event = razani_civil_war.22
+	}
+}

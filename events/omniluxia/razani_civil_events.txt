@@ -72,7 +72,7 @@ razani_civil_war.2 = { # Razani Emperor Dies, Choose A Side
     desc = razani_civil_war_2_desc
     picture = city_country
     left_portrait = char:228
-    left_portrait = char:132
+    left_portrait = char:124
     right_portrait = char:229
     right_portrait = char:125
 
@@ -2078,3 +2078,198 @@ razani_civil_war.20 = {
     }
 }
 
+razani_civil_war.21 = { # Get Council Support
+    type = country_event
+
+    title = razani_civil_war_21_title
+    desc = razani_civil_war_21_desc
+    picture = celtic_chiefs
+    left_portrait = current_ruler
+
+    
+    option = {
+        name = "razani_civil_war_21.a"
+        show_as_tooltip = {
+            add_legitimacy = 100
+            add_political_influence = -25
+            remove_country_modifier = razani_council_bad_mod
+            add_country_modifier = {
+                name = razani_council_good_mod
+                duration = -1
+            }
+        }
+    }
+}
+
+razani_civil_war.22 = { # End Council Revolt
+    type = country_event
+
+    title = razani_civil_war_22_title
+    desc = razani_civil_war_22_desc
+    picture = greek_siege
+    left_portrait = current_ruler
+    right_portrait = scope:council_noble_rebel
+
+    immediate = {
+        hidden_effect = {
+            random_character = {
+                limit = {
+                    is_alive = yes
+                    is_adult = yes
+                    female = no
+                }
+                save_scope_as = council_noble_rebel
+            }
+            start_civil_war = scope:council_noble_rebel
+            hidden_effect = { 
+                scope:council_noble_rebel.employer = {
+                    change_country_name = "Imperial Council Coalition"
+                    change_country_adjective = "Noble"
+                    change_country_color = forrj_red
+                    change_government = aristocratic_republic
+                    save_scope_as = slave_noble_revolt_country
+                }
+            }
+            create_unit = {
+                navy = no
+                name = "Noble Men-at-Arms"
+                location = capital_scope
+                hidden_effect = {
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_cavalry
+                    add_subunit = heavy_cavalry
+                    add_subunit = heavy_cavalry
+                    add_subunit = heavy_cavalry
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry 
+                    add_subunit = light_cavalry                                        
+                    add_food = 150
+                    add_morale = 3
+                }
+            }
+        }
+    }
+
+    
+    option = {
+        name = "razani_civil_war_18.a"
+        show_as_tooltip = {
+            add_legitimacy = -50
+            add_stability = -25
+            add_tyranny = 100
+            add_political_influence = -100
+            if = {
+                limit = { has_country_modifier = razani_council_bad_mod }
+                remove_country_modifier = razani_council_bad_mod
+            }
+            else = {
+                remove_country_modifier = razani_council_good_mod
+            }
+        }
+    }
+}
+
+razani_civil_war.23 = { # End Slavery Revolt
+    type = country_event
+
+    title = razani_civil_war_23_title
+    desc = razani_civil_war_23_desc
+    picture = epirote_phalanx
+    left_portrait = current_ruler
+    right_portrait = scope:slaver_noble_rebel
+
+    immediate = {
+        hidden_effect = {
+            random_character = {
+                limit = {
+                    is_alive = yes
+                    is_adult = yes
+                    female = no
+                }
+                save_scope_as = slaver_noble_rebel
+            }
+
+            start_civil_war = scope:slaver_noble_rebel
+            hidden_effect = { 
+                scope:slaver_noble_rebel.employer = {
+                    change_country_name = "Noble Revolt"
+                    change_country_adjective = "Noble"
+                    change_country_color = forrj_red
+                    change_government = aristocratic_republic
+                    save_scope_as = slave_noble_revolt_country
+                }
+            }
+            create_unit = {
+                navy = no
+                name = "Noble Men-at-Arms"
+                location = capital_scope
+                hidden_effect = {
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_cavalry
+                    add_subunit = heavy_cavalry
+                    add_subunit = heavy_cavalry
+                    add_subunit = heavy_cavalry
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry 
+                    add_subunit = light_cavalry                                        
+                    add_food = 150
+                    add_morale = 3
+                }
+            }
+        }
+    }
+
+    
+    option = {
+        name = "razani_civil_war_18.a"
+        show_as_tooltip = {
+            add_political_influence = -75
+            add_war_exhaustion = 1
+            remove_country_modifier = razani_slavery_mod
+        }
+    }
+}
+
+razani_civil_war.24 = { # Council Removes Support
+    type = country_event
+
+    title = razani_civil_war_24_title
+    desc = razani_civil_war_24_desc
+    picture = senator_conversing
+    left_portrait = current_ruler
+
+    trigger = {
+        tag = EGA
+        OR = {
+            legitimacy <= 50
+            stability <= 10
+        }
+        has_country_modifier = razani_council_good_mod
+    }
+
+    
+    option = {
+        name = "razani_civil_war_24.a"
+        add_legitimacy = -25
+        add_stability = -5
+        add_country_modifier = {
+            name = razani_council_bad_mod
+            duration = -1
+        }
+        remove_country_modifier = razani_council_good_mod
+    }
+}
