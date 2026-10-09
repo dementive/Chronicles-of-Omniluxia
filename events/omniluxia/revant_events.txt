@@ -691,11 +691,27 @@ revant.8 = { # Rise of the Blood Angel Girl
 				}
 			}
 		}
+		if = {
+			limit = { 
+				random_country = {
+					limit = { current ruler = { scope:revant_scope } }
+					is_ai = yes
+				}
+			}
+			random_list = {
+				25 = { add_gold = 1}
+				75 = {
+					trigger_event = {
+						id = revant.12
+						days = { 730 1095 } # Blood Angel Girl Auto Ai Duel
+					}
+				}
+			}
+		}
     	every_country = {
 			limit = {
 				OR = {
 					is_ai = no
-					tag = SE1
 				}
 			}
 			trigger_event = revant.9
@@ -711,29 +727,34 @@ revant.9 = { # Rise of Blood Angel Girl WORLD
     left_portrait = scope:blood_angel_girl
     right_portrait = current_ruler
 
+    immediate = {
+    	limit = { 
+			random_country = {
+				limit = { current ruler = { scope:revant_scope } }
+			}
+			save_scope_as = revant_target
+		}
+    }
 
-    option = {      
+    option = {
+    	trigger = {
+    		capital_scope = {
+				NOR = {
+					is_in_region = egalia_majori_region
+					is_in_region = egalia_north
+					is_in_region = egalia_desert
+					is_in_region = egalia_east
+					is_in_region = far_march_of_empire
+				}
+			}
+    	} 
         name = revant.9.a
         ai_chance = { factor = 10 }
         add_stability = 5
-        hidden_effect = {
-	        if = {
-	        	limit = { tag = SE1 }
-	        	random_list = {
-					25 = { add_gold = 1}
-					75 = {
-						trigger_event = {
-							id = revant.12
-							days = { 730 1095 } # Blood Angel Girl Auto Ai Duel
-						}
-					}
-				}
-			}
-		}
     }
     option = {      
         name = revant.9.b
-        custom_tooltip = revant_tooltip.9
+        custom_tooltip = revant_tooltip.9.a
         hidden_effect = {
 	        if = {
 	            limit = { is_ai = no }
@@ -741,6 +762,34 @@ revant.9 = { # Rise of Blood Angel Girl WORLD
 	        }
         }
     }
+    option = {
+    	trigger = {
+    		capital_scope = {
+				OR = {
+					is_in_region = egalia_majori_region
+					is_in_region = egalia_north
+					is_in_region = egalia_desert
+					is_in_region = egalia_east
+					is_in_region = far_march_of_empire
+				}
+			}
+    	} 
+        name = revant.9.c
+        custom_tooltip = revant_tooltip.9.b
+        add_stability = 5
+        make_subject = {
+           target = scope:restorer_army
+           type = feudatory
+        }
+        if = {
+       		limit = { NOT = { war_with = scope:revant_target } }
+       		declare_war_with_wargoal = {
+				war_goal = imperial_contest
+				target = scope:revant_target
+			}
+        }
+    }
+    
 }
 
 revant.10 = { # Blood Angel Revant Duel at Durobaeste; Helluvian Conversion
@@ -756,8 +805,15 @@ revant.10 = { # Blood Angel Revant Duel at Durobaeste; Helluvian Conversion
     fire_only_once = yes
 
     trigger = {
-    	current_ruler = {
-    		has_trait = blood_angel_curse_trait
+    	OR = {
+	    	current_ruler = {
+	    		has_trait = blood_angel_curse_trait
+	    	}
+	    	any_subject = {
+	    		current_ruler = {
+		    		has_trait = blood_angel_curse_trait
+		    	}
+	    	}
     	}
     	owns = 2478
     }
