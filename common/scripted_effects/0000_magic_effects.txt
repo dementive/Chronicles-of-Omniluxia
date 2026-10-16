@@ -12,6 +12,13 @@
 # They refresh monthly with the mana tick.
 recalculate_character_magic_vars = {
 	if = {
+		limit = {
+			has_trait = cramming_fatigue_trait
+			NOT = { has_character_modifier = cramming_fatigue_timer_modifier }
+		}
+		remove_trait = cramming_fatigue_trait
+	}
+	if = {
 		limit = { NOT = { has_variable = magic } }
 		set_variable = {
 			name = magic
@@ -26,6 +33,7 @@ recalculate_character_magic_vars = {
 		name = magic_max
 		value = omni_character_magic_max_value
 	}
+	clamp_character_magic_to_max = yes
 }
 
 refill_character_magic_to_max = {
@@ -43,9 +51,7 @@ magic_on_birth_effects = {
 		}
 		set_variable = {
 			name = magic
-			value = {
-				integer_range = { min = 1 max = 10 }
-			}
+			value = 0
 		}
 	}
 	recalculate_character_magic_vars = yes
@@ -116,6 +122,10 @@ change_province_magic = {
 }
 
 clamp_character_magic_to_max = {
+	if = {
+		limit = { has_variable = magic var:magic < 0 }
+		set_variable = { name = magic value = 0 }
+	}
 	if = {
 		limit = {
 			has_variable = magic
@@ -198,27 +208,13 @@ change_country_scope_magic_vars = {
 				value = 0
 			}
 		}
-		# Refresh the display copies (tooltips can only read stored vars in
-		# this engine version), apply one month's regen, clamp.
-		set_variable = {
-			name = magic_monthly
-			value = omni_character_monthly_mana_value
-		}
-		set_variable = {
-			name = magic_max
-			value = omni_character_magic_max_value
-		}
+		# Refresh display values and expire fatigue before applying regeneration.
+		recalculate_character_magic_vars = yes
 		change_variable = {
 			name = magic
 			add = omni_character_monthly_mana_value
 		}
-		if = {
-			limit = { var:magic > omni_character_magic_max_value }
-			set_variable = {
-				name = magic
-				value = omni_character_magic_max_value
-			}
-		}
+		clamp_character_magic_to_max = yes
 	}
 }
 
