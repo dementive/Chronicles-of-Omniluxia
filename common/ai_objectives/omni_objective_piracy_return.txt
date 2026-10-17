@@ -1,0 +1,47 @@
+﻿# Return during cooldown; also cover automatic modifier expiry before cleanup.
+# Keep sea tiles eligible so the planner can evaluate a route home.
+omni_objective_piracy_return = {
+    priority = 70
+    allow = {
+        is_navy = yes
+        OR = {
+            has_variable = omni_piracy_returning_to_port
+            AND = {
+                has_variable = engage_in_piracy_active
+                NOT = { has_unit_modifier = engage_in_piracy_unit_modifier }
+            }
+        }
+        NOT = { has_unit_modifier = engage_in_piracy_unit_modifier }
+        is_exiled = no
+    }
+    interface_allow = { always = no }
+    pure_weight = yes
+    is_focus_objective = yes
+    search_depth = 6
+    mode = replace
+    weight = {
+        # A friendly port is strongly preferred to any sea destination.
+        modifier = {
+            trigger = {
+                scope:province = { omni_piracy_friendly_port_trigger = yes }
+            }
+            add = { value = -100000 }
+        }
+        # Sea routes remain available. Only unsafe land destinations or
+        # enemy fleets are excluded, with a single penalty to avoid overflow.
+        modifier = {
+            trigger = {
+                scope:province = {
+                    OR = {
+                        AND = {
+                            is_sea = no
+                            NOT = { omni_piracy_friendly_port_trigger = yes }
+                        }
+                        has_enemy_navy = root.unit_owner
+                    }
+                }
+            }
+            add = { value = 1500000 }
+        }
+    }
+}

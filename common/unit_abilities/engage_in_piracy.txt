@@ -17,11 +17,12 @@
 		unit_owner = { NOT = { has_law = antipiracy_edict } }
 		unit_location = {
 			custom_tooltip = {
-				text = naval_raiding_sea_province
+				text = omni_piracy_sea_or_friendly_port_tt
 				OR = {
 					terrain = riverine_terrain
 					terrain = ocean
 					terrain = coastal_terrain
+					omni_piracy_friendly_port_trigger = yes
 				}
 			}
 		}
@@ -37,6 +38,13 @@
 
 	start_effect = {
 		hidden_effect = {
+			remove_variable = omni_piracy_returning_to_port
+			# Backup for automatic expiry: the timed modifier may end without the
+			# ability's finish callback. Keep the fleet scope in this event chain.
+			save_scope_as = omni_piracy_expiring_fleet
+			unit_owner = {
+				trigger_event = { id = omni_piracy.2 days = 121 }
+			}
 			set_variable = {
 				name = engage_in_piracy_active
 				value = yes
@@ -62,27 +70,7 @@
 	}
 
 	finish_effect = {
-		hidden_effect = {
-			remove_variable = engage_in_piracy_active
-			if = {
-				limit = {
-					has_global_variable = omni_active_piracy_count
-					global_var:omni_active_piracy_count >= 1
-				}
-				change_global_variable = { name = omni_active_piracy_count subtract = 1 }
-			}
-			if = {
-				limit = {
-					has_unit_modifier = engage_in_piracy_unit_modifier
-				}
-				remove_unit_modifier = engage_in_piracy_unit_modifier
-			}
-set_variable = {
-				name = engage_in_piracy_cooldown
-				value = 1
-				days = 120
-			}
-		}
+		hidden_effect = { omni_finish_piracy_effect = yes }
 	}
 
 	ai_will_do = {

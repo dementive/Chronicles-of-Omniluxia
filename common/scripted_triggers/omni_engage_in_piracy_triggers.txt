@@ -2,3 +2,22 @@
 	is_sea = no
 	has_owner = yes
 }
+
+# Province scope; ROOT is the fleet. Occupied home ports are not safe ports.
+omni_piracy_friendly_port_trigger = {
+    is_port = yes
+    has_owner = yes
+    exists = controller
+    controller = {
+        NOT = { war_with = root.unit_owner }
+        OR = {
+            this = root.unit_owner
+            is_subject_of = root.unit_owner
+            root.unit_owner = { is_subject_of = prev }
+            AND = {
+                alliance_with = root.unit_owner
+                root.unit_owner = { has_military_access = prev }
+            }
+        }
+    }
+}
