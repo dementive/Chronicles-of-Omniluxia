@@ -40,13 +40,15 @@
 	
 		potential = {
 			num_of_cities >= 1
-			OR = {
-                religion = helluvian
-            }
-            NOT = {
-				OR = {
-					has_variable = new_pope_var
-					tag = IF3
+			religion = helluvian
+			exists = current_ruler
+			# Former holders, including IF3, may reclaim the office. The
+			# reigning Shannah cannot repeatedly take the decision for rewards.
+			NOT = {
+				AND = {
+					government = papacy
+					current_ruler = { has_trait = shannah_trait }
+					NOT = { has_variable = omni_shannah_deposed }
 				}
 			}
 		}
@@ -62,14 +64,8 @@
 		}
 		
 		effect = {
-			set_capital = 2706
-			current_ruler = {
-				force_add_trait = shannah_trait
-			}
-			set_variable = new_pope_var
-			add_legitimacy = 50
-			add_political_influence = 100
-			change_government = papacy
+			custom_tooltip = omni_shannah_transfer_tt
+			hidden_effect = { omni_shannah_claim_office_effect = yes }
 		}
 	}
 	become_pharon = {
@@ -136,10 +132,9 @@
 			current_ruler = {
 				has_trait = shannah_trait
 			}
-            NOT = {
-				has_variable = called_helluvian_crusade_var
-			}
-			rank >= regional_power
+			NOT = { has_variable = omni_crusade_pending }
+			NOT = { has_variable = omni_crusade_preparing }
+			NOT = { has_variable = omni_crusade_active }
 		}
 		highlight = {
 			scope:province = {
@@ -149,21 +144,40 @@
 			}
 		}
 		allow = {
+			# Religious office, not territorial rank, grants crusade authority.
+			NOT = { has_variable = called_helluvian_crusade_var }
+			NOT = { has_global_variable = omni_crusade_world_busy }
 			political_influence >= 50
 			treasury >= 250
-			war = no
+			omni_crusade_host_ready_trigger = yes
+			# In this decision ROOT is the prospective Shannah's country.
+			any_country = {
+				has_land = yes
+				NOT = { this = root }
+				is_subject = no
+				has_civil_war = no
+				NOT = { religion = helluvian }
+				in_diplomatic_range = root
+                OR = {
+                    any_neighbour_country = { this = root }
+                    capital_scope = {
+                        distance_from = {
+                            province = root.capital_scope
+                            value <= omni_crusade_target_distance_svalue
+                        }
+                    }
+                }
+				NOT = { alliance_with = root }
+				NOT = { has_truce_with = root }
+				NOT = { war_with = root }
+			}
 		}
 		
 		effect = {
-			add_political_influence = -50
-			add_treasury = -250
-			custom_tooltip = shannah_crusade_call_tt
-			trigger_event = me_zorgoomni.55
-			set_variable = {
-				name = called_helluvian_crusade_var
-				days = 3650
-			}
+			custom_tooltip = omni_crusade_propose_tt
+			trigger_event = omni_crusade.15
 		}
+		ai_will_do = { base = 1 }
 	}
 
 	destroy_lodge = {

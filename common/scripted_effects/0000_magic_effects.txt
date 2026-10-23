@@ -196,8 +196,22 @@ change_country_scope_magic_vars = {
 	# first country to claim one otherwise blocks every other country's casters.
 	# ------------------------------------------------------------------
 	every_character = {
+		# PERF: skip non-casters. For a character with no mana income, no mana cap, no stored
+		# mana/display values and no cramming fatigue, the full tick below only rewrites zeros.
+		# Births and game start already initialise these vars, so the result is identical,
+		# but most of the world's characters now cost two modifier reads instead of
+		# ~6 script-value evaluations and 4 variable writes every month.
 		limit = {
 			is_alive = yes
+			OR = {
+				NOT = { has_variable = magic }
+				has_trait = cramming_fatigue_trait
+				omni_character_monthly_mana_value > 0
+				omni_character_magic_max_value > 0
+				var:magic > 0
+				AND = { has_variable = magic_max var:magic_max > 0 }
+				AND = { has_variable = magic_monthly var:magic_monthly > 0 }
+			}
 		}
 		if = {
 			limit = {

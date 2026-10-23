@@ -1,0 +1,109 @@
+﻿on_ruler_change = {
+    effect = {
+        if = {
+            limit = { exists = scope:former_ruler scope:former_ruler = { is_alive = yes } }
+            scope:former_ruler = {
+                if = { limit = { has_trait = shannah_trait } remove_trait = shannah_trait }
+            }
+        }
+        omni_shannah_repair_office_effect = yes
+    }
+}
+
+monthly_country_pulse = {
+    effect = {
+        omni_shannah_repair_office_effect = yes
+        if = {
+            limit = {
+                has_variable = omni_crusade_preparing
+                NOT = { has_variable = omni_crusade_declaring }
+            }
+            omni_crusade_restore_scopes_effect = yes
+            if = {
+                limit = {
+                    NOT = { omni_crusade_preparation_valid_trigger = yes }
+                }
+                if = {
+                    limit = {
+                        OR = {
+                            NOT = { religion = helluvian }
+                            is_subject = yes
+                            NOT = { exists = current_ruler }
+                            current_ruler = { NOT = { has_trait = shannah_trait } }
+                        }
+                    }
+                    debug_log = "OMNI_CRUSADE: monthly validation cancelled preparation; host lost religious office or independence."
+                }
+                if = {
+                    limit = {
+                        OR = {
+                            NOT = { exists = var:omni_crusade_target }
+                            var:omni_crusade_target = {
+                                OR = { has_land = no is_subject = yes religion = helluvian }
+                            }
+                        }
+                    }
+                    debug_log = "OMNI_CRUSADE: monthly validation cancelled preparation; target disappeared, became a subject, or converted."
+                }
+                omni_crusade_cancel_effect = yes
+            }
+        }
+        if = {
+            limit = { has_variable = omni_crusade_active }
+            trigger_event = { id = omni_crusade.10 }
+        }
+        # Repair orphaned participant records if a host was annexed.
+        if = {
+            limit = { has_variable = omni_crusade_host }
+            if = {
+                limit = {
+                    OR = {
+                        NOT = { exists = var:omni_crusade_host }
+                        var:omni_crusade_host = {
+                            OR = {
+                                has_land = no
+                                NOR = {
+                                    has_variable = omni_crusade_preparing
+                                    has_variable = omni_crusade_active
+                                }
+                            }
+                        }
+                    }
+                }
+                # A defeated/annexed host cannot return treasury: no minted refund.
+                omni_crusade_clear_participant_effect = yes
+            }
+        }
+        # One global scan per 28 days, following ai_recruit_mercenaries.
+        # The global lock cannot outlive all landed hosts.
+        if = {
+            limit = {
+                has_global_variable = omni_crusade_world_busy
+                NOT = { has_global_variable = omni_crusade_lock_audited }
+            }
+            set_global_variable = { name = omni_crusade_lock_audited days = 28 }
+            if = {
+                limit = {
+                    NOT = {
+                        any_country = {
+                            has_land = yes
+                            OR = { has_variable = omni_crusade_preparing has_variable = omni_crusade_active }
+                        }
+                    }
+                }
+                remove_global_variable = omni_crusade_world_busy
+            }
+        }
+    }
+}
+
+# Do not clear on every peace: an unrelated war can end during the crusade.
+# Wait one day so the ended war is absent from the active-war collection.
+on_ending_war = {
+    effect = {
+        if = {
+            limit = { has_variable = omni_crusade_active }
+            trigger_event = { id = omni_crusade.10 days = 1 }
+        }
+    }
+}

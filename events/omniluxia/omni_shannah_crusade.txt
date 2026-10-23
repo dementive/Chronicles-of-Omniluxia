@@ -1,0 +1,803 @@
+﻿namespace = omni_crusade
+
+# Candidate confirmation is free. Costs and the global lock begin on assent.
+omni_crusade.1 = {
+    type = country_event
+    title = omni_crusade.1.t
+    desc = omni_crusade.1.desc
+    picture = event_marching_army
+    left_portrait = current_ruler
+    immediate = {
+        save_scope_as = omni_crusade_actor
+        if = {
+            limit = {
+                has_variable = omni_crusade_pending
+                exists = var:omni_crusade_target
+            }
+            # The council has already selected a country. Do not reroll it.
+            var:omni_crusade_target = { save_scope_as = omni_crusade_target }
+        }
+        else = {
+            # Retain the direct event .1 testing entry point.
+            random_country = {
+                limit = { omni_crusade_target_trigger = yes }
+                save_scope_as = omni_crusade_target
+            }
+        }
+        if = {
+            limit = { exists = scope:omni_crusade_target }
+            set_variable = { name = omni_crusade_target value = scope:omni_crusade_target }
+            set_variable = omni_crusade_pending
+        }
+    }
+    option = {
+        name = omni_crusade.1.a
+        trigger = {
+            has_variable = omni_crusade_pending
+            NOT = { has_global_variable = omni_crusade_world_busy }
+            NOT = { has_variable = called_helluvian_crusade_var }
+            omni_crusade_host_ready_trigger = yes
+            political_influence >= 50
+            treasury >= 250
+            # Compare with this event's candidate, not a subsequent proposal.
+            exists = var:omni_crusade_target
+            var:omni_crusade_target = { this = scope:omni_crusade_target }
+            scope:omni_crusade_target = { omni_crusade_target_trigger = yes }
+        }
+        ai_chance = { factor = 4 }
+        custom_tooltip = omni_crusade_preparation_tt
+        hidden_effect = { omni_crusade_begin_preparation_effect = yes }
+    }
+    option = {
+        name = omni_crusade.1.b
+        ai_chance = { factor = 1 }
+        if = {
+            limit = {
+                NOT = { has_variable = omni_crusade_preparing }
+                NOT = { has_variable = omni_crusade_active }
+            }
+            remove_variable = omni_crusade_pending
+            remove_variable = omni_crusade_target
+        }
+    }
+}
+
+# Invictus judea_inv.1 / .3: intervene or remain neutral, with opinion weights.
+omni_crusade.2 = {
+    type = country_event
+    title = omni_crusade.2.t
+    desc = omni_crusade.2.desc
+    picture = event_marching_army
+    left_portrait = current_ruler
+    trigger = { omni_crusade_invitation_live_trigger = yes }
+    immediate = {
+        var:omni_crusade_host = {
+            omni_crusade_restore_scopes_effect = yes
+            if = { limit = { NOT = { has_variable = omni_crusade_target_advantage } } omni_crusade_snapshot_strength_effect = yes }
+        }
+        set_variable = { name = omni_crusade_response_strength value = omni_crusade_strength_svalue }
+        set_variable = { name = omni_crusade_response_advantage value = { value = var:omni_crusade_response_strength subtract = scope:omni_crusade_actor.var:omni_crusade_strength } }
+    }
+    option = {
+        name = omni_crusade.2.a
+        trigger = {
+            omni_crusade_invitation_live_trigger = yes
+            omni_crusade_invitee_trigger = yes
+            war = no
+        }
+        ai_chance = {
+            factor = 40
+            # Initial tuning: score = territories + twice current cohorts.
+            # Bands are exclusive; no territorial eligibility gate.
+            modifier = { factor = 0.1 scope:omni_crusade_actor = { var:omni_crusade_strength < 25 } }
+            modifier = { factor = 0.35 scope:omni_crusade_actor = { var:omni_crusade_strength >= 25 var:omni_crusade_strength < 75 } }
+            modifier = { factor = 1.5 scope:omni_crusade_actor = { var:omni_crusade_strength >= 150 var:omni_crusade_strength < 300 } }
+            modifier = { factor = 2.5 scope:omni_crusade_actor = { var:omni_crusade_strength >= 300 } }
+            modifier = { factor = 0.35 var:omni_crusade_response_advantage > 0 }
+            modifier = { factor = 0.5 scope:omni_crusade_actor = { var:omni_crusade_target_advantage > 0 } }
+            modifier = { factor = 2 alliance_with = scope:omni_crusade_actor }
+            modifier = { factor = 2 opinion = { target = scope:omni_crusade_actor value >= 50 } }
+            modifier = { factor = 0.25 opinion = { target = scope:omni_crusade_actor value <= -50 } }
+            modifier = { factor = 0.5 treasury < 100 }
+        }
+        custom_tooltip = omni_crusade_pledge_tt
+        hidden_effect = {
+            remove_variable = omni_crusade_invited
+            set_variable = omni_crusade_pledged
+            var:omni_crusade_host = { change_variable = { name = omni_crusade_pledge_count add = 1 } }
+        }
+    }
+    option = {
+        name = omni_crusade.2.b
+        trigger = {
+            omni_crusade_invitation_live_trigger = yes
+            omni_crusade_invitee_trigger = yes
+            treasury >= omni_crusade_current_offering_svalue
+        }
+        ai_chance = {
+            factor = 25
+            modifier = { factor = 2 war = yes }
+            modifier = { factor = 2 opinion = { target = scope:omni_crusade_actor value >= 50 } }
+            modifier = { factor = 0.25 opinion = { target = scope:omni_crusade_actor value <= -50 } }
+        }
+        custom_tooltip = omni_crusade_donate_tt
+        hidden_effect = {
+            set_variable = { name = omni_crusade_paid_offering value = omni_crusade_current_offering_svalue }
+            add_treasury = omni_crusade_negative_paid_offering_svalue
+            remove_variable = omni_crusade_invited
+            set_variable = omni_crusade_donated
+            save_scope_as = omni_crusade_donor
+            var:omni_crusade_host = {
+                add_treasury = scope:omni_crusade_donor.omni_crusade_paid_offering_svalue
+                change_variable = { name = omni_crusade_donor_count add = 1 }
+                add_opinion = { modifier = omni_crusade_financial_support target = scope:omni_crusade_donor }
+            }
+        }
+    }
+    option = {
+        name = omni_crusade.2.c
+        ai_chance = { factor = 35 }
+        hidden_effect = {
+            if = {
+                limit = { omni_crusade_invitation_live_trigger = yes }
+                if = { limit = { NOR = { has_variable = omni_crusade_defense_invited has_variable = omni_crusade_defense_pledged has_variable = omni_crusade_defense_refused } } set_variable = omni_crusade_refused }
+            }
+            if = {
+                limit = {
+                    omni_crusade_invitation_live_trigger = yes
+                    omni_crusade_invitee_trigger = yes
+                    war = no
+                }
+                save_scope_as = omni_crusade_refuser
+                var:omni_crusade_host = {
+                    add_opinion = { modifier = omni_crusade_refused_support target = scope:omni_crusade_refuser }
+                }
+            }
+            remove_variable = omni_crusade_invited
+        }
+    }
+}
+
+omni_crusade.3 = {
+    type = country_event
+    title = omni_crusade.3.t
+    desc = omni_crusade.3.desc
+    picture = Event_royal_chamber
+    left_portrait = current_ruler
+    trigger = {
+        has_variable = omni_crusade_preparing
+        NOT = { has_variable = omni_crusade_declaring }
+    }
+    immediate = { omni_crusade_restore_scopes_effect = yes }
+    option = {
+        name = omni_crusade.3.a
+        trigger = {
+            has_variable = omni_crusade_preparing
+            NOT = { has_variable = omni_crusade_declaring }
+            omni_crusade_host_ready_trigger = yes
+            omni_crusade_target_still_valid_trigger = yes
+        }
+        ai_chance = { factor = 10 }
+        custom_tooltip = omni_crusade_launch_tt
+        hidden_effect = { omni_crusade_launch_effect = yes }
+    }
+    option = {
+        name = omni_crusade.3.c
+        trigger = {
+            has_variable = omni_crusade_preparing
+            NOT = { has_variable = omni_crusade_declaring }
+            omni_crusade_preparation_valid_trigger = yes
+        }
+        ai_chance = {
+            factor = 100
+            modifier = {
+                factor = 0
+                omni_crusade_host_ready_trigger = yes
+                omni_crusade_target_still_valid_trigger = yes
+            }
+        }
+        custom_tooltip = omni_crusade_postpone_tt
+        hidden_effect = {
+            trigger_event = { id = omni_crusade.3 days = 30 }
+        }
+    }
+    option = {
+        name = omni_crusade.3.b
+        ai_chance = { factor = 1 }
+        if = {
+            limit = {
+                has_variable = omni_crusade_preparing
+                NOT = { has_variable = omni_crusade_declaring }
+            }
+            add_stability = -3
+            hidden_effect = { omni_crusade_cancel_effect = yes }
+        }
+    }
+}
+
+omni_crusade.4 = {
+    type = country_event
+    title = omni_crusade.4.t
+    desc = omni_crusade.4.desc
+    picture = event_marching_army
+    option = { name = omni_crusade.4.a }
+}
+omni_crusade.5 = {
+    type = country_event
+    title = omni_crusade.5.t
+    desc = omni_crusade.5.desc
+    picture = Event_royal_chamber
+    option = { name = omni_crusade.5.a }
+}
+omni_crusade.6 = {
+    type = country_event
+    title = omni_crusade.6.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { var:omni_crusade_cancel_reason = 1 }
+                desc = omni_crusade.6.faith
+            }
+            triggered_desc = {
+                trigger = { var:omni_crusade_cancel_reason = 2 }
+                desc = omni_crusade.6.independence
+            }
+            triggered_desc = {
+                trigger = { var:omni_crusade_cancel_reason = 3 }
+                desc = omni_crusade.6.office
+            }
+            triggered_desc = {
+                trigger = { var:omni_crusade_cancel_reason = 4 }
+                desc = omni_crusade.6.target_lost
+            }
+            triggered_desc = {
+                trigger = { var:omni_crusade_cancel_reason = 5 }
+                desc = omni_crusade.6.target_faith
+            }
+            triggered_desc = {
+                trigger = { var:omni_crusade_cancel_reason = 6 }
+                desc = omni_crusade.6.target_subject
+            }
+            triggered_desc = {
+                trigger = { var:omni_crusade_cancel_reason = 7 }
+                desc = omni_crusade.6.declaration
+            }
+            triggered_desc = {
+                trigger = { always = yes }
+                desc = omni_crusade.6.desc
+            }
+        }
+    }
+    picture = Event_royal_chamber
+    option = {
+        name = omni_crusade.6.a
+        remove_variable = omni_crusade_cancel_reason
+    }
+}
+omni_crusade.7 = {
+    type = country_event
+    title = omni_crusade.7.t
+    desc = omni_crusade.7.desc
+    picture = Event_royal_chamber
+    option = { name = omni_crusade.7.a }
+}
+omni_crusade.8 = {
+    type = country_event
+    title = omni_crusade.8.t
+    desc = omni_crusade.8.desc
+    picture = Event_royal_chamber
+    option = { name = omni_crusade.8.a }
+}
+
+# Capture the war on the next day, after the declaration has registered.
+# Membership and recruitment follow Invictus flavor_cap.3.
+omni_crusade.9 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = omni_crusade_preparing }
+    immediate = {
+        omni_crusade_restore_scopes_effect = yes
+        if = {
+            limit = { any_current_war = { omni_crusade_matching_war_trigger = yes } }
+            random_current_war = {
+                limit = { omni_crusade_matching_war_trigger = yes }
+                save_scope_as = omni_crusade_war
+            }
+            remove_variable = omni_crusade_preparing
+            set_variable = omni_crusade_active
+            debug_log = "OMNI_CRUSADE: matching host-led war found; activating expedition and recruiting pledgers."
+            # Preserve the original expedition's nine subunits, but only after
+            # a real declaration. Cancelling cannot repeatedly create armies.
+            create_unit = {
+                navy = no
+                name = "Helluvian Crusaders"
+                location = capital_scope
+                hidden_effect = {
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = light_infantry
+                    add_subunit = light_infantry
+                    add_subunit = heavy_cavalry
+                    add_subunit = heavy_cavalry
+                    add_subunit = supply_train
+                    add_subunit = supply_train
+                    add_food = 100
+                    add_morale = 2
+                }
+            }
+            omni_crusade_recruit_effect = yes
+            omni_crusade_recruit_defenders_effect = yes
+            omni_crusade_announce_launch_effect = yes
+        }
+        else = {
+            if = {
+                limit = { war = no }
+                debug_log = "OMNI_CRUSADE: declaration check failed; host is still at peace."
+            }
+            else = {
+                debug_log = "OMNI_CRUSADE: declaration check failed; host is at war but no matching host-led war was found."
+            }
+            omni_crusade_cancel_effect = yes
+        }
+    }
+}
+
+# Reconstruct from persistent country references after reload. No assumed war
+# outcome or contribution ranking. Leadership loss also releases our state.
+omni_crusade.10 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = omni_crusade_active }
+    immediate = {
+        omni_crusade_restore_scopes_effect = yes
+        if = {
+            limit = {
+                OR = {
+                    NOT = { exists = var:omni_crusade_target }
+                    NOT = { any_current_war = { omni_crusade_matching_war_trigger = yes } }
+                }
+            }
+            omni_crusade_finish_effect = yes
+        }
+    }
+}
+
+omni_crusade.11 = {
+    type = country_event
+    title = omni_crusade.11.t
+    desc = omni_crusade.11.desc
+    picture = event_marching_army
+    option = { name = omni_crusade.11.a }
+}
+
+# Launch announcements inherit the confirmed host, target and war scopes.
+# Dispatch runs once after actual coalition entry, including ordinary allies.
+omni_crusade.17 = {
+    type = country_event
+    title = omni_crusade.17.t
+    desc = omni_crusade.17.desc
+    picture = event_marching_army
+    left_portrait = current_ruler
+    right_portrait = scope:omni_crusade_actor.current_ruler
+    option = { name = omni_crusade.17.a }
+}
+
+omni_crusade.18 = {
+    type = country_event
+    title = omni_crusade.18.t
+    desc = omni_crusade.18.desc
+    picture = event_marching_army
+    left_portrait = current_ruler
+    right_portrait = scope:omni_crusade_actor.current_ruler
+    option = { name = omni_crusade.18.a }
+}
+
+omni_crusade.19 = {
+    type = country_event
+    title = omni_crusade.19.t
+    desc = {
+        desc = omni_crusade.19.desc
+        first_valid = {
+            triggered_desc = {
+                trigger = {
+                    has_variable = omni_crusade_pledged
+                    exists = var:omni_crusade_host
+                    var:omni_crusade_host = { this = scope:omni_crusade_actor }
+                    NOT = { has_variable = omni_crusade_joined }
+                }
+                desc = omni_crusade.19.unfulfilled
+            }
+        }
+    }
+    picture = event_marching_army
+    left_portrait = current_ruler
+    right_portrait = scope:omni_crusade_actor.current_ruler
+    option = { name = omni_crusade.19.a }
+}
+
+# Decision-accessible briefing also provides a deliberate cancellation route.
+omni_crusade.12 = {
+    type = country_event
+    title = omni_crusade.12.t
+    desc = omni_crusade.12.desc
+    picture = Event_royal_chamber
+    immediate = { omni_crusade_restore_scopes_effect = yes }
+    option = {
+        name = omni_crusade.12.a
+        hidden_effect = {
+            trigger_event = { id = omni_crusade.22 }
+        }
+    }
+    option = {
+        name = omni_crusade.12.b
+        trigger = {
+            has_variable = omni_crusade_preparing
+            NOT = { has_variable = omni_crusade_declaring }
+        }
+        ai_chance = { factor = 0 }
+        add_stability = -3
+        hidden_effect = { omni_crusade_cancel_effect = yes }
+    }
+}
+
+# One category per page, one name per line, no repeated status paragraphs.
+omni_crusade.16 = {
+    type = country_event
+    title = omni_crusade.16.t
+    desc = {
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 11 } desc = omni_crusade.22.defense_unfulfilled } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 1 } desc = omni_crusade.22.military } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 2 } desc = omni_crusade.22.offerings } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 3 } desc = omni_crusade.22.declined } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 4 } desc = omni_crusade.22.pending } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 5 } desc = omni_crusade.22.defenders } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 6 } desc = omni_crusade.22.defense_declined } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 7 } desc = omni_crusade.22.defense_pending } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 8 } desc = omni_crusade.22.joined } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 9 } desc = omni_crusade.22.defense_joined } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_category = 10 } desc = omni_crusade.22.unfulfilled } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 1 } desc = omni_crusade.16.header } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 1 } desc = omni_crusade.16.row_1 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 2 } desc = omni_crusade.16.row_2 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 3 } desc = omni_crusade.16.row_3 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 4 } desc = omni_crusade.16.row_4 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 5 } desc = omni_crusade.16.row_5 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 6 } desc = omni_crusade.16.row_6 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 7 } desc = omni_crusade.16.row_7 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 8 } desc = omni_crusade.16.row_8 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 9 } desc = omni_crusade.16.row_9 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 10 } desc = omni_crusade.16.row_10 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 11 } desc = omni_crusade.16.row_11 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 12 } desc = omni_crusade.16.row_12 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 13 } desc = omni_crusade.16.row_13 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 14 } desc = omni_crusade.16.row_14 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots >= 15 } desc = omni_crusade.16.row_15 } }
+        first_valid = { triggered_desc = { trigger = { var:omni_crusade_roster_slots = 0 } desc = omni_crusade_roster_empty_tt } }
+    }
+    picture = Event_royal_chamber
+    immediate = { omni_crusade_roster_page_effect = yes }
+    option = {
+        name = omni_crusade.16.next
+        trigger = { var:omni_crusade_roster_remaining > 0 }
+        hidden_effect = { change_variable = { name = omni_crusade_roster_start add = 15 } trigger_event = { id = omni_crusade.16 } }
+    }
+    option = {
+        name = omni_crusade.16.previous
+        trigger = { var:omni_crusade_roster_start >= 15 }
+        hidden_effect = { change_variable = { name = omni_crusade_roster_start add = -15 } trigger_event = { id = omni_crusade.16 } }
+    }
+    option = { name = omni_crusade.16.categories hidden_effect = { omni_crusade_clear_roster_view_effect = yes trigger_event = { id = omni_crusade.22 } } }
+    option = { name = omni_crusade.16.close hidden_effect = { omni_crusade_clear_roster_view_effect = yes } }
+}
+
+omni_crusade.14 = {
+    type = country_event
+    title = omni_crusade.14.t
+    desc = omni_crusade.14.desc
+    picture = Event_royal_chamber
+    option = { name = omni_crusade.14.a }
+}
+
+# Invictus war_council.1: saved candidate country scopes and named options.
+# Choose distinct candidates instead of letting advisers repeat the same one.
+omni_crusade.15 = {
+    type = country_event
+    title = omni_crusade.15.t
+    desc = omni_crusade.15.desc
+    picture = war_council
+    left_portrait = current_ruler
+    trigger = {
+        NOT = { has_variable = omni_crusade_preparing }
+        NOT = { has_variable = omni_crusade_active }
+        NOT = { has_variable = called_helluvian_crusade_var }
+        NOT = { has_global_variable = omni_crusade_world_busy }
+    }
+    immediate = {
+        save_scope_as = omni_crusade_actor
+        remove_variable = omni_crusade_target
+        set_variable = omni_crusade_pending
+        random_country = {
+            limit = { omni_crusade_target_trigger = yes }
+            save_scope_as = omni_crusade_candidate_1
+        }
+        if = {
+            limit = { exists = scope:omni_crusade_candidate_1 }
+            random_country = {
+                limit = {
+                    omni_crusade_target_trigger = yes
+                    NOT = { this = scope:omni_crusade_candidate_1 }
+                }
+                save_scope_as = omni_crusade_candidate_2
+            }
+        }
+        if = {
+            limit = { exists = scope:omni_crusade_candidate_2 }
+            random_country = {
+                limit = {
+                    omni_crusade_target_trigger = yes
+                    NOT = { this = scope:omni_crusade_candidate_1 }
+                    NOT = { this = scope:omni_crusade_candidate_2 }
+                }
+                save_scope_as = omni_crusade_candidate_3
+            }
+        }
+    }
+    option = {
+        name = omni_crusade.15.a
+        trigger = {
+            has_variable = omni_crusade_pending
+            exists = scope:omni_crusade_candidate_1
+            scope:omni_crusade_candidate_1 = { omni_crusade_target_trigger = yes }
+        }
+        ai_chance = { factor = 1 }
+        custom_tooltip = omni_crusade_choose_target_tt
+        hidden_effect = {
+            set_variable = { name = omni_crusade_target value = scope:omni_crusade_candidate_1 }
+            trigger_event = { id = omni_crusade.1 }
+        }
+    }
+    option = {
+        name = omni_crusade.15.b
+        trigger = {
+            has_variable = omni_crusade_pending
+            exists = scope:omni_crusade_candidate_2
+            scope:omni_crusade_candidate_2 = { omni_crusade_target_trigger = yes }
+        }
+        ai_chance = { factor = 1 }
+        custom_tooltip = omni_crusade_choose_target_tt
+        hidden_effect = {
+            set_variable = { name = omni_crusade_target value = scope:omni_crusade_candidate_2 }
+            trigger_event = { id = omni_crusade.1 }
+        }
+    }
+    option = {
+        name = omni_crusade.15.c
+        trigger = {
+            has_variable = omni_crusade_pending
+            exists = scope:omni_crusade_candidate_3
+            scope:omni_crusade_candidate_3 = { omni_crusade_target_trigger = yes }
+        }
+        ai_chance = { factor = 1 }
+        custom_tooltip = omni_crusade_choose_target_tt
+        hidden_effect = {
+            set_variable = { name = omni_crusade_target value = scope:omni_crusade_candidate_3 }
+            trigger_event = { id = omni_crusade.1 }
+        }
+    }
+    option = {
+        name = omni_crusade.15.d
+        ai_chance = { factor = 0 }
+        if = {
+            limit = {
+                NOT = { has_variable = omni_crusade_preparing }
+                NOT = { has_variable = omni_crusade_active }
+            }
+            remove_variable = omni_crusade_pending
+            remove_variable = omni_crusade_target
+        }
+    }
+}
+
+# Old saves may already have me_zorgoomni.56 scheduled. Do not launch the old
+# unvalidated war or charge a second entry fee; explain that it was retired.
+omni_crusade.90 = {
+    type = country_event
+    title = omni_crusade.90.t
+    desc = omni_crusade.90.desc
+    picture = Event_royal_chamber
+    option = {
+        name = omni_crusade.90.a
+        add_treasury = 250
+        add_political_influence = 50
+    }
+}
+
+# Warning only after the expedition is funded and confirmed.
+omni_crusade.20 = {
+    type = country_event
+    title = omni_crusade.20.t
+    desc = omni_crusade.20.desc
+    picture = war_council
+    trigger = { exists = var:omni_crusade_host
+        var:omni_crusade_host = { has_variable = omni_crusade_preparing NOT = { has_variable = omni_crusade_declaring } exists = var:omni_crusade_target var:omni_crusade_target = { this = root } } }
+    immediate = {
+        var:omni_crusade_host = { omni_crusade_restore_scopes_effect = yes }
+    }
+    option = {
+        name = omni_crusade.20.a
+        trigger = { exists = var:omni_crusade_host
+        var:omni_crusade_host = { has_variable = omni_crusade_preparing NOT = { has_variable = omni_crusade_declaring } exists = var:omni_crusade_target var:omni_crusade_target = { this = root } } NOT = { has_variable = omni_crusade_appealed } }
+        ai_chance = { factor = 10 }
+        hidden_effect = { omni_crusade_appeal_effect = yes }
+    }
+    option = { name = omni_crusade.20.b ai_chance = { factor = 1 } }
+}
+omni_crusade.21 = {
+    type = country_event
+    title = omni_crusade.21.t
+    desc = omni_crusade.21.desc
+    picture = war_council
+    trigger = { omni_crusade_defensive_invitation_live_trigger = yes }
+    immediate = {
+        var:omni_crusade_host = { omni_crusade_restore_scopes_effect = yes }
+    }
+    option = {
+        name = omni_crusade.21.a
+        trigger = { omni_crusade_defensive_invitation_live_trigger = yes omni_crusade_defender_trigger = yes war = no }
+        ai_chance = {
+            factor = 20
+            modifier = { factor = 4 alliance_with = scope:omni_crusade_target }
+            modifier = { factor = 2 opinion = { target = scope:omni_crusade_target value >= 50 } }
+            modifier = { factor = 0.25 opinion = { target = scope:omni_crusade_target value <= -25 } }
+            modifier = { factor = 2 religion = scope:omni_crusade_target.religion }
+            modifier = { factor = 1.5 omni_crusade_shared_race_trigger = yes }
+            modifier = { factor = 1.5 opinion = { target = scope:omni_crusade_actor value <= -50 } }
+            modifier = { factor = 0.5 treasury < 100 }
+        }
+        hidden_effect = { remove_variable = omni_crusade_defense_invited set_variable = omni_crusade_defense_pledged }
+    }
+    option = {
+        name = omni_crusade.21.b
+        ai_chance = { factor = 40 }
+        hidden_effect = {
+            if = { limit = { omni_crusade_defensive_invitation_live_trigger = yes } set_variable = omni_crusade_defense_refused }
+            remove_variable = omni_crusade_defense_invited
+        }
+    }
+}
+
+omni_crusade.22 = {
+    type = country_event
+    title = omni_crusade.16.t
+    desc = omni_crusade.22.desc
+    picture = Event_royal_chamber
+    immediate = { omni_crusade_restore_review_scopes_effect = yes }
+    option = {
+        name = omni_crusade.22.military
+        trigger = { this = scope:omni_crusade_actor any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_pledged } }
+        hidden_effect = {
+            set_variable = { name = omni_crusade_roster_category value = 1 }
+            set_variable = { name = omni_crusade_roster_start value = 0 }
+            trigger_event = { id = omni_crusade.16 }
+        }
+    }
+    option = {
+        name = omni_crusade.22.offerings
+        trigger = { this = scope:omni_crusade_actor any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_donated } }
+        hidden_effect = {
+            set_variable = { name = omni_crusade_roster_category value = 2 }
+            set_variable = { name = omni_crusade_roster_start value = 0 }
+            trigger_event = { id = omni_crusade.16 }
+        }
+    }
+    option = {
+        name = omni_crusade.22.declined
+        trigger = { this = scope:omni_crusade_actor any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_refused } }
+        hidden_effect = {
+            set_variable = { name = omni_crusade_roster_category value = 3 }
+            set_variable = { name = omni_crusade_roster_start value = 0 }
+            trigger_event = { id = omni_crusade.16 }
+        }
+    }
+    option = {
+        name = omni_crusade.22.pending
+        trigger = { this = scope:omni_crusade_actor any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_invited } }
+        hidden_effect = {
+            set_variable = { name = omni_crusade_roster_category value = 4 }
+            set_variable = { name = omni_crusade_roster_start value = 0 }
+            trigger_event = { id = omni_crusade.16 }
+        }
+    }
+
+    option = { name = omni_crusade.22.other hidden_effect = { trigger_event = { id = omni_crusade.23 } } }
+    option = { name = omni_crusade.16.close hidden_effect = { omni_crusade_clear_roster_view_effect = yes } }
+}
+
+omni_crusade.23 = {
+    type = country_event
+    title = omni_crusade.16.t
+    desc = omni_crusade.23.desc
+    picture = Event_royal_chamber
+    immediate = { omni_crusade_restore_review_scopes_effect = yes }
+    option = {
+        name = omni_crusade.22.defenders
+        trigger = { any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_defense_pledged } }
+        hidden_effect = {
+            set_variable = { name = omni_crusade_roster_category value = 5 }
+            set_variable = { name = omni_crusade_roster_start value = 0 }
+            trigger_event = { id = omni_crusade.16 }
+        }
+    }
+    option = {
+        name = omni_crusade.22.defense_declined
+        trigger = { any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_defense_refused } }
+        hidden_effect = {
+            set_variable = { name = omni_crusade_roster_category value = 6 }
+            set_variable = { name = omni_crusade_roster_start value = 0 }
+            trigger_event = { id = omni_crusade.16 }
+        }
+    }
+    option = {
+        name = omni_crusade.22.defense_pending
+        trigger = { any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_defense_invited } }
+        hidden_effect = {
+            set_variable = { name = omni_crusade_roster_category value = 7 }
+            set_variable = { name = omni_crusade_roster_start value = 0 }
+            trigger_event = { id = omni_crusade.16 }
+        }
+    }
+
+    option = { name = omni_crusade.25.open hidden_effect = { trigger_event = { id = omni_crusade.25 } } }
+    option = { name = omni_crusade.16.categories hidden_effect = { trigger_event = { id = omni_crusade.22 } } }
+    option = { name = omni_crusade.16.close hidden_effect = { omni_crusade_clear_roster_view_effect = yes } }
+}
+
+omni_crusade.24 = {
+    type = country_event
+    title = omni_crusade.20.t
+    desc = omni_crusade.24.desc
+    picture = war_council
+    immediate = { var:omni_crusade_host = { omni_crusade_restore_scopes_effect = yes } }
+    option = {
+        name = omni_crusade.20.a
+        trigger = {
+            NOT = { has_variable = omni_crusade_appealed }
+            exists = var:omni_crusade_host
+            var:omni_crusade_host = { has_variable = omni_crusade_preparing NOT = { has_variable = omni_crusade_declaring } }
+        }
+        hidden_effect = { omni_crusade_appeal_effect = yes }
+    }
+    option = { name = omni_crusade.24.roll hidden_effect = { trigger_event = { id = omni_crusade.23 } } }
+    option = { name = omni_crusade.16.close }
+}
+
+omni_crusade.25 = {
+    type = country_event
+    title = omni_crusade.16.t
+    desc = omni_crusade.25.desc
+    picture = Event_royal_chamber
+    immediate = { omni_crusade_restore_review_scopes_effect = yes }
+    option = {
+        name = omni_crusade.22.joined
+        trigger = { this = scope:omni_crusade_actor  any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_joined } }
+        hidden_effect = { set_variable = { name = omni_crusade_roster_category value = 8 } set_variable = { name = omni_crusade_roster_start value = 0 } trigger_event = { id = omni_crusade.16 } }
+    }
+    option = {
+        name = omni_crusade.22.defense_joined
+        trigger = {   any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_defense_joined } }
+        hidden_effect = { set_variable = { name = omni_crusade_roster_category value = 9 } set_variable = { name = omni_crusade_roster_start value = 0 } trigger_event = { id = omni_crusade.16 } }
+    }
+    option = {
+        name = omni_crusade.22.unfulfilled
+        trigger = { this = scope:omni_crusade_actor has_variable = omni_crusade_active any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_pledged NOT = { has_variable = omni_crusade_joined } } }
+        hidden_effect = { set_variable = { name = omni_crusade_roster_category value = 10 } set_variable = { name = omni_crusade_roster_start value = 0 } trigger_event = { id = omni_crusade.16 } }
+    }
+    option = {
+        name = omni_crusade.22.defense_unfulfilled
+        trigger = { scope:omni_crusade_actor = { has_variable = omni_crusade_active } any_country = { omni_crusade_roster_member_trigger = yes has_variable = omni_crusade_defense_pledged NOT = { has_variable = omni_crusade_defense_joined } } }
+        hidden_effect = { set_variable = { name = omni_crusade_roster_category value = 11 } set_variable = { name = omni_crusade_roster_start value = 0 } trigger_event = { id = omni_crusade.16 } }
+    }
+    option = { name = omni_crusade.25.back hidden_effect = { trigger_event = { id = omni_crusade.23 } } }
+    option = { name = omni_crusade.16.close hidden_effect = { omni_crusade_clear_roster_view_effect = yes } }
+}

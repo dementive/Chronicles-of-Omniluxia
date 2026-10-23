@@ -2551,100 +2551,23 @@ me_zorgoomni.54 = {
     }
 }
 
+# Legacy pending expeditions are refunded instead of invoking the retired chain.
+# New expeditions enter through omni_crusade.1 from the decision.
 me_zorgoomni.55 = {
     type = country_event
-
-    title = me_zorgoomni.55_title
-    desc = me_zorgoomni.55_desc
-    picture = event_marching_army
-    left_portrait = current_ruler
-    right_portrait = scope:helluvian_crusade_target.current_ruler
-
+    hidden = yes
     immediate = {
-        random_neighbour_country = {
-            limit = {
-                has_land = yes
-                in_diplomatic_range = root
-            }
-            save_scope_as = helluvian_crusade_target
-        }
-        root = { save_scope_as = helluvian_crusade_actor }
-    }
-
-    option = {
-        name = "me_zorgoomni.55.a"
-        set_variable = {
-            name = called_helluvian_crusade_var
-            days = 3650
-        }
-        if = {
-            limit = { exists = scope:helluvian_crusade_target }
-            scope:helluvian_crusade_target = {
-                capital_scope = {
-                    add_claim = root
-                    save_scope_as = helluvian_crusade_capital
-                }
-            }
-        }
-        trigger_event = {
-            id = me_zorgoomni.56
-            days = { 30 31 }
-        }
+        debug_log = "OMNI_CRUSADE: retired console event me_zorgoomni.55 invoked; refunding legacy expedition. Use omni_crusade.1 to start a new crusade."
+        trigger_event = { id = omni_crusade.90 }
     }
 }
 
 me_zorgoomni.56 = {
     type = country_event
-
-    title = me_zorgoomni.56_title
-    desc = me_zorgoomni.56_desc
-    picture = Event_royal_chamber
-    left_portrait = current_ruler
-    right_portrait = scope:helluvian_crusade_target.current_ruler
-
-    option = {
-        name = "me_zorgoomni.56.a"
-        create_unit = {
-            navy = no
-            name = "Helluvian Crusaders"
-            location = capital_scope
-            hidden_effect = {
-            add_subunit = heavy_infantry
-            add_subunit = heavy_infantry
-            add_subunit = heavy_infantry
-            add_subunit = light_infantry
-            add_subunit = light_infantry
-            add_subunit = heavy_cavalry
-            add_subunit = heavy_cavalry
-            add_subunit = supply_train
-            add_subunit = supply_train                                          
-            add_food = 100
-            add_morale = 2
-            }
-        }
-        ROOT = {
-            declare_war_with_wargoal = {
-                war_goal = helluvian_crusade_wargoal
-                province = scope:helluvian_crusade_capital 
-                target = scope:helluvian_crusade_capital.owner
-            }
-        }
-        every_country = {
-            limit = {
-                NOT = {
-                    religion = helluvian
-                }
-            }
-            trigger_event = {
-                id = me_zorgoomni.58
-                days = { 6 7 }
-            }
-        }
-    }
-
-    option = {
-        name = "me_zorgoomni.56.b"
-        add_stability = -3
+    hidden = yes
+    immediate = {
+        debug_log = "OMNI_CRUSADE: retired console event me_zorgoomni.56 invoked; refunding legacy expedition. Use omni_crusade.1 to start a new crusade."
+        trigger_event = { id = omni_crusade.90 }
     }
 }
 
@@ -2677,23 +2600,12 @@ me_zorgoomni.58 = {
     picture = Event_royal_chamber
     left_portrait = current_ruler
     right_portrait = p:2706.state.governor_or_ruler
-    right_portrait = scope:helluvian_crusade_target.current_ruler
     
 
     option = {
         name = "me_zorgoomni.58.a"
-        show_as_tooltip = {
-            if = {
-                limit = { exists = scope:helluvian_crusade_actor }
-                scope:helluvian_crusade_actor = {
-                    declare_war_with_wargoal = {
-                        war_goal = helluvian_crusade_wargoal
-                        province = scope:helluvian_crusade_capital 
-                        target = scope:helluvian_crusade_capital.owner
-                    }
-                }
-            }
-        }
+        # Legacy news only. The retired .55/.56 chain no longer sets its old
+        # actor, target or capital scopes. Keep old queued news safe to dismiss.
     }
 }
 
