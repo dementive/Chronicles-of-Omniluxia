@@ -2,14 +2,14 @@
 # Omniluxia - AI healing magic
 #
 # The cure logic exists in the Aldic support menu (me_zorgo_magic_focus.18):
-# Healing Light removes invalid/gangrene, Healing Light II removes a long list of
+# Healing Light removes acute mental and infectious illnesses, Healing Light II removes a long list of
 # chronic and terminal ailments, Vitality grants add_health. None of it was
 # reachable by the AI, so an AI ruler could rot to death from a curable disease
 # while their own court cleric sat on a full mana pool.
 #
 # Runs in the CASTER (character) scope. scope:omni_heal_target is the patient.
 # Costs and tier gates match the player options exactly:
-#   Healing Light     75 mana, cleric T1 (any Aldic T1) - clears invalid/gangrene
+#   Healing Light     75 mana, cleric T1 - clears acute mental and infectious illnesses
 #   Healing Light II 100 mana, cleric_t3_unlocked_var   - clears the full list
 #   Vitality         100 mana, cleric_t3_unlocked_var   - add_health = 3
 #
@@ -31,24 +31,15 @@ omni_ai_cast_healing_effect = {
 		scope:omni_heal_target = { omni_remove_one_curable_ailment = yes }
 	}
 	else_if = {
-		# Tier 1 fallback: only the two ailments Healing Light can touch.
+		# Tier 1 fallback: one acute ailment, matching the player spell.
 		limit = {
 			omni_can_afford_spell = { BASE = 75 }
-			omni_caster_aldic_t1 = yes
+			has_variable = cleric_t2_unlocked_var
 			omni_knows_spell = { SPELL = healing_light }
 			scope:omni_heal_target = { omni_has_minor_curable_ailment = yes }
 		}
 		omni_spell_mana_cost_effect = { BASE = 75 }
-		scope:omni_heal_target = {
-			if = {
-				limit = { has_trait = invalid }
-				remove_trait = invalid
-			}
-			else_if = {
-				limit = { has_trait = gangrene }
-				remove_trait = gangrene
-			}
-		}
+		scope:omni_heal_target = { omni_remove_one_minor_curable_ailment = yes }
 	}
 	else_if = {
 		# Nothing chronic to cure, but the patient is hurt or ill - top them up.
@@ -65,9 +56,8 @@ omni_ai_cast_healing_effect = {
 
 # Mirrors the Healing Light II removal chain in me_zorgo_magic_focus.18.
 # One ailment per cast, worst-first so the AI clears the things that actually
-# kill or incapacitate before the merely inconvenient ones. (The player option's
-# chain is in menu order and checks "cancer" twice; this is the same set, ordered
-# by severity, without the duplicate.)
+# kill or incapacitate before the merely inconvenient ones. The player option
+# uses this same helper, so both paths cure the same conditions in the same order.
 omni_remove_one_curable_ailment = {
 	if =      { limit = { has_trait = cancer }        remove_trait = cancer }
 	else_if = { limit = { has_trait = gangrene }      remove_trait = gangrene }
@@ -81,4 +71,20 @@ omni_remove_one_curable_ailment = {
 	else_if = { limit = { has_trait = arthritis }     remove_trait = arthritis }
 	else_if = { limit = { has_trait = gout }          remove_trait = gout }
 	else_if = { limit = { has_trait = drow_mushroom_spots_trait } remove_trait = drow_mushroom_spots_trait }
+}
+
+# Shared with the player Healing Light option.
+omni_remove_one_minor_curable_ailment = {
+	if = { limit = { has_trait = schizophrenic } remove_trait = schizophrenic }
+	else_if = { limit = { has_trait = epileptic } remove_trait = epileptic }
+	else_if = { limit = { has_trait = hemorrhagic_fever } remove_trait = hemorrhagic_fever }
+	else_if = { limit = { has_trait = vampiric_fever } remove_trait = vampiric_fever }
+	else_if = { limit = { has_trait = plague } remove_trait = plague }
+	else_if = { limit = { has_trait = mentagra } remove_trait = mentagra }
+	else_if = { limit = { has_trait = pox } remove_trait = pox }
+	else_if = { limit = { has_trait = dysentery } remove_trait = dysentery }
+	else_if = { limit = { has_trait = infection } remove_trait = infection }
+	else_if = { limit = { has_trait = inflammation } remove_trait = inflammation }
+	else_if = { limit = { has_trait = pneumonia } remove_trait = pneumonia }
+	else_if = { limit = { has_trait = gangrene } remove_trait = gangrene }
 }

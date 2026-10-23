@@ -20,10 +20,13 @@
 }
 
 omni_ai_equip_artifacts_for_war = {
-	# We must find the best general to give items to
-	# Or we just give to ruler for now
+	# Hand each artifact the country holds (reliquary or owned holy site) to the
+	# best loyal, non-mercenary commander currently leading an army, falling back
+	# to the ruler. Respects the one-item-per-category rule that players follow,
+	# and spreads artifacts across commanders (see omni_ai_artifact_holder_score).
+	# Previously every artifact went to the ruler, often someone not in the field,
+	# who could end up wearing several artifacts of the same type.
 	save_scope_as = ai_employer
-	current_ruler = { save_scope_as = best_general }
 	if = {
 		limit = {
 			OR = {
@@ -31,780 +34,136 @@ omni_ai_equip_artifacts_for_war = {
 				any_owned_holy_site = { any_province_treasure = { always = yes } }
 			}
 		}
-	# Check Reliquary for Cyrogley_crown_of_eagalia
-	if = {
-		limit = {
-			exists = treasure:Cyrogley_crown_of_eagalia
-			AND = { exists = treasure:Cyrogley_crown_of_eagalia any_country_treasure = { THIS = treasure:Cyrogley_crown_of_eagalia } }
-		}
-		treasure:Cyrogley_crown_of_eagalia = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_Cyrogley_crown_of_eagalia }
-		}
+		omni_ai_place_artifact = { TREASURE = Cyrogley_crown_of_eagalia ITEM = item_artifact_Cyrogley_crown_of_eagalia CATEGORY = emblem }
+		omni_ai_place_artifact = { TREASURE = treasure_axe_of_Fiorinoes ITEM = item_artifact_treasure_axe_of_Fiorinoes CATEGORY = weapon }
+		omni_ai_place_artifact = { TREASURE = treasure_Dunydurcerg_royal_scale ITEM = item_artifact_treasure_Dunydurcerg_royal_scale CATEGORY = trinket }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_lantern_of_Trajan ITEM = item_artifact_treasure_lantern_of_Trajan }
+		omni_ai_place_artifact = { TREASURE = treasure_krak_diadem ITEM = item_artifact_treasure_krak_diadem CATEGORY = emblem }
+		omni_ai_place_artifact = { TREASURE = treasure_spear_krak ITEM = item_artifact_treasure_spear_krak CATEGORY = weapon }
+		omni_ai_place_artifact = { TREASURE = treasure_Shield_krak ITEM = item_artifact_treasure_Shield_krak CATEGORY = shield }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_krak_slain_dragon_skull ITEM = item_artifact_treasure_krak_slain_dragon_skull }
+		omni_ai_place_artifact = { TREASURE = treasure_grom_axe ITEM = item_artifact_treasure_grom_axe CATEGORY = weapon }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_czarnopani_tear ITEM = item_artifact_treasure_czarnopani_tear }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_witomir_greeting ITEM = item_artifact_treasure_witomir_greeting }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_Piorun_lightning_bolt_bottle ITEM = item_artifact_treasure_Piorun_lightning_bolt_bottle }
+		omni_ai_place_artifact = { TREASURE = treasure_lech_cape ITEM = item_artifact_treasure_lech_cape CATEGORY = armour }
+		omni_ai_place_artifact = { TREASURE = treasure_ros_bow ITEM = item_artifact_treasure_ros_bow CATEGORY = weapon_ranged }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_jeddiah_wiseman_scroll ITEM = item_artifact_treasure_jeddiah_wiseman_scroll }
+		omni_ai_place_artifact = { TREASURE = treasure_zehia_horse_saddle ITEM = item_artifact_treasure_zehia_horse_saddle CATEGORY = special }
+		omni_ai_place_artifact = { TREASURE = treasure_martyr ITEM = item_artifact_treasure_martyr CATEGORY = weapon }
+		omni_ai_place_artifact = { TREASURE = treasure_wolf_tooth ITEM = item_artifact_treasure_wolf_tooth CATEGORY = trinket }
+		omni_ai_place_artifact = { TREASURE = treasure_eternity_shield ITEM = item_artifact_treasure_eternity_shield CATEGORY = shield }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_fear_disc ITEM = item_artifact_treasure_fear_disc }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_tablet_transformation ITEM = item_artifact_treasure_tablet_transformation }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_kings_heart ITEM = item_artifact_treasure_kings_heart }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_eye_storm ITEM = item_artifact_treasure_eye_storm }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_horn_beasts ITEM = item_artifact_treasure_horn_beasts }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_chalice_blood ITEM = item_artifact_treasure_chalice_blood }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_blade_night ITEM = item_artifact_treasure_blade_night }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_cloak_shadows ITEM = item_artifact_treasure_cloak_shadows }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_helm_ancients ITEM = item_artifact_treasure_helm_ancients }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_ring_power ITEM = item_artifact_treasure_ring_power }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_amulet_life ITEM = item_artifact_treasure_amulet_life }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_orb_knowledge ITEM = item_artifact_treasure_orb_knowledge }
+		omni_ai_place_artifact_uncategorized = { TREASURE = treasure_staff_elements ITEM = item_artifact_treasure_staff_elements }
 	}
-	# Check Holy Sites for Cyrogley_crown_of_eagalia
+}
+
+# Country scope. $CATEGORY$ must be a category registered by
+# omni_assign_artifact_item_categories (choo_items_effects.txt).
+omni_ai_place_artifact = {
 	if = {
 		limit = {
-			exists = treasure:Cyrogley_crown_of_eagalia
-			any_owned_holy_site = {
-				AND = { exists = treasure:Cyrogley_crown_of_eagalia any_province_treasure = { THIS = treasure:Cyrogley_crown_of_eagalia } }
+			exists = treasure:$TREASURE$
+			OR = {
+				any_country_treasure = { THIS = treasure:$TREASURE$ }
+				any_owned_holy_site = { any_province_treasure = { THIS = treasure:$TREASURE$ } }
 			}
 		}
-		treasure:Cyrogley_crown_of_eagalia = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_Cyrogley_crown_of_eagalia }
+		ordered_character = {
+			limit = {
+				omni_ai_artifact_commander_trigger = yes
+				NOT = { has_item = { item_ID = $ITEM$ } }
+				has_any_other_same_category_item_equipped = { item_category = $CATEGORY$ item_ID = $ITEM$ amount_per_category = 1 }
+			}
+			order_by = omni_ai_artifact_holder_score
+			save_scope_as = omni_art_recipient_$TREASURE$
 		}
-	}
-	# Check Reliquary for treasure_axe_of_Fiorinoes
-	if = {
-		limit = {
-			exists = treasure:treasure_axe_of_Fiorinoes
-			AND = { exists = treasure:treasure_axe_of_Fiorinoes any_country_treasure = { THIS = treasure:treasure_axe_of_Fiorinoes } }
+		if = {
+			limit = {
+				NOT = { exists = scope:omni_art_recipient_$TREASURE$ }
+				exists = current_ruler
+				current_ruler = {
+					NOT = { has_item = { item_ID = $ITEM$ } }
+					has_any_other_same_category_item_equipped = { item_category = $CATEGORY$ item_ID = $ITEM$ amount_per_category = 1 }
+				}
+			}
+			current_ruler = { save_scope_as = omni_art_recipient_$TREASURE$ }
 		}
-		treasure:treasure_axe_of_Fiorinoes = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_axe_of_Fiorinoes }
-		}
-	}
-	# Check Holy Sites for treasure_axe_of_Fiorinoes
-	if = {
-		limit = {
-			exists = treasure:treasure_axe_of_Fiorinoes
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_axe_of_Fiorinoes any_province_treasure = { THIS = treasure:treasure_axe_of_Fiorinoes } }
+		# If every candidate already fills that slot, the artifact stays in the reliquary.
+		if = {
+			limit = { exists = scope:omni_art_recipient_$TREASURE$ }
+			treasure:$TREASURE$ = { destroy_treasure = yes }
+			scope:omni_art_recipient_$TREASURE$ = {
+				give_character_an_artifact = { item_ID = $ITEM$ }
+				if = {
+					limit = { NOT = { has_variable = omni_ai_artifacts_held } }
+					set_variable = { name = omni_ai_artifacts_held value = 0 }
+				}
+				change_variable = { name = omni_ai_artifacts_held add = 1 }
 			}
 		}
-		treasure:treasure_axe_of_Fiorinoes = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_axe_of_Fiorinoes }
-		}
 	}
-	# Check Reliquary for treasure_Dunydurcerg_royal_scale
+}
+
+# Country scope. For artifacts with no registered item category: no slot rule,
+# but still spread across commanders by omni_ai_artifact_holder_score.
+omni_ai_place_artifact_uncategorized = {
 	if = {
 		limit = {
-			exists = treasure:treasure_Dunydurcerg_royal_scale
-			AND = { exists = treasure:treasure_Dunydurcerg_royal_scale any_country_treasure = { THIS = treasure:treasure_Dunydurcerg_royal_scale } }
-		}
-		treasure:treasure_Dunydurcerg_royal_scale = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_Dunydurcerg_royal_scale }
-		}
-	}
-	# Check Holy Sites for treasure_Dunydurcerg_royal_scale
-	if = {
-		limit = {
-			exists = treasure:treasure_Dunydurcerg_royal_scale
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_Dunydurcerg_royal_scale any_province_treasure = { THIS = treasure:treasure_Dunydurcerg_royal_scale } }
+			exists = treasure:$TREASURE$
+			OR = {
+				any_country_treasure = { THIS = treasure:$TREASURE$ }
+				any_owned_holy_site = { any_province_treasure = { THIS = treasure:$TREASURE$ } }
 			}
 		}
-		treasure:treasure_Dunydurcerg_royal_scale = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_Dunydurcerg_royal_scale }
+		ordered_character = {
+			limit = {
+				omni_ai_artifact_commander_trigger = yes
+				NOT = { has_item = { item_ID = $ITEM$ } }
+			}
+			order_by = omni_ai_artifact_holder_score
+			save_scope_as = omni_art_recipient_$TREASURE$
 		}
-	}
-	# Check Reliquary for treasure_lantern_of_Trajan
-	if = {
-		limit = {
-			exists = treasure:treasure_lantern_of_Trajan
-			AND = { exists = treasure:treasure_lantern_of_Trajan any_country_treasure = { THIS = treasure:treasure_lantern_of_Trajan } }
+		if = {
+			limit = {
+				NOT = { exists = scope:omni_art_recipient_$TREASURE$ }
+				exists = current_ruler
+			}
+			current_ruler = { save_scope_as = omni_art_recipient_$TREASURE$ }
 		}
-		treasure:treasure_lantern_of_Trajan = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_lantern_of_Trajan }
-		}
-	}
-	# Check Holy Sites for treasure_lantern_of_Trajan
-	if = {
-		limit = {
-			exists = treasure:treasure_lantern_of_Trajan
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_lantern_of_Trajan any_province_treasure = { THIS = treasure:treasure_lantern_of_Trajan } }
+		if = {
+			limit = { exists = scope:omni_art_recipient_$TREASURE$ }
+			treasure:$TREASURE$ = { destroy_treasure = yes }
+			scope:omni_art_recipient_$TREASURE$ = {
+				give_character_an_artifact = { item_ID = $ITEM$ }
+				if = {
+					limit = { NOT = { has_variable = omni_ai_artifacts_held } }
+					set_variable = { name = omni_ai_artifacts_held value = 0 }
+				}
+				change_variable = { name = omni_ai_artifacts_held add = 1 }
 			}
 		}
-		treasure:treasure_lantern_of_Trajan = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_lantern_of_Trajan }
-		}
-	}
-	# Check Reliquary for treasure_krak_diadem
-	if = {
-		limit = {
-			exists = treasure:treasure_krak_diadem
-			AND = { exists = treasure:treasure_krak_diadem any_country_treasure = { THIS = treasure:treasure_krak_diadem } }
-		}
-		treasure:treasure_krak_diadem = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_krak_diadem }
-		}
-	}
-	# Check Holy Sites for treasure_krak_diadem
-	if = {
-		limit = {
-			exists = treasure:treasure_krak_diadem
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_krak_diadem any_province_treasure = { THIS = treasure:treasure_krak_diadem } }
-			}
-		}
-		treasure:treasure_krak_diadem = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_krak_diadem }
-		}
-	}
-	# Check Reliquary for treasure_spear_krak
-	if = {
-		limit = {
-			exists = treasure:treasure_spear_krak
-			AND = { exists = treasure:treasure_spear_krak any_country_treasure = { THIS = treasure:treasure_spear_krak } }
-		}
-		treasure:treasure_spear_krak = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_spear_krak }
-		}
-	}
-	# Check Holy Sites for treasure_spear_krak
-	if = {
-		limit = {
-			exists = treasure:treasure_spear_krak
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_spear_krak any_province_treasure = { THIS = treasure:treasure_spear_krak } }
-			}
-		}
-		treasure:treasure_spear_krak = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_spear_krak }
-		}
-	}
-	# Check Reliquary for treasure_Shield_krak
-	if = {
-		limit = {
-			exists = treasure:treasure_Shield_krak
-			AND = { exists = treasure:treasure_Shield_krak any_country_treasure = { THIS = treasure:treasure_Shield_krak } }
-		}
-		treasure:treasure_Shield_krak = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_Shield_krak }
-		}
-	}
-	# Check Holy Sites for treasure_Shield_krak
-	if = {
-		limit = {
-			exists = treasure:treasure_Shield_krak
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_Shield_krak any_province_treasure = { THIS = treasure:treasure_Shield_krak } }
-			}
-		}
-		treasure:treasure_Shield_krak = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_Shield_krak }
-		}
-	}
-	# Check Reliquary for treasure_krak_slain_dragon_skull
-	if = {
-		limit = {
-			exists = treasure:treasure_krak_slain_dragon_skull
-			AND = { exists = treasure:treasure_krak_slain_dragon_skull any_country_treasure = { THIS = treasure:treasure_krak_slain_dragon_skull } }
-		}
-		treasure:treasure_krak_slain_dragon_skull = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_krak_slain_dragon_skull }
-		}
-	}
-	# Check Holy Sites for treasure_krak_slain_dragon_skull
-	if = {
-		limit = {
-			exists = treasure:treasure_krak_slain_dragon_skull
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_krak_slain_dragon_skull any_province_treasure = { THIS = treasure:treasure_krak_slain_dragon_skull } }
-			}
-		}
-		treasure:treasure_krak_slain_dragon_skull = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_krak_slain_dragon_skull }
-		}
-	}
-	# Check Reliquary for treasure_grom_axe
-	if = {
-		limit = {
-			exists = treasure:treasure_grom_axe
-			AND = { exists = treasure:treasure_grom_axe any_country_treasure = { THIS = treasure:treasure_grom_axe } }
-		}
-		treasure:treasure_grom_axe = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_grom_axe }
-		}
-	}
-	# Check Holy Sites for treasure_grom_axe
-	if = {
-		limit = {
-			exists = treasure:treasure_grom_axe
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_grom_axe any_province_treasure = { THIS = treasure:treasure_grom_axe } }
-			}
-		}
-		treasure:treasure_grom_axe = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_grom_axe }
-		}
-	}
-	# Check Reliquary for treasure_czarnopani_tear
-	if = {
-		limit = {
-			exists = treasure:treasure_czarnopani_tear
-			AND = { exists = treasure:treasure_czarnopani_tear any_country_treasure = { THIS = treasure:treasure_czarnopani_tear } }
-		}
-		treasure:treasure_czarnopani_tear = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_czarnopani_tear }
-		}
-	}
-	# Check Holy Sites for treasure_czarnopani_tear
-	if = {
-		limit = {
-			exists = treasure:treasure_czarnopani_tear
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_czarnopani_tear any_province_treasure = { THIS = treasure:treasure_czarnopani_tear } }
-			}
-		}
-		treasure:treasure_czarnopani_tear = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_czarnopani_tear }
-		}
-	}
-	# Check Reliquary for treasure_witomir_greeting
-	if = {
-		limit = {
-			exists = treasure:treasure_witomir_greeting
-			AND = { exists = treasure:treasure_witomir_greeting any_country_treasure = { THIS = treasure:treasure_witomir_greeting } }
-		}
-		treasure:treasure_witomir_greeting = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_witomir_greeting }
-		}
-	}
-	# Check Holy Sites for treasure_witomir_greeting
-	if = {
-		limit = {
-			exists = treasure:treasure_witomir_greeting
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_witomir_greeting any_province_treasure = { THIS = treasure:treasure_witomir_greeting } }
-			}
-		}
-		treasure:treasure_witomir_greeting = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_witomir_greeting }
-		}
-	}
-	# Check Reliquary for treasure_Piorun_lightning_bolt_bottle
-	if = {
-		limit = {
-			exists = treasure:treasure_Piorun_lightning_bolt_bottle
-			AND = { exists = treasure:treasure_Piorun_lightning_bolt_bottle any_country_treasure = { THIS = treasure:treasure_Piorun_lightning_bolt_bottle } }
-		}
-		treasure:treasure_Piorun_lightning_bolt_bottle = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_Piorun_lightning_bolt_bottle }
-		}
-	}
-	# Check Holy Sites for treasure_Piorun_lightning_bolt_bottle
-	if = {
-		limit = {
-			exists = treasure:treasure_Piorun_lightning_bolt_bottle
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_Piorun_lightning_bolt_bottle any_province_treasure = { THIS = treasure:treasure_Piorun_lightning_bolt_bottle } }
-			}
-		}
-		treasure:treasure_Piorun_lightning_bolt_bottle = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_Piorun_lightning_bolt_bottle }
-		}
-	}
-	# Check Reliquary for treasure_lech_cape
-	if = {
-		limit = {
-			exists = treasure:treasure_lech_cape
-			AND = { exists = treasure:treasure_lech_cape any_country_treasure = { THIS = treasure:treasure_lech_cape } }
-		}
-		treasure:treasure_lech_cape = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_lech_cape }
-		}
-	}
-	# Check Holy Sites for treasure_lech_cape
-	if = {
-		limit = {
-			exists = treasure:treasure_lech_cape
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_lech_cape any_province_treasure = { THIS = treasure:treasure_lech_cape } }
-			}
-		}
-		treasure:treasure_lech_cape = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_lech_cape }
-		}
-	}
-	# Check Reliquary for treasure_ros_bow
-	if = {
-		limit = {
-			exists = treasure:treasure_ros_bow
-			AND = { exists = treasure:treasure_ros_bow any_country_treasure = { THIS = treasure:treasure_ros_bow } }
-		}
-		treasure:treasure_ros_bow = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_ros_bow }
-		}
-	}
-	# Check Holy Sites for treasure_ros_bow
-	if = {
-		limit = {
-			exists = treasure:treasure_ros_bow
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_ros_bow any_province_treasure = { THIS = treasure:treasure_ros_bow } }
-			}
-		}
-		treasure:treasure_ros_bow = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_ros_bow }
-		}
-	}
-	# Check Reliquary for treasure_jeddiah_wiseman_scroll
-	if = {
-		limit = {
-			exists = treasure:treasure_jeddiah_wiseman_scroll
-			AND = { exists = treasure:treasure_jeddiah_wiseman_scroll any_country_treasure = { THIS = treasure:treasure_jeddiah_wiseman_scroll } }
-		}
-		treasure:treasure_jeddiah_wiseman_scroll = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_jeddiah_wiseman_scroll }
-		}
-	}
-	# Check Holy Sites for treasure_jeddiah_wiseman_scroll
-	if = {
-		limit = {
-			exists = treasure:treasure_jeddiah_wiseman_scroll
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_jeddiah_wiseman_scroll any_province_treasure = { THIS = treasure:treasure_jeddiah_wiseman_scroll } }
-			}
-		}
-		treasure:treasure_jeddiah_wiseman_scroll = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_jeddiah_wiseman_scroll }
-		}
-	}
-	# Check Reliquary for treasure_zehia_horse_saddle
-	if = {
-		limit = {
-			exists = treasure:treasure_zehia_horse_saddle
-			AND = { exists = treasure:treasure_zehia_horse_saddle any_country_treasure = { THIS = treasure:treasure_zehia_horse_saddle } }
-		}
-		treasure:treasure_zehia_horse_saddle = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_zehia_horse_saddle }
-		}
-	}
-	# Check Holy Sites for treasure_zehia_horse_saddle
-	if = {
-		limit = {
-			exists = treasure:treasure_zehia_horse_saddle
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_zehia_horse_saddle any_province_treasure = { THIS = treasure:treasure_zehia_horse_saddle } }
-			}
-		}
-		treasure:treasure_zehia_horse_saddle = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_zehia_horse_saddle }
-		}
-	}
-	# Check Reliquary for treasure_martyr
-	if = {
-		limit = {
-			exists = treasure:treasure_martyr
-			AND = { exists = treasure:treasure_martyr any_country_treasure = { THIS = treasure:treasure_martyr } }
-		}
-		treasure:treasure_martyr = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_martyr }
-		}
-	}
-	# Check Holy Sites for treasure_martyr
-	if = {
-		limit = {
-			exists = treasure:treasure_martyr
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_martyr any_province_treasure = { THIS = treasure:treasure_martyr } }
-			}
-		}
-		treasure:treasure_martyr = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_martyr }
-		}
-	}
-	# Check Reliquary for treasure_wolf_tooth
-	if = {
-		limit = {
-			exists = treasure:treasure_wolf_tooth
-			AND = { exists = treasure:treasure_wolf_tooth any_country_treasure = { THIS = treasure:treasure_wolf_tooth } }
-		}
-		treasure:treasure_wolf_tooth = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_wolf_tooth }
-		}
-	}
-	# Check Holy Sites for treasure_wolf_tooth
-	if = {
-		limit = {
-			exists = treasure:treasure_wolf_tooth
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_wolf_tooth any_province_treasure = { THIS = treasure:treasure_wolf_tooth } }
-			}
-		}
-		treasure:treasure_wolf_tooth = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_wolf_tooth }
-		}
-	}
-	# Check Reliquary for treasure_eternity_shield
-	if = {
-		limit = {
-			exists = treasure:treasure_eternity_shield
-			AND = { exists = treasure:treasure_eternity_shield any_country_treasure = { THIS = treasure:treasure_eternity_shield } }
-		}
-		treasure:treasure_eternity_shield = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_eternity_shield }
-		}
-	}
-	# Check Holy Sites for treasure_eternity_shield
-	if = {
-		limit = {
-			exists = treasure:treasure_eternity_shield
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_eternity_shield any_province_treasure = { THIS = treasure:treasure_eternity_shield } }
-			}
-		}
-		treasure:treasure_eternity_shield = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_eternity_shield }
-		}
-	}
-	# Check Reliquary for treasure_fear_disc
-	if = {
-		limit = {
-			exists = treasure:treasure_fear_disc
-			AND = { exists = treasure:treasure_fear_disc any_country_treasure = { THIS = treasure:treasure_fear_disc } }
-		}
-		treasure:treasure_fear_disc = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_fear_disc }
-		}
-	}
-	# Check Holy Sites for treasure_fear_disc
-	if = {
-		limit = {
-			exists = treasure:treasure_fear_disc
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_fear_disc any_province_treasure = { THIS = treasure:treasure_fear_disc } }
-			}
-		}
-		treasure:treasure_fear_disc = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_fear_disc }
-		}
-	}
-	# Check Reliquary for treasure_tablet_transformation
-	if = {
-		limit = {
-			exists = treasure:treasure_tablet_transformation
-			AND = { exists = treasure:treasure_tablet_transformation any_country_treasure = { THIS = treasure:treasure_tablet_transformation } }
-		}
-		treasure:treasure_tablet_transformation = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_tablet_transformation }
-		}
-	}
-	# Check Holy Sites for treasure_tablet_transformation
-	if = {
-		limit = {
-			exists = treasure:treasure_tablet_transformation
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_tablet_transformation any_province_treasure = { THIS = treasure:treasure_tablet_transformation } }
-			}
-		}
-		treasure:treasure_tablet_transformation = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_tablet_transformation }
-		}
-	}
-	# Check Reliquary for treasure_kings_heart
-	if = {
-		limit = {
-			exists = treasure:treasure_kings_heart
-			AND = { exists = treasure:treasure_kings_heart any_country_treasure = { THIS = treasure:treasure_kings_heart } }
-		}
-		treasure:treasure_kings_heart = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_kings_heart }
-		}
-	}
-	# Check Holy Sites for treasure_kings_heart
-	if = {
-		limit = {
-			exists = treasure:treasure_kings_heart
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_kings_heart any_province_treasure = { THIS = treasure:treasure_kings_heart } }
-			}
-		}
-		treasure:treasure_kings_heart = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_kings_heart }
-		}
-	}
-	# Check Reliquary for treasure_eye_storm
-	if = {
-		limit = {
-			exists = treasure:treasure_eye_storm
-			AND = { exists = treasure:treasure_eye_storm any_country_treasure = { THIS = treasure:treasure_eye_storm } }
-		}
-		treasure:treasure_eye_storm = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_eye_storm }
-		}
-	}
-	# Check Holy Sites for treasure_eye_storm
-	if = {
-		limit = {
-			exists = treasure:treasure_eye_storm
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_eye_storm any_province_treasure = { THIS = treasure:treasure_eye_storm } }
-			}
-		}
-		treasure:treasure_eye_storm = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_eye_storm }
-		}
-	}
-	# Check Reliquary for treasure_horn_beasts
-	if = {
-		limit = {
-			exists = treasure:treasure_horn_beasts
-			AND = { exists = treasure:treasure_horn_beasts any_country_treasure = { THIS = treasure:treasure_horn_beasts } }
-		}
-		treasure:treasure_horn_beasts = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_horn_beasts }
-		}
-	}
-	# Check Holy Sites for treasure_horn_beasts
-	if = {
-		limit = {
-			exists = treasure:treasure_horn_beasts
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_horn_beasts any_province_treasure = { THIS = treasure:treasure_horn_beasts } }
-			}
-		}
-		treasure:treasure_horn_beasts = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_horn_beasts }
-		}
-	}
-	# Check Reliquary for treasure_chalice_blood
-	if = {
-		limit = {
-			exists = treasure:treasure_chalice_blood
-			AND = { exists = treasure:treasure_chalice_blood any_country_treasure = { THIS = treasure:treasure_chalice_blood } }
-		}
-		treasure:treasure_chalice_blood = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_chalice_blood }
-		}
-	}
-	# Check Holy Sites for treasure_chalice_blood
-	if = {
-		limit = {
-			exists = treasure:treasure_chalice_blood
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_chalice_blood any_province_treasure = { THIS = treasure:treasure_chalice_blood } }
-			}
-		}
-		treasure:treasure_chalice_blood = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_chalice_blood }
-		}
-	}
-	# Check Reliquary for treasure_blade_night
-	if = {
-		limit = {
-			exists = treasure:treasure_blade_night
-			AND = { exists = treasure:treasure_blade_night any_country_treasure = { THIS = treasure:treasure_blade_night } }
-		}
-		treasure:treasure_blade_night = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_blade_night }
-		}
-	}
-	# Check Holy Sites for treasure_blade_night
-	if = {
-		limit = {
-			exists = treasure:treasure_blade_night
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_blade_night any_province_treasure = { THIS = treasure:treasure_blade_night } }
-			}
-		}
-		treasure:treasure_blade_night = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_blade_night }
-		}
-	}
-	# Check Reliquary for treasure_cloak_shadows
-	if = {
-		limit = {
-			exists = treasure:treasure_cloak_shadows
-			AND = { exists = treasure:treasure_cloak_shadows any_country_treasure = { THIS = treasure:treasure_cloak_shadows } }
-		}
-		treasure:treasure_cloak_shadows = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_cloak_shadows }
-		}
-	}
-	# Check Holy Sites for treasure_cloak_shadows
-	if = {
-		limit = {
-			exists = treasure:treasure_cloak_shadows
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_cloak_shadows any_province_treasure = { THIS = treasure:treasure_cloak_shadows } }
-			}
-		}
-		treasure:treasure_cloak_shadows = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_cloak_shadows }
-		}
-	}
-	# Check Reliquary for treasure_helm_ancients
-	if = {
-		limit = {
-			exists = treasure:treasure_helm_ancients
-			AND = { exists = treasure:treasure_helm_ancients any_country_treasure = { THIS = treasure:treasure_helm_ancients } }
-		}
-		treasure:treasure_helm_ancients = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_helm_ancients }
-		}
-	}
-	# Check Holy Sites for treasure_helm_ancients
-	if = {
-		limit = {
-			exists = treasure:treasure_helm_ancients
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_helm_ancients any_province_treasure = { THIS = treasure:treasure_helm_ancients } }
-			}
-		}
-		treasure:treasure_helm_ancients = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_helm_ancients }
-		}
-	}
-	# Check Reliquary for treasure_ring_power
-	if = {
-		limit = {
-			exists = treasure:treasure_ring_power
-			AND = { exists = treasure:treasure_ring_power any_country_treasure = { THIS = treasure:treasure_ring_power } }
-		}
-		treasure:treasure_ring_power = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_ring_power }
-		}
-	}
-	# Check Holy Sites for treasure_ring_power
-	if = {
-		limit = {
-			exists = treasure:treasure_ring_power
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_ring_power any_province_treasure = { THIS = treasure:treasure_ring_power } }
-			}
-		}
-		treasure:treasure_ring_power = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_ring_power }
-		}
-	}
-	# Check Reliquary for treasure_amulet_life
-	if = {
-		limit = {
-			exists = treasure:treasure_amulet_life
-			AND = { exists = treasure:treasure_amulet_life any_country_treasure = { THIS = treasure:treasure_amulet_life } }
-		}
-		treasure:treasure_amulet_life = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_amulet_life }
-		}
-	}
-	# Check Holy Sites for treasure_amulet_life
-	if = {
-		limit = {
-			exists = treasure:treasure_amulet_life
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_amulet_life any_province_treasure = { THIS = treasure:treasure_amulet_life } }
-			}
-		}
-		treasure:treasure_amulet_life = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_amulet_life }
-		}
-	}
-	# Check Reliquary for treasure_orb_knowledge
-	if = {
-		limit = {
-			exists = treasure:treasure_orb_knowledge
-			AND = { exists = treasure:treasure_orb_knowledge any_country_treasure = { THIS = treasure:treasure_orb_knowledge } }
-		}
-		treasure:treasure_orb_knowledge = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_orb_knowledge }
-		}
-	}
-	# Check Holy Sites for treasure_orb_knowledge
-	if = {
-		limit = {
-			exists = treasure:treasure_orb_knowledge
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_orb_knowledge any_province_treasure = { THIS = treasure:treasure_orb_knowledge } }
-			}
-		}
-		treasure:treasure_orb_knowledge = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_orb_knowledge }
-		}
-	}
-	# Check Reliquary for treasure_staff_elements
-	if = {
-		limit = {
-			exists = treasure:treasure_staff_elements
-			AND = { exists = treasure:treasure_staff_elements any_country_treasure = { THIS = treasure:treasure_staff_elements } }
-		}
-		treasure:treasure_staff_elements = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_staff_elements }
-		}
-	}
-	# Check Holy Sites for treasure_staff_elements
-	if = {
-		limit = {
-			exists = treasure:treasure_staff_elements
-			any_owned_holy_site = {
-				AND = { exists = treasure:treasure_staff_elements any_province_treasure = { THIS = treasure:treasure_staff_elements } }
-			}
-		}
-		treasure:treasure_staff_elements = { destroy_treasure = yes }
-		scope:best_general = {
-			give_character_an_artifact = { item_ID = item_artifact_treasure_staff_elements }
-		}
-	}
 	}
 }
 
 omni_ai_unequip_artifacts_for_peace = {
 	# Find anyone who has the item and remove it, recreate treasure
 	every_character = {
+		if = {
+			limit = { has_variable = omni_ai_artifacts_held }
+			remove_variable = omni_ai_artifacts_held
+		}
 		if = {
 			limit = { has_item = { item_ID = item_artifact_Cyrogley_crown_of_eagalia } }
 			remove_character_item = { item_ID = item_artifact_Cyrogley_crown_of_eagalia }
@@ -998,4 +357,38 @@ omni_ai_unequip_artifacts_for_peace = {
 			employer = { create_country_treasure = { key = treasure_staff_elements icon = "gfx/interface/icons/treasures/actual_paper.dds" } }
 		}
 	}
+	# Holders who died off the battlefield or left the country took their artifact
+	# with them; drop the country-wide bonus that artifact was still granting.
+	if = { limit = { has_country_modifier = item_artifact_Cyrogley_crown_of_eagalia_army NOT = { any_character = { has_item = { item_ID = item_artifact_Cyrogley_crown_of_eagalia } } } } remove_country_modifier = item_artifact_Cyrogley_crown_of_eagalia_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_axe_of_Fiorinoes_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_axe_of_Fiorinoes } } } } remove_country_modifier = item_artifact_treasure_axe_of_Fiorinoes_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_Dunydurcerg_royal_scale_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_Dunydurcerg_royal_scale } } } } remove_country_modifier = item_artifact_treasure_Dunydurcerg_royal_scale_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_lantern_of_Trajan_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_lantern_of_Trajan } } } } remove_country_modifier = item_artifact_treasure_lantern_of_Trajan_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_krak_diadem_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_krak_diadem } } } } remove_country_modifier = item_artifact_treasure_krak_diadem_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_spear_krak_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_spear_krak } } } } remove_country_modifier = item_artifact_treasure_spear_krak_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_Shield_krak_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_Shield_krak } } } } remove_country_modifier = item_artifact_treasure_Shield_krak_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_krak_slain_dragon_skull_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_krak_slain_dragon_skull } } } } remove_country_modifier = item_artifact_treasure_krak_slain_dragon_skull_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_grom_axe_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_grom_axe } } } } remove_country_modifier = item_artifact_treasure_grom_axe_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_czarnopani_tear_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_czarnopani_tear } } } } remove_country_modifier = item_artifact_treasure_czarnopani_tear_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_witomir_greeting_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_witomir_greeting } } } } remove_country_modifier = item_artifact_treasure_witomir_greeting_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_Piorun_lightning_bolt_bottle_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_Piorun_lightning_bolt_bottle } } } } remove_country_modifier = item_artifact_treasure_Piorun_lightning_bolt_bottle_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_lech_cape_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_lech_cape } } } } remove_country_modifier = item_artifact_treasure_lech_cape_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_ros_bow_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_ros_bow } } } } remove_country_modifier = item_artifact_treasure_ros_bow_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_jeddiah_wiseman_scroll_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_jeddiah_wiseman_scroll } } } } remove_country_modifier = item_artifact_treasure_jeddiah_wiseman_scroll_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_zehia_horse_saddle_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_zehia_horse_saddle } } } } remove_country_modifier = item_artifact_treasure_zehia_horse_saddle_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_martyr_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_martyr } } } } remove_country_modifier = item_artifact_treasure_martyr_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_wolf_tooth_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_wolf_tooth } } } } remove_country_modifier = item_artifact_treasure_wolf_tooth_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_eternity_shield_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_eternity_shield } } } } remove_country_modifier = item_artifact_treasure_eternity_shield_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_fear_disc_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_fear_disc } } } } remove_country_modifier = item_artifact_treasure_fear_disc_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_tablet_transformation_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_tablet_transformation } } } } remove_country_modifier = item_artifact_treasure_tablet_transformation_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_kings_heart_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_kings_heart } } } } remove_country_modifier = item_artifact_treasure_kings_heart_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_eye_storm_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_eye_storm } } } } remove_country_modifier = item_artifact_treasure_eye_storm_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_horn_beasts_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_horn_beasts } } } } remove_country_modifier = item_artifact_treasure_horn_beasts_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_chalice_blood_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_chalice_blood } } } } remove_country_modifier = item_artifact_treasure_chalice_blood_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_blade_night_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_blade_night } } } } remove_country_modifier = item_artifact_treasure_blade_night_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_cloak_shadows_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_cloak_shadows } } } } remove_country_modifier = item_artifact_treasure_cloak_shadows_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_helm_ancients_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_helm_ancients } } } } remove_country_modifier = item_artifact_treasure_helm_ancients_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_ring_power_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_ring_power } } } } remove_country_modifier = item_artifact_treasure_ring_power_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_amulet_life_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_amulet_life } } } } remove_country_modifier = item_artifact_treasure_amulet_life_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_orb_knowledge_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_orb_knowledge } } } } remove_country_modifier = item_artifact_treasure_orb_knowledge_army }
+	if = { limit = { has_country_modifier = item_artifact_treasure_staff_elements_army NOT = { any_character = { has_item = { item_ID = item_artifact_treasure_staff_elements } } } } remove_country_modifier = item_artifact_treasure_staff_elements_army }
 }

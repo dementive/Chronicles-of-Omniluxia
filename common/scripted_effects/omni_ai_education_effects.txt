@@ -1,0 +1,68 @@
+﻿# AI parity for the Educate Child interaction (common/character_interactions/OMNI_educate_child.txt).
+# Players pick a track through events omni_educate_child.1-6; the graduation events .7-.11 then fire
+# from the monthly pulse for everyone, AI included, once the child is an adult. The AI never started
+# an education, so its heirs never got the graduation traits.
+#
+# Country scope, run once a year from omni_perf.9 (AI only, peacetime). At most one child per year,
+# same cost as for players (one year of income), and only from money above the AI's protected war
+# reserve (omni_ai_luxury_spendable_treasury). Magical tracks are left to the AI magic-study system.
+omni_ai_educate_child_effect = {
+	if = {
+		limit = {
+			is_ai = yes
+			war = no
+			has_monthly_income > 0
+			omni_ai_luxury_spendable_treasury >= has_yearly_income_svalue
+			any_character = { omni_ai_education_candidate_trigger = yes }
+		}
+		ordered_character = {
+			limit = { omni_ai_education_candidate_trigger = yes }
+			order_by = omni_ai_education_priority_svalue
+			save_scope_as = omni_ai_ec_child
+		}
+		add_treasury = {
+			value = 0
+			subtract = has_yearly_income_svalue
+		}
+		scope:omni_ai_ec_child = {
+			random_list = {
+				10 = { # Land
+					modifier = { factor = 3 martial >= 6 }
+					modifier = { factor = 2 is_primary_heir = no }
+					set_variable = ec_land_var
+				}
+				4 = { # Sea
+					trigger = { employer = { num_of_ports >= 3 } }
+					modifier = { factor = 2 martial >= 6 }
+					set_variable = ec_sea_var
+				}
+				6 = { # Sophistry
+					modifier = { factor = 3 charisma >= 6 }
+					set_variable = ec_sophistry_var
+				}
+				6 = { # Law
+					modifier = { factor = 2 charisma >= 6 }
+					modifier = { factor = 2 is_primary_heir = yes }
+					set_variable = ec_law_var
+				}
+				8 = { # Administration
+					modifier = { factor = 3 finesse >= 6 }
+					modifier = { factor = 2 is_primary_heir = yes }
+					set_variable = ec_admin_var
+				}
+				6 = { # Trade
+					modifier = { factor = 3 finesse >= 6 }
+					set_variable = ec_trade_var
+				}
+				5 = { # Secular
+					modifier = { factor = 2 zeal >= 6 }
+					set_variable = ec_secular_var
+				}
+				5 = { # Religious
+					modifier = { factor = 3 zeal >= 6 }
+					set_variable = ec_religious_var
+				}
+			}
+		}
+	}
+}

@@ -52,7 +52,7 @@ omni_perf.3 = {
 		cache_adjusted_research_efficiency = yes
 		ai_determine_economic_policies = yes
 		ai_import_food_into_states_in_need = yes  # Global, food is lowest during winter
-		ai_recruit_mercenaries = yes
+		# ai_recruit_mercenaries moved back to omniluxia_ai_monthly_pulse (cheap, globally guarded)
 
 		trigger_event = { id = omni_perf.6 days = 20 }
 	}
@@ -120,6 +120,36 @@ omni_perf.7 = {
 		trigger_event = { id = omni_ai_magic.1 days = { 5 40 } }   # Court cleric heals ruler / heir / commanders
 		trigger_event = { id = omni_ai_magic.2 days = { 45 80 } }  # Court mage casts a civic spell in peacetime
 		trigger_event = { id = omni_ai_magic.3 days = { 80 115 } } # Court mage casts a country-wide peacetime blessing
+
+		# Character loyalty is designed to be checked quarterly and laws half-yearly (both
+		# self-throttle). Only running them yearly let disloyalty snowball into AI civil wars.
+		# Three small follow-ups per AI country per year, spread out, no global scans.
+		trigger_event = { id = omni_perf.8 days = { 88 95 } }
+		trigger_event = { id = omni_perf.8 days = { 179 186 } }
+		trigger_event = { id = omni_perf.8 days = { 270 277 } }
+
+		# AI child education (once a year, peacetime, spare money only).
+		trigger_event = { id = omni_perf.9 days = { 120 200 } }
+	}
+
+	option = {}
+}
+
+
+# Quarterly AI follow-up: loyalty upkeep (75-day guard -> every call) and law choice
+# (165-day guard -> only the mid-year call gets through). AI-only, early-out trigger.
+omni_perf.8 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		has_land = yes
+	}
+
+	immediate = {
+		ai_fix_character_loyalty = yes
+		ai_choose_and_enact_law = yes
 	}
 
 	option = {}
@@ -149,6 +179,24 @@ omni_perf.5 = {
 
 	immediate = {
 		disable_racial_assimilation = yes
+	}
+
+	option = {}
+}
+
+
+# Yearly AI child education - see common/scripted_effects/omni_ai_education_effects.txt.
+omni_perf.9 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		war = no
+	}
+
+	immediate = {
+		omni_ai_educate_child_effect = yes
 	}
 
 	option = {}
