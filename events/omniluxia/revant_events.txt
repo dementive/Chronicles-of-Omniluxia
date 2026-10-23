@@ -931,14 +931,26 @@ revant.11 = { # Revant is Killed WORLD
     }
 }
 
-revant.12 = { # Blood Angel Girl Auto Ai
+revant.12 = { # Blood Angel Girl Auto AI
     type = country_event
     hidden = yes
 
     immediate = {
-    	p:2478 = {
-	    	set_owned_by = scope:restorer_army
-	    }
-	}
+        # This event can arrive years after the Bloodsworn were annexed.
+        # Giving land to that extinct country resurrects it without a ruler.
+        if = {
+            limit = {
+                exists = scope:restorer_army
+                scope:restorer_army = { has_land = yes exists = current_ruler }
+                exists = scope:blood_angel_girl
+                scope:blood_angel_girl = { is_alive = yes }
+                exists = scope:revant_tag
+                p:2478 = { owner = scope:revant_tag }
+            }
+            p:2478 = { set_owned_by = scope:restorer_army }
+        }
+        else = {
+            debug_log = "REVANT: skipped delayed Bloodsworn intervention; realm, ruler, heroine or target no longer valid."
+        }
+    }
 }
-
