@@ -13,6 +13,31 @@
 monthly_country_pulse = {
     effect = {
         omni_shannah_repair_office_effect = yes
+        # Reliable AI scheduling, independent of ordinary decision evaluation.
+        # Only eligible AI hosts reach the target scan, at most twice a year.
+        if = {
+            limit = {
+                is_ai = yes
+                omni_crusade_host_ready_trigger = yes
+                treasury >= 250
+                political_influence >= 50
+                NOR = {
+                    has_variable = omni_crusade_ai_attempt_delay
+                    has_variable = called_helluvian_crusade_var
+                    has_variable = omni_crusade_pending
+                    has_variable = omni_crusade_preparing
+                    has_variable = omni_crusade_active
+                    has_global_variable = omni_crusade_world_busy
+                }
+            }
+            set_variable = { name = omni_crusade_ai_attempt_delay days = 180 }
+            omni_crusade_restore_scopes_effect = yes
+            if = {
+                limit = { any_country = { omni_crusade_target_trigger = yes } }
+                debug_log = "OMNI_CRUSADE: AI Shannah eligible; convening target council from monthly scheduler."
+                trigger_event = { id = omni_crusade.15 }
+            }
+        }
         if = {
             limit = {
                 has_variable = omni_crusade_preparing
@@ -92,6 +117,10 @@ monthly_country_pulse = {
                     }
                 }
                 remove_global_variable = omni_crusade_world_busy
+                every_province = {
+                    limit = { has_variable = omni_crusade_original_target_land }
+                    remove_variable = omni_crusade_original_target_land
+                }
             }
         }
     }

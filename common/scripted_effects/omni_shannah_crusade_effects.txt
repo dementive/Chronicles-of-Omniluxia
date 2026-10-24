@@ -114,6 +114,7 @@ omni_crusade_clear_participant_effect = {
 
 # ROOT is the host when called, including inside every_country below.
 omni_crusade_clear_host_effect = {
+    omni_crusade_clear_target_land_effect = yes
     omni_crusade_clear_roster_view_effect = yes
     every_country = {
         limit = {
@@ -287,6 +288,8 @@ omni_crusade_begin_preparation_effect = {
     debug_log = "OMNI_CRUSADE: new expedition confirmed; starting 180-day preparation."
     omni_crusade_restore_scopes_effect = yes
     remove_variable = omni_crusade_pending
+    remove_variable = omni_crusade_conversion_pops
+    remove_variable = omni_crusade_conversion_territories
     set_variable = omni_crusade_preparing
     set_global_variable = omni_crusade_world_busy
     set_variable = { name = called_helluvian_crusade_var days = 3650 }
@@ -405,6 +408,7 @@ omni_crusade_launch_effect = {
                 save_scope_as = omni_crusade_capital
             }
         }
+        omni_crusade_record_target_land_effect = yes
         set_variable = omni_crusade_declaring
         debug_log = "OMNI_CRUSADE: host and target valid; issuing declaration."
         declare_war_with_wargoal = {
@@ -501,4 +505,135 @@ omni_crusade_snapshot_strength_effect = {
     set_variable = { name = omni_crusade_strength value = omni_crusade_strength_svalue }
     set_variable = { name = omni_crusade_target_strength value = scope:omni_crusade_target.omni_crusade_strength_svalue }
     set_variable = { name = omni_crusade_target_advantage value = { value = var:omni_crusade_target_strength subtract = var:omni_crusade_strength } }
+}
+
+# One ownership snapshot at declaration. Only original target land can qualify.
+omni_crusade_record_target_land_effect = {
+    set_variable = omni_crusade_land_recorded
+    scope:omni_crusade_target = {
+        every_owned_province = {
+            set_variable = { name = omni_crusade_original_target_land value = scope:omni_crusade_actor }
+        }
+    }
+}
+omni_crusade_clear_target_land_effect = {
+    if = {
+        limit = { has_variable = omni_crusade_land_recorded }
+        every_province = {
+            limit = {
+                exists = var:omni_crusade_original_target_land
+                var:omni_crusade_original_target_land = { this = scope:omni_crusade_actor }
+            }
+            remove_variable = omni_crusade_original_target_land
+        }
+        remove_variable = omni_crusade_land_recorded
+    }
+}
+# Called only after the original host/target war ends. Build a linked queue
+# from the peace-time eligible territories; no population iteration here.
+# Province references stored in variables follow revant first_attack and
+# generic_infra_events good_infra_bypass_cooldown.
+omni_crusade_convert_conquests_effect = {
+    if = {
+        limit = { has_variable = omni_crusade_land_recorded religion = helluvian }
+        set_variable = { name = omni_crusade_conversion_pops value = 0 }
+        set_variable = { name = omni_crusade_conversion_territories value = 0 }
+        set_variable = { name = omni_crusade_conversion_pending value = 0 }
+        remove_variable = omni_crusade_conversion_head
+        every_province = {
+            limit = {
+                exists = var:omni_crusade_original_target_land
+                var:omni_crusade_original_target_land = { this = scope:omni_crusade_actor }
+                exists = owner
+                owner = {
+                    religion = helluvian
+                    OR = {
+                        this = scope:omni_crusade_actor
+                        AND = {
+                            has_variable = omni_crusade_joined
+                            exists = var:omni_crusade_host
+                            var:omni_crusade_host = { this = scope:omni_crusade_actor }
+                        }
+                    }
+                }
+            }
+            set_variable = omni_crusade_conversion_queued
+            set_variable = { name = omni_crusade_conversion_host value = scope:omni_crusade_actor }
+            set_variable = { name = omni_crusade_conversion_owner value = owner }
+            remove_variable = omni_crusade_conversion_next
+            if = {
+                limit = { scope:omni_crusade_actor = { exists = var:omni_crusade_conversion_head } }
+                set_variable = { name = omni_crusade_conversion_next value = scope:omni_crusade_actor.var:omni_crusade_conversion_head }
+            }
+            save_scope_as = omni_crusade_conversion_item
+            scope:omni_crusade_actor = {
+                set_variable = { name = omni_crusade_conversion_head value = scope:omni_crusade_conversion_item }
+                change_variable = { name = omni_crusade_conversion_pending add = 1 }
+            }
+        }
+        if = {
+            limit = { exists = var:omni_crusade_conversion_head }
+            var:omni_crusade_conversion_head = { trigger_event = { id = omni_crusade.26 days = 1 } }
+            remove_variable = omni_crusade_conversion_head
+        }
+        else = {
+            remove_variable = omni_crusade_conversion_pending
+            remove_variable = omni_crusade_conversion_pops
+            remove_variable = omni_crusade_conversion_territories
+        }
+    }
+}
+# Province scope. Process one node and advance the saved batch cursor.
+# Queue processing is independent of old host/participant administration.
+omni_crusade_conversion_step_effect = {
+    if = {
+        limit = {
+            exists = var:omni_crusade_conversion_host
+            var:omni_crusade_conversion_host = { has_land = yes religion = helluvian }
+            exists = var:omni_crusade_conversion_owner
+            owner = var:omni_crusade_conversion_owner
+            owner = { religion = helluvian }
+        }
+        var:omni_crusade_conversion_host = { save_scope_as = omni_crusade_conversion_actor }
+        scope:omni_crusade_conversion_actor = { change_variable = { name = omni_crusade_conversion_territories add = 1 } }
+        every_pops_in_province = {
+            limit = { NOT = { pop_religion = helluvian } }
+            random = {
+                chance = 50
+                set_pop_religion = helluvian
+                scope:omni_crusade_conversion_actor = { change_variable = { name = omni_crusade_conversion_pops add = 1 } }
+            }
+        }
+    }
+    # A changed owner, faith, or vanished host skips this node rather than
+    # converting the new owner's population. The queue still advances.
+    if = {
+        limit = {
+            exists = var:omni_crusade_conversion_host
+            var:omni_crusade_conversion_host = { has_land = yes }
+        }
+        var:omni_crusade_conversion_host = {
+            change_variable = { name = omni_crusade_conversion_pending add = -1 }
+            if = {
+                limit = { var:omni_crusade_conversion_pending <= 0 }
+                remove_variable = omni_crusade_conversion_pending
+                if = {
+                    limit = { var:omni_crusade_conversion_pops > 0 }
+                    trigger_event = { id = omni_crusade.27 }
+                }
+                else = {
+                    remove_variable = omni_crusade_conversion_pops
+                    remove_variable = omni_crusade_conversion_territories
+                }
+            }
+        }
+    }
+    if = {
+        limit = { exists = var:omni_crusade_conversion_next }
+        var:omni_crusade_conversion_next = { save_scope_as = omni_crusade_conversion_cursor }
+    }
+    remove_variable = omni_crusade_conversion_next
+    remove_variable = omni_crusade_conversion_queued
+    remove_variable = omni_crusade_conversion_host
+    remove_variable = omni_crusade_conversion_owner
 }

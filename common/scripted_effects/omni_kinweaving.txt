@@ -1,0 +1,43 @@
+﻿# Province scope; charges only after successfully finding an eligible pop.
+# Direct culture replacement bypasses racial assimilation speed penalties.
+omni_kinweaving_transform_pop = {
+    if = {
+        limit = { omni_kinweaving_valid_province = { COUNTRY = scope:omni_kinweaving_country } }
+        random_pops_in_province = {
+            limit = { NOT = { pop_culture = scope:omni_kinweaving_country.culture } }
+            set_pop_culture = scope:omni_kinweaving_country.culture
+            scope:omni_kinweaving_caster = {
+                omni_spell_mana_cost_effect = { BASE = 100 }
+            }
+        }
+        add_province_modifier = { name = omni_kinweaving_cooldown duration = 365 }
+    }
+}
+
+# Country scope. Prefer an eligible territory occupied by a commanded army,
+# otherwise use the caster's current location. No remote province targeting.
+omni_cast_kinweaving = {
+    if = {
+        limit = { scope:target = { omni_can_cast_kinweaving = yes } }
+        save_scope_as = omni_kinweaving_country
+        scope:target = {
+            save_scope_as = omni_kinweaving_caster
+            if = {
+                limit = {
+                    any_character_unit = {
+                        is_army = yes
+                        unit_location = { omni_kinweaving_valid_province = { COUNTRY = scope:omni_kinweaving_country } }
+                    }
+                }
+                random_character_unit = {
+                    limit = {
+                        is_army = yes
+                        unit_location = { omni_kinweaving_valid_province = { COUNTRY = scope:omni_kinweaving_country } }
+                    }
+                    unit_location = { omni_kinweaving_transform_pop = yes }
+                }
+            }
+            else = { location = { omni_kinweaving_transform_pop = yes } }
+        }
+    }
+}

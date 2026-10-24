@@ -1,0 +1,23 @@
+﻿# Character scope, called only after paying for an actual new Folk lesson.
+# Existing trained casters keep their own mana progression. Ordinary first-time
+# students (and legacy Folk users with no mana at all) gain a slow ritual reserve.
+omni_folk_initiate_practitioner = {
+    if = {
+        limit = {
+            NOT = { has_variable = omni_folk_practitioner }
+            OR = {
+                NOT = { omni_character_is_eligible_caster = yes }
+                AND = {
+                    omni_character_magic_max_value <= 0
+                    omni_character_monthly_mana_value <= 0
+                }
+            }
+        }
+        set_variable = omni_folk_practitioner
+        add_character_modifier = { name = omni_folk_practitioner_status duration = -1 }
+        recalculate_character_magic_vars = yes
+        change_variable = { name = magic add = 25 }
+        clamp_character_magic_to_max = yes
+    }
+    set_variable = folk_unlocked_var
+}

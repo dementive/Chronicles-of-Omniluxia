@@ -50,7 +50,20 @@ omni_crusade.1 = {
     }
     option = {
         name = omni_crusade.1.b
-        ai_chance = { factor = 1 }
+        ai_chance = {
+            factor = 1
+            modifier = {
+                factor = 0
+                is_ai = yes
+                has_variable = omni_crusade_pending
+                omni_crusade_host_ready_trigger = yes
+                treasury >= 250
+                political_influence >= 50
+                NOT = { has_global_variable = omni_crusade_world_busy }
+                NOT = { has_variable = called_helluvian_crusade_var }
+                omni_crusade_target_still_valid_trigger = yes
+            }
+        }
         if = {
             limit = {
                 NOT = { has_variable = omni_crusade_preparing }
@@ -203,7 +216,14 @@ omni_crusade.3 = {
     }
     option = {
         name = omni_crusade.3.b
-        ai_chance = { factor = 1 }
+        ai_chance = {
+            factor = 1
+            modifier = {
+                factor = 0
+                is_ai = yes
+                omni_crusade_preparation_valid_trigger = yes
+            }
+        }
         if = {
             limit = {
                 has_variable = omni_crusade_preparing
@@ -284,7 +304,15 @@ omni_crusade.7 = {
 omni_crusade.8 = {
     type = country_event
     title = omni_crusade.8.t
-    desc = omni_crusade.8.desc
+    desc = {
+        desc = omni_crusade.8.desc
+        first_valid = {
+            triggered_desc = {
+                trigger = { has_variable = omni_crusade_conversion_pending var:omni_crusade_conversion_pending > 0 }
+                desc = omni_crusade.8.conversion_queue
+            }
+        }
+    }
     picture = Event_royal_chamber
     option = { name = omni_crusade.8.a }
 }
@@ -310,7 +338,7 @@ omni_crusade.9 = {
             # a real declaration. Cancelling cannot repeatedly create armies.
             create_unit = {
                 navy = no
-                name = "Helluvian Crusaders"
+                name = "Warriors of the Omostthanat"
                 location = capital_scope
                 hidden_effect = {
                     add_subunit = heavy_infantry
@@ -357,6 +385,22 @@ omni_crusade.10 = {
                     NOT = { exists = var:omni_crusade_target }
                     NOT = { any_current_war = { omni_crusade_matching_war_trigger = yes } }
                 }
+            }
+            # Losing leadership alone ends administration, but is not victory.
+            if = {
+                limit = { NOT = { exists = var:omni_crusade_target } }
+                omni_crusade_convert_conquests_effect = yes
+            }
+            else_if = {
+                limit = {
+                    NOT = {
+                        any_current_war = {
+                            any_war_attacker = { this = scope:omni_crusade_actor }
+                            any_war_defender = { this = scope:omni_crusade_target }
+                        }
+                    }
+                }
+                omni_crusade_convert_conquests_effect = yes
             }
             omni_crusade_finish_effect = yes
         }
@@ -800,4 +844,41 @@ omni_crusade.25 = {
     }
     option = { name = omni_crusade.25.back hidden_effect = { trigger_event = { id = omni_crusade.23 } } }
     option = { name = omni_crusade.16.close hidden_effect = { omni_crusade_clear_roster_view_effect = yes } }
+}
+
+# At most five queued territories per day. Direct references avoid repeated
+# map scans, and province events survive host annexation to drain stale nodes.
+omni_crusade.26 = {
+    type = province_event
+    hidden = yes
+    trigger = { has_variable = omni_crusade_conversion_queued }
+    immediate = {
+        save_scope_as = omni_crusade_conversion_cursor
+        while = {
+            count = 5
+            if = {
+                limit = { scope:omni_crusade_conversion_cursor = { has_variable = omni_crusade_conversion_queued } }
+                scope:omni_crusade_conversion_cursor = { omni_crusade_conversion_step_effect = yes }
+            }
+        }
+        scope:omni_crusade_conversion_cursor = {
+            if = {
+                limit = { has_variable = omni_crusade_conversion_queued }
+                trigger_event = { id = omni_crusade.26 days = 1 }
+            }
+        }
+    }
+}
+omni_crusade.27 = {
+    type = country_event
+    title = omni_crusade.27.t
+    desc = omni_crusade.8.conversions
+    picture = Event_royal_chamber
+    option = {
+        name = omni_crusade.27.a
+        hidden_effect = {
+            remove_variable = omni_crusade_conversion_pops
+            remove_variable = omni_crusade_conversion_territories
+        }
+    }
 }

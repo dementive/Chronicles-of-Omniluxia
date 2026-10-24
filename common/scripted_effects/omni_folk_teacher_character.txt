@@ -1,0 +1,63 @@
+﻿# Country scope. A real local character, generated only when a visit begins.
+# Cultural name pools provide the personal name; an epithet adds individuality.
+omni_folk_create_teacher_character = {
+    create_character = {
+        culture = scope:omni_folk_teacher.culture
+        religion = scope:omni_folk_teacher.religion
+        age = $AGE$
+        female = $FEMALE$
+        no_traits = yes
+        no_stats = yes
+        add_martial = 4
+        add_finesse = 9
+        add_charisma = 7
+        add_zeal = 11
+        save_scope_as = omni_folk_tutor
+    }
+    scope:omni_folk_tutor = {
+        set_racial_trait_effect = yes
+        force_add_trait = mage_trait
+        force_add_trait = magically_attuned_trait
+        set_variable = folk_unlocked_var
+        set_variable = omni_folk_generated_teacher
+        set_can_marry = no
+        set_can_inherit = no
+        random_list = {
+            1 = { force_add_trait = scholar }
+            1 = { force_add_trait = wise }
+            1 = { force_add_trait = shrewd }
+        }
+        random_list = {
+            1 = { force_add_trait = patient }
+            1 = { force_add_trait = reclusive }
+            1 = { force_add_trait = eccentric }
+        }
+        random_list = {
+            1 = { add_nickname = OMNI_FOLK_NICKNAME_HEARTHKEEPER }
+            1 = { add_nickname = OMNI_FOLK_NICKNAME_ASH_READER }
+            1 = { add_nickname = OMNI_FOLK_NICKNAME_WAYSIDE_SAGE }
+            1 = { add_nickname = OMNI_FOLK_NICKNAME_MOONWATCHER }
+            1 = { add_nickname = OMNI_FOLK_NICKNAME_THREADBINDER }
+            1 = { add_nickname = OMNI_FOLK_NICKNAME_LANTERN_KEEPER }
+        }
+        omni_folk_grant_teacher_lessons = yes
+    }
+}
+
+# Event-host scope. Called once by the visit-entry event, never by map icons or
+# the lesson menu refresh. Teachers belong to the territory's owner, not visitor.
+omni_folk_prepare_teacher_character = {
+    if = {
+        limit = { exists = scope:omni_folk_teacher scope:omni_folk_teacher = { has_owner = yes } }
+        scope:omni_folk_teacher.owner = {
+            random_list = {
+                1 = { omni_folk_create_teacher_character = { AGE = 36 FEMALE = yes } }
+                1 = { omni_folk_create_teacher_character = { AGE = 36 FEMALE = no } }
+                1 = { omni_folk_create_teacher_character = { AGE = 49 FEMALE = yes } }
+                1 = { omni_folk_create_teacher_character = { AGE = 49 FEMALE = no } }
+                1 = { omni_folk_create_teacher_character = { AGE = 63 FEMALE = yes } }
+                1 = { omni_folk_create_teacher_character = { AGE = 63 FEMALE = no } }
+            }
+        }
+    }
+}
