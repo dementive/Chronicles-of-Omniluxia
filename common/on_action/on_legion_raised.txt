@@ -2,74 +2,77 @@
 	# what: on the end of the day after a legion is created
 	# scope: legion
 	effect = {
-		# stop starting legions from receiving events/history entries.
-		# Make sure to change this if any starting legions are added
 		if = {
-			limit = {
-				NAND = {
-					current_date < 1001.1.10
-					#OR = {
-					#	any_legion_commander = {
-					#		OR = {
-					#			THIS = char:35 # Demetrios/Antigonids
-					#			THIS = char:43 # Magas/Egypt
-					#		}
-					#	}
-					#	any_legion_unit = {
-					#		exists = commander
-					#		commander = {
-					#			OR = {
-					#				THIS = char:35 # Demetrios/Antigonids
-					#				THIS = char:23 # Antiochus/Seleukids
-					#			}
-					#		}
-					#	}
-					#}
-				}
-			}
+			limit = { exists = this }
+			# stop starting legions from receiving events/history entries.
+			# Make sure to change this if any starting legions are added
 			if = {
 				limit = {
-					owner = {
-						NOT = {
-							any_legion = { has_distinction = distinction_legio_primagena }
-						}
+					NAND = {
+						current_date < 1001.1.10
+						#OR = {
+						#	any_legion_commander = {
+						#		OR = {
+						#			THIS = char:35 # Demetrios/Antigonids
+						#			THIS = char:43 # Magas/Egypt
+						#		}
+						#	}
+						#	any_legion_unit = {
+						#		exists = commander
+						#		commander = {
+						#			OR = {
+						#				THIS = char:35 # Demetrios/Antigonids
+						#				THIS = char:23 # Antiochus/Seleukids
+						#			}
+						#		}
+						#	}
+						#}
 					}
 				}
 				if = {
 					limit = {
 						owner = {
-							is_ai = yes
-							has_civil_war = yes
+							NOT = {
+								any_legion = { has_distinction = distinction_legio_primagena }
+							}
 						}
 					}
-					owner = {
-						save_scope_as = mutineer_revolting_country
-						trigger_event = distinction.40
+					if = {
+						limit = {
+							owner = {
+								is_ai = yes
+								has_civil_war = yes
+							}
+						}
+						owner = {
+							save_scope_as = mutineer_revolting_country
+							trigger_event = distinction.40
+						}
+					}
+					else_if = {
+						limit = {
+							NOT = { has_distinction = distinction_legio_primagena }
+						}
+						save_scope_as = primagena_legion
+						owner = { trigger_event = distinction.7 }
 					}
 				}
-				else_if = {
-					limit = {
-						NOT = { has_distinction = distinction_legio_primagena }
+				else = {
+					add_legion_history = {
+						key = legion_raised_history
+						commander = owner.current_ruler
+						province = owner.capital_scope
 					}
-					save_scope_as = primagena_legion
-					owner = { trigger_event = distinction.7 }
 				}
 			}
-			else = {
-				add_legion_history = {
-					key = legion_raised_history
-					commander = owner.current_ruler
-					province = owner.capital_scope
+			if = {
+				limit = {
+					NOT = {
+						has_distinction = distinction_legion_default
+					}
 				}
+				add_distinction = distinction_legion_default
 			}
-		}
-		if = {
-			limit = {
-				NOT = {
-					has_distinction = distinction_legion_default
-				}
-			}
-			add_distinction = distinction_legion_default
 		}
 	}
 }
