@@ -4,8 +4,10 @@ Renders the project wiki into a designed static site, published on GitHub Pages
 at `https://<owner>.github.io/Chronicles-of-Omniluxia`.
 
 **The wiki stays the source of truth.** Nothing about authoring changes — pages
-are written on github.com as normal markdown. This directory only adds a
-presentation layer that reads them.
+are written on github.com as normal markdown. The publication workflow executes the renderer and assets in the wiki’s
+`site/` directory. Keep presentation changes there so the reviewed preview and
+GitHub Pages use the same implementation. This directory provides the artwork
+grader and publication checks.
 
 ## Why not just style the wiki?
 
@@ -20,7 +22,7 @@ onto the same text.
 `.github/workflows/wiki-site.yml` runs on the `gollum` event, which GitHub fires
 whenever anyone edits the wiki. An edit on github.com updates the live site about
 a minute later. **There is no manual step and nothing generated is committed** —
-`docs/` is gitignored and rebuilt by CI on every run.
+`.wiki/site/preview/` is rebuilt by CI and uploaded as the Pages artifact.
 
 One-time setup, already done if the site is live: **Settings → Pages → Source →
 GitHub Actions.**
@@ -38,12 +40,18 @@ pip install markdown pillow
 # Clone the wiki beside the mod repo (once); it is then found automatically
 git clone https://github.com/dementive/Chronicles-of-Omniluxia.wiki.git ../Chronicles-of-Omniluxia.wiki
 
-python3 tools/wiki_site/build_art.py   # only when gfx/ art changes
-python3 tools/wiki_site/build.py
-python3 -m http.server -d docs 8000    # then open localhost:8000
+# Use the actual path to your wiki checkout here.
+python3 tools/wiki_site/build_art.py --out ../Chronicles-of-Omniluxia.wiki/site/preview/assets/img
+python3 ../Chronicles-of-Omniluxia.wiki/site/build.py
+python3 tools/wiki_site/check_deployed_features.py ../Chronicles-of-Omniluxia.wiki/site/preview
+python3 -m http.server -d ../Chronicles-of-Omniluxia.wiki/site/preview 8000
 ```
 
-Point it elsewhere with `--wiki PATH`, or set `OMNI_WIKI`.
+The wiki renderer accepts `--wiki PATH` and `--base URL`. Its generated output
+must remain inside the wiki checkout. CI grades art into `.wiki/site/preview/`,
+runs `.wiki/site/build.py`, validates links and interactive features, and uploads
+that exact directory. The feature check rejects an artifact missing full-text
+search, the geographic atlas, or the shared JavaScript asset.
 
 ## How pages are categorised
 

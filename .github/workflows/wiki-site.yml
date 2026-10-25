@@ -45,22 +45,28 @@ jobs:
         run: pip install markdown pillow
 
       - name: Grade the mod's art into web plates
-        run: python tools/wiki_site/build_art.py --out docs/assets/img
+        run: python tools/wiki_site/build_art.py --out .wiki/site/preview/assets/img
 
-      - name: Build the site
+      # Keep production on the same renderer and assets as the reviewed preview.
+      # The wiki's Markdown alone is insufficient for its interactive features.
+      - name: Build the site from the wiki renderer
         run: |
-          python tools/wiki_site/build.py \
+          python .wiki/site/build.py \
             --wiki .wiki \
-            --out docs \
+            --out .wiki/site/preview \
             --base "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
       - name: Check generated links and assets
-        run: python tools/wiki_site/check_site.py docs
+        run: |
+          python .wiki/tools/check_site.py .wiki/site/preview
+          python tools/wiki_site/check_deployed_features.py .wiki/site/preview
+          node .wiki/tools/test_search.cjs
+          node .wiki/tools/test_world_atlas.cjs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: .wiki/site/preview
 
   deploy:
     needs: build
