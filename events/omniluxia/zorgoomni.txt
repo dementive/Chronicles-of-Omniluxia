@@ -3046,8 +3046,11 @@ me_zorgoomni.67 = { # High Elf Disease
                 char_valid_for_country_events_trigger = yes
                 age > 100
                 has_trait = high_elf_trait
+                NOT = { has_trait = high_elf_disease_trait }
+                NOT = { has_variable = high_elf_disease_pending }
             }
             save_scope_as = dead_guy_walking
+            set_variable = { name = high_elf_disease_pending days = 5379 }
             add_trait = depressed
         }
     }
@@ -3060,6 +3063,8 @@ me_zorgoomni.67 = { # High Elf Disease
             char_valid_for_country_events_trigger = yes
             age > 100
             has_trait = high_elf_trait
+            NOT = { has_trait = high_elf_disease_trait }
+            NOT = { has_variable = high_elf_disease_pending }
         }
     }
 
@@ -3089,30 +3094,23 @@ me_zorgoomni.68 = { # High Elf Disease 2
     picture = Event_royal_chamber
     left_portrait = scope:dead_guy_walking
 
-    immediate = {
-        random_character = {
-            limit = {
-                char_valid_for_country_events_trigger = yes
-                age > 100
-                has_trait = high_elf_trait
-            }
-            save_scope_as = dead_guy_walking
-            add_trait = high_elf_disease_trait
-        }
-        if = {
-            limit = { exists = scope:dead_guy_walking }
-            trigger_event = {
-                id = me_zorgoomni.69
-                days = { 365 1825 }
-            }
+    trigger = {
+        exists = scope:dead_guy_walking
+        scope:dead_guy_walking = {
+            is_alive = yes
+            has_trait = high_elf_trait
+            NOT = { has_trait = high_elf_disease_trait }
         }
     }
 
-    trigger = {
-        any_character = {
-            char_valid_for_country_events_trigger = yes
-            age > 100
-            has_trait = high_elf_trait
+    immediate = {
+        scope:dead_guy_walking = {
+            remove_variable = high_elf_disease_pending
+            add_trait = high_elf_disease_trait
+        }
+        trigger_event = {
+            id = me_zorgoomni.69
+            days = { 365 1825 }
         }
     }
 
@@ -3144,6 +3142,7 @@ me_zorgoomni.69 = { # High Elf Disease Death
     trigger = {
         exists = scope:dead_guy_walking
         scope:dead_guy_walking = {
+            is_alive = yes
             has_trait = high_elf_disease_trait
         }
     }
@@ -3237,7 +3236,6 @@ me_zorgoomni.72 = { # Draconic Madness 1
     desc = me_zorgoomni.72_desc
     picture = greek_theater
     left_portrait = current_ruler
-    right_portrait = scope:insane_guy
     right_portrait = scope:insane_guy_victim
 
     trigger = {
@@ -3246,6 +3244,20 @@ me_zorgoomni.72 = { # Draconic Madness 1
             country_culture_group = dragkhanic_jarenam
             country_culture_group = dragkhanic_eastern
             country_culture_group = dragkhanic_western
+        }
+        any_character = {
+            char_valid_for_country_events_trigger = yes
+            age > 40
+            has_trait = dragkhanic_trait
+            health > 3
+            is_ruler = no
+            NOT = { has_trait = dragkhanic_insanity_trait }
+            save_temporary_scope_as = madness_candidate
+        }
+        any_character = {
+            char_valid_for_country_events_trigger = yes
+            age > 13
+            NOT = { THIS = scope:madness_candidate }
         }
     }
 
@@ -3256,6 +3268,8 @@ me_zorgoomni.72 = { # Draconic Madness 1
                 age > 40
                 has_trait = dragkhanic_trait
                 health > 3
+                is_ruler = no
+                NOT = { has_trait = dragkhanic_insanity_trait }
             }
             save_scope_as = insane_guy
         }
@@ -3264,6 +3278,7 @@ me_zorgoomni.72 = { # Draconic Madness 1
             limit = {
                 char_valid_for_country_events_trigger = yes
                 age > 13
+                NOT = { THIS = scope:insane_guy }
             }
             save_scope_as = insane_guy_victim
         }
@@ -3276,7 +3291,7 @@ me_zorgoomni.72 = { # Draconic Madness 1
             imprison = { target = scope:insane_guy }
         }
         if = {
-            limit = { exists = scope:insane_guy_victim }
+            limit = { exists = scope:insane_guy exists = scope:insane_guy_victim }
             scope:insane_guy_victim = {
                 death = {
                     death_reason = death_pulled_limb_by_limb
@@ -3295,14 +3310,14 @@ me_zorgoomni.72 = { # Draconic Madness 1
             40 = {
                 custom_tooltip = dragkhan_insane_ttp
                 trigger_event = {
-                    id = me_zorgoomni.73
+                    id = me_zorgoomni.74
                     days = { 90 180 }
                 }
             }
             60 = {
                 custom_tooltip = dragkhan_safe_ttp
                 trigger_event = {
-                    id = me_zorgoomni.74
+                    id = me_zorgoomni.73
                     days = { 90 180 }
                 }
             }
@@ -3317,14 +3332,14 @@ me_zorgoomni.72 = { # Draconic Madness 1
             80 = {
                 custom_tooltip = dragkhan_insane_ttp
                 trigger_event = {
-                    id = me_zorgoomni.73
+                    id = me_zorgoomni.74
                     days = { 7 14 }
                 }
             }
             20 = {
                 custom_tooltip = dragkhan_safe_ttp
                 trigger_event = {
-                    id = me_zorgoomni.74
+                    id = me_zorgoomni.73
                     days = { 7 14 }
                 }
             }
@@ -3340,6 +3355,14 @@ me_zorgoomni.73 = { # Saved from Insanity
     picture = oration
     left_portrait = scope:insane_guy
 
+    trigger = {
+        exists = scope:insane_guy
+        scope:insane_guy = {
+            is_alive = yes
+            has_trait = dragkhanic_insanity_trait
+        }
+    }
+
     option = {
         name = "me_zorgoomni.73.a"
         add_stability = 3
@@ -3347,6 +3370,10 @@ me_zorgoomni.73 = { # Saved from Insanity
             limit = { exists = scope:insane_guy scope:insane_guy = { is_alive = yes } }
             scope:insane_guy = {
                 remove_trait = dragkhanic_insanity_trait
+            }
+            if = {
+                limit = { scope:insane_guy = { prisoner = yes employer = root } }
+                release_prisoner = { target = scope:insane_guy }
             }
         }
     }
@@ -3359,6 +3386,14 @@ me_zorgoomni.74 = { # Goes Insane
     desc = me_zorgoomni.74_desc
     picture = peaceful_integration_or_crucifixion
     left_portrait = scope:insane_guy
+
+    trigger = {
+        exists = scope:insane_guy
+        scope:insane_guy = {
+            is_alive = yes
+            has_trait = dragkhanic_insanity_trait
+        }
+    }
 
     option = {
         name = "me_zorgoomni.74.a"
@@ -3386,6 +3421,13 @@ me_zorgoomni.75 = { # Mushroom Spots
         OR = {
             country_culture_group = drow
         }
+        any_character = {
+            char_valid_for_country_events_trigger = yes
+            age > 20
+            is_female = no
+            has_trait = drow_trait
+            NOT = { has_trait = drow_mushroom_spots_trait }
+        }
     }
 
     immediate = {
@@ -3395,6 +3437,7 @@ me_zorgoomni.75 = { # Mushroom Spots
                 age > 20
                 is_female = no
                 has_trait = drow_trait
+                NOT = { has_trait = drow_mushroom_spots_trait }
             }
             save_scope_as = mushroom_man
         }
@@ -3426,6 +3469,12 @@ me_zorgoomni.76 = { # Cursed Child
         current_ruler = {
             has_trait = human_trait
         }
+        any_character = {
+            char_valid_for_country_events_trigger = yes
+            age < 5
+            has_trait = human_trait
+            NOT = { has_trait = wishtheon_curse_trait }
+        }
     }
 
     immediate = {
@@ -3434,6 +3483,7 @@ me_zorgoomni.76 = { # Cursed Child
                 char_valid_for_country_events_trigger = yes
                 age < 5
                 has_trait = human_trait
+                NOT = { has_trait = wishtheon_curse_trait }
             }
             save_scope_as = cursed_kiddy
         }
@@ -3446,17 +3496,20 @@ me_zorgoomni.76 = { # Cursed Child
             }
         }
 
-        capital_scope = {
-            ordered_pops_in_province = {
-                order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 10
+        if = {
+            limit = { exists = scope:cursed_kiddy }
+            capital_scope = {
+                ordered_pops_in_province = {
+                    order_by = pop_hapiness
+                    max = {
+                        value = total_population
+                        divide = 10
+                    }
+                    min = {
+                        value = 0
+                    }
+                    kill_pop = yes
                 }
-                min = {
-                    value = 0
-                }
-                kill_pop = yes
             }
         }
     }

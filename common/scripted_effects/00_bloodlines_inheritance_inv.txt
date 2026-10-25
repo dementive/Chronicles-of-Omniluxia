@@ -1,7 +1,9 @@
 ﻿## All Bloodline passdown effects are in this file and this file only.
-## Each new bloodline has to be added to the bloodline_on_born_effect and bloodline_setup_effect scripted effects
+## Register each inheritable bloodline in bloodline_on_born_effect; setup reuses it.
 
 bloodline_on_born_effect = {
+    # Generated starting children can miss on_being_born entirely.
+    set_racial_trait_effect = yes
     omni_cleanup_invalid_bloodlines_effect = yes
     pass_down_bloodline_character_effect = { BLOODLINE = "zani"}
     pass_down_bloodline_character_effect = { BLOODLINE = "aspatta"}
@@ -53,10 +55,19 @@ bloodline_on_born_effect = {
 }
 
 
+# Resolve all generations, even if children are iterated before their parents.
+# A new pass is requested only when an eligible character actually gains a trait.
 bloodline_setup_effect = {
-    every_character = {
-        bloodline_on_born_effect = yes
+    set_global_variable = { name = omni_bloodline_setup_running value = 1 }
+    set_global_variable = { name = omni_bloodline_setup_pending value = 1 }
+    while = {
+        limit = { has_global_variable = omni_bloodline_setup_pending }
+        remove_global_variable = omni_bloodline_setup_pending
+        every_living_character = {
+            bloodline_on_born_effect = yes
+        }
     }
+    remove_global_variable = omni_bloodline_setup_running
 }
 
 bloodline_game_start_effects = {
@@ -158,9 +169,9 @@ bloodline_game_start_effects = {
     # add_bloodline_setup_effect = { BLOODLINE = blood_of_tenmari CHAR = c:X05.current_ruler }
     # add_bloodline_setup_effect = { BLOODLINE = blood_of_tenmari CHAR = c:X10.current_ruler }
     # add_bloodline_setup_effect = { BLOODLINE = blood_of_tenmari CHAR = c:X12.current_ruler }
-    hidden_effect = {
-        trigger_event = { id = bloodlines_setup_completion.1 }
-    }
+    # Run synchronously after race assignment and all founder/family grants.
+    bloodline_setup_effect = yes
+    set_global_variable = { name = omni_bloodline_initialization_v2 value = 1 }
 }
 
 add_bloodline_setup_effect = {
@@ -168,7 +179,7 @@ add_bloodline_setup_effect = {
         limit = {
             exists = $CHAR$
         }
-        every_character = {
+        every_living_character = {
             limit = {
                 has_same_family = $CHAR$
             }
@@ -177,53 +188,16 @@ add_bloodline_setup_effect = {
     }
 }
 
-##Bloodline legitimacy scheme effect.
+# Legitimacy awards propagate through all living generations, not just children
+# and grandchildren. Keep this definition here rather than duplicating it.
 add_bloodline_effect = {
     omni_add_racial_bloodline_effect = { BLOODLINE = $BLOODLINE$ }
-    if = {
-        limit = {
-            num_of_children > 0
-        }
-        every_child = {
-            limit = { is_alive = yes }
-            omni_add_racial_bloodline_effect = { BLOODLINE = $BLOODLINE$ }
-            if = {
-                limit = { num_of_children > 0 }
-                every_child = {
-                    limit = { is_alive = yes }
-                    omni_add_racial_bloodline_effect = { BLOODLINE = $BLOODLINE$ }
-                }
-            }
-        }
-    }
+    bloodline_setup_effect = yes
 }
 
 pass_down_bloodline_effect = {
-    every_character = {
-        if = {
-            limit = {
-                exists = father
-                father = {
-                    has_trait = $BLOODLINE$
-                }                
-                NOT = {
-                    has_trait = $BLOODLINE$
-                }
-            }
-            omni_add_racial_bloodline_effect = { BLOODLINE = $BLOODLINE$ }
-        }
-        if = {
-            limit = {
-                exists = mother
-                mother = {
-                    has_trait = $BLOODLINE$
-                }
-                NOT = {
-                    has_trait = $BLOODLINE$
-                }
-            }
-            omni_add_racial_bloodline_effect = { BLOODLINE = $BLOODLINE$ }
-        }
+    every_living_character = {
+        pass_down_bloodline_character_effect = { BLOODLINE = $BLOODLINE$ }
     }
 }
 
@@ -240,6 +214,13 @@ pass_down_bloodline_character_effect = {
             }
         }
         omni_add_racial_bloodline_effect = { BLOODLINE = $BLOODLINE$ }
+        if = {
+            limit = {
+                has_global_variable = omni_bloodline_setup_running
+                has_trait = $BLOODLINE$
+            }
+            set_global_variable = { name = omni_bloodline_setup_pending value = 1 }
+        }
     }
     if = {
         limit = {
@@ -252,5 +233,12 @@ pass_down_bloodline_character_effect = {
             }
         }
         omni_add_racial_bloodline_effect = { BLOODLINE = $BLOODLINE$ }
+        if = {
+            limit = {
+                has_global_variable = omni_bloodline_setup_running
+                has_trait = $BLOODLINE$
+            }
+            set_global_variable = { name = omni_bloodline_setup_pending value = 1 }
+        }
     }
 }
