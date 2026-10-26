@@ -1,0 +1,65 @@
+﻿# One-time knowledge migration for the October 2026 spell-gate fix.
+# 23 menu spells were castable without being learned. Their options now check
+# omni_knows_spell. Characters who could already cast one (they hold the unlock
+# the option requires) are granted it once, so existing saves keep their spells.
+# Mages trained after this runs must learn the spells normally.
+
+omni_grandfather_gated_spells = {
+	if = { limit = { has_variable = diviner_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = light_shields } } } omni_learn_spell = { SPELL = light_shields } }
+	if = { limit = { has_variable = diviner_t3_unlocked_var NOT = { omni_knows_spell = { SPELL = light_walls } } } omni_learn_spell = { SPELL = light_walls } }
+	if = { limit = { has_variable = diviner_t4_unlocked_var NOT = { omni_knows_spell = { SPELL = spirit_bomb } } } omni_learn_spell = { SPELL = spirit_bomb } }
+	if = { limit = { has_variable = hierophant_t4_unlocked_var NOT = { omni_knows_spell = { SPELL = revelation_ii } } } omni_learn_spell = { SPELL = revelation_ii } }
+	if = { limit = { has_variable = elementalist_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = detect_minerals } } } omni_learn_spell = { SPELL = detect_minerals } }
+	if = { limit = { has_variable = elementalist_t3_unlocked_var NOT = { omni_knows_spell = { SPELL = rock_slide } } } omni_learn_spell = { SPELL = rock_slide } }
+	if = { limit = { has_variable = elementalist_t4_unlocked_var NOT = { omni_knows_spell = { SPELL = summon_earthworks } } } omni_learn_spell = { SPELL = summon_earthworks } }
+	if = { limit = { has_variable = druid_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = plant_growth } } } omni_learn_spell = { SPELL = plant_growth } }
+	if = { limit = { has_variable = druid_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = summon_dryads } } } omni_learn_spell = { SPELL = summon_dryads } }
+	if = { limit = { has_variable = druid_t3_unlocked_var NOT = { omni_knows_spell = { SPELL = nature_bounty } } } omni_learn_spell = { SPELL = nature_bounty } }
+	if = { limit = { has_variable = necromancer_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = summon_warborn } } } omni_learn_spell = { SPELL = summon_warborn } }
+	if = { limit = { has_variable = necromancer_t4_unlocked_var NOT = { omni_knows_spell = { SPELL = raise_workers } } } omni_learn_spell = { SPELL = raise_workers } }
+	if = { limit = { has_variable = warlock_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = dark_offering } } } omni_learn_spell = { SPELL = dark_offering } }
+	if = { limit = { has_variable = diviner_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = light_rays } } } omni_learn_spell = { SPELL = light_rays } }
+	if = { limit = { has_variable = hierophant_t3_unlocked_var NOT = { omni_knows_spell = { SPELL = exorcism_ii } } } omni_learn_spell = { SPELL = exorcism_ii } }
+	if = { limit = { has_variable = illusionist_t3_unlocked_var NOT = { omni_knows_spell = { SPELL = warped_flesh } } } omni_learn_spell = { SPELL = warped_flesh } }
+	if = { limit = { has_variable = elementalist_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = winds_of_pedentrutzu } } } omni_learn_spell = { SPELL = winds_of_pedentrutzu } }
+	if = { limit = { has_variable = warlock_t3_unlocked_var NOT = { omni_knows_spell = { SPELL = death_ray } } } omni_learn_spell = { SPELL = death_ray } }
+	if = { limit = { has_variable = warlock_t3_unlocked_var NOT = { omni_knows_spell = { SPELL = dark_visions } } } omni_learn_spell = { SPELL = dark_visions } }
+	if = { limit = { has_variable = hierophant_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = exorcism } } } omni_learn_spell = { SPELL = exorcism } }
+	if = { limit = { has_variable = hierophant_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = revelation } } } omni_learn_spell = { SPELL = revelation } }
+	if = { limit = { has_variable = hierophant_t3_unlocked_var NOT = { omni_knows_spell = { SPELL = blessing } } } omni_learn_spell = { SPELL = blessing } }
+	if = { limit = { has_variable = cleric_t2_unlocked_var NOT = { omni_knows_spell = { SPELL = healing_light } } } omni_learn_spell = { SPELL = healing_light } }
+	# The pool file used to grant the misspelled dark_visons_known_var.
+	if = { limit = { has_variable = dark_visons_known_var } omni_learn_spell = { SPELL = dark_visions } remove_variable = dark_visons_known_var }
+}
+
+omni_spell_gate_migration_once = {
+	if = {
+		limit = { NOT = { has_global_variable = omni_spell_gate_v2_done } }
+		set_global_variable = omni_spell_gate_v2_done
+		every_living_character = {
+			limit = {
+				OR = {
+					has_variable = cleric_t2_unlocked_var
+					has_variable = diviner_t2_unlocked_var
+					has_variable = diviner_t3_unlocked_var
+					has_variable = diviner_t4_unlocked_var
+					has_variable = druid_t2_unlocked_var
+					has_variable = druid_t3_unlocked_var
+					has_variable = elementalist_t2_unlocked_var
+					has_variable = elementalist_t3_unlocked_var
+					has_variable = elementalist_t4_unlocked_var
+					has_variable = hierophant_t2_unlocked_var
+					has_variable = hierophant_t3_unlocked_var
+					has_variable = hierophant_t4_unlocked_var
+					has_variable = illusionist_t3_unlocked_var
+					has_variable = necromancer_t2_unlocked_var
+					has_variable = necromancer_t4_unlocked_var
+					has_variable = warlock_t2_unlocked_var
+					has_variable = warlock_t3_unlocked_var
+					has_variable = dark_visons_known_var
+				}
+			}
+			omni_grandfather_gated_spells = yes
+		}
+	}
+}

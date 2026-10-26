@@ -3352,8 +3352,19 @@ omni_character_items_button = {
 		trigger_if = {
 			limit = { exists = scope:omni_gui_character }
 			scope:omni_gui_character = {
-				is_ruler = yes
-
+				custom_tooltip = {
+					text = omni_items_button_commander_only_tt
+					OR = {
+						is_ruler = yes
+						# Commander's gear: generals and admirals manage their own kit.
+						AND = {
+							OR = { is_general = yes is_admiral = yes }
+							is_mercenary = no
+							exists = employer
+							employer = scope:player
+						}
+					}
+				}
 			}
 		}
 	}
@@ -3363,8 +3374,17 @@ omni_character_items_button = {
 			limit = { exists = scope:omni_gui_character }
 			scope:omni_gui_character = {
 				hidden_effect = {
-				# Opens the event-based item menu on the shown character.
-				trigger_event = { id = omni_items.1 }
+					if = {
+						limit = { is_ruler = yes }
+						# Opens the event-based item menu on the shown character.
+						trigger_event = { id = omni_items.1 }
+					}
+					else = {
+						# Non-ruler character events are auto-resolved by the engine, so the
+						# commander's gear menu is shown on the ruler with the commander saved.
+						save_scope_as = omni_gear_holder
+						scope:player.current_ruler = { trigger_event = { id = omni_cmd_gear.1 } }
+					}
 				}
 					# --- Currently Equipped: army loadout + character items ---
 					if = {

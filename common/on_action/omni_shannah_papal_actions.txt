@@ -1,0 +1,36 @@
+﻿# Explicitly registered before any random delays in the main pulse dispatchers.
+omni_shannah_papal_yearly = {
+    trigger = {
+        is_ai = yes
+        has_land = yes
+        religion = helluvian
+        exists = current_ruler
+        current_ruler = { has_trait = shannah_trait }
+    }
+    effect = {
+        # Existing saves without the counter begin a fresh three-year interval.
+        if = {
+            limit = { NOT = { has_variable = omni_shannah_council_years_remaining } }
+            set_variable = { name = omni_shannah_council_years_remaining value = 3 }
+        }
+        change_variable = { name = omni_shannah_council_years_remaining subtract = 1 }
+        if = {
+            limit = { var:omni_shannah_council_years_remaining <= 0 }
+            omni_shannah_ai_council_effect = yes
+        }
+    }
+}
+
+# Existing/new saves get their first council on the next monthly pulse.
+# The permanent country flag prevents further bootstrap scans or succession resets.
+omni_shannah_papal_bootstrap = {
+    trigger = {
+        is_ai = yes
+        has_land = yes
+        religion = helluvian
+        exists = current_ruler
+        current_ruler = { has_trait = shannah_trait }
+        NOT = { has_variable = omni_shannah_ai_council_initialized }
+    }
+    effect = { omni_shannah_ai_council_effect = yes }
+}

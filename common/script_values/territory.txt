@@ -1,28 +1,37 @@
-﻿province_cultural_unity = {
-  value = integrated_pops
-  divide = total_population
-  multiply = 100
+﻿# Province scope. Empty/unowned territories have no measurable unity.
+province_cultural_unity = {
+  value = 0
+  if = {
+    limit = { has_owner = yes total_population > 0 }
+    value = integrated_pops
+    divide = total_population
+    multiply = 100
+  }
 }
 
 integrated_pops = {
+  value = 0
   if = {
-    limit = {
-      has_owner = yes
-    }
+    limit = { has_owner = yes }
     every_pops_in_province = {
-      limit = {
-        country_culture = {
-          is_integrated = yes
-        }
+      # Some pops have no country-culture record. Filter them before switching
+      # scope, rather than attempting a context switch inside the same limit.
+      limit = { exists = country_culture }
+      if = {
+        limit = { country_culture = { is_integrated = yes } }
+        add = 1
       }
-      add = 1
     }
   }
 }
 
 province_religious_unity = {
-  value = total_population
-  subtract = num_other_religion
-  divide = total_population
-  multiply = 100
+  value = 0
+  if = {
+    limit = { has_owner = yes total_population > 0 }
+    value = total_population
+    subtract = num_other_religion
+    divide = total_population
+    multiply = 100
+  }
 }

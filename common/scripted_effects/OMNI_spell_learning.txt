@@ -78,7 +78,7 @@ omni_learn_all_spells = {
 	omni_learn_spell = { SPELL = hex }
 	omni_learn_spell = { SPELL = curse_ii }
 	omni_learn_spell = { SPELL = death_ray }
-	omni_learn_spell = { SPELL = dark_visons }
+	omni_learn_spell = { SPELL = dark_visions }
 	omni_learn_spell = { SPELL = raise_workers }
 	omni_learn_spell = { SPELL = dark_offering_ii }
 	omni_learn_spell = { SPELL = plague_miasma }
@@ -145,6 +145,7 @@ omni_apply_cramming_fatigue = {
 # this only adds the equivalent spell flags, so loading a save cannot remove
 # previously available magic.
 omni_migrate_legacy_magic = {
+	omni_check_magic_prestige = yes
 	# One-shot per character. This is a save-compatibility bridge; once a
 	# character's legacy unlocks have been copied to the new spell flags there
 	# is nothing left to migrate, so the guard skips the ~15 has_variable checks
@@ -162,13 +163,6 @@ omni_migrate_legacy_magic = {
 	if = { limit = { has_variable = druid_t2_unlocked_var } omni_learn_spell = { SPELL = plant_growth } }
 	if = { limit = { has_variable = necromancer_t2_unlocked_var } omni_learn_spell = { SPELL = summon_warborn } }
 	if = { limit = { has_variable = warlock_t2_unlocked_var } omni_learn_spell = { SPELL = rage } }
-	if = {
-		limit = { has_trait = archmage_trait }
-		set_variable = { name = diviner_mastered_var value = 1 }
-		set_variable = { name = cleric_mastered_var value = 1 }
-		set_variable = { name = elementalist_mastered_var value = 1 }
-		set_variable = { name = necromancer_mastered_var value = 1 }
-	}
 	} # closes one-shot migration guard
 	# V2 adds individual knowledge flags for tactical/civic spells that formerly
 	# relied only on school tiers. Kept under its own guard because existing saves
@@ -193,6 +187,8 @@ omni_migrate_legacy_magic = {
 # Preserve access to higher-tier spells after repairing their individual gates.
 # Character scope; called before a player spellbook opens.
 omni_migrate_spell_audit_knowledge = {
+    # Repair existing casters immediately when their spellbook opens.
+    omni_check_magic_prestige = yes
     if = {
         limit = { NOT = { has_variable = omni_spell_audit_knowledge_migrated } }
         set_variable = omni_spell_audit_knowledge_migrated

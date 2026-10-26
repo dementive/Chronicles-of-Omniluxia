@@ -1,0 +1,337 @@
+﻿namespace = omni_siege_supply
+
+# Siege supplies market. Shown on the ruler; the buyer is scope:omni_city_visitor.
+# Attacker kits are paid from the visitor's own purse and carried by them; they
+# are also sold in hostile cities (the black market), so a general in the field
+# can restock. Defender stores are paid from the treasury, kept by the realm, and
+# can only be bought in your own or friendly markets.
+omni_siege_supply.1 = {
+	type = character_event
+	picture = event_marketplace
+	title = omni_siege_supply.1.t
+	desc = omni_siege_supply.1.desc
+	left_portrait = scope:omni_city_visitor
+
+	immediate = {
+		if = { limit = { NOT = { exists = scope:omni_city_visitor } } save_scope_as = omni_city_visitor }
+		country = {
+			save_scope_as = omni_gear_country
+			omni_def_init = yes
+		}
+		scope:omni_city_visitor = { omni_kit_init = yes }
+	}
+
+	option = {
+		name = omni_siege_supply.1.ram
+		trigger = {
+			scope:omni_city_visitor = {
+				OR = {
+					omni_character_has_local_market = yes
+					omni_character_can_visit_hostile_city = yes
+				}
+				omni_kit_below_cap = { KIT = ram }
+			}
+			omni_city_actor_has_wealth = { PRICE = 60 }
+		}
+		custom_tooltip = omni_kit_ram_use_tt
+		custom_tooltip = omni_siege_supply_carried_tt
+		omni_city_actor_change_gold = { VALUE = 60 MULTIPLY = -1 }
+		scope:omni_city_visitor = { omni_kit_gain = { KIT = ram } }
+		trigger_event = { id = omni_siege_supply.1 }
+	}
+	option = {
+		name = omni_siege_supply.1.sapper
+		trigger = {
+			scope:omni_city_visitor = {
+				OR = {
+					omni_character_has_local_market = yes
+					omni_character_can_visit_hostile_city = yes
+				}
+				omni_kit_below_cap = { KIT = sapper }
+			}
+			omni_city_actor_has_wealth = { PRICE = 90 }
+		}
+		custom_tooltip = omni_kit_sapper_use_tt
+		custom_tooltip = omni_siege_supply_carried_tt
+		omni_city_actor_change_gold = { VALUE = 90 MULTIPLY = -1 }
+		scope:omni_city_visitor = { omni_kit_gain = { KIT = sapper } }
+		trigger_event = { id = omni_siege_supply.1 }
+	}
+	option = {
+		name = omni_siege_supply.1.fire
+		trigger = {
+			scope:omni_city_visitor = {
+				OR = {
+					omni_character_has_local_market = yes
+					omni_character_can_visit_hostile_city = yes
+				}
+				omni_kit_below_cap = { KIT = fire }
+			}
+			omni_city_actor_has_wealth = { PRICE = 75 }
+		}
+		custom_tooltip = omni_kit_fire_use_tt
+		custom_tooltip = omni_siege_supply_carried_tt
+		omni_city_actor_change_gold = { VALUE = 75 MULTIPLY = -1 }
+		scope:omni_city_visitor = { omni_kit_gain = { KIT = fire } }
+		trigger_event = { id = omni_siege_supply.1 }
+	}
+	option = {
+		name = omni_siege_supply.1.plague
+		trigger = {
+			scope:omni_city_visitor = {
+				OR = {
+					omni_character_has_local_market = yes
+					omni_character_can_visit_hostile_city = yes
+				}
+				omni_kit_below_cap = { KIT = plague }
+			}
+			omni_city_actor_has_wealth = { PRICE = 100 }
+		}
+		custom_tooltip = omni_kit_plague_use_tt
+		custom_tooltip = omni_siege_supply_carried_tt
+		omni_city_actor_change_gold = { VALUE = 100 MULTIPLY = -1 }
+		scope:omni_city_visitor = { omni_kit_gain = { KIT = plague } }
+		trigger_event = { id = omni_siege_supply.1 }
+	}
+	option = {
+		name = omni_siege_supply.1.stores
+		trigger = {
+			scope:omni_city_visitor = { omni_character_has_local_market = yes }
+			scope:omni_gear_country = {
+				omni_def_below_cap = { KIT = stores }
+				treasury >= 80
+			}
+		}
+		custom_tooltip = omni_def_stores_use_tt
+		custom_tooltip = omni_siege_supply_stored_tt
+		scope:omni_gear_country = {
+			add_treasury = -80
+			omni_def_gain = { KIT = stores }
+		}
+		trigger_event = { id = omni_siege_supply.1 }
+	}
+	option = {
+		name = omni_siege_supply.1.gates
+		trigger = {
+			scope:omni_city_visitor = { omni_character_has_local_market = yes }
+			scope:omni_gear_country = {
+				omni_def_below_cap = { KIT = gates }
+				treasury >= 120
+			}
+		}
+		custom_tooltip = omni_def_gates_use_tt
+		custom_tooltip = omni_siege_supply_stored_tt
+		scope:omni_gear_country = {
+			add_treasury = -120
+			omni_def_gain = { KIT = gates }
+		}
+		trigger_event = { id = omni_siege_supply.1 }
+	}
+	option = {
+		name = omni_siege_supply.1.wards
+		trigger = {
+			scope:omni_city_visitor = { omni_character_has_local_market = yes }
+			scope:omni_gear_country = {
+				omni_def_below_cap = { KIT = wards }
+				treasury >= 150
+			}
+		}
+		custom_tooltip = omni_def_wards_use_tt
+		custom_tooltip = omni_siege_supply_stored_tt
+		scope:omni_gear_country = {
+			add_treasury = -150
+			omni_def_gain = { KIT = wards }
+		}
+		trigger_event = { id = omni_siege_supply.1 }
+	}
+	option = {
+		name = omni_items.back
+		trigger_event = { id = omni_items.7 }
+	}
+	option = {
+		name = omni_items.1.close
+	}
+}
+
+# Defender notification: the enemy used siege supplies on one of our cities.
+omni_siege_supply.10 = {
+	type = country_event
+	title = omni_siege_supply.10.t
+	desc = omni_siege_supply.10.desc
+	picture = city_siege
+	goto_location = scope:omni_kit_target
+	left_portrait = current_ruler
+	right_portrait = scope:omni_gear_holder
+
+	option = {
+		name = omni_siege_supply.10.a
+	}
+}
+
+# Defender menu, opened from the siege window of one of our besieged cities.
+# Shown on the ruler; the city is scope:omni_defense_province.
+omni_siege_supply.20 = {
+	type = character_event
+	picture = city_siege
+	title = omni_siege_supply.20.t
+	desc = omni_siege_supply.20.desc
+	left_portrait = root
+
+	immediate = {
+		country = {
+			save_scope_as = omni_gear_country
+			omni_def_init = yes
+		}
+	}
+
+	option = {
+		name = omni_siege_supply.20.stores
+		trigger = {
+			scope:omni_gear_country = { omni_def_has = { KIT = stores } }
+			scope:omni_defense_province = {
+				has_siege = yes
+				NOT = { has_province_modifier = omni_def_stores_mod }
+			}
+		}
+		custom_tooltip = omni_def_stores_use_tt
+		hidden_effect = {
+			scope:omni_gear_country = { omni_def_spend = { KIT = stores } }
+			scope:omni_defense_province = { omni_supply_refresh_province_mod = { MOD = omni_def_stores_mod DAYS = 90 } }
+		}
+		trigger_event = { id = omni_siege_supply.20 }
+	}
+	option = {
+		name = omni_siege_supply.20.gates
+		trigger = {
+			scope:omni_gear_country = { omni_def_has = { KIT = gates } }
+			scope:omni_defense_province = {
+				has_siege = yes
+				NOT = { has_province_modifier = omni_def_gates_mod }
+			}
+		}
+		custom_tooltip = omni_def_gates_use_tt
+		hidden_effect = {
+			scope:omni_gear_country = { omni_def_spend = { KIT = gates } }
+			scope:omni_defense_province = { omni_supply_refresh_province_mod = { MOD = omni_def_gates_mod DAYS = 90 } }
+		}
+		trigger_event = { id = omni_siege_supply.20 }
+	}
+	option = {
+		name = omni_siege_supply.20.wards
+		trigger = {
+			scope:omni_gear_country = { omni_def_has = { KIT = wards } }
+			scope:omni_defense_province = {
+				has_siege = yes
+				NOT = { has_province_modifier = omni_def_wards_mod }
+			}
+		}
+		custom_tooltip = omni_def_wards_use_tt
+		hidden_effect = {
+			scope:omni_gear_country = { omni_def_spend = { KIT = wards } }
+			scope:omni_defense_province = { omni_supply_refresh_province_mod = { MOD = omni_def_wards_mod DAYS = 90 } }
+		}
+		trigger_event = { id = omni_siege_supply.20 }
+	}
+	option = {
+		name = omni_items.1.close
+	}
+}
+
+# AI defender: a besieged AI city spends from the luxury budget on defenses.
+# Monthly (omni_monthly_flavor_pulse); cheap country checks short-circuit first.
+omni_siege_supply.30 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		war = yes
+		omni_country_can_pay_for_luxury = { PRICE = 80 }
+		any_owned_province = {
+			has_siege = yes
+			NOR = {
+				has_province_modifier = omni_def_gates_mod
+				has_province_modifier = omni_def_stores_mod
+			}
+		}
+	}
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				has_siege = yes
+				NOR = {
+					has_province_modifier = omni_def_gates_mod
+					has_province_modifier = omni_def_stores_mod
+				}
+			}
+			save_scope_as = omni_defense_province
+		}
+		# Ward Stones first when a hostile mage is leading the siege.
+		if = {
+			limit = {
+				omni_country_can_pay_for_luxury = { PRICE = 150 }
+				scope:omni_defense_province = {
+					NOT = { has_province_modifier = omni_def_wards_mod }
+					any_unit_in_province = {
+						is_army = yes
+						unit_owner = { war_with = root }
+						exists = commander
+						commander = { omni_character_is_eligible_caster = yes }
+					}
+				}
+			}
+			add_treasury = -150
+			scope:omni_defense_province = { omni_supply_refresh_province_mod = { MOD = omni_def_wards_mod DAYS = 90 } }
+		}
+		if = {
+			limit = { omni_country_can_pay_for_luxury = { PRICE = 120 } }
+			add_treasury = -120
+			scope:omni_defense_province = { omni_supply_refresh_province_mod = { MOD = omni_def_gates_mod DAYS = 90 } }
+		}
+		else = {
+			add_treasury = -80
+			scope:omni_defense_province = { omni_supply_refresh_province_mod = { MOD = omni_def_stores_mod DAYS = 90 } }
+		}
+	}
+}
+
+# AI attacker: armies besieging an enemy fort buy a battering ram (one per city
+# every 60 days), paid from the luxury budget.
+omni_siege_supply.31 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		war = yes
+		omni_country_can_pay_for_luxury = { PRICE = 60 }
+		any_army = {
+			unit_location = {
+				has_siege = yes
+				NOT = { controller = root }
+				NOT = { has_variable = omni_ai_ram_used }
+			}
+		}
+	}
+
+	immediate = {
+		every_army = {
+			limit = {
+				unit_location = {
+					has_siege = yes
+					NOT = { controller = root }
+					NOT = { has_variable = omni_ai_ram_used }
+				}
+			}
+			if = {
+				limit = { root = { omni_country_can_pay_for_luxury = { PRICE = 60 } } }
+				root = { add_treasury = -60 }
+				unit_location = {
+					set_variable = { name = omni_ai_ram_used days = 60 }
+					siege = { add_breach = 1 }
+				}
+			}
+		}
+	}
+}

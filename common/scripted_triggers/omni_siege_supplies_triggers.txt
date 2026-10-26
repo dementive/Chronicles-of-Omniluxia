@@ -1,0 +1,58 @@
+﻿# Siege supplies. Attacker kits (ram, sapper, fire, plague) are CARRIED by a
+# character in var:omni_kit_<KIT>; defender stores (stores, gates, wards) are held
+# by the COUNTRY in var:omni_def_<KIT>. Max 3 of each.
+
+# CHARACTER scope.
+omni_kit_has = {
+	has_variable = omni_kit_$KIT$
+	var:omni_kit_$KIT$ >= 1
+}
+omni_kit_below_cap = {
+	OR = {
+		NOT = { has_variable = omni_kit_$KIT$ }
+		var:omni_kit_$KIT$ < 3
+	}
+}
+omni_kit_has_any = {
+	OR = {
+		omni_kit_has = { KIT = ram }
+		omni_kit_has = { KIT = sapper }
+		omni_kit_has = { KIT = fire }
+		omni_kit_has = { KIT = plague }
+	}
+}
+# CHARACTER scope. True when this character leads an army that is besieging a
+# settlement $COUNTRY$ does not control (so kits never hit your own city).
+omni_character_is_besieging = {
+	any_character_unit = {
+		is_army = yes
+		unit_location = {
+			has_siege = yes
+			NOT = { controller = $COUNTRY$ }
+		}
+	}
+}
+
+# COUNTRY scope.
+omni_def_has = {
+	has_variable = omni_def_$KIT$
+	var:omni_def_$KIT$ >= 1
+}
+omni_def_below_cap = {
+	OR = {
+		NOT = { has_variable = omni_def_$KIT$ }
+		var:omni_def_$KIT$ < 3
+	}
+}
+omni_def_has_any = {
+	OR = {
+		omni_def_has = { KIT = stores }
+		omni_def_has = { KIT = gates }
+		omni_def_has = { KIT = wards }
+	}
+}
+
+# PROVINCE scope. Ward Stones block hostile siege magic on this settlement.
+omni_province_is_warded = {
+	has_province_modifier = omni_def_wards_mod
+}

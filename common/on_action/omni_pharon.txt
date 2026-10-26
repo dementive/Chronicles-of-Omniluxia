@@ -1,6 +1,21 @@
-﻿on_ruler_change = {
+﻿# Called explicitly by the main ruler-change dispatcher. Never poll countries.
+omni_pharon_on_ruler_change = {
+    trigger = {
+        government = egyptian_dynasty
+    }
     effect = {
+        # The office can also change hands while the former ruler is alive.
+        if = {
+            limit = {
+                exists = scope:former_ruler
+                scope:former_ruler = { is_alive = yes has_trait = Pharon }
+            }
+            scope:former_ruler = { remove_trait = Pharon }
+        }
         omni_pharon_ensure_ruler_trait_effect = yes
+        # Re-read the country's ruler after succession and any same-day events.
+        # One queued event per Baetepian succession; it never reschedules itself.
+        trigger_event = { id = omni_pharon.1 days = 1 }
     }
 }
 

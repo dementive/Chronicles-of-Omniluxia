@@ -1,0 +1,141 @@
+﻿# Triennial AI council. Ordinary powers retain costs; the pastoral fallback is free.
+omni_shannah_ai_council_effect = {
+    save_scope_as = actor
+    set_variable = omni_shannah_ai_council_initialized
+    set_variable = { name = omni_shannah_council_years_remaining value = 3 }
+    remove_variable = omni_shannah_council_action_performed
+    debug_log = "OMNI_PAPAL: AI Shannah convenes three-year council."
+    if = {
+        limit = {
+            NOT = { has_country_modifier = omni_shannah_excommunicated }
+        }
+        random_country = {
+            limit = {
+                omni_shannah_lift_excommunication_potential_trigger = { TARGET = current_ruler }
+                omni_shannah_lift_excommunication_allowed_trigger = yes
+                scope:actor = { opinion = { target = prev value >= 25 } }
+            }
+            current_ruler = { save_scope_as = target }
+            omni_shannah_lift_excommunication_effect = yes
+            debug_log = "OMNI_PAPAL: three-year council executed lift_excommunication."
+        }
+    }
+    if = {
+        limit = {
+            political_influence >= 75
+            NOT = { has_variable = omni_shannah_recognize_crown_cooldown }
+            NOT = { has_country_modifier = omni_shannah_excommunicated }
+        }
+        random_country = {
+            limit = {
+                omni_shannah_recognize_crown_potential_trigger = { TARGET = current_ruler }
+                omni_shannah_recognize_crown_allowed_trigger = yes
+                scope:actor = { opinion = { target = prev value >= 25 } }
+            }
+            current_ruler = { save_scope_as = target }
+            omni_shannah_recognize_crown_effect = yes
+            debug_log = "OMNI_PAPAL: three-year council executed recognize_crown."
+        }
+    }
+    if = {
+        limit = {
+            political_influence >= 75
+            NOT = { has_variable = omni_shannah_absolve_cooldown }
+            NOT = { has_country_modifier = omni_shannah_excommunicated }
+        }
+        random_country = {
+            limit = {
+                omni_shannah_absolve_potential_trigger = { TARGET = current_ruler }
+                omni_shannah_absolve_allowed_trigger = { TARGET = current_ruler }
+                scope:actor = { opinion = { target = prev value >= 25 } }
+            }
+            current_ruler = { save_scope_as = target }
+            omni_shannah_absolve_effect = yes
+            debug_log = "OMNI_PAPAL: three-year council executed absolve."
+        }
+    }
+    if = {
+        limit = {
+            political_influence >= 75
+            NOT = { has_variable = omni_shannah_excommunication_cooldown }
+            NOT = { has_country_modifier = omni_shannah_excommunicated }
+        }
+        random_country = {
+            limit = {
+                omni_shannah_excommunicate_potential_trigger = { TARGET = current_ruler }
+                omni_shannah_excommunicate_allowed_trigger = yes
+                NOT = { alliance_with = scope:actor }
+                scope:actor = { opinion = { target = prev value <= -50 } }
+            }
+            current_ruler = { save_scope_as = target }
+            omni_shannah_excommunicate_effect = yes
+            debug_log = "OMNI_PAPAL: three-year council executed excommunicate."
+        }
+    }
+    if = {
+        limit = {
+            political_influence >= 75
+            NOT = { has_variable = omni_shannah_holy_mission_cooldown }
+            treasury >= 300
+            NOT = { has_country_modifier = omni_shannah_excommunicated }
+        }
+        random_country = {
+            limit = {
+                omni_shannah_holy_mission_potential_trigger = { TARGET = current_ruler }
+                omni_shannah_holy_mission_allowed_trigger = yes
+                scope:actor = { opinion = { target = prev value >= 25 } }
+            }
+            current_ruler = { save_scope_as = target }
+            omni_shannah_holy_mission_effect = yes
+            debug_log = "OMNI_PAPAL: three-year council executed holy_mission."
+        }
+    }
+    if = {
+        limit = {
+            political_influence >= 75
+            NOT = { has_variable = omni_shannah_bless_cooldown }
+            NOT = { has_country_modifier = omni_shannah_excommunicated }
+        }
+        random_country = {
+            limit = {
+                omni_shannah_bless_potential_trigger = { TARGET = current_ruler }
+                omni_shannah_bless_allowed_trigger = yes
+                scope:actor = { opinion = { target = prev value >= 25 } }
+            }
+            current_ruler = { save_scope_as = target }
+            omni_shannah_bless_effect = yes
+            debug_log = "OMNI_PAPAL: three-year council executed bless."
+        }
+    }
+
+    # At least one substantive council action, even when ordinary policy finds none.
+    if = {
+        limit = { NOT = { has_variable = omni_shannah_council_action_performed } }
+        random_country = {
+            limit = {
+                omni_shannah_annual_recipient_trigger = yes
+                NOT = { has_country_modifier = omni_shannah_excommunicated }
+            }
+            current_ruler = { save_scope_as = target }
+            omni_shannah_apply_blessing_effect = yes
+            debug_log = "OMNI_PAPAL: council duty blessed a Helluvian realm (free; existing blessing refreshed)."
+        }
+    }
+    if = {
+        limit = { NOT = { has_variable = omni_shannah_council_action_performed } }
+        random_country = {
+            limit = {
+                omni_shannah_annual_recipient_trigger = yes
+                has_country_modifier = omni_shannah_excommunicated
+            }
+            current_ruler = { save_scope_as = target }
+            omni_shannah_lift_excommunication_effect = yes
+            debug_log = "OMNI_PAPAL: council duty reconciled a condemned Helluvian realm."
+        }
+    }
+    if = {
+        limit = { NOT = { has_variable = omni_shannah_council_action_performed } }
+        debug_log = "OMNI_PAPAL: no foreign landed Helluvian country with a living ruler exists; council duty has no recipient."
+    }
+    remove_variable = omni_shannah_council_action_performed
+}

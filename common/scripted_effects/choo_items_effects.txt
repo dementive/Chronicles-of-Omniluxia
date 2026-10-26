@@ -78,6 +78,10 @@ remove_character_item = {
                 name = equiped_item_list
                 target = flag:$item_ID$
             }
+            # Combat items apply $item_ID$_personal + country $item_ID$_army on
+            # equip (equip_combat_item_with_modifier). Strip both here too, or a
+            # sold/discarded/gifted item keeps its bonuses forever.
+            omni_remove_fixed_combat_item_layers = { item_ID = $item_ID$ }
         }
 
         # Strip the character modifier the item applied on equip (if any).
@@ -1170,6 +1174,11 @@ equip_combat_item_with_modifier = {
         }
         custom_tooltip = unequiping_$item_ID$_tt
         remove_character_modifier = $item_ID$_personal
+        # Commander's gear: drop the army layer from the units this character leads.
+        every_character_unit = {
+            limit = { has_unit_modifier = $item_ID$_unit }
+            remove_unit_modifier = $item_ID$_unit
+        }
         # Saves made before the split carry the combined modifier instead. Both
         # removes are static references to modifiers that exist, so the unused
         # one is a harmless no-op rather than a script error.
@@ -1192,6 +1201,14 @@ equip_combat_item_with_modifier = {
         if = {
             limit = { is_ruler = yes }
             country = { add_country_modifier = { name = $item_ID$_army duration = -1 } }
+        }
+        else = {
+            # Commander's gear: a non-ruler's item boosts only the army or fleet they
+            # lead. Refreshed monthly by omni_sync_country_commander_gear.
+            every_character_unit = {
+                if = { limit = { has_unit_modifier = $item_ID$_unit } remove_unit_modifier = $item_ID$_unit }
+                add_unit_modifier = { name = $item_ID$_unit duration = 60 }
+            }
         }
     }
 }

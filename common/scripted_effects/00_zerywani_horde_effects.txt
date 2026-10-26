@@ -23,6 +23,14 @@ zerywani_horde_formation_effect = {
 		set_global_variable = {
 			name = zerywani_horde_formed
 		}
+        # Start the sequel clock at the first invasion's launch: sixteen years
+        # to the warning, then four years of gathering before the return.
+        set_global_variable = { name = zerywani_second_generation_cooldown days = 5840 }
+        set_global_variable = { name = zerywani_second_generation_window days = 5840 }
+        set_global_variable = { name = z2_warning_clock }
+        set_global_variable = { name = z2_warning_gate days = 5840 }
+        set_global_variable = { name = z2_warning_deadline days = 5840 }
+
 		set_variable = {
 			name = is_zerywani_horde_leader
 			# Persistent until resolution; the monitor must not silently expire.
@@ -290,12 +298,17 @@ zerywani_first_legacy_effect = {
     if = {
         limit = { NOT = { has_global_variable = zerywani_first_ended } }
         set_global_variable = { name = zerywani_first_ended }
-        set_global_variable = { name = zerywani_second_generation_cooldown days = 10950 }
-        set_global_variable = { name = zerywani_second_generation_window days = 18250 }
-        # Four-year warnings precede the requested 30–50 year return of the sons.
-        set_global_variable = { name = z2_warning_clock }
-        set_global_variable = { name = z2_warning_gate days = 9490 }
-        set_global_variable = { name = z2_warning_deadline days = 16790 }
+        # Older saves without a launch clock start their fallback clock at resolution.
+        if = {
+            limit = { NOT = { has_global_variable = z2_warning_clock } }
+            # Start the sequel clock at the first invasion's launch: sixteen years
+            # to the warning, then four years of gathering before the return.
+            set_global_variable = { name = zerywani_second_generation_cooldown days = 5840 }
+            set_global_variable = { name = zerywani_second_generation_window days = 5840 }
+            set_global_variable = { name = z2_warning_clock }
+            set_global_variable = { name = z2_warning_gate days = 5840 }
+            set_global_variable = { name = z2_warning_deadline days = 5840 }
+        }
         every_country = {
             limit = { OR = { has_variable = zerywani_first_veterans is_ai = no } }
             trigger_event = { id = zerywani_horde.6 days = 1 }

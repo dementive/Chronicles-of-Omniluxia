@@ -1,0 +1,131 @@
+﻿# Actor country scope; called by the interaction after all gameplay effects.
+# Saved characters preserve the actual parties, rather than a recipient's ruler.
+omni_shannah_announce_effect = {
+    set_variable = omni_shannah_council_action_performed
+    save_scope_as = omni_papal_actor_country
+    current_ruler = { save_scope_as = omni_papal_shannah }
+    scope:target = {
+        save_scope_as = omni_papal_target_ruler
+        employer = { save_scope_as = omni_papal_target_country }
+    }
+    every_country = {
+        limit = {
+            has_land = yes
+            OR = {
+                religion = helluvian
+                this = scope:omni_papal_actor_country
+                this = scope:omni_papal_target_country
+            }
+        }
+        trigger_event = { id = $EVENT$ }
+    }
+}
+
+omni_shannah_excommunicate_effect = {
+        scope:actor = {
+            add_political_influence = -25
+            set_variable = { name = omni_shannah_excommunication_cooldown days = 365 }
+        }
+        scope:target.employer = {
+            add_country_modifier = { name = omni_shannah_excommunicated duration = -1 }
+        }
+        hidden_effect = {
+            every_country = {
+                limit = {
+                    has_land = yes
+                    religion = helluvian
+                    NOT = { this = scope:target.employer }
+                }
+                remove_opinion = { target = scope:target.employer modifier = omni_shannah_excommunication_opinion }
+                add_opinion = { target = scope:target.employer modifier = omni_shannah_excommunication_opinion }
+            }
+        }
+        hidden_effect = {
+            scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.10 } }
+        }
+    
+}
+
+
+omni_shannah_lift_excommunication_effect = {
+        scope:target.employer = { remove_country_modifier = omni_shannah_excommunicated }
+        hidden_effect = {
+            every_country = {
+                remove_opinion = { target = scope:target.employer modifier = omni_shannah_excommunication_opinion }
+            }
+        }
+        hidden_effect = {
+            scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.11 } }
+        }
+    
+}
+
+
+omni_shannah_bless_effect = {
+        scope:actor = {
+            add_political_influence = -25
+            set_variable = { name = omni_shannah_bless_cooldown days = 365 }
+        }
+        omni_shannah_apply_blessing_effect = yes
+    
+}
+
+
+omni_shannah_recognize_crown_effect = {
+        scope:actor = {
+            add_political_influence = -25
+            set_variable = { name = omni_shannah_recognize_crown_cooldown days = 365 }
+        }
+        scope:target = { set_variable = omni_shannah_crown_recognized }
+        scope:target.employer = {
+            add_legitimacy = 10
+            remove_opinion = { target = scope:actor modifier = omni_shannah_recognized_crown_opinion }
+            add_opinion = { target = scope:actor modifier = omni_shannah_recognized_crown_opinion }
+        }
+        hidden_effect = {
+            scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.13 } }
+        }
+    
+}
+
+
+omni_shannah_absolve_effect = {
+        scope:actor = {
+            add_political_influence = -25
+            set_variable = { name = omni_shannah_absolve_cooldown days = 365 }
+        }
+        scope:target.employer = {
+            add_aggressive_expansion = -5
+            set_variable = { name = omni_shannah_absolution_received days = 3650 }
+        }
+        hidden_effect = {
+            scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.14 } }
+        }
+    
+}
+
+
+omni_shannah_holy_mission_effect = {
+        scope:actor = {
+            add_political_influence = -25
+            set_variable = { name = omni_shannah_holy_mission_cooldown days = 365 }
+        }
+        scope:actor = { add_treasury = -50 }
+        scope:target.employer = { add_country_modifier = { name = omni_shannah_holy_mission duration = 1825 } }
+        hidden_effect = {
+            scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.15 } }
+        }
+    
+}
+
+# Pure blessing outcome shared by paid interactions and the free annual duty.
+# Replacement refreshes a previous blessing without stacking it.
+omni_shannah_apply_blessing_effect = {
+    scope:target.employer = {
+        remove_country_modifier = omni_shannah_blessing
+        add_country_modifier = { name = omni_shannah_blessing duration = 1825 }
+    }
+    hidden_effect = {
+        scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.12 } }
+    }
+}
