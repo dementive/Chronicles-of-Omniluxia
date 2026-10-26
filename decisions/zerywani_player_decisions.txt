@@ -1,0 +1,138 @@
+﻿country_decisions = {
+    z2_gather_veterans_sons = {
+        potential = { is_ai = no z2_tribe_trigger = yes has_global_variable = zerywani_first_ended NOT = { has_global_variable = z2_warned } NOT = { has_variable = z2_player_project } }
+        allow = {
+            custom_tooltip = { text = z2_ui_claim_restored_tt NOT = { has_variable = z2_player_claim_cooldown } }
+            custom_tooltip = { text = z2_ui_candidate_tt z2_player_candidate_trigger = yes }
+            treasury >= z2_project_gold_cost
+            political_influence >= z2_project_influence_cost
+        }
+        effect = {
+            custom_tooltip = z2_ui_claim_effect_tt
+            hidden_effect = { z2_player_claim_effect = yes }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_rally_veteran_households = {
+        potential = { is_ai = no has_variable = z2_player_project NOT = { has_variable = z2_active } }
+        allow = {
+            z2_ui_project_trigger = yes
+            treasury >= 75
+            political_influence >= 20
+            custom_tooltip = { text = z2_ui_support_room_tt var:z2_player_support < 3 }
+            custom_tooltip = { text = z2_ui_household_ready_tt NOT = { has_variable = z2_household_cooldown } }
+        }
+        effect = {
+            add_treasury = -75
+            add_political_influence = -20
+            custom_tooltip = z2_ui_rally_effect_tt
+            hidden_effect = { change_variable = { name = z2_player_support add = 1 } set_variable = { name = z2_household_cooldown days = 730 } }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_gather_remount_herds = {
+        potential = { is_ai = no has_variable = z2_player_project NOT = { has_variable = z2_active } NOT = { has_variable = z2_player_remounts } }
+        allow = {
+            z2_ui_project_trigger = yes
+            treasury >= 150
+            manpower >= 10
+        }
+        effect = {
+            add_treasury = -150
+            add_manpower = -10
+            custom_tooltip = z2_ui_remounts_effect_tt
+            hidden_effect = { set_variable = { name = z2_player_remounts } }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_seek_chiefs_oaths = {
+        potential = { is_ai = no has_variable = z2_player_project NOT = { has_variable = z2_active } }
+        allow = {
+            z2_ui_project_trigger = yes
+            custom_tooltip = { text = z2_ui_chief_envoys_ready_tt NOT = { has_variable = z2_negotiation_pending } NOT = { has_variable = z2_chief_menu_open } NOT = { has_variable = z2_chief_council_cooldown } }
+        }
+        effect = {
+            custom_tooltip = z2_ui_chief_council_effect_tt
+            hidden_effect = { set_variable = { name = z2_chief_menu_open } set_variable = { name = z2_chief_council_cooldown days = 180 } z2_player_chief_choices_effect = yes trigger_event = { id = zerywani_second.110 days = 1 } }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_receive_veterans_son = {
+        potential = { is_ai = no has_variable = z2_player_project NOT = { has_global_variable = z2_warned } }
+        allow = {
+            z2_ui_project_trigger = yes
+            custom_tooltip = { text = z2_ui_generation_ready_tt z2_generation_ready_trigger = yes }
+            war = no
+        }
+        effect = {
+            custom_tooltip = z2_ui_receive_effect_tt
+            hidden_effect = { z2_prepare_effect = yes }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_abandon_gathering = {
+        potential = { is_ai = no has_variable = z2_player_project NOT = { has_variable = z2_active } }
+        allow = {
+            always = yes
+        }
+        effect = {
+            custom_tooltip = z2_ui_abandon_effect_tt
+            hidden_effect = { z2_player_release_claim_effect = yes }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_convene_war_council = {
+        potential = { is_ai = no has_variable = z2_active }
+        allow = {
+            custom_tooltip = { text = z2_ui_founder_rules_tt z2_founder_rules_trigger = yes }
+            custom_tooltip = { text = z2_ui_war_council_ready_tt NOT = { has_variable = z2_player_demand_pending } NOT = { has_variable = z2_war_menu_open } NOT = { has_variable = z2_player_council_cooldown } }
+        }
+        effect = {
+            custom_tooltip = z2_ui_war_council_effect_tt
+            hidden_effect = { set_variable = { name = z2_war_menu_open } set_variable = { name = z2_player_council_cooldown days = 90 } z2_player_frontier_choices_effect = yes trigger_event = { id = zerywani_second.150 days = 1 } }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_raise_jelenias_banner = {
+        potential = { is_ai = no has_variable = z2_preparing has_variable = z2_player_coronation_unlocked }
+        allow = {
+            custom_tooltip = { text = z2_ui_coronation_host_tt z2_crown_host_trigger = yes }
+            z2_player_ready_trigger = yes
+            custom_tooltip = { text = z2_ui_coronation_ready_tt NOT = { has_variable = z2_coronation_pending } }
+            custom_tooltip = { text = z2_ui_century_tt OR = { current_date >= 1101.1.1 has_global_variable = z2_debug_testing } }
+        }
+        effect = {
+            custom_tooltip = z2_ui_coronation_effect_tt
+            hidden_effect = { set_variable = { name = z2_coronation_pending } trigger_event = { id = zerywani_second.140 days = 1 } }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_choose_promised_city = {
+        potential = { is_ai = no has_variable = z2_preparing }
+        allow = {
+            custom_tooltip = { text = z2_ui_scouts_ready_tt NOT = { has_variable = z2_city_menu_open } NOT = { has_variable = z2_city_council_cooldown } }
+            political_influence >= 20
+        }
+        effect = {
+            add_political_influence = -20
+            custom_tooltip = z2_ui_city_council_effect_tt
+            hidden_effect = { set_variable = { name = z2_city_menu_open } set_variable = { name = z2_city_council_cooldown days = 365 } z2_player_city_choices_effect = yes trigger_event = { id = zerywani_second.130 days = 1 } }
+        }
+        ai_will_do = { base = 0 }
+    }
+    z2_support_first_gathering = {
+        potential = { is_ai = no is_tribal = yes has_global_variable = zerywani_horde_formed NOT = { has_global_variable = zerywani_first_ended } NOT = { has_variable = zerywani_first_veterans } OR = { country_culture_group = western_zerywani country_culture_group = eastern_zerywani } }
+        allow = {
+            is_subject = no
+            war = no
+            treasury >= 100
+            manpower >= 10
+            custom_tooltip = { text = z2_ui_first_campaign_active_tt any_country = { has_variable = is_zerywani_horde_leader war = yes has_land = yes } }
+        }
+        effect = {
+            custom_tooltip = z2_ui_support_first_effect_tt
+            hidden_effect = { z2_player_support_first_effect = yes }
+        }
+        ai_will_do = { base = 0 }
+    }
+}

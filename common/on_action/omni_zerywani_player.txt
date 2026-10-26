@@ -1,0 +1,93 @@
+﻿monthly_country_pulse = {
+    effect = {
+        if = {
+            limit = {
+                has_variable = z2_pledged_to
+                OR = {
+                    NOT = { exists = var:z2_pledged_to }
+                    var:z2_pledged_to = { NOT = { has_variable = z2_player_project } NOT = { has_variable = z2_active } }
+                }
+            }
+            remove_variable = z2_pledged_to
+            remove_variable = z2_privileges_promised
+        }
+        if = {
+            limit = { z2_player_candidate_trigger = yes NOT = { has_variable = z2_player_offered } NOT = { has_variable = z2_player_declined } }
+            set_variable = { name = z2_player_offered }
+            set_variable = { name = z2_player_offer_pending days = 180 }
+            trigger_event = { id = zerywani_second.100 days = 1 }
+        }
+        if = {
+            limit = { has_variable = z2_player_offered NOT = { has_variable = z2_player_offer_pending } NOT = { has_variable = z2_player_project } }
+            set_variable = { name = z2_player_declined }
+        }
+        if = {
+            limit = { has_variable = z2_player_project NOT = { has_variable = z2_active } }
+            if = {
+                limit = { NOT = { z2_player_project_valid_trigger = yes } }
+                z2_player_release_claim_effect = yes
+                if = { limit = { is_ai = no } trigger_event = { id = zerywani_second.102 days = 1 } }
+            }
+            else_if = {
+                limit = { NOT = { has_global_variable = z2_warned } z2_generation_ready_trigger = yes }
+                if = {
+                    limit = { NOT = { has_variable = z2_player_generation_offered } }
+                    set_variable = { name = z2_player_generation_offered }
+                    set_variable = { name = z2_player_claim_deadline days = 1825 }
+                    trigger_event = { id = zerywani_second.120 days = 1 }
+                }
+                else_if = {
+                    limit = { NOT = { has_variable = z2_player_claim_deadline } }
+                    z2_player_release_claim_effect = yes
+                    trigger_event = { id = zerywani_second.102 days = 1 }
+                }
+            }
+        }
+        if = {
+            limit = { has_variable = z2_active is_ai = no }
+            if = { limit = { var:z2_cohesion < 40 } add_country_modifier = { name = z2_unsteady_oaths duration = 62 } }
+            else = { remove_country_modifier = z2_unsteady_oaths }
+        }
+    }
+}
+yearly_country_pulse = {
+    effect = {
+        if = {
+            limit = { is_ai = no has_global_variable = z2_player_claim NOT = { exists = global_var:z2_player_claim } }
+            remove_global_variable = z2_player_claim
+        }
+        if = {
+            limit = { is_ai = no exists = global_var:z2_player_claim global_var:z2_player_claim = { NOT = { z2_player_project_valid_trigger = yes } } }
+            global_var:z2_player_claim = { z2_player_release_claim_effect = yes }
+        }
+        if = {
+            limit = { has_variable = z2_active is_ai = no }
+            if = { limit = { OR = { has_variable = z2_recent_plunder has_variable = z2_recent_victory } } change_variable = { name = z2_cohesion add = 10 } }
+            else_if = { limit = { NOT = { has_variable = z2_settled } } change_variable = { name = z2_cohesion add = -10 } }
+            if = { limit = { OR = { has_war_exhaustion >= 10 stability < 30 } } change_variable = { name = z2_cohesion add = -10 } }
+            z2_player_clamp_cohesion_effect = yes
+            if = { limit = { var:z2_cohesion <= 20 } trigger_event = { id = zerywani_second.160 days = 1 } }
+        }
+    }
+}
+on_great_battle_won_country = {
+    effect = {
+        if = {
+            limit = { has_variable = z2_active is_ai = no NOT = { has_variable = z2_victory_cooldown } }
+            set_variable = { name = z2_victory_cooldown days = 90 }
+            set_variable = { name = z2_recent_victory days = 365 }
+            change_variable = { name = z2_cohesion add = 5 }
+            z2_player_clamp_cohesion_effect = yes
+        }
+    }
+}
+on_great_battle_lost_country = {
+    effect = {
+        if = {
+            limit = { has_variable = z2_active is_ai = no NOT = { has_variable = z2_defeat_cooldown } }
+            set_variable = { name = z2_defeat_cooldown days = 90 }
+            change_variable = { name = z2_cohesion add = -10 }
+            z2_player_clamp_cohesion_effect = yes
+        }
+    }
+}

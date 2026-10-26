@@ -1,0 +1,32 @@
+﻿# Imperator merges repeated on_action keys; see omni_invader_rehydration.txt.
+# Only active crises perform the geography/eligibility checks each month.
+monthly_country_pulse = {
+	on_actions = { omni_tribal_cycle_monitor }
+}
+
+omni_tribal_cycle_monitor = {
+	trigger = { has_variable = is_facing_tribal_crisis }
+	effect = {
+		if = {
+			limit = { NOT = { omni_tribal_cycle_valid_realm_trigger = yes } }
+			omni_tribal_cycle_cancel_effect = yes
+		}
+		else_if = {
+			limit = { NOT = { has_variable = omni_tribal_rise_clock } }
+			omni_tribal_cycle_remove_rise_effect = yes
+			if = {
+				limit = { war = no has_civil_war = no }
+				trigger_event = { id = tribal_flavour_events.4 }
+			}
+			else_if = {
+				limit = { NOT = { has_variable = omni_tribal_waiting_for_peace } }
+				set_variable = { name = omni_tribal_waiting_for_peace }
+				set_variable = { name = omni_tribal_war_grace days = 1825 }
+			}
+			else_if = {
+				limit = { NOT = { has_variable = omni_tribal_war_grace } }
+				omni_tribal_cycle_cancel_effect = yes
+			}
+		}
+	}
+}

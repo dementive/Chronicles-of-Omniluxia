@@ -1,0 +1,137 @@
+﻿# Adapted from Invictus tribal_flavour_events.2/.4 and its crisis modifiers.
+# Country scope throughout, except where explicitly scoped to a territory.
+omni_tribal_cycle_remove_rise_effect = {
+	remove_country_modifier = omni_tribal_steppe_rise
+	remove_country_modifier = omni_tribal_migratory_rise
+	remove_country_modifier = omni_tribal_settled_rise
+}
+
+omni_tribal_cycle_clear_effect = {
+	omni_tribal_cycle_remove_rise_effect = yes
+	remove_variable = is_facing_tribal_crisis
+	remove_variable = omni_tribal_rise_clock
+	remove_variable = omni_tribal_war_grace
+	remove_variable = omni_tribal_waiting_for_peace
+}
+
+# No collapse history is recorded when reform, conquest or a special campaign
+# cancels a cycle. A five-year pause prevents immediate rerolls after cancellation.
+omni_tribal_cycle_cancel_effect = {
+	omni_tribal_cycle_clear_effect = yes
+	set_variable = { name = omni_tribal_cycle_cooldown days = 1825 }
+}
+
+omni_tribal_cycle_start_effect = {
+	set_variable = { name = is_facing_tribal_crisis }
+	if = {
+		limit = { NOT = { has_variable = has_been_through_tribal_collapse } }
+		set_variable = { name = omni_tribal_rise_clock days = 7300 }
+		if = {
+			limit = { government = steppe_horde }
+			add_country_modifier = { name = omni_tribal_steppe_rise duration = 7300 }
+		}
+		else_if = {
+			limit = { government = tribal_chiefdom }
+			add_country_modifier = { name = omni_tribal_migratory_rise duration = 7300 }
+		}
+		else = {
+			add_country_modifier = { name = omni_tribal_settled_rise duration = 7300 }
+		}
+		save_scope_as = origin_crisis
+		every_country = {
+			limit = {
+				is_ai = no
+				any_neighbour_country = { this = scope:origin_crisis }
+			}
+			trigger_event = { id = tribal_flavour_events.5 }
+		}
+	}
+	else = {
+		# Invictus's repeat crisis skips the first rise. The recovery cooldown
+		# prevents a recovered remnant from being split again immediately.
+		trigger_event = { id = tribal_flavour_events.4 }
+	}
+}
+
+# create_country provides local culture/religion and an initial character pool,
+# as in the existing release_subject_button and tribal collapse scripts.
+omni_tribal_cycle_successor_setup_effect = {
+	change_government = tribal_kingdom
+	if = {
+		limit = { NOT = { exists = current_ruler } }
+		create_character = {
+			culture = scope:omni_tribal_successor.culture
+			religion = scope:omni_tribal_successor.religion
+			female = no
+			age = 30
+			save_scope_as = omni_tribal_successor_ruler
+		}
+		set_as_ruler = scope:omni_tribal_successor_ruler
+	}
+	every_character = {
+		limit = { is_alive = yes }
+		set_racial_trait_effect = yes
+	}
+	# Local release/revolt effects seed treasury and manpower in this manner.
+	# A flat experience grant avoids Invictus's historical absolute-date table.
+	add_treasury = 100
+	add_manpower = 5
+	add_military_experience = 80
+	omni_tribal_cycle_clear_effect = yes
+	remove_variable = has_been_through_tribal_collapse
+	set_variable = { name = omni_tribal_cycle_cooldown days = 3650 }
+	add_country_modifier = { name = omni_tribal_successor_recovery duration = 1900 }
+}
+
+omni_tribal_cycle_collapse_effect = {
+	save_scope_as = origin_crisis
+	# Invictus seeds countries at state capitals and combines the parent's
+	# territories by region. Keep its owner recheck after each region transfers.
+	every_owned_province = {
+		limit = {
+			is_state_capital = yes
+			NOT = { this.region = scope:origin_crisis.capital_scope.state.region }
+		}
+		if = {
+			limit = { owner = scope:origin_crisis }
+			create_country = {
+				save_scope_as = omni_tribal_successor
+				capital_scope.region = {
+					every_region_province = {
+						limit = { owner = scope:origin_crisis }
+						set_owned_by = scope:omni_tribal_successor
+					}
+				}
+				omni_tribal_cycle_successor_setup_effect = yes
+				if = {
+					limit = { scope:origin_crisis = { has_variable = has_been_through_tribal_collapse } }
+					add_country_modifier = { name = omni_tribal_successor_ambition duration = 1900 }
+				}
+				else = {
+					scope:origin_crisis = {
+						make_subject = { target = scope:omni_tribal_successor type = tributary }
+					}
+				}
+			}
+		}
+	}
+	if = {
+		limit = { exists = scope:omni_tribal_successor }
+		# Apply parent penalties once, not once per created country.
+		if = {
+			limit = { has_variable = has_been_through_tribal_collapse }
+			add_country_modifier = { name = omni_tribal_repeat_collapse duration = 1900 }
+		}
+		else = {
+			add_country_modifier = { name = omni_tribal_first_collapse duration = 1900 }
+		}
+		set_variable = { name = has_been_through_tribal_collapse }
+		every_country = {
+			limit = { is_ai = no }
+			trigger_event = { id = tribal_flavour_events.3 }
+		}
+		omni_tribal_cycle_clear_effect = yes
+		set_variable = { name = omni_tribal_cycle_cooldown days = 3650 }
+	}
+	else = { omni_tribal_cycle_cancel_effect = yes }
+}

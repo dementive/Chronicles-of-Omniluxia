@@ -1,0 +1,73 @@
+﻿z2_tribe_count = {
+    value = 0
+    every_country = { limit = { z2_tribe_trigger = yes } add = 1 }
+}
+z2_tribal_land = {
+    value = 0
+    every_country = { limit = { z2_tribe_trigger = yes } add = num_of_cities }
+}
+z2_host_score = {
+    value = num_of_cities
+    if = { limit = { has_variable = zerywani_first_veterans } add = 1000 }
+}
+# Population dominates; civilization and commercial infrastructure proxy urban wealth.
+z2_city_score = {
+    value = total_population
+    multiply = 10
+    add = civilization_value
+    add = { value = num_of_commerce_building multiply = 20 }
+    add = { value = num_of_port_building multiply = 10 }
+}
+z2_country_prize_score = {
+    value = 0
+    every_owned_province = {
+        limit = { z2_prize_city_trigger = yes }
+        max = z2_city_score
+    }
+}
+z2_cavalry_packs = {
+    value = country_population
+    divide = 60
+    min = 12
+    max = 32
+}
+z2_reinforcement_packs = {
+    value = var:z2_army_scale
+    divide = 3
+    min = 4
+    max = 10
+}
+# The goal's owner is preferred once reachable. Otherwise advance toward it.
+z2_frontier_score = {
+    value = 10000
+    capital_scope = { subtract = distance_from_province }
+    add = { value = country_population multiply = 0.05 }
+    if = {
+        limit = {
+            OR = {
+                any_owned_province = { this = scope:target_province }
+                any_subject = { any_owned_province = { this = scope:target_province } }
+            }
+        }
+        add = 20000
+    }
+    if = { limit = { has_variable = z2_defied_banner } add = 1000 }
+}
+z2_sack_deaths = {
+    value = total_population
+    divide = 10
+    min = 1
+    max = 20
+}
+z2_sack_captives = {
+    value = total_population
+    divide = 10
+    min = 1
+    max = 20
+}
+z2_sack_gold = {
+    value = total_population
+    multiply = 2
+    min = 25
+    max = 250
+}

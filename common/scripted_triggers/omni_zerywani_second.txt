@@ -1,0 +1,76 @@
+﻿# Southern homelands visible in the Zerywani portion of Luxterra.
+z2_homeland_trigger = {
+    custom_tooltip = {
+        text = z2_ui_homeland_tt
+        OR = {
+            is_in_region = pomorania_region
+            is_in_region = lechia_region
+            is_in_region = russhovia_region
+            is_in_region = mizhykraina_region
+            is_in_region = zarusshovia_region
+            is_in_region = polabowy_region
+        }
+    }
+}
+z2_tribe_trigger = {
+    is_tribal = yes
+    is_subject = no
+    has_land = yes
+    has_civil_war = no
+    capital_scope = { z2_homeland_trigger = yes z2_mainland_trigger = yes }
+}
+z2_host_trigger = {
+    z2_tribe_trigger = yes
+    war = no
+}
+z2_base_survives_trigger = {
+    # Consolidation preserves the recruiting base even when only one realm remains.
+    z2_tribe_count >= 1
+    z2_tribal_land >= 24
+}
+z2_founder_rules_trigger = {
+    exists = var:z2_founder
+    var:z2_founder = { is_alive = yes }
+    current_ruler = var:z2_founder
+    is_subject = no
+    has_land = yes
+    has_civil_war = no
+}
+# A subject of the confederacy is a military frontier as well as its overlord.
+z2_frontier_target_trigger = {
+    has_land = yes
+    is_subject = no
+    NOT = { this = scope:z2_host }
+    NOT = { has_truce_with = scope:z2_host }
+    NOT = { alliance_with = scope:z2_host }
+    NOT = { has_variable = z2_paid_reprieve }
+    NOT = { has_variable = z2_member }
+    has_civil_war = no
+    OR = {
+        z2_border_country_trigger = yes
+        any_subject = { z2_border_country_trigger = yes }
+    }
+}
+z2_prize_city_trigger = {
+    is_in_luxterra = yes
+    z2_mainland_trigger = yes
+    NOT = { is_in_region = dissolved_island_region }
+    z2_homeland_trigger = no
+    has_city_status = yes
+    has_owner = yes
+    is_sea = no
+    is_uninhabitable = no
+    NOT = { owner = scope:z2_host }
+    NOT = { owner = { is_subject_of = scope:z2_host } }
+}
+
+# An overlord can be reached through its military subjects' frontier.
+z2_border_country_trigger = {
+    any_owned_province = {
+        is_in_luxterra = yes
+        any_neighbor_province = {
+            exists = owner
+            owner = { OR = { this = scope:z2_host is_subject_of = scope:z2_host } }
+        }
+    }
+}

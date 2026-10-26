@@ -1,0 +1,62 @@
+﻿z2_player_candidate_trigger = {
+    is_ai = no
+    z2_tribe_trigger = yes
+    war = no
+    has_global_variable = zerywani_first_ended
+    NOT = { has_global_variable = z2_warned }
+    NOT = { has_global_variable = z2_ended }
+    NOT = { exists = global_var:z2_player_claim }
+    NOT = { has_variable = z2_player_claim_cooldown }
+    z2_base_survives_trigger = yes
+}
+z2_player_project_valid_trigger = {
+    is_ai = no
+    has_variable = z2_player_project
+    z2_tribe_trigger = yes
+    z2_base_survives_trigger = yes
+}
+z2_generation_ready_trigger = {
+    has_global_variable = zerywani_first_ended
+    OR = {
+        has_global_variable = z2_debug_testing
+        AND = {
+            current_date >= 1097.1.1
+            OR = {
+                AND = { has_global_variable = z2_warning_clock NOT = { has_global_variable = z2_warning_gate } }
+                AND = { NOT = { has_global_variable = z2_warning_clock } NOT = { has_global_variable = zerywani_second_generation_cooldown } }
+            }
+        }
+    }
+}
+z2_crown_host_trigger = {
+    OR = {
+        z2_host_trigger = yes
+        AND = { is_ai = no z2_tribe_trigger = yes war = no has_variable = z2_player_leader }
+    }
+}
+# Readiness is also shown in event/decision tooltips: summarize the state rather
+# than exposing variable names, scope pointers, and every map area.
+z2_player_ready_trigger = {
+    custom_tooltip = { text = z2_ui_households_required_tt var:z2_player_support >= 2 }
+    custom_tooltip = { text = z2_ui_pledges_required_tt OR = { z2_player_pledge_count >= 2 num_of_cities >= 24 } }
+    custom_tooltip = { text = z2_ui_remounts_required_tt has_variable = z2_player_remounts }
+    custom_tooltip = {
+        text = z2_ui_city_required_tt
+        has_variable = z2_player_goal_chosen
+        exists = var:z2_goal
+        var:z2_goal = {
+            has_owner = yes has_city_status = yes
+            NOT = { owner = root }
+            NOT = { owner = { is_subject_of = root } }
+        }
+    }
+}
+z2_ui_project_trigger = {
+    custom_tooltip = {
+        text = z2_ui_southern_host_tt
+        is_ai = no
+        z2_tribe_trigger = yes
+        has_variable = z2_player_project
+    }
+    custom_tooltip = { text = z2_ui_tribal_base_tt z2_base_survives_trigger = yes }
+}

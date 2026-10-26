@@ -1,0 +1,192 @@
+﻿# Single annual roll per world, rather than one roll per surviving tribe/player.
+yearly_country_pulse = {
+    effect = {
+        if = {
+            limit = {
+                is_ai = no
+                current_date >= 1097.1.1
+                has_global_variable = zerywani_first_ended
+                OR = {
+                    AND = { has_global_variable = z2_warning_clock NOT = { has_global_variable = z2_warning_gate } }
+                    AND = { NOT = { has_global_variable = z2_warning_clock } NOT = { has_global_variable = zerywani_second_generation_cooldown } }
+                }
+                NOT = { has_global_variable = z2_warned }
+                NOT = { exists = global_var:z2_player_claim }
+                NOT = { any_country = { z2_player_candidate_trigger = yes NOT = { has_variable = z2_player_declined } } }
+                NOT = { has_global_variable = z2_annual_roll }
+                z2_base_survives_trigger = yes
+            }
+            set_global_variable = { name = z2_annual_roll days = 300 }
+            if = {
+                limit = {
+                    OR = {
+                        AND = { has_global_variable = z2_warning_clock NOT = { has_global_variable = z2_warning_deadline } }
+                        AND = { NOT = { has_global_variable = z2_warning_clock } NOT = { has_global_variable = zerywani_second_generation_window } }
+                    }
+                }
+                ordered_country = {
+                    limit = { z2_host_trigger = yes }
+                    order_by = z2_host_score
+                    position = 0
+                    z2_prepare_effect = yes
+                }
+            }
+            else = {
+                random = {
+                    chance = 10
+                    ordered_country = {
+                        limit = { z2_host_trigger = yes }
+                        order_by = z2_host_score
+                        position = 0
+                        z2_prepare_effect = yes
+                    }
+                }
+            }
+        }
+        if = {
+            limit = {
+                is_ai = no
+                has_global_variable = z2_started
+                NOT = { has_global_variable = z2_ended }
+                NOT = { any_country = { has_variable = z2_active has_land = yes } }
+            }
+            z2_orphan_cleanup_effect = yes
+        }
+        if = {
+            limit = {
+                is_ai = no
+                has_global_variable = z2_warned
+                NOT = { has_global_variable = z2_started }
+                NOT = { has_global_variable = z2_ended }
+                NOT = { has_global_variable = z2_succession_war }
+                NOT = { any_country = { has_variable = z2_preparing has_land = yes } }
+            }
+            z2_cancel_preparation_effect = yes
+        }
+    }
+}
+monthly_country_pulse = {
+    effect = {
+        if = {
+            limit = { has_variable = z2_preparing NOT = { has_variable = z2_challenge_victor_pending } }
+            z2_restore_effect = yes
+            if = {
+                limit = {
+                    OR = {
+                        NOT = { z2_base_survives_trigger = yes }
+                        is_subject = yes
+                        has_civil_war = yes
+                        NOT = { exists = var:z2_founder }
+                        var:z2_founder = { is_alive = no }
+                    }
+                }
+                z2_cancel_preparation_effect = yes
+            }
+        }
+        if = {
+            limit = { has_variable = z2_active }
+            z2_restore_effect = yes
+            if = { limit = { NOT = { z2_founder_rules_trigger = yes } } z2_collapse_effect = yes }
+        }
+        if = {
+            limit = { has_variable = z2_active }
+            z2_restore_effect = yes
+            # Replenishment is finite, annual, and only supplied during active wars.
+            if = {
+                limit = { war = yes var:z2_reinforcement_reserve > 0 NOT = { has_variable = z2_next_reinforcement } }
+                set_variable = { name = z2_next_reinforcement days = 365 }
+                change_variable = { name = z2_reinforcement_reserve add = -1 }
+                set_variable = { name = z2_spawn_packs value = z2_reinforcement_packs }
+                capital_scope = { save_scope_as = z2_spawn_location }
+                z2_raise_army_effect = yes
+                add_treasury = 300
+                add_manpower = 20
+            }
+            # Invite tribes that were fighting an unrelated war at initial formation.
+            every_country = {
+                limit = {
+                    z2_tribe_trigger = yes
+                    war = no
+                    NOT = { this = scope:z2_host }
+                    NOT = { has_variable = z2_invited }
+                    NOT = { has_variable = z2_defied_banner }
+                }
+                if = {
+                    limit = { exists = var:z2_pledged_to var:z2_pledged_to = scope:z2_host }
+                    z2_join_oath_effect = yes
+                }
+                else = {
+                    set_variable = { name = z2_invited }
+                    trigger_event = { id = zerywani_second.3 days = 1 }
+                }
+            }
+            if = {
+                limit = { exists = var:z2_goal NOT = { has_variable = z2_settled } }
+                if = {
+                    limit = {
+                        var:z2_goal = {
+                            owner = scope:z2_host
+                            controller = scope:z2_host
+                            any_neighbor_province = { exists = owner owner = scope:z2_host }
+                        }
+                    }
+                    if = {
+                        limit = { NOT = { has_variable = z2_holding_goal } }
+                        set_variable = { name = z2_holding_goal }
+                        set_variable = { name = z2_settlement_wait days = 180 }
+                    }
+                    else_if = {
+                        limit = { NOT = { has_variable = z2_settlement_wait } }
+                        z2_settle_effect = yes
+                    }
+                }
+                else = { remove_variable = z2_holding_goal remove_variable = z2_settlement_wait }
+            }
+            if = {
+                limit = { is_ai = yes war = no exists = var:z2_goal NOT = { has_variable = z2_campaign_delay } }
+                z2_next_campaign_effect = yes
+            }
+        }
+    }
+}
+on_civil_war_won = { effect = { z2_challenge_victory_effect = yes } }
+on_civil_war_lost = { effect = { z2_challenge_victory_effect = yes } }
+
+on_ruler_change = {
+    effect = {
+        if = {
+            limit = { has_variable = z2_active NOT = { current_ruler = var:z2_founder } }
+            trigger_event = { id = zerywani_second.50 days = 1 }
+        }
+    }
+}
+on_character_death = {
+    effect = {
+        if = {
+            limit = { has_variable = z2_founder_character exists = global_var:z2_host }
+            global_var:z2_host = { trigger_event = { id = zerywani_second.50 days = 1 } }
+        }
+    }
+}
+on_province_occupied = {
+    effect = {
+        if = {
+            limit = {
+                exists = global_var:z2_host
+                global_var:z2_host = { has_variable = z2_active }
+                exists = owner
+                exists = controller
+                OR = {
+                    controller = global_var:z2_host
+                    controller = { is_subject_of = global_var:z2_host }
+                }
+                # Conquest can transfer ownership before this hook runs.
+                # Protected pre-war land prevents friendly recaptures being sacked.
+                NOT = { has_variable = z2_protected_land }
+                NOT = { has_variable = z2_recent_sack }
+            }
+            z2_restore_effect = yes
+            z2_sack_effect = yes
+        }
+    }
+}

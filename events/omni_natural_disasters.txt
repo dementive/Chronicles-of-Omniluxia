@@ -736,7 +736,7 @@ omni_disaster.7 = { #drought
 
 	left_portrait = current_ruler
 	right_portrait = scope:i_am_thirsty.governor
-	goto_location = scope:i_am_thirsty
+	goto_location = scope:i_am_thirsty.capital_scope
 
 	trigger = {
 		any_country_state = {
@@ -770,6 +770,13 @@ omni_disaster.7 = { #drought
 				duration = 1825 #5 yrs
 			}
 		}
+        # Event scopes may be lost by old queued events or a reload. Keep the
+        # actual state on the country as well as in this event's display scope.
+        if = {
+            limit = { exists = scope:i_am_thirsty }
+            set_variable = { name = omni_drought_state value = scope:i_am_thirsty }
+        }
+
 	}
 
 	option = { #try to save and feed your people
@@ -850,124 +857,141 @@ omni_disaster.7 = { #drought
 			}
 		}
 	}
+    after = {
+        set_variable = { name = drought_cooldown days = 9125 }
+    }
+
 }
 
 omni_disaster.8 = {
-	type = country_event
-	title = omni_disaster.8.t
-	desc = omni_disaster.8.desc
-	picture = farming
+    type = country_event
+    title = omni_disaster.8.t
+    desc = omni_disaster.8.desc
+    picture = farming
+    left_portrait = current_ruler
+    right_portrait = scope:i_am_thirsty.governor
+    goto_location = scope:i_am_thirsty.capital_scope
 
-	left_portrait = current_ruler
-	right_portrait = scope:i_am_thirsty.governor
-	goto_location = scope:i_am_thirsty
-
-	immediate = {
-		set_variable = {
-			name = drought_spread
-			days = 500
-			value = 5
-		}
-		scope:i_am_thirsty.area = {
-			every_neighbor_area = {
-				every_area_state = {
-					add_state_modifier = {
-						name = omni_grow_a_pear
-						duration = 1825 # 5yrs
-					}
-				}
-			}
-		}
-	}
-
-	option = {
-		name = omni_disaster.8.a
-		random_list = {
-			25 = {
-				modifier = {
-					factor = var:drought_spread
-				}
-				custom_tooltip = omni_disaster_8_a_1
-				trigger_event = {
-					id = omni_disaster.8
-					days = { 30 100 }
-				}
-			}
-			75 = {
-				custom_tooltip = omni_disaster_8_a_2
-				set_variable = {
-					name = drought_cooldown
-					days = 9125 #25 yrs
-				}
-			}
-		}
-	}
-
-	option = {
-		name = omni_disaster.8.b
-		custom_tooltip = omni_disaster_8_b
-		trigger = {
-			current_ruler = {
-				OR = {
-					has_trait = merciful
-					has_trait = lunatic
-					has_trait = lapsed
-					has_trait = arbitrary
-					has_trait = easygoing
-				}
-			}
-			var:drought_spread >= 1
-		}
-		add_treasury = {
-			subtract = has_monthly_income
-			multiply = 32
-			min = -500
-			max = -50
-		}
-		highlight = yes
-	}
-
-	after = {
-		if = {
-			limit = {
-				OR = {
-					var:drought_spread = 5
-					var:drought_spread = 4
-					var:drought_spread = 3
-					var:drought_spread = 2
-				}
-			}
-			change_variable = {
-				add = -1
-				name = drought_spread
-			}
-		}
-		scope:i_am_thirsty = {
-			remove_state_modifier = omni_grow_a_pear
-			add_state_modifier = {
-				name = omni_grow_a_pear
-				duration = 3650 #10 yrs
-			}
-			clear_saved_scope = i_am_thirsty
-			set_variable = {
-				name = thirsty_bois
-				days = 500
-			}
-			area = {
-				random_neighbor_area = {
-					random_area_state = {
-						limit = {
-							has_state_modifier = omni_grow_a_pear
-							NOT = {
-								has_variable = thirsty_bois
-							}
-						}
-						save_scope_as = i_am_thirsty
-					}
-				}
-			}
-		}
-	}
+    # Old saves can contain queued follow-ups with no saved event target. Only
+    # deliver a follow-up if there is a real owned state we can restore.
+    trigger = {
+        OR = {
+            AND = { exists = var:omni_drought_state var:omni_drought_state = { owner = root } }
+            AND = { exists = scope:i_am_thirsty scope:i_am_thirsty = { owner = root } }
+            any_country_state = { has_state_modifier = omni_grow_a_pear }
+        }
+    }
+    immediate = {
+        if = {
+            limit = { exists = var:omni_drought_state var:omni_drought_state = { owner = root } }
+            var:omni_drought_state = { save_scope_as = i_am_thirsty }
+        }
+        else_if = {
+            limit = { exists = scope:i_am_thirsty scope:i_am_thirsty = { owner = root } }
+            set_variable = { name = omni_drought_state value = scope:i_am_thirsty }
+        }
+        else = {
+            random_country_state = {
+                limit = { has_state_modifier = omni_grow_a_pear }
+                save_scope_as = i_am_thirsty
+            }
+            set_variable = { name = omni_drought_state value = scope:i_am_thirsty }
+        }
+        # Initialize once per chain, not on every recurrence.
+        if = {
+            limit = { NOT = { has_variable = drought_spread } }
+            set_variable = { name = drought_spread value = 5 }
+        }
+        remove_variable = omni_drought_continue
+        remove_variable = omni_drought_next_found
+        scope:i_am_thirsty.area = {
+            every_neighbor_area = {
+                every_area_state = {
+                    limit = { owner = root }
+                    add_state_modifier = { name = omni_grow_a_pear duration = 1825 }
+                }
+            }
+        }
+    }
+    option = {
+        name = omni_disaster.8.a
+        random_list = {
+            25 = {
+                trigger = { var:drought_spread > 1 }
+                modifier = { factor = var:drought_spread }
+                custom_tooltip = omni_disaster_8_a_1
+                set_variable = { name = omni_drought_continue }
+            }
+            75 = { custom_tooltip = omni_disaster_8_a_2 }
+        }
+    }
+    option = {
+        name = omni_disaster.8.b
+        custom_tooltip = omni_disaster_8_b
+        trigger = {
+            current_ruler = {
+                OR = {
+                    has_trait = merciful
+                    has_trait = lunatic
+                    has_trait = lapsed
+                    has_trait = arbitrary
+                    has_trait = easygoing
+                }
+            }
+            var:drought_spread >= 1
+        }
+        add_treasury = { subtract = has_monthly_income multiply = 32 min = -500 max = -50 }
+        highlight = yes
+    }
+    after = {
+        scope:i_am_thirsty = {
+            remove_state_modifier = omni_grow_a_pear
+            add_state_modifier = { name = omni_grow_a_pear duration = 3650 }
+            set_variable = { name = thirsty_bois days = 500 }
+        }
+        if = {
+            limit = { has_variable = omni_drought_continue var:drought_spread > 1 }
+            # Filter neighboring areas BEFORE choosing one, so a randomly empty
+            # area cannot erase the target while another has eligible states.
+            scope:i_am_thirsty.area = {
+                random_neighbor_area = {
+                    limit = {
+                        any_area_state = {
+                            owner = root
+                            has_state_modifier = omni_grow_a_pear
+                            NOT = { has_variable = thirsty_bois }
+                        }
+                    }
+                    random_area_state = {
+                        limit = {
+                            owner = root
+                            has_state_modifier = omni_grow_a_pear
+                            NOT = { has_variable = thirsty_bois }
+                        }
+                        save_scope_as = i_am_thirsty
+                        root = {
+                            set_variable = { name = omni_drought_state value = scope:i_am_thirsty }
+                            set_variable = { name = omni_drought_next_found }
+                        }
+                    }
+                }
+            }
+        }
+        if = {
+            limit = { has_variable = omni_drought_next_found }
+            change_variable = { name = drought_spread add = -1 }
+            trigger_event = { id = omni_disaster.8 days = { 30 100 } }
+        }
+        else = {
+            # Relief, exhausted spread budget, and no eligible neighbor all end
+            # the chain without leaving an invalid delayed event behind.
+            set_variable = { name = drought_cooldown days = 9125 }
+            remove_variable = drought_spread
+            remove_variable = omni_drought_state
+        }
+        remove_variable = omni_drought_continue
+        remove_variable = omni_drought_next_found
+    }
 }
 
 ###Sandstorm

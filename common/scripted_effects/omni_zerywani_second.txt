@@ -1,0 +1,480 @@
+﻿# Persistent scope pointers are restored at every event boundary and after reload.
+z2_restore_effect = {
+    if = {
+        limit = { exists = global_var:z2_host }
+        global_var:z2_host = {
+            save_scope_as = z2_host
+            if = { limit = { exists = var:z2_founder } var:z2_founder = { save_scope_as = z2_founder } }
+            if = { limit = { exists = var:z2_goal } var:z2_goal = { save_scope_as = target_province } }
+        }
+    }
+}
+
+# ROOT/THIS is the chosen tribal host, not the human scheduler.
+z2_prepare_effect = {
+    save_scope_as = z2_host
+    ordered_country = {
+        limit = {
+            has_land = yes
+            NOT = { this = scope:z2_host }
+            any_owned_province = { z2_prize_city_trigger = yes }
+        }
+        order_by = z2_country_prize_score
+        position = 0
+        ordered_owned_province = {
+            limit = { z2_prize_city_trigger = yes }
+            order_by = z2_city_score
+            position = 0
+            save_scope_as = z2_selected_goal
+        }
+    }
+    if = {
+        limit = { exists = scope:z2_selected_goal }
+        scope:z2_selected_goal = { save_scope_as = target_province }
+        set_global_variable = { name = z2_warned }
+        set_global_variable = { name = z2_host value = scope:z2_host }
+        set_variable = { name = z2_preparing }
+        set_variable = { name = z2_goal value = scope:target_province }
+        # Prefer a surviving veteran; otherwise create the obscure soldier explicitly.
+        if = {
+            limit = { any_character = { has_variable = zerywani_first_generation is_alive = yes is_female = no age >= 50 } }
+            random_character = {
+                limit = { has_variable = zerywani_first_generation is_alive = yes is_female = no age >= 50 }
+                save_scope_as = z2_father
+            }
+        }
+        else = {
+            create_character = {
+                age = 70
+                female = no
+                culture = scope:z2_host.culture
+                religion = scope:z2_host.religion
+                set_variable = { name = zerywani_first_generation }
+                save_scope_as = z2_father
+            }
+        }
+        create_character = {
+            age = 30
+            female = no
+            father = scope:z2_father
+            culture = scope:z2_host.culture
+            religion = scope:z2_host.religion
+            add_martial = 10
+            add_charisma = 6
+            set_variable = { name = z2_founder_character }
+            save_scope_as = z2_founder
+        }
+        set_variable = { name = z2_founder value = scope:z2_founder }
+        if = {
+            limit = { is_ai = no }
+            set_variable = { name = z2_player_leader }
+            if = { limit = { NOT = { has_variable = z2_player_support } } set_variable = { name = z2_player_support value = 0 } }
+            set_variable = { name = z2_player_extensions value = 0 }
+            z2_player_city_choices_effect = yes
+            trigger_event = { id = zerywani_second.130 days = 1 }
+        }
+        every_country = {
+            limit = { is_ai = no NOT = { this = scope:z2_host } }
+            trigger_event = { id = zerywani_second.1 days = 1 }
+        }
+        trigger_event = { id = zerywani_second.5 days = 730 }
+        trigger_event = { id = zerywani_second.2 days = 1460 }
+    }
+}
+z2_cancel_preparation_effect = {
+    remove_variable = z2_preparing
+    set_global_variable = { name = z2_prevented }
+    set_global_variable = { name = z2_ended }
+    every_country = { limit = { is_ai = no } trigger_event = { id = zerywani_second.9 days = 1 } }
+}
+z2_start_effect = {
+    if = {
+        limit = {
+            has_variable = z2_preparing
+            NOT = { has_global_variable = z2_started }
+            NOT = { has_global_variable = z2_ended }
+            NOT = { has_global_variable = z2_succession_war }
+        }
+        z2_restore_effect = yes
+        # Set the ruler before enabling death/deposition hooks for this country.
+        set_as_ruler = scope:z2_founder
+        remove_variable = z2_preparing
+        remove_variable = z2_challenge_victor_pending
+        set_variable = { name = z2_active }
+        set_global_variable = { name = z2_started }
+        if = {
+            limit = { is_ai = no }
+            set_variable = { name = z2_cohesion value = z2_player_cohesion_start }
+            remove_variable = z2_player_project
+            if = { limit = { exists = global_var:z2_player_claim global_var:z2_player_claim = this } remove_global_variable = z2_player_claim }
+            if = { limit = { has_variable = z2_player_remounts } add_country_modifier = { name = z2_prepared_remounts duration = 1825 } }
+        }
+        # The new ruler replaces inherited foreign pacts with his personal oaths.
+        every_country = { limit = { alliance_with = scope:z2_host } break_alliance = scope:z2_host }
+        set_variable = { name = z2_reinforcement_reserve value = 12 }
+        set_variable = { name = is_not_allowed_to_go_broke }
+        set_variable = { name = is_ignoring_ae }
+        set_local_variable = { name = z2_sampled_scale value = 12 }
+        ordered_country = {
+            limit = {
+                is_subject = no
+                is_tribal = no
+                has_land = yes
+                any_owned_province = { is_in_luxterra = yes z2_mainland_trigger = yes }
+            }
+            order_by = country_population
+            position = 0
+            set_local_variable = { name = z2_sampled_scale value = z2_cavalry_packs }
+        }
+        set_variable = { name = z2_army_scale value = local_var:z2_sampled_scale }
+        every_owned_province = { set_variable = { name = z2_protected_land } }
+        add_treasury = 2000
+        add_manpower = 100
+        add_stability = 20
+        add_country_modifier = { name = z2_banner_ascendant duration = -1 }
+        if = {
+            limit = { has_global_variable = zerywani_first_capital_taken }
+            add_country_modifier = { name = z2_lesson_rule duration = -1 }
+        }
+        else_if = {
+            limit = { has_global_variable = zerywani_first_capital_sacked }
+            add_country_modifier = { name = z2_lesson_roads duration = -1 }
+        }
+        else = { add_country_modifier = { name = z2_lesson_command duration = -1 } }
+        set_variable = { name = z2_spawn_packs value = var:z2_army_scale }
+        capital_scope = { save_scope_as = z2_spawn_location }
+        z2_raise_army_effect = yes
+        z2_raise_army_effect = yes
+        z2_raise_army_effect = yes
+        every_country = {
+            limit = {
+                z2_tribe_trigger = yes
+                NOT = { this = scope:z2_host }
+                war = no
+            }
+            if = {
+                limit = {
+                    OR = {
+                        AND = { exists = var:z2_pledged_to var:z2_pledged_to = scope:z2_host }
+                        AND = { scope:z2_host = { is_ai = yes } is_ai = yes num_of_cities <= 12 }
+                    }
+                }
+                z2_join_oath_effect = yes
+            }
+            else = {
+                set_variable = { name = z2_invited }
+                trigger_event = { id = zerywani_second.3 days = 1 }
+            }
+        }
+        every_country = { limit = { is_ai = no } trigger_event = { id = zerywani_second.4 days = 2 } }
+        set_variable = { name = z2_campaign_delay days = 60 }
+    }
+}
+# Called on a prospective member; all ownership is retained.
+z2_join_oath_effect = {
+    save_scope_as = z2_new_member
+    scope:z2_host = { make_subject = { target = scope:z2_new_member type = z2_oath_subject } }
+    set_variable = { name = z2_member }
+    if = {
+        limit = { has_variable = z2_privileges_promised }
+        add_country_modifier = { name = z2_chief_privileges duration = 10950 }
+        remove_variable = z2_privileges_promised
+    }
+    every_owned_province = { set_variable = { name = z2_protected_land } }
+    remove_variable = z2_defied_banner
+}
+z2_join_tributary_effect = {
+    save_scope_as = z2_new_member
+    scope:z2_host = { make_subject = { target = scope:z2_new_member type = z2_tributary_subject } }
+    set_variable = { name = z2_member }
+    every_owned_province = { set_variable = { name = z2_protected_land } }
+    # Submission includes the selected seat and up to two actual adjacent holdings.
+    if = {
+        limit = { exists = scope:target_province scope:target_province = { OR = { owner = scope:z2_new_member owner = { is_subject_of = scope:z2_new_member } } } }
+        scope:target_province = {
+            set_owned_by = scope:z2_host
+            ordered_neighbor_province = {
+                limit = { OR = { owner = scope:z2_new_member owner = { is_subject_of = scope:z2_new_member } } is_sea = no is_uninhabitable = no }
+                order_by = total_population
+                max = 2
+                set_owned_by = scope:z2_host
+            }
+        }
+    }
+}
+# Called only in the host country; unit effects stay inside create_unit.
+z2_raise_army_effect = {
+    if = {
+        limit = { NOT = { has_variable = z2_founder_deployed } }
+        set_variable = { name = z2_founder_deployed }
+        scope:z2_founder = { save_scope_as = z2_army_commander }
+    }
+    else = {
+        create_character = {
+            age = 30
+            female = no
+            culture = scope:z2_host.culture
+            religion = scope:z2_host.religion
+            add_martial = 6
+            save_scope_as = z2_army_commander
+        }
+    }
+    create_unit = {
+        name = z2_army_name
+        location = scope:z2_spawn_location
+        set_as_commander = scope:z2_army_commander
+        while = {
+            count = scope:z2_host.var:z2_spawn_packs
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = heavy_cavalry
+            add_subunit = heavy_cavalry
+        }
+        add_food = 4000
+        add_morale = 3
+        add_unit_modifier = { name = z2_riders duration = -1 }
+    }
+}
+z2_next_campaign_effect = {
+    z2_restore_effect = yes
+    ordered_country = {
+        limit = { z2_frontier_target_trigger = yes }
+        order_by = z2_frontier_score
+        position = 0
+        set_variable = { name = z2_envoy_pending }
+        trigger_event = { id = zerywani_second.10 days = 1 }
+    }
+    set_variable = { name = z2_campaign_delay days = 180 }
+}
+# ROOT/THIS is the rejecting defender; no remote or vanished target declarations.
+z2_defiance_war_effect = {
+    if = {
+        limit = {
+            exists = scope:z2_host
+            scope:z2_host = { has_variable = z2_active }
+            z2_frontier_target_trigger = yes
+            NOT = { war_with = scope:z2_host }
+        }
+        save_scope_as = z2_defender
+        scope:z2_host = {
+            if = { limit = { is_ai = yes } declare_war_with_wargoal = { war_goal = z2_banner_conquest target = scope:z2_defender } }
+            else = { trigger_event = { id = zerywani_second.155 days = 1 } }
+        }
+    }
+}
+# Called only after the objective and its neighboring foothold have been secured.
+z2_settle_effect = {
+    z2_restore_effect = yes
+    set_variable = { name = z2_settled }
+    set_global_variable = { name = z2_capital_founded }
+    capital_scope = { save_scope_as = z2_old_capital }
+    set_capital = scope:target_province
+    change_country_name = ZJ2
+    change_country_adjective = ZJ2_ADJ
+    if = { limit = { NOT = { exists = c:ZJ2 } } change_country_tag = ZJ2 }
+    change_country_color = z2_banner_green
+    change_country_flag = ZJ2
+    change_government = despotic_monarchy
+    every_owned_province = { set_variable = { name = z2_protected_land } }
+    scope:target_province = {
+        remove_province_modifier = z2_ravaged
+        add_province_modifier = { name = z2_seat_of_jelenia duration = -1 }
+    }
+    # Real population movement creates the new ruling community; no free conversions.
+    scope:z2_old_capital = {
+        if = {
+            limit = { total_population > 10 }
+            random_pops_in_province = { move_pop = scope:target_province }
+            random_pops_in_province = { move_pop = scope:target_province }
+        }
+    }
+    every_subject = {
+        limit = { is_subject_type = z2_oath_subject }
+        capital_scope = {
+            if = {
+                limit = { total_population > 10 }
+                random_pops_in_province = { move_pop = scope:target_province }
+            }
+        }
+    }
+    scope:target_province = { add_province_modifier = { name = z2_settled_riders duration = 7300 } }
+    every_country = { limit = { is_ai = no } trigger_event = { id = zerywani_second.20 days = 1 } }
+}
+# Province scope, called on occupation by either the central host or its subjects.
+z2_sack_effect = {
+    scope:z2_host = { set_variable = { name = z2_recent_plunder days = 365 } }
+    set_variable = { name = z2_recent_sack days = 3650 }
+    add_province_modifier = { name = z2_ravaged duration = 3650 }
+    controller = { add_treasury = prev.z2_sack_gold }
+    while = {
+        count = z2_sack_deaths
+        if = { limit = { total_population > 5 } random_pops_in_province = { kill_pop = yes } }
+    }
+    while = {
+        count = z2_sack_captives
+        if = {
+            limit = { total_population > 5 }
+            random_pops_in_province = {
+                set_pop_type = slaves
+                move_pop = scope:z2_host.capital_scope
+            }
+        }
+    }
+    if = { limit = { num_of_fortress_building > 0 } remove_building_level = fortress_building }
+    if = { limit = { num_of_commerce_building > 0 } remove_building_level = commerce_building }
+    if = { limit = { num_of_aqueduct_building > 0 } remove_building_level = aqueduct_building }
+    if = {
+        limit = {
+            has_city_status = yes
+            total_population < 15
+            NOT = { this = scope:target_province }
+        }
+        destroy_city_effect = yes
+    }
+    # With civil-war conquest, a subject may have taken ownership. Consolidate only
+    # the objective into the founder's demesne, leaving ordinary subject land alone.
+    if = {
+        limit = { this = scope:target_province owner = { is_subject_of = scope:z2_host } }
+        set_owned_by = scope:z2_host
+    }
+}
+z2_clear_host_modifiers_effect = {
+    remove_country_modifier = z2_unsteady_oaths
+    remove_country_modifier = z2_prepared_remounts
+    remove_country_modifier = z2_banner_ascendant
+    remove_country_modifier = z2_lesson_rule
+    remove_country_modifier = z2_lesson_roads
+    remove_country_modifier = z2_lesson_command
+    remove_variable = is_not_allowed_to_go_broke
+    remove_variable = is_ignoring_ae
+    remove_variable = z2_reinforcement_reserve
+    # The event host disperses; a small remnant is raised separately for successors.
+    every_unit = { limit = { has_unit_modifier = z2_riders } destroy_unit = yes }
+}
+# Resolve personal rule once. The settled country and surviving troops remain.
+z2_collapse_effect = {
+    if = {
+        limit = { has_variable = z2_active NOT = { has_global_variable = z2_ended } }
+        save_scope_as = z2_host
+        set_global_variable = { name = z2_ended }
+        remove_variable = z2_active
+        set_variable = { name = z2_successor }
+        z2_clear_host_modifiers_effect = yes
+        add_stability = -20
+        add_country_modifier = { name = z2_broken_oaths duration = 1825 }
+        add_country_modifier = { name = z2_successor_ambition duration = 1825 }
+        z2_remnant_effect = yes
+        # End the founder's offensive expeditions before releasing their participants.
+        every_current_war = {
+            limit = { any_war_attacker = { this = scope:z2_host } }
+            save_scope_as = z2_campaign_war
+            force_white_peace = scope:z2_campaign_war
+        }
+        every_subject = {
+            limit = { OR = { is_subject_type = z2_oath_subject is_subject_type = z2_tributary_subject } }
+            save_scope_as = z2_released
+            set_variable = { name = z2_successor }
+            remove_variable = z2_member
+            scope:z2_host = { release_subject = scope:z2_released }
+            add_country_modifier = { name = z2_successor_ambition duration = 1825 }
+            if = { limit = { num_of_cities >= 8 } z2_remnant_effect = yes }
+            trigger_event = { id = zerywani_second.40 days = 30 }
+        }
+        every_country = {
+            limit = { has_variable = z2_member is_subject = no }
+            remove_variable = z2_member
+            set_variable = { name = z2_successor }
+            add_country_modifier = { name = z2_successor_ambition duration = 1825 }
+            if = { limit = { num_of_cities >= 8 } z2_remnant_effect = yes }
+            trigger_event = { id = zerywani_second.40 days = 30 }
+        }
+        z2_successor_blocs_effect = yes
+        every_country = { limit = { is_ai = no } trigger_event = { id = zerywani_second.30 days = 1 } }
+    }
+}
+# Two strong AI successor chiefs may gather nearby smaller AI states into blocs.
+z2_successor_blocs_effect = {
+    ordered_country = {
+        limit = {
+            has_variable = z2_successor
+            is_subject = no
+            is_ai = yes
+            num_of_cities >= 8
+            trigger_if = { limit = { exists = scope:z2_host } NOT = { this = scope:z2_host } }
+        }
+        order_by = num_of_cities
+        max = 2
+        save_scope_as = z2_bloc_leader
+        every_country = {
+            limit = {
+                has_variable = z2_successor
+                is_ai = yes
+                is_subject = no
+                num_of_cities < 8
+                trigger_if = { limit = { exists = scope:z2_host } NOT = { this = scope:z2_host } }
+                any_owned_province = {
+                    any_neighbor_province = { exists = owner owner = scope:z2_bloc_leader }
+                }
+            }
+            random = {
+                chance = 50
+                save_scope_as = z2_bloc_member
+                scope:z2_bloc_leader = { make_subject = { target = scope:z2_bloc_member type = z2_successor_subject } }
+            }
+        }
+    }
+}
+# Country destruction leaves no living host to run its death or ruler-change hooks.
+z2_orphan_cleanup_effect = {
+    if = {
+        limit = { exists = global_var:z2_host }
+        global_var:z2_host = {
+            remove_variable = z2_active
+            remove_variable = z2_preparing
+            z2_clear_host_modifiers_effect = yes
+        }
+    }
+    set_global_variable = { name = z2_ended }
+    every_country = {
+        limit = { has_variable = z2_member }
+        if = {
+            limit = { is_subject = yes OR = { is_subject_type = z2_oath_subject is_subject_type = z2_tributary_subject } }
+            save_scope_as = z2_released
+            overlord = { release_subject = scope:z2_released }
+        }
+        remove_variable = z2_member
+        set_variable = { name = z2_successor }
+        add_country_modifier = { name = z2_successor_ambition duration = 1825 }
+        if = { limit = { num_of_cities >= 8 } z2_remnant_effect = yes }
+        trigger_event = { id = zerywani_second.40 days = 30 }
+    }
+    z2_successor_blocs_effect = yes
+    every_country = { limit = { is_ai = no } trigger_event = { id = zerywani_second.31 days = 1 } }
+}
+
+# Reorganize surviving companions without leaving tiny successors paying for a
+# continental event army that the AI cannot normally disband.
+z2_remnant_effect = {
+    if = {
+        limit = { has_land = yes NOT = { has_variable = z2_remnant_raised } }
+        set_variable = { name = z2_remnant_raised }
+        save_scope_as = z2_remnant_country
+        create_character = {
+            age = 35
+            culture = scope:z2_remnant_country.culture
+            religion = scope:z2_remnant_country.religion
+            add_martial = 3
+            save_scope_as = z2_remnant_commander
+        }
+        create_unit = {
+            name = z2_remnant_name
+            location = scope:z2_remnant_country.capital_scope
+            set_as_commander = scope:z2_remnant_commander
+            while = { count = 12 add_subunit = light_cavalry }
+            while = { count = 8 add_subunit = heavy_cavalry }
+            add_food = 500
+            add_morale = 2
+        }
+    }
+}

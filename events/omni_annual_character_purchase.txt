@@ -10,13 +10,21 @@ omni_annual_purchase.1 = {
 	trigger = {
 		# Must be in a country to participate
 		exists = employer
-		# Must have some wealth to potentially spend
-		wealth >= 30
+		# Poor AI characters still need to equip items already in their inventory.
+		OR = {
+			wealth >= 30
+			employer = { is_ai = yes }
+		}
 		# Don't run for very young characters
 		age >= 16
 	}
 
 	immediate = {
+		employer = { omni_ensure_item_registry = yes }
+		if = {
+			limit = { employer = { is_ai = yes } has_variable_list = item_list }
+			trigger_event = { id = omni_item_autoequip.1 }
+		}
 		# Run the annual equipment check
 		omni_annual_character_equipment_check = yes
 	}

@@ -1,0 +1,54 @@
+﻿# If the expedition's country is destroyed, its delayed country events cannot finish.
+# Run the global handoff once from a player pulse; never recruit a replacement here.
+yearly_country_pulse = {
+    effect = {
+        if = {
+            limit = {
+                is_ai = no
+                has_global_variable = zerywani_horde_formed
+                NOT = { has_global_variable = zerywani_first_ended }
+                NOT = { any_country = { has_variable = is_zerywani_horde_leader } }
+            }
+            set_global_variable = { name = zerywani_first_capital_not_taken }
+            zerywani_first_legacy_effect = yes
+            every_country = {
+                limit = { has_variable = is_zerywani_horde_participant }
+                remove_country_modifier = zerywani_horde_participant_modifier
+                remove_variable = is_zerywani_horde_participant
+            }
+            every_country = {
+                limit = { has_variable = zerywani_horde_target_of_invasion }
+                remove_country_modifier = zerywani_horde_under_invasion_modifier
+                remove_variable = zerywani_horde_target_of_invasion
+            }
+        }
+    }
+}
+
+# Loot occupied enemy settlements once per ten years, including unfortified towns.
+on_province_occupied = {
+    effect = {
+        if = {
+            limit = {
+                exists = owner
+                exists = controller
+                controller = { has_variable = is_zerywani_horde_leader }
+                # Civil-war conquest may have already changed owner to controller.
+                NOT = { has_variable = zerywani_first_home_ground }
+                NOT = { has_variable = zerywani_first_recently_plundered }
+            }
+            set_global_variable = { name = zerywani_first_plundered_settlements }
+            if = {
+                limit = { has_variable = zerywani_first_objective }
+                set_global_variable = { name = zerywani_first_capital_sacked }
+            }
+            set_variable = { name = zerywani_first_recently_plundered days = 3650 }
+            add_province_modifier = { name = zerywani_first_plundered duration = 1825 }
+            controller = { add_treasury = 10 }
+            if = {
+                limit = { total_population > 5 }
+                random_pops_in_province = { kill_pop = yes }
+            }
+        }
+    }
+}

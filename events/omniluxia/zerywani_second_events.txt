@@ -1,0 +1,273 @@
+﻿namespace = zerywani_second
+
+# Notices are delivered to humans; the autonomous state machine lives in on_actions.
+zerywani_second.1 = {
+    left_portrait = current_ruler
+    type = country_event
+    title = z2_warning_title
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_global_variable = zerywani_first_capital_taken } desc = z2_warning_victory_desc }
+            triggered_desc = { trigger = { has_global_variable = zerywani_first_capital_sacked } desc = z2_warning_withdrawal_desc }
+            triggered_desc = { trigger = { always = yes } desc = z2_warning_defeat_desc }
+        }
+    }
+    picture = war_council
+    trigger = { exists = global_var:z2_host NOT = { has_global_variable = z2_ended } }
+    immediate = { z2_restore_effect = yes }
+    right_portrait = scope:z2_founder
+    option = { name = z2_warning.a }
+}
+zerywani_second.2 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = z2_preparing NOT = { has_global_variable = z2_ended } }
+    immediate = {
+        z2_restore_effect = yes
+        # START_DATE is 1001.1.1. Do not let day-based timers cross the
+        # century gate early because of leap days or annual-pulse alignment.
+        if = {
+            limit = { current_date < 1101.1.1 NOT = { has_global_variable = z2_debug_testing } }
+            trigger_event = { id = zerywani_second.2 days = 30 }
+        }
+        else_if = {
+            # A foreign war postpones the council; it does not erase the crisis.
+            limit = { war = yes has_civil_war = no }
+            trigger_event = { id = zerywani_second.2 days = 30 }
+        }
+        else_if = {
+            limit = {
+                z2_base_survives_trigger = yes
+                z2_crown_host_trigger = yes
+                exists = var:z2_founder
+                var:z2_founder = { is_alive = yes }
+                exists = var:z2_goal
+                var:z2_goal = { has_owner = yes }
+            }
+            if = {
+                limit = { is_ai = no }
+                set_variable = { name = z2_player_coronation_unlocked }
+                if = {
+                    limit = { NOT = { has_variable = z2_coronation_pending } }
+                    set_variable = { name = z2_coronation_pending }
+                    trigger_event = { id = zerywani_second.140 days = 1 }
+                }
+            }
+            else = { z2_start_effect = yes }
+        }
+        else = { z2_cancel_preparation_effect = yes }
+    }
+}
+zerywani_second.3 = {
+    left_portrait = current_ruler
+    type = country_event
+    title = z2_oath_title
+    desc = z2_oath_desc
+    picture = war_council
+    trigger = {
+        z2_tribe_trigger = yes
+        war = no
+        exists = global_var:z2_host
+        global_var:z2_host = { has_variable = z2_active }
+    }
+    immediate = { z2_restore_effect = yes }
+    right_portrait = scope:z2_founder
+    option = {
+        name = z2_oath.a
+        ai_chance = { factor = 85 }
+        custom_tooltip = z2_oath_tt
+        hidden_effect = { z2_join_oath_effect = yes }
+    }
+    option = {
+        name = z2_oath.b
+        ai_chance = { factor = 15 }
+        custom_tooltip = z2_ui_refuse_submission_tt
+        hidden_effect = { set_variable = { name = z2_defied_banner } z2_defiance_war_effect = yes }
+    }
+}
+zerywani_second.4 = {
+    type = country_event
+    title = z2_march_title
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = global_var:z2_host global_var:z2_host = { has_variable = z2_incumbent_victory } } desc = z2_march_incumbent_desc }
+            triggered_desc = { trigger = { always = yes } desc = z2_march_desc }
+        }
+    }
+    picture = city_siege
+    immediate = { z2_restore_effect = yes }
+    option = { name = z2_march.a }
+}
+zerywani_second.9 = {
+    type = country_event
+    title = z2_prevented_title
+    trigger = { has_global_variable = z2_prevented }
+    desc = z2_prevented_desc
+    picture = war_council
+    option = { name = z2_prevented.a }
+}
+# Every independent frontier realm gets a real choice before its campaign begins.
+zerywani_second.10 = {
+    left_portrait = current_ruler
+    type = country_event
+    title = z2_envoy_title
+    desc = z2_envoy_desc
+    picture = war_council
+    trigger = {
+        is_subject = no
+        exists = global_var:z2_host
+        global_var:z2_host = { has_variable = z2_active }
+        NOT = { this = global_var:z2_host }
+    }
+    immediate = { z2_restore_effect = yes remove_variable = z2_envoy_pending scope:z2_host = { remove_variable = z2_player_demand_pending } }
+    right_portrait = scope:z2_founder
+    option = {
+        name = z2_envoy.a
+        ai_chance = { factor = 20 modifier = { factor = 4 num_of_cities < 10 } }
+        custom_tooltip = z2_tributary_tt
+        hidden_effect = { z2_join_tributary_effect = yes }
+    }
+    option = {
+        name = z2_envoy.b
+        trigger = { treasury >= 300 NOT = { has_variable = z2_reprieve_used } }
+        ai_chance = { factor = 15 }
+        add_treasury = -300
+        custom_tooltip = z2_reprieve_tt
+        hidden_effect = { scope:z2_host = { add_treasury = 300 } set_variable = { name = z2_reprieve_used } set_variable = { name = z2_paid_reprieve days = 1095 } }
+    }
+    option = {
+        name = z2_envoy.c
+        ai_chance = { factor = 65 }
+        custom_tooltip = z2_ui_refuse_submission_tt
+        hidden_effect = { z2_defiance_war_effect = yes }
+    }
+}
+zerywani_second.20 = {
+    type = country_event
+    title = z2_settlement_title
+    trigger = { has_global_variable = z2_capital_founded }
+    desc = z2_settlement_desc
+    picture = city_siege
+    immediate = { z2_restore_effect = yes }
+    option = { name = z2_settlement.a }
+}
+zerywani_second.30 = {
+    type = country_event
+    title = z2_collapse_title
+    desc = z2_collapse_desc
+    picture = war_council
+    option = { name = z2_collapse.a }
+}
+zerywani_second.31 = {
+    type = country_event
+    title = z2_destroyed_title
+    desc = z2_destroyed_desc
+    picture = city_siege
+    option = { name = z2_collapse.a }
+}
+zerywani_second.40 = {
+    type = country_event
+    title = z2_successor_title
+    desc = z2_successor_desc
+    picture = war_council
+    trigger = { has_variable = z2_successor is_subject = no has_land = yes }
+    immediate = { z2_restore_effect = yes }
+    option = {
+        name = z2_successor.a
+        ai_chance = { factor = 70 }
+        add_stability = 5
+    }
+    option = {
+        name = z2_successor.b
+        ai_chance = { factor = 30 }
+        trigger = {
+            exists = scope:z2_host
+            NOT = { this = scope:z2_host }
+            war = no
+            scope:z2_host = { has_land = yes is_subject = no }
+            NOT = { has_truce_with = scope:z2_host }
+            NOT = { alliance_with = scope:z2_host }
+            any_owned_province = { any_neighbor_province = { exists = owner owner = scope:z2_host } }
+        }
+        declare_war_with_wargoal = { war_goal = z2_succession_conquest target = scope:z2_host }
+    }
+}
+# Console helpers: .999 begins the warnings, .998 skips the four-year wait,
+# .996 breaks an active confederacy. None reset the one-time global gates.
+zerywani_second.999 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = {
+                NOT = { has_global_variable = z2_warned }
+                z2_base_survives_trigger = yes
+            }
+            set_global_variable = { name = z2_debug_testing }
+            ordered_country = {
+                limit = { z2_host_trigger = yes }
+                order_by = z2_host_score
+                position = 0
+                z2_prepare_effect = yes
+            }
+        }
+    }
+}
+zerywani_second.998 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { exists = global_var:z2_host }
+            global_var:z2_host = { trigger_event = { id = zerywani_second.2 days = 1 } }
+        }
+    }
+}
+zerywani_second.996 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = { limit = { exists = global_var:z2_host } global_var:z2_host = { z2_collapse_effect = yes } }
+    }
+}
+
+# The second warning is cancelled automatically if preparations were broken.
+zerywani_second.5 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = z2_preparing NOT = { has_global_variable = z2_ended } }
+    immediate = {
+        z2_restore_effect = yes
+        if = { limit = { is_ai = no } trigger_event = { id = zerywani_second.126 days = 1 } }
+        every_country = { limit = { is_ai = no NOT = { this = scope:z2_host } } trigger_event = { id = zerywani_second.6 days = 1 } }
+    }
+}
+zerywani_second.6 = {
+    type = country_event
+    title = z2_gathering_title
+    desc = z2_gathering_desc
+    picture = war_council
+    option = {
+        name = z2_gathering.a
+        trigger = { treasury >= 100 }
+        add_treasury = -100
+        hidden_effect = { add_country_modifier = { name = z2_watchful_borders duration = 1460 } }
+    }
+    option = { name = z2_gathering.b }
+}
+
+# Resolve after character-death/succession processing has finished, not inside it.
+zerywani_second.50 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = { limit = { has_variable = z2_active NOT = { z2_founder_rules_trigger = yes } } z2_collapse_effect = yes }
+        if = {
+            limit = {
+                has_variable = z2_preparing
+                OR = { NOT = { exists = var:z2_founder } var:z2_founder = { is_alive = no } }
+            }
+            z2_cancel_preparation_effect = yes
+        }
+    }
+}
