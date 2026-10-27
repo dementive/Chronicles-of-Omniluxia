@@ -188,11 +188,56 @@ add_bloodline_setup_effect = {
     }
 }
 
-# Legitimacy awards propagate through all living generations, not just children
-# and grandchildren. Keep this definition here rather than duplicating it.
+# Legitimacy awards propagate to living descendants (six generations deep).
+# Character scope. Walks only this character's family tree - never the whole
+# world - so it is safe to call from decisions, schemes and events.
+# Race validation still applies at every step via pass_down/omni_add_racial.
+# A descendant who cannot hold the bloodline (wrong race) stops that branch,
+# matching normal birth inheritance.
 add_bloodline_effect = {
     omni_add_racial_bloodline_effect = { BLOODLINE = $BLOODLINE$ }
-    bloodline_setup_effect = yes
+    if = {
+        limit = { has_trait = $BLOODLINE$ }
+        every_child = {
+            limit = { is_alive = yes }
+            pass_down_bloodline_character_effect = { BLOODLINE = $BLOODLINE$ }
+            if = {
+                limit = { has_trait = $BLOODLINE$ }
+                every_child = {
+                    limit = { is_alive = yes }
+                    pass_down_bloodline_character_effect = { BLOODLINE = $BLOODLINE$ }
+                    if = {
+                        limit = { has_trait = $BLOODLINE$ }
+                        every_child = {
+                            limit = { is_alive = yes }
+                            pass_down_bloodline_character_effect = { BLOODLINE = $BLOODLINE$ }
+                            if = {
+                                limit = { has_trait = $BLOODLINE$ }
+                                every_child = {
+                                    limit = { is_alive = yes }
+                                    pass_down_bloodline_character_effect = { BLOODLINE = $BLOODLINE$ }
+                                    if = {
+                                        limit = { has_trait = $BLOODLINE$ }
+                                        every_child = {
+                                            limit = { is_alive = yes }
+                                            pass_down_bloodline_character_effect = { BLOODLINE = $BLOODLINE$ }
+                                            if = {
+                                                limit = { has_trait = $BLOODLINE$ }
+                                                every_child = {
+                                                    limit = { is_alive = yes }
+                                                    pass_down_bloodline_character_effect = { BLOODLINE = $BLOODLINE$ }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 pass_down_bloodline_effect = {

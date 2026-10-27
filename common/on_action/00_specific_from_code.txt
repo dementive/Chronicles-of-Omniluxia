@@ -1866,12 +1866,21 @@ on_game_initialized = {
 	}
 	effect = {
 
-		choo_on_game_init_effects = yes
-		# Initialize rank-based Court Arcana immediately for every country.
-		every_country = {
-			omni_court_arcana_yearly = yes
-			# Initial Pharon assignment, including AI Baetepian rulers.
-			omni_pharon_ensure_ruler_trait_effect = yes
+		# on_game_initialized fires once PER COUNTRY. These effects are global
+		# (every_living_character / every_province / every_country sweeps, plus the
+		# synchronous multi-pass bloodline setup), so run them only for the first
+		# country of this initialization pass. Running them per country freezes load.
+		if = {
+			limit = { NOT = { has_global_variable = omni_global_init_ran } }
+			set_global_variable = { name = omni_global_init_ran days = 1 }
+			choo_on_game_init_effects = yes
+			omni_folk_discovery_init_effect = yes
+			# Initialize rank-based Court Arcana immediately for every country.
+			every_country = {
+				omni_court_arcana_yearly = yes
+				# Initial Pharon assignment, including AI Baetepian rulers.
+				omni_pharon_ensure_ruler_trait_effect = yes
+			}
 		}
 		c:EGA = {
 			trigger_event = {

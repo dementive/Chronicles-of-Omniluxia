@@ -1880,8 +1880,15 @@ character_events.34 = {
 character_events.35 = { #add bloodline traits. this has to be an event, don't put it in OA effects.
 	type = character_event
 	hidden = yes
+	# Queued by both on_being_born and on_character_created; only run once.
+	trigger = {
+		NOT = { has_variable = omni_bloodline_born_done }
+	}
 	
 	immediate = {
+		# Short-lived marker: long enough to absorb the duplicate, then expires
+		# so it never accumulates on every character in the save.
+		set_variable = { name = omni_bloodline_born_done days = 30 }
 		bloodline_on_born_effect = yes
 	}	
 }
