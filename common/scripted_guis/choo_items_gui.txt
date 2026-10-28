@@ -3356,7 +3356,8 @@ omni_character_items_button = {
 					text = omni_items_button_commander_only_tt
 					OR = {
 						is_ruler = yes
-						# Commander's gear: generals and admirals manage their own kit.
+						this = scope:player.current_ruler
+						# Commanders carry siege supplies.
 						AND = {
 							OR = { is_general = yes is_admiral = yes }
 							is_mercenary = no
@@ -3375,14 +3376,14 @@ omni_character_items_button = {
 			scope:omni_gui_character = {
 				hidden_effect = {
 					if = {
-						limit = { is_ruler = yes }
-						# Opens the event-based item menu on the shown character.
+						limit = { OR = { is_ruler = yes this = scope:player.current_ruler } }
+						# Ruler: full equipment menu (equip, unequip, discard, artifacts, reliquary).
 						trigger_event = { id = omni_items.1 }
 					}
 					else = {
-						# Non-ruler character events are auto-resolved by the engine, so the
-						# commander's gear menu is shown on the ruler with the commander saved.
+						# Commander: siege supplies. Non-ruler events auto-resolve, so the menu shows on the ruler.
 						save_scope_as = omni_gear_holder
+						scope:player = { save_scope_as = omni_gear_country }
 						scope:player.current_ruler = { trigger_event = { id = omni_cmd_gear.1 } }
 					}
 				}

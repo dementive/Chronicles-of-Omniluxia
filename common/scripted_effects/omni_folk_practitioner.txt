@@ -14,10 +14,26 @@ omni_folk_initiate_practitioner = {
             }
         }
         set_variable = omni_folk_practitioner
-        add_character_modifier = { name = omni_folk_practitioner_status duration = -1 }
+        force_add_trait = omni_folk_practitioner_trait
         recalculate_character_magic_vars = yes
         change_variable = { name = magic add = 25 }
         clamp_character_magic_to_max = yes
     }
+    omni_folk_sync_practitioner_trait = yes
     set_variable = folk_unlocked_var
+}
+
+# Preserve existing practitioners without granting starting mana again.
+omni_folk_sync_practitioner_trait = {
+    if = {
+        limit = { has_variable = omni_folk_practitioner }
+        if = {
+            limit = { NOT = { has_trait = omni_folk_practitioner_trait } }
+            force_add_trait = omni_folk_practitioner_trait
+        }
+        if = {
+            limit = { has_character_modifier = omni_folk_practitioner_status }
+            remove_character_modifier = omni_folk_practitioner_status
+        }
+    }
 }
