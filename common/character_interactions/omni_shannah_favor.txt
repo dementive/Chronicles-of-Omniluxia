@@ -1,0 +1,61 @@
+﻿omni_sf_cultivate = {
+
+    on_other_nation = yes on_own_nation = no message = no close_ui = yes
+
+    potential_trigger = {
+
+        exists = scope:actor exists = scope:target
+
+        scope:actor = { omni_sf_petitioner_trigger = yes is_ai = no }
+
+        scope:target = { omni_sf_shannah_trigger = yes NOT = { employer = scope:actor } }
+
+    }
+
+    allowed_trigger = {
+
+        scope:actor = {
+
+            omni_ruler_available_for_court_action_trigger = yes
+
+            current_ruler = { is_adult = yes prisoner = no }
+
+            NOT = { has_variable = omni_sf_active }
+
+            NOT = { has_variable = omni_sf_pending }
+
+            NOT = { has_variable = omni_sf_human_waiting }
+
+        }
+
+    }
+
+    effect = {
+
+        scope:target = { save_scope_as = omni_sf_new_shannah }
+
+        scope:actor = {
+
+            if = {
+
+                limit = { omni_sf_relationship_trigger = yes NOT = { var:omni_sf_shannah = scope:target } }
+
+                trigger_event = { id = omni_shannah_favor.2 }
+
+            }
+
+            else = {
+
+                if = { limit = { NOT = { omni_sf_relationship_trigger = yes } } omni_sf_bind_effect = yes }
+
+                trigger_event = { id = omni_shannah_favor.1 }
+
+            }
+
+        }
+
+    }
+
+    ai_will_do = { base = 0 }
+
+}

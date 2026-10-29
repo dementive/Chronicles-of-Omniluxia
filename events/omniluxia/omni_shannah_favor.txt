@@ -1,0 +1,895 @@
+﻿namespace = omni_shannah_favor
+
+omni_shannah_favor.1 = {
+
+    type = country_event
+
+    title = omni_sf_1_t desc = omni_sf_1_d
+
+    picture = omni_shannah_petition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    trigger = { omni_sf_relationship_trigger = yes }
+    option = { name = omni_sf_begin
+        trigger = { omni_sf_can_build_trigger = yes }
+        omni_sf_start_effect = yes
+    }
+    option = { name = omni_sf_menu_1
+        trigger = { omni_sf_request_1_trigger = yes }
+        custom_tooltip = omni_sf_menu_1_tt
+
+        omni_sf_prepare_request_effect = { ACTION = 1 }
+    }
+    option = { name = omni_sf_menu_2
+        trigger = { omni_sf_request_2_trigger = yes }
+        custom_tooltip = omni_sf_menu_2_tt
+
+        omni_sf_prepare_request_effect = { ACTION = 2 }
+    }
+    option = { name = omni_sf_menu_3
+        trigger = { omni_sf_request_3_trigger = yes }
+        custom_tooltip = omni_sf_menu_3_tt
+
+        omni_sf_prepare_request_effect = { ACTION = 3 }
+    }
+    option = { name = omni_sf_menu_4
+        trigger = { omni_sf_request_4_trigger = yes }
+        custom_tooltip = omni_sf_menu_4_tt
+
+        omni_sf_prepare_request_effect = { ACTION = 4 }
+    }
+    option = { name = omni_sf_menu_5
+        trigger = { omni_sf_request_5_trigger = yes }
+        custom_tooltip = omni_sf_menu_5_tt
+
+        omni_sf_prepare_request_effect = { ACTION = 5 }
+    }
+    option = { name = omni_sf_menu_6
+        trigger = { omni_sf_available_trigger = yes NOT = { has_variable = omni_sf_active } omni_sf_favor_value >= 85 NOT = { has_country_modifier = omni_shannah_excommunicated } }
+        custom_tooltip = omni_sf_menu_6_tt
+
+        trigger_event = { id = omni_shannah_favor.30 }
+    }
+    option = { name = omni_sf_close
+
+    }
+
+}
+
+omni_shannah_favor.2 = {
+
+    type = country_event
+
+    title = omni_sf_2_t desc = omni_sf_2_d
+
+    picture = omni_shannah_petition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_switch
+        trigger = { exists = scope:omni_sf_new_shannah scope:omni_sf_new_shannah = { omni_sf_shannah_trigger = yes } }
+        omni_sf_bind_effect = yes
+        trigger_event = { id = omni_shannah_favor.1 }
+    }
+    option = { name = omni_sf_keep
+
+    }
+
+}
+
+
+omni_shannah_favor.10 = {
+
+    type = country_event hidden = yes
+
+    immediate = {
+
+        if = {
+
+            limit = {
+
+                omni_sf_relationship_trigger = yes has_variable = omni_sf_active
+
+                current_ruler = scope:omni_sf_chain_patron
+
+                trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no }
+
+                omni_ruler_available_for_court_action_trigger = yes
+
+                current_ruler = { is_adult = yes prisoner = no }
+
+                var:omni_sf_shannah = { omni_char_available_for_court_action_trigger = yes }
+
+            }
+
+            # Rotating random start gives three distinct scenes per cultivation.
+
+            if = { limit = { trigger_if = { limit = { has_variable = omni_sf_scene } var:omni_sf_scene = 0 } trigger_else = { always = no } }
+
+                random_list = {
+
+                    1 = { set_variable = { name = omni_sf_scene value = 1 } }
+
+                    1 = { set_variable = { name = omni_sf_scene value = 2 } }
+
+                    1 = { set_variable = { name = omni_sf_scene value = 3 } }
+
+                }
+
+            }
+
+            else = {
+
+                change_variable = { name = omni_sf_scene add = 1 }
+
+                if = { limit = { trigger_if = { limit = { has_variable = omni_sf_scene } var:omni_sf_scene > 3 } trigger_else = { always = no } } set_variable = { name = omni_sf_scene value = 1 } }
+
+            }
+
+            if = { limit = { trigger_if = { limit = { has_variable = omni_sf_scene } var:omni_sf_scene = 1 } trigger_else = { always = no } } trigger_event = { id = omni_shannah_favor.11 } }
+
+            else_if = { limit = { trigger_if = { limit = { has_variable = omni_sf_scene } var:omni_sf_scene = 2 } trigger_else = { always = no } } trigger_event = { id = omni_shannah_favor.13 } }
+
+            else = { trigger_event = { id = omni_shannah_favor.14 } }
+
+        }
+
+        else_if = {
+
+            limit = { has_variable = omni_sf_chain_waiting }
+
+            remove_variable = omni_sf_active
+
+            remove_variable = omni_sf_chain_waiting
+
+            trigger_event = { id = omni_shannah_favor.15 }
+
+        }
+
+    }
+
+}
+
+
+omni_shannah_favor.11 = {
+
+    type = country_event
+
+    title = omni_sf_11_t desc = omni_sf_11_d
+
+    picture = omni_shannah_gifts
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    trigger = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } }
+    option = { name = omni_sf_temple
+        trigger = { treasury >= 50 }
+        custom_tooltip = omni_sf_temple_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } treasury >= 50 }
+
+            add_treasury = -50
+
+            var:omni_sf_shannah.employer = { add_treasury = 50 }
+            if = { limit = { var:omni_sf_shannah = { OR = { has_trait = pious has_trait = devout } } } omni_sf_gain_effect = { AMOUNT = 5 } }
+
+            omni_sf_gain_effect = { AMOUNT = 10 }
+
+            omni_sf_next_effect = yes
+
+        }
+
+        else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_purse
+        trigger = { treasury >= 75 }
+        custom_tooltip = omni_sf_purse_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } treasury >= 75 }
+
+            add_treasury = -75
+
+            if = { limit = { var:omni_sf_shannah = { has_trait = righteous } }
+
+                var:omni_sf_shannah.employer = { add_treasury = 75 }
+
+                omni_sf_gain_effect = { AMOUNT = -5 }
+
+            }
+
+            else = { var:omni_sf_shannah = { add_gold = 75 add_corruption = 2 } }
+
+            current_ruler = { add_corruption = 3 }
+
+            set_variable = { name = omni_sf_complicity days = 1825 }
+
+            if = { limit = { var:omni_sf_shannah = { has_trait = corrupt } } omni_sf_gain_effect = { AMOUNT = 5 } }
+
+
+
+            if = { limit = { var:omni_sf_shannah = { NOT = { has_trait = righteous } } } omni_sf_gain_effect = { AMOUNT = 15 } }
+
+            omni_sf_next_effect = yes
+
+        }
+
+        else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_skip
+        custom_tooltip = omni_sf_skip_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } } omni_sf_next_effect = yes } else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_withdraw
+        remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting
+    }
+
+}
+
+omni_shannah_favor.13 = {
+
+    type = country_event
+
+    title = omni_sf_13_t desc = omni_sf_13_d
+
+    picture = omni_shannah_gifts
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    trigger = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } }
+    option = { name = omni_sf_beast
+        trigger = { treasury >= 100 }
+        custom_tooltip = omni_sf_beast_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } treasury >= 100 }
+
+            add_treasury = -100
+
+            if = { limit = { var:omni_sf_shannah = { NOT = { has_trait = miserly } } } omni_sf_gain_effect = { AMOUNT = 10 } }
+
+            omni_sf_gain_effect = { AMOUNT = 5 }
+
+            omni_sf_next_effect = yes
+
+        }
+
+        else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_art
+        trigger = { treasury >= 40 }
+        custom_tooltip = omni_sf_art_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } treasury >= 40 }
+
+            add_treasury = -40
+
+            if = { limit = { var:omni_sf_shannah = { has_trait = generous } } omni_sf_gain_effect = { AMOUNT = 5 } }
+
+            omni_sf_gain_effect = { AMOUNT = 10 }
+
+            omni_sf_next_effect = yes
+
+        }
+
+        else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_skip
+        custom_tooltip = omni_sf_skip_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } } omni_sf_next_effect = yes } else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_withdraw
+        remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting
+    }
+
+}
+
+omni_shannah_favor.14 = {
+
+    type = country_event
+
+    title = omni_sf_14_t desc = omni_sf_14_d
+
+    picture = omni_shannah_petition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    trigger = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } }
+    option = { name = omni_sf_defend
+        trigger = { political_influence >= 10 }
+        custom_tooltip = omni_sf_defend_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } political_influence >= 10 }
+
+            add_political_influence = -10
+
+            omni_sf_gain_effect = { AMOUNT = 10 }
+
+            if = { limit = { current_ruler = { has_trait = silver_tongued } } omni_sf_gain_effect = { AMOUNT = 5 } }
+
+            omni_sf_next_effect = yes
+
+        } else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_silence
+        trigger = { treasury >= 60 }
+        custom_tooltip = omni_sf_silence_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } treasury >= 60 }
+
+            add_treasury = -60
+
+            current_ruler = { add_corruption = 3 } add_tyranny = 2 set_variable = { name = omni_sf_complicity days = 1825 } if = { limit = { var:omni_sf_shannah = { has_trait = vengeful } } omni_sf_gain_effect = { AMOUNT = 5 } }
+
+            omni_sf_gain_effect = { AMOUNT = 15 }
+
+            omni_sf_next_effect = yes
+
+        }
+
+        else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_skip
+        custom_tooltip = omni_sf_skip_choice_tt
+        hidden_effect = {
+        if = { limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_active current_ruler = scope:omni_sf_chain_patron trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_chain_shannah } trigger_else = { always = no } } omni_sf_next_effect = yes } else = { remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting }
+    
+        }
+    }
+    option = { name = omni_sf_withdraw
+        remove_variable = omni_sf_active remove_variable = omni_sf_chain_waiting
+    }
+
+}
+
+omni_shannah_favor.12 = {
+
+    type = country_event
+
+    title = omni_sf_12_t desc = omni_sf_12_d
+
+    picture = omni_shannah_petition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_done
+
+    }
+
+}
+
+omni_shannah_favor.15 = {
+
+    type = country_event
+
+    title = omni_sf_15_t desc = omni_sf_15_d
+
+    picture = omni_shannah_petition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_abort
+
+    }
+
+}
+
+omni_shannah_favor.30 = {
+
+    type = country_event
+
+    title = omni_sf_30_t desc = omni_sf_30_d
+
+    picture = omni_shannah_judgment
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    trigger = { omni_sf_available_trigger = yes NOT = { has_variable = omni_sf_active } omni_sf_favor_value >= 85 NOT = { has_country_modifier = omni_shannah_excommunicated } }
+    immediate = { random_country = { limit = { has_land = yes religion = helluvian exists = current_ruler
+
+    NOT = { this = root } NOT = { this = root.var:omni_sf_shannah.employer }
+
+    NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+
+    NOT = { has_country_modifier = omni_shannah_excommunicated }
+
+    current_ruler = { is_alive = yes }
+
+  } current_ruler = { save_scope_as = omni_sf_candidate_1 } }
+random_country = { limit = { has_land = yes religion = helluvian exists = current_ruler
+
+    NOT = { this = root } NOT = { this = root.var:omni_sf_shannah.employer }
+
+    NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+
+    NOT = { has_country_modifier = omni_shannah_excommunicated }
+
+    current_ruler = { is_alive = yes }
+
+ NOT = { current_ruler = scope:omni_sf_candidate_1 } } current_ruler = { save_scope_as = omni_sf_candidate_2 } }
+random_country = { limit = { has_land = yes religion = helluvian exists = current_ruler
+
+    NOT = { this = root } NOT = { this = root.var:omni_sf_shannah.employer }
+
+    NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+
+    NOT = { has_country_modifier = omni_shannah_excommunicated }
+
+    current_ruler = { is_alive = yes }
+
+ NOT = { current_ruler = scope:omni_sf_candidate_1 } NOT = { current_ruler = scope:omni_sf_candidate_2 } } current_ruler = { save_scope_as = omni_sf_candidate_3 } }
+random_country = { limit = { has_land = yes religion = helluvian exists = current_ruler
+
+    NOT = { this = root } NOT = { this = root.var:omni_sf_shannah.employer }
+
+    NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+
+    NOT = { has_country_modifier = omni_shannah_excommunicated }
+
+    current_ruler = { is_alive = yes }
+
+ NOT = { current_ruler = scope:omni_sf_candidate_1 } NOT = { current_ruler = scope:omni_sf_candidate_2 } NOT = { current_ruler = scope:omni_sf_candidate_3 } } current_ruler = { save_scope_as = omni_sf_candidate_4 } }
+random_country = { limit = { has_land = yes religion = helluvian exists = current_ruler
+
+    NOT = { this = root } NOT = { this = root.var:omni_sf_shannah.employer }
+
+    NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+
+    NOT = { has_country_modifier = omni_shannah_excommunicated }
+
+    current_ruler = { is_alive = yes }
+
+ NOT = { current_ruler = scope:omni_sf_candidate_1 } NOT = { current_ruler = scope:omni_sf_candidate_2 } NOT = { current_ruler = scope:omni_sf_candidate_3 } NOT = { current_ruler = scope:omni_sf_candidate_4 } } current_ruler = { save_scope_as = omni_sf_candidate_5 } }
+ }
+    option = { name = omni_sf_victim_1
+        trigger = { exists = scope:omni_sf_candidate_1 }
+        set_variable = { name = omni_sf_victim value = scope:omni_sf_candidate_1 }
+
+        set_variable = { name = omni_sf_victim_country value = scope:omni_sf_candidate_1.employer }
+
+        if = { limit = { omni_sf_request_6_trigger = yes } omni_sf_prepare_request_effect = { ACTION = 6 } }
+
+        else = { remove_variable = omni_sf_victim trigger_event = { id = omni_shannah_favor.53 } }
+    }
+    option = { name = omni_sf_victim_2
+        trigger = { exists = scope:omni_sf_candidate_2 }
+        set_variable = { name = omni_sf_victim value = scope:omni_sf_candidate_2 }
+
+        set_variable = { name = omni_sf_victim_country value = scope:omni_sf_candidate_2.employer }
+
+        if = { limit = { omni_sf_request_6_trigger = yes } omni_sf_prepare_request_effect = { ACTION = 6 } }
+
+        else = { remove_variable = omni_sf_victim trigger_event = { id = omni_shannah_favor.53 } }
+    }
+    option = { name = omni_sf_victim_3
+        trigger = { exists = scope:omni_sf_candidate_3 }
+        set_variable = { name = omni_sf_victim value = scope:omni_sf_candidate_3 }
+
+        set_variable = { name = omni_sf_victim_country value = scope:omni_sf_candidate_3.employer }
+
+        if = { limit = { omni_sf_request_6_trigger = yes } omni_sf_prepare_request_effect = { ACTION = 6 } }
+
+        else = { remove_variable = omni_sf_victim trigger_event = { id = omni_shannah_favor.53 } }
+    }
+    option = { name = omni_sf_victim_4
+        trigger = { exists = scope:omni_sf_candidate_4 }
+        set_variable = { name = omni_sf_victim value = scope:omni_sf_candidate_4 }
+
+        set_variable = { name = omni_sf_victim_country value = scope:omni_sf_candidate_4.employer }
+
+        if = { limit = { omni_sf_request_6_trigger = yes } omni_sf_prepare_request_effect = { ACTION = 6 } }
+
+        else = { remove_variable = omni_sf_victim trigger_event = { id = omni_shannah_favor.53 } }
+    }
+    option = { name = omni_sf_victim_5
+        trigger = { exists = scope:omni_sf_candidate_5 }
+        set_variable = { name = omni_sf_victim value = scope:omni_sf_candidate_5 }
+
+        set_variable = { name = omni_sf_victim_country value = scope:omni_sf_candidate_5.employer }
+
+        if = { limit = { omni_sf_request_6_trigger = yes } omni_sf_prepare_request_effect = { ACTION = 6 } }
+
+        else = { remove_variable = omni_sf_victim trigger_event = { id = omni_shannah_favor.53 } }
+    }
+    option = { name = omni_sf_more
+        trigger_event = { id = omni_shannah_favor.30 }
+    }
+    option = { name = omni_sf_cancel
+
+    }
+
+}
+
+omni_shannah_favor.50 = {
+
+    type = country_event
+
+    title = omni_sf_50_t desc = { first_valid = {
+triggered_desc = { trigger = { scope:omni_sf_petitioner = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 1 } trigger_else = { always = no } } } desc = omni_sf_human_1 }
+triggered_desc = { trigger = { scope:omni_sf_petitioner = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 2 } trigger_else = { always = no } } } desc = omni_sf_human_2 }
+triggered_desc = { trigger = { scope:omni_sf_petitioner = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 3 } trigger_else = { always = no } } } desc = omni_sf_human_3 }
+triggered_desc = { trigger = { scope:omni_sf_petitioner = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 4 } trigger_else = { always = no } } } desc = omni_sf_human_4 }
+triggered_desc = { trigger = { scope:omni_sf_petitioner = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 5 } trigger_else = { always = no } } } desc = omni_sf_human_5 }
+triggered_desc = { trigger = { scope:omni_sf_petitioner = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 6 } trigger_else = { always = no } } } desc = omni_sf_human_6 }
+desc = omni_sf_50_d } }
+
+    picture = omni_shannah_favor_request
+
+    left_portrait = current_ruler
+
+    right_portrait = scope:omni_sf_request_patron
+    option = { name = omni_sf_accept
+        trigger = { exists = scope:omni_sf_petitioner exists = scope:omni_sf_request_patron exists = scope:omni_sf_request_shannah
+
+    scope:omni_sf_petitioner = {
+
+        has_variable = omni_sf_human_waiting has_variable = omni_sf_pending OR = {
+        AND = { NOT = { has_variable = omni_hc_request_serial } NOT = { exists = scope:omni_hc_request_serial } }
+        AND = { exists = scope:omni_hc_request_serial trigger_if = { limit = { has_variable = omni_hc_request_serial } var:omni_hc_request_serial = scope:omni_hc_request_serial } trigger_else = { always = no } }
+    }
+
+        current_ruler = scope:omni_sf_request_patron
+
+        trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_request_shannah } trigger_else = { always = no }
+
+    }
+
+current_ruler = scope:omni_sf_request_shannah }
+        scope:omni_sf_petitioner = { remove_variable = omni_sf_human_waiting trigger_event = { id = omni_shannah_favor.52 } }
+    }
+    option = { name = omni_sf_refuse
+        if = { limit = { exists = scope:omni_sf_petitioner current_ruler = scope:omni_sf_request_shannah
+                scope:omni_sf_petitioner = { has_variable = omni_sf_human_waiting
+                    current_ruler = scope:omni_sf_request_patron
+                    trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_request_shannah } trigger_else = { always = no } OR = {
+        AND = { NOT = { has_variable = omni_hc_request_serial } NOT = { exists = scope:omni_hc_request_serial } }
+        AND = { exists = scope:omni_hc_request_serial trigger_if = { limit = { has_variable = omni_hc_request_serial } var:omni_hc_request_serial = scope:omni_hc_request_serial } trigger_else = { always = no } }
+    } } } scope:omni_sf_petitioner = { omni_sf_finish_request_effect = yes trigger_event = { id = omni_shannah_favor.54 } } }
+    }
+
+}
+
+
+omni_shannah_favor.51 = {
+
+    type = country_event hidden = yes
+
+    immediate = {
+
+        if = { limit = { exists = scope:omni_sf_petitioner exists = scope:omni_sf_request_patron exists = scope:omni_sf_request_shannah
+
+    scope:omni_sf_petitioner = {
+
+        has_variable = omni_sf_pending OR = {
+        AND = { NOT = { has_variable = omni_hc_request_serial } NOT = { exists = scope:omni_hc_request_serial } }
+        AND = { exists = scope:omni_hc_request_serial trigger_if = { limit = { has_variable = omni_hc_request_serial } var:omni_hc_request_serial = scope:omni_hc_request_serial } trigger_else = { always = no } }
+    } NOT = { has_variable = omni_sf_ai_decided }
+
+        current_ruler = scope:omni_sf_request_patron
+
+        trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_request_shannah } trigger_else = { always = no }
+
+    }
+
+ }
+
+            # AI acceptance starts at 80 percent, modified by the patron traits.
+
+            set_variable = omni_sf_ai_decided
+            remove_variable = omni_sf_ai_accepts
+            random = {
+                chance = omni_sf_ai_acceptance_chance
+                set_variable = omni_sf_ai_accepts
+            }
+            if = {
+                limit = { has_variable = omni_sf_ai_accepts }
+                trigger_event = { id = omni_shannah_favor.52 }
+            }
+            else = {
+                omni_sf_finish_request_effect = yes
+                trigger_event = { id = omni_shannah_favor.54 }
+            }
+
+        }
+
+    }
+
+}
+
+omni_shannah_favor.52 = {
+
+    type = country_event hidden = yes
+
+    immediate = {
+
+        if = { limit = { exists = scope:omni_sf_petitioner exists = scope:omni_sf_request_patron exists = scope:omni_sf_request_shannah
+
+    scope:omni_sf_petitioner = {
+
+        has_variable = omni_sf_pending OR = {
+        AND = { NOT = { has_variable = omni_hc_request_serial } NOT = { exists = scope:omni_hc_request_serial } }
+        AND = { exists = scope:omni_hc_request_serial trigger_if = { limit = { has_variable = omni_hc_request_serial } var:omni_hc_request_serial = scope:omni_hc_request_serial } trigger_else = { always = no } }
+    }
+
+        current_ruler = scope:omni_sf_request_patron
+
+        trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_request_shannah } trigger_else = { always = no }
+
+    }
+
+ }
+
+            # Temporarily release pending gate; recheck all ordinary eligibility.
+
+            remove_variable = omni_sf_pending
+
+            if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 1 } trigger_else = { always = no } omni_sf_request_1_trigger = yes }
+
+                omni_sf_execute_1_effect = yes
+
+                trigger_event = { id = omni_shannah_favor.55 }
+
+                if = { limit = { has_variable = omni_sf_complicity }
+
+                    random_list = { 9 = { } 1 = { trigger_event = { id = omni_shannah_favor.56 } } }
+
+                }
+
+            }
+
+            else_if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 2 } trigger_else = { always = no } omni_sf_request_2_trigger = yes }
+
+                omni_sf_execute_2_effect = yes
+
+                trigger_event = { id = omni_shannah_favor.57 }
+
+                if = { limit = { has_variable = omni_sf_complicity }
+
+                    random_list = { 9 = { } 1 = { trigger_event = { id = omni_shannah_favor.56 } } }
+
+                }
+
+            }
+
+            else_if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 3 } trigger_else = { always = no } omni_sf_request_3_trigger = yes }
+
+                omni_sf_execute_3_effect = yes
+
+                trigger_event = { id = omni_shannah_favor.58 }
+
+                if = { limit = { has_variable = omni_sf_complicity }
+
+                    random_list = { 9 = { } 1 = { trigger_event = { id = omni_shannah_favor.56 } } }
+
+                }
+
+            }
+
+            else_if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 4 } trigger_else = { always = no } omni_sf_request_4_trigger = yes }
+
+                omni_sf_execute_4_effect = yes
+
+                trigger_event = { id = omni_shannah_favor.55 }
+
+                if = { limit = { has_variable = omni_sf_complicity }
+
+                    random_list = { 9 = { } 1 = { trigger_event = { id = omni_shannah_favor.56 } } }
+
+                }
+
+            }
+
+            else_if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 5 } trigger_else = { always = no } omni_sf_request_5_trigger = yes }
+
+                omni_sf_execute_5_effect = yes
+
+                trigger_event = { id = omni_shannah_favor.55 }
+
+                if = { limit = { has_variable = omni_sf_complicity }
+
+                    random_list = { 9 = { } 1 = { trigger_event = { id = omni_shannah_favor.56 } } }
+
+                }
+
+            }
+
+            else_if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 6 } trigger_else = { always = no } omni_sf_request_6_trigger = yes }
+
+                omni_sf_execute_6_effect = yes
+
+                trigger_event = { id = omni_shannah_favor.55 }
+
+                if = { limit = { has_variable = omni_sf_complicity }
+
+                    random_list = { 9 = { } 1 = { trigger_event = { id = omni_shannah_favor.56 } } }
+
+                }
+
+            }
+
+            else = { trigger_event = { id = omni_shannah_favor.53 } }
+
+            omni_sf_finish_request_effect = yes
+
+        }
+
+    }
+
+}
+
+
+omni_shannah_favor.53 = {
+
+    type = country_event
+
+    title = omni_sf_53_t desc = omni_sf_53_d
+
+    picture = omni_shannah_petition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_invalid
+
+    }
+
+}
+
+omni_shannah_favor.54 = {
+
+    type = country_event
+
+    title = omni_sf_54_t desc = omni_sf_54_d
+
+    picture = omni_shannah_petition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_refused
+
+    }
+
+}
+
+omni_shannah_favor.55 = {
+
+    type = country_event
+
+    title = omni_sf_55_t desc = omni_sf_55_d
+
+    picture = omni_shannah_petition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_granted
+
+    }
+
+}
+
+omni_shannah_favor.56 = {
+
+    type = country_event
+
+    title = omni_sf_56_t desc = omni_sf_56_d
+
+    picture = omni_shannah_gifts
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_scandal
+        if = { limit = { exists = var:omni_sf_see var:omni_sf_see = { omni_hc_shannah_trigger = yes } } var:omni_sf_see = { omni_pc_scandal_effect = yes } }
+        current_ruler = { add_popularity = -10 } add_tyranny = 2 remove_variable = omni_sf_complicity
+    }
+
+}
+
+omni_shannah_favor.57 = {
+
+    type = country_event
+
+    title = omni_sf_55_t desc = omni_sf_55_d
+
+    picture = omni_shannah_mission
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_granted
+
+    }
+
+}
+
+
+omni_shannah_favor.58 = {
+
+    type = country_event
+
+    title = omni_sf_55_t desc = omni_sf_55_d
+
+    picture = omni_shannah_recognition
+
+    left_portrait = current_ruler
+
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_granted
+
+    }
+
+}
+
+
+
+omni_shannah_favor.60 = {
+    type = country_event
+    title = omni_sf_60_t
+    desc = omni_sf_60_d
+    picture = omni_shannah_petition
+    left_portrait = current_ruler
+    right_portrait = scope:omni_sf_request_patron
+    trigger = { exists = scope:omni_sf_petitioner exists = scope:omni_sf_request_patron exists = scope:omni_sf_request_shannah
+
+    scope:omni_sf_petitioner = {
+
+        has_variable = omni_sf_human_waiting has_variable = omni_sf_pending OR = {
+        AND = { NOT = { has_variable = omni_hc_request_serial } NOT = { exists = scope:omni_hc_request_serial } }
+        AND = { exists = scope:omni_hc_request_serial trigger_if = { limit = { has_variable = omni_hc_request_serial } var:omni_hc_request_serial = scope:omni_hc_request_serial } trigger_else = { always = no } }
+    }
+
+        current_ruler = scope:omni_sf_request_patron
+
+        trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_request_shannah } trigger_else = { always = no }
+
+    }
+
+current_ruler = scope:omni_sf_request_shannah }
+    option = { name = omni_sf_review_petition
+        trigger = { exists = scope:omni_sf_petitioner exists = scope:omni_sf_request_patron exists = scope:omni_sf_request_shannah
+
+    scope:omni_sf_petitioner = {
+
+        has_variable = omni_sf_human_waiting has_variable = omni_sf_pending OR = {
+        AND = { NOT = { has_variable = omni_hc_request_serial } NOT = { exists = scope:omni_hc_request_serial } }
+        AND = { exists = scope:omni_hc_request_serial trigger_if = { limit = { has_variable = omni_hc_request_serial } var:omni_hc_request_serial = scope:omni_hc_request_serial } trigger_else = { always = no } }
+    }
+
+        current_ruler = scope:omni_sf_request_patron
+
+        trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_request_shannah } trigger_else = { always = no }
+
+    }
+
+current_ruler = scope:omni_sf_request_shannah }
+        trigger_event = { id = omni_shannah_favor.50 }
+    }
+    option = { name = omni_sf_petition_later }
+}

@@ -34,3 +34,49 @@ omni_shannah_papal_bootstrap = {
     }
     effect = { omni_shannah_ai_council_effect = yes }
 }
+
+on_ruler_change = {
+    effect = {
+        if = {
+            limit = {
+                OR = {
+                    has_variable = omni_shannah_crown_recognized
+                    AND = {
+                        exists = scope:former_ruler
+                        scope:former_ruler = { has_variable = omni_shannah_crown_recognized }
+                    }
+                }
+            }
+            omni_shannah_remove_recognized_crown_effect = yes
+        }
+    }
+}
+
+on_character_death = {
+    effect = {
+        if = {
+            limit = {
+                has_variable = omni_shannah_crown_recognized
+                exists = employer
+            }
+            employer = {
+                omni_shannah_remove_recognized_crown_effect = yes
+            }
+        }
+    }
+}
+
+monthly_country_pulse = {
+    effect = {
+        if = {
+            limit = {
+                has_variable = omni_shannah_crown_recognized
+                OR = {
+                    NOT = { religion = helluvian }
+                    is_monarchy = no
+                }
+            }
+            omni_shannah_remove_recognized_crown_effect = yes
+        }
+    }
+}

@@ -7,12 +7,32 @@
             }
         }
         omni_shannah_repair_office_effect = yes
+        omni_shannah_accession_queue_effect = yes
     }
 }
 
 monthly_country_pulse = {
     effect = {
         omni_shannah_repair_office_effect = yes
+        if = { limit = { omni_hc_shannah_trigger = yes }
+            omni_hc_accession_effect = yes
+            if = { limit = { NOT = { trigger_if = { limit = { has_variable = omni_hc_broadcast_holder } current_ruler = var:omni_hc_broadcast_holder } trigger_else = { always = no } } }
+                set_variable = { name = omni_hc_broadcast_holder value = scope:omni_hc_current_holder }
+                save_scope_as = omni_hc_incumbent_see
+                every_country = {
+                    limit = { omni_hc_view_trigger = yes }
+                    set_variable = { name = omni_hc_see value = scope:omni_hc_incumbent_see }
+                    omni_hc_ai_recognition_effect = yes
+                }
+            }
+        }
+        # New/converting AI realms join recognition without a recurring target scan.
+        if = { limit = { is_ai = yes omni_hc_view_trigger = yes NOT = { omni_hc_shannah_trigger = yes } }
+            if = { limit = { OR = { NOT = { exists = var:omni_hc_see } var:omni_hc_see = { NOT = { omni_hc_shannah_trigger = yes } } } }
+                omni_hc_refresh_effect = yes
+            }
+            omni_hc_ai_recognition_effect = yes
+        }
         # Reliable AI scheduling, independent of ordinary decision evaluation.
         # Only eligible AI hosts reach the target scan, at most twice a year.
         if = {

@@ -1,0 +1,81 @@
+﻿omni_ashes_monthly = {
+
+ effect = {
+
+  if = {
+
+   limit = {
+
+    current_date >= 1001.7.1
+
+    current_date < 1003.1.1
+
+    NOT = { has_global_variable = omni_ashes_proclaimed }
+
+    religion = helluvian
+
+    has_land = yes
+
+    exists = current_ruler
+
+    current_ruler = { has_trait = shannah_trait }
+
+   }
+
+   set_global_variable = omni_ashes_proclaimed
+
+   # All Helluvian realms hear the proclamation, including subjects and the see.
+   every_country = {
+    limit = { has_land = yes religion = helluvian }
+    trigger_event = omni_ashes.1
+   }
+
+  }
+
+  # Recover recipients skipped at proclamation, including existing saves.
+  if = {
+   limit = {
+    has_global_variable = omni_ashes_proclaimed
+    current_date < 1003.1.1
+    omni_ashes_eligible = yes
+    NOT = { has_variable = omni_ashes_envoy_pending }
+    NOT = { has_variable = omni_ashes_invited }
+    NOT = { has_variable = omni_ashes_pledged }
+    NOT = { has_country_modifier = omni_ashes_blessing }
+    NOT = { has_country_modifier = omni_ashes_broken }
+   }
+   set_variable = omni_ashes_envoy_pending
+   trigger_event = { id = omni_ashes.7 days = { 90 180 } }
+  }
+  if = {
+
+   limit = { has_variable = omni_ashes_pledged }
+
+   if = {
+
+    limit = {
+
+     any_current_war = {
+
+      is_war_leader = root
+
+      any_war_attacker = { this = root }
+
+     }
+
+    }
+
+    remove_variable = omni_ashes_pledged
+
+    remove_country_modifier = omni_ashes_oath
+
+    trigger_event = omni_ashes.4
+
+   }
+
+  }
+
+ }
+
+}
+

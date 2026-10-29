@@ -1,0 +1,136 @@
+﻿omni_hc_initialize_effect = {
+        if = { limit = { NOT = { has_variable = omni_hc_authority_base } }
+            set_variable = { name = omni_hc_authority_base value = 50 }
+        }
+        omni_hc_sync_authority_effect = yes
+    }
+    omni_hc_change_authority_effect = {
+        omni_hc_initialize_effect = yes
+        change_variable = { name = omni_hc_authority_base add = $AMOUNT$ }
+        debug_log = "OMNI_AUTHORITY: change $AMOUNT$."
+        if = { limit = { trigger_if = { limit = { has_variable = omni_hc_authority_base } var:omni_hc_authority_base > 100 } trigger_else = { always = no } } set_variable = { name = omni_hc_authority_base value = 100 } }
+        if = { limit = { trigger_if = { limit = { has_variable = omni_hc_authority_base } var:omni_hc_authority_base < 0 } trigger_else = { always = no } } set_variable = { name = omni_hc_authority_base value = 0 } }
+        omni_hc_sync_authority_effect = yes
+    }
+    omni_hc_refresh_effect = {
+        remove_variable = omni_hc_see
+        clear_saved_scope = omni_hc_found_see
+        if = { limit = { omni_hc_shannah_trigger = yes }
+            save_scope_as = omni_hc_found_see
+            set_variable = { name = omni_hc_see value = this }
+            omni_hc_accession_effect = yes
+        }
+        else = {
+            if = { limit = { any_country = { omni_hc_shannah_trigger = yes owns = 2706 } }
+                random_country = { limit = { omni_hc_shannah_trigger = yes owns = 2706 } save_scope_as = omni_hc_found_see }
+            }
+            else = { random_country = { limit = { omni_hc_shannah_trigger = yes } save_scope_as = omni_hc_found_see } }
+            if = { limit = { exists = scope:omni_hc_found_see }
+                set_variable = { name = omni_hc_see value = scope:omni_hc_found_see }
+                var:omni_hc_see = { omni_hc_accession_effect = yes }
+            }
+        }
+    }
+    omni_hc_begin_selection_effect = {
+        set_variable = { name = omni_hc_action value = $ACTION$ }
+        save_scope_as = actor save_scope_as = omni_crusade_actor
+        clear_variable_list = omni_hc_recipients
+        every_country = {
+            limit = { omni_hc_recipient_trigger = yes }
+            save_scope_as = omni_hc_candidate
+            scope:actor = { add_to_variable_list = { name = omni_hc_recipients target = scope:omni_hc_candidate } }
+        }
+    }
+    omni_hc_recognition_effect = {
+        if = { limit = { omni_hc_recognition_available_trigger = yes }
+            save_scope_as = omni_hc_recognizing_realm
+            set_variable = { name = omni_hc_decided_holder value = var:omni_hc_see.current_ruler }
+            set_variable = { name = omni_hc_recognition value = $STANCE$ }
+            var:omni_hc_see = {
+                if = { limit = { NOT = { has_variable = omni_hc_recognition_gains } } set_variable = { name = omni_hc_recognition_gains value = 0 } }
+                if = { limit = { NOT = { has_variable = omni_hc_recognition_losses } } set_variable = { name = omni_hc_recognition_losses value = 0 } }
+                if = { limit = { scope:omni_hc_recognizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 1 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_gains } var:omni_hc_recognition_gains < 20 } trigger_else = { always = no } }
+                    change_variable = { name = omni_hc_recognition_gains add = 2 }
+                    omni_hc_change_authority_effect = { AMOUNT = $AMOUNT$ }
+                }
+                if = { limit = { scope:omni_hc_recognizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 3 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_losses } var:omni_hc_recognition_losses < 20 } trigger_else = { always = no } }
+                    change_variable = { name = omni_hc_recognition_losses add = 2 }
+                    omni_hc_change_authority_effect = { AMOUNT = $AMOUNT$ }
+                }
+            }
+            omni_hc_recognition_event_effect = yes
+        }
+    }
+    omni_hc_accession_effect = {
+        omni_hc_initialize_effect = yes
+        # Resolve the ruler as an explicit character scope. The monthly refresh
+        # must never charge another accession or reset recognition for this holder.
+        current_ruler = { save_scope_as = omni_hc_current_holder }
+        if = { limit = { NOT = { has_variable = omni_hc_last_holder } }
+            set_variable = { name = omni_hc_recognition_gains value = 0 }
+            set_variable = { name = omni_hc_recognition_losses value = 0 }
+        }
+        else_if = { limit = { NOT = { current_ruler = var:omni_hc_last_holder } }
+            set_variable = { name = omni_hc_recognition_gains value = 0 }
+            set_variable = { name = omni_hc_recognition_losses value = 0 }
+            omni_hc_change_authority_effect = { AMOUNT = -5 }
+            debug_log = "OMNI_AUTHORITY: new holder; succession -5."
+        }
+        set_variable = { name = omni_hc_last_holder value = scope:omni_hc_current_holder }
+    }
+    omni_hc_pastoral_authority_effect = {
+        if = { limit = { omni_hc_shannah_trigger = yes NOT = { has_variable = omni_hc_pastoral_authority_cooldown } }
+            set_variable = { name = omni_hc_pastoral_authority_cooldown days = 365 }
+            omni_hc_change_authority_effect = { AMOUNT = 3 }
+            debug_log = "OMNI_AUTHORITY: pastoral service +3; annual cooldown started."
+        }
+    }
+    
+omni_hc_ai_recognition_effect = {
+        if = { limit = { is_ai = yes omni_hc_recognition_available_trigger = yes }
+            random_list = {
+                70 = {
+                    modifier = { factor = 0 war_with = var:omni_hc_see }
+                    modifier = { factor = 0.25 has_country_modifier = omni_shannah_excommunicated }
+                    # A respected Shahanat is easier to accept; a weak one invites doubt.
+                    modifier = { factor = 1.25 omni_hc_authority >= 75 }
+                    modifier = { factor = 0.75 omni_hc_authority < 50 }
+                    modifier = { factor = 0.5 omni_hc_authority < 25 }
+                    omni_hc_recognition_effect = { STANCE = 1 AMOUNT = 2 }
+                }
+                20 = { omni_hc_recognition_effect = { STANCE = 2 AMOUNT = 0 } }
+                10 = {
+                    modifier = { factor = 5 war_with = var:omni_hc_see }
+                    modifier = { factor = 2 has_country_modifier = omni_shannah_excommunicated }
+                    modifier = { factor = 0.5 omni_hc_authority >= 75 }
+                    modifier = { factor = 1.5 omni_hc_authority < 50 }
+                    modifier = { factor = 2 omni_hc_authority < 25 }
+                    omni_hc_recognition_effect = { STANCE = 3 AMOUNT = -2 }
+                }
+            }
+        }
+    }
+    omni_hc_dispatch_selection_effect = {
+if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 1 } trigger_else = { always = no } } trigger_event = { id = omni_helluvian_court.1 } }
+if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 2 } trigger_else = { always = no } } trigger_event = { id = omni_helluvian_court.2 } }
+if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 3 } trigger_else = { always = no } } trigger_event = { id = omni_helluvian_court.3 } }
+if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 4 } trigger_else = { always = no } } trigger_event = { id = omni_helluvian_court.4 } }
+if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 5 } trigger_else = { always = no } } trigger_event = { id = omni_helluvian_court.5 } }
+if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 6 } trigger_else = { always = no } } trigger_event = { id = omni_helluvian_court.6 } }
+if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 7 } trigger_else = { always = no } } trigger_event = { id = omni_helluvian_court.7 } }
+    if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 8 } trigger_else = { always = no } omni_hc_shannah_trigger = yes }
+        set_variable = { name = omni_crusade_target value = scope:omni_hc_recipient }
+        set_variable = omni_crusade_pending trigger_event = { id = omni_crusade.1 }
+    }
+    if = { limit = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 9 } trigger_else = { always = no } omni_hc_shannah_trigger = yes }
+        clear_saved_scope = omni_sf_request_victim
+        scope:omni_hc_recipient = {
+            var:omni_hc_request_serial = { save_scope_as = omni_hc_request_serial }
+            save_scope_as = omni_sf_petitioner
+            current_ruler = { save_scope_as = omni_sf_request_patron }
+            var:omni_sf_shannah = { save_scope_as = omni_sf_request_shannah }
+            if = { limit = { exists = var:omni_sf_victim } var:omni_sf_victim = { save_scope_as = omni_sf_request_victim } }
+        }
+        trigger_event = { id = omni_shannah_favor.50 }
+    }
+    }

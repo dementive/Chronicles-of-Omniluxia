@@ -1,0 +1,380 @@
+﻿# Pastoral Council: a summoned gathering of the Helluvian faithful.
+# 1. Summons (player: omni_pastoral_council.1; AI: omni_pc_ai_convene_effect). Free; starts the three-year cooldown.
+# 2. Every invited realm replies (humans: event .4; AI: omni_pc_ai_reply_effect).
+# 3. Sixty days later the host chooses an agenda (event .5) for 25 PI.
+# 4. Thirty to sixty days after that, an incident (event .10).
+
+omni_pc_summon_effect = {
+    save_scope_as = omni_pc_host
+    current_ruler = { save_scope_as = omni_pc_shannah }
+    hidden_effect = {
+        # AI councils follow a yearly three-pulse counter; a slightly shorter AI cooldown keeps them from skipping a cycle.
+        if = { limit = { is_ai = yes } set_variable = { name = omni_hc_council_cooldown days = 1000 } }
+        else = { set_variable = { name = omni_hc_council_cooldown days = 1095 } }
+        set_variable = { name = omni_pc_summons_pending }
+        remove_variable = omni_pc_votes_for
+        remove_variable = omni_pc_votes_against
+        remove_variable = omni_pc_proposal
+        remove_variable = omni_pc_ballot_open
+        remove_variable = omni_pc_agenda
+        remove_variable = omni_pc_embassy_success
+        every_country = {
+            limit = { omni_pc_invitee_trigger = yes }
+            set_variable = { name = omni_pc_invited_by value = scope:omni_pc_host }
+            remove_variable = omni_pc_vote
+            remove_variable = omni_pc_reply
+            if = { limit = { is_ai = yes } omni_pc_ai_reply_effect = yes }
+            else = { trigger_event = { id = omni_pastoral_council.4 } }
+        }
+        trigger_event = { id = omni_pastoral_council.5 days = 60 }
+        debug_log = "OMNI_COUNCIL: summons issued."
+    }
+}
+
+# Scope: invitee. Replies last long enough to cover the agenda and the incident.
+omni_pc_set_reply_effect = {
+    set_variable = { name = omni_pc_reply value = $REPLY$ }
+}
+omni_pc_reply_delegation_effect = {
+    add_treasury = -50
+    custom_tooltip = omni_pc_reply_delegation_tt
+    hidden_effect = {
+        omni_pc_set_reply_effect = { REPLY = 1 }
+        var:omni_pc_invited_by = { add_treasury = 50 }
+        remove_variable = omni_pc_refusals
+        if = {
+            limit = {
+                omni_sf_relationship_trigger = yes
+                trigger_if = { limit = { has_variable = omni_sf_see } var:omni_sf_see = var:omni_pc_invited_by } trigger_else = { always = no }
+            }
+            omni_sf_gain_effect = { AMOUNT = 5 }
+        }
+    }
+}
+omni_pc_reply_observers_effect = {
+    custom_tooltip = omni_pc_reply_observers_tt
+    hidden_effect = { omni_pc_set_reply_effect = { REPLY = 2 } remove_variable = omni_pc_refusals }
+}
+omni_pc_reply_decline_effect = {
+    custom_tooltip = omni_pc_reply_decline_tt
+    hidden_effect = {
+        omni_pc_set_reply_effect = { REPLY = 3 }
+        save_scope_as = omni_pc_decliner
+        if = { limit = { NOT = { has_variable = omni_pc_refusals } } set_variable = { name = omni_pc_refusals value = 0 } }
+        change_variable = { name = omni_pc_refusals add = 1 }
+        var:omni_pc_invited_by = {
+            remove_opinion = { target = scope:omni_pc_decliner modifier = omni_pc_declined_opinion }
+            add_opinion = { target = scope:omni_pc_decliner modifier = omni_pc_declined_opinion }
+        }
+        # A second consecutive refusal is remembered much longer.
+        if = {
+            limit = { var:omni_pc_refusals >= 2 }
+            var:omni_pc_invited_by = {
+                remove_opinion = { target = scope:omni_pc_decliner modifier = omni_pc_repeated_refusal_opinion }
+                add_opinion = { target = scope:omni_pc_decliner modifier = omni_pc_repeated_refusal_opinion }
+            }
+        }
+    }
+}
+omni_pc_reply_spy_effect = {
+    custom_tooltip = omni_pc_reply_spy_tt
+    hidden_effect = { omni_pc_set_reply_effect = { REPLY = 4 } }
+}
+
+# Scope: AI invitee during the summons (scope:omni_pc_host is set).
+omni_pc_ai_reply_effect = {
+    random_list = {
+        50 = {
+            modifier = { factor = 0 treasury < 100 }
+            modifier = { factor = 0 omni_pc_rejecting_trigger = yes }
+            modifier = { factor = 0 war_with = scope:omni_pc_host }
+            modifier = { factor = 0.4 NOT = { omni_pc_recognizing_trigger = yes } }
+            modifier = { factor = 2 opinion = { target = scope:omni_pc_host value >= 50 } }
+            modifier = { factor = 0.5 opinion = { target = scope:omni_pc_host value < 0 } }
+            modifier = { factor = 1.5 scope:omni_pc_host = { omni_hc_authority >= 75 } }
+            modifier = { factor = 0.5 scope:omni_pc_host = { omni_hc_authority < 25 } }
+            omni_pc_reply_delegation_effect = yes
+        }
+        30 = {
+            modifier = { factor = 0 omni_pc_rejecting_trigger = yes }
+            modifier = { factor = 0 war_with = scope:omni_pc_host }
+            modifier = { factor = 1.5 NOT = { omni_pc_recognizing_trigger = yes } }
+            omni_pc_reply_observers_effect = yes
+        }
+        20 = {
+            modifier = { factor = 3.5 omni_pc_rejecting_trigger = yes }
+            modifier = { factor = 2 opinion = { target = scope:omni_pc_host value < 0 } }
+            modifier = { factor = 1.5 scope:omni_pc_host = { omni_hc_authority < 50 } }
+            modifier = { factor = 2 scope:omni_pc_host = { omni_hc_authority < 25 } }
+            modifier = { factor = 0.5 scope:omni_pc_host = { omni_hc_authority >= 75 } }
+            omni_pc_reply_decline_effect = yes
+        }
+        10 = {
+            modifier = { factor = 0 NOT = { omni_pc_rejecting_trigger = yes } }
+            modifier = { factor = 3 omni_pc_rejecting_trigger = yes }
+            omni_pc_reply_spy_effect = yes
+        }
+    }
+}
+
+# Scope: host. Counts replies to this host's summons; the embassy target comes from declared stance.
+omni_pc_count_effect = {
+    save_scope_as = omni_pc_host
+    set_variable = { name = omni_pc_delegates value = 0 }
+    set_variable = { name = omni_pc_observers value = 0 }
+    set_variable = { name = omni_pc_boycotts value = 0 }
+    every_country = {
+        limit = { omni_pc_invited_trigger = yes }
+        if = { limit = { omni_pc_delegate_trigger = yes } scope:omni_pc_host = { change_variable = { name = omni_pc_delegates add = 1 } } }
+        else_if = { limit = { omni_pc_observer_trigger = yes } scope:omni_pc_host = { change_variable = { name = omni_pc_observers add = 1 } } }
+        else_if = { limit = { omni_pc_boycott_trigger = yes } scope:omni_pc_host = { change_variable = { name = omni_pc_boycotts add = 1 } } }
+    }
+    set_variable = { name = omni_pc_attendees value = var:omni_pc_delegates }
+    change_variable = { name = omni_pc_attendees add = var:omni_pc_observers }
+    clear_saved_scope = omni_pc_dissenter
+    random_country = {
+        limit = { omni_pc_dissenter_trigger = yes }
+        save_scope_as = omni_pc_dissenter
+    }
+}
+
+# Scope: host, when the council opens. Each secret agent has a one-in-four chance of being caught.
+omni_pc_catch_spies_effect = {
+    set_variable = { name = omni_pc_spies_caught value = 0 }
+    every_country = {
+        limit = { omni_pc_spy_trigger = yes }
+        save_scope_as = omni_pc_spy_realm
+        random_list = {
+            25 = {
+                scope:omni_pc_host = {
+                    change_variable = { name = omni_pc_spies_caught add = 1 }
+                    remove_opinion = { target = scope:omni_pc_spy_realm modifier = omni_pc_spy_caught_opinion }
+                    add_opinion = { target = scope:omni_pc_spy_realm modifier = omni_pc_spy_caught_opinion }
+                }
+            }
+            75 = { }
+        }
+    }
+}
+
+omni_pc_begin_effect = {
+    save_scope_as = omni_pc_host
+    current_ruler = { save_scope_as = omni_pc_shannah }
+    add_political_influence = -25
+    hidden_effect = {
+        remove_variable = omni_pc_summons_pending
+        set_variable = { name = omni_pc_agenda value = $AGENDA$ }
+    }
+}
+
+omni_pc_finish_effect = {
+    hidden_effect = {
+        every_country = {
+            limit = { is_ai = no has_land = yes religion = helluvian NOT = { this = scope:omni_pc_host } }
+            trigger_event = { id = omni_pastoral_council.2 }
+        }
+        trigger_event = { id = omni_pastoral_council.10 days = { 30 60 } }
+    }
+}
+
+# 1. Canons of Unity: +3 Authority, +1 at 3/6/10 attending realms; delegations warm to the Shahanat.
+omni_pc_agenda_canons_effect = {
+    omni_pc_begin_effect = { AGENDA = 1 }
+    custom_tooltip = omni_pc_canons_tt
+    hidden_effect = {
+        omni_hc_change_authority_effect = { AMOUNT = 3 }
+        if = { limit = { omni_pc_turnout_trigger = { N = 3 } } omni_hc_change_authority_effect = { AMOUNT = 1 } }
+        if = { limit = { omni_pc_turnout_trigger = { N = 6 } } omni_hc_change_authority_effect = { AMOUNT = 1 } }
+        if = { limit = { omni_pc_turnout_trigger = { N = 10 } } omni_hc_change_authority_effect = { AMOUNT = 1 } }
+        every_country = {
+            limit = { omni_pc_delegate_trigger = yes }
+            remove_opinion = { target = scope:omni_pc_host modifier = omni_pc_canons_opinion }
+            add_opinion = { target = scope:omni_pc_host modifier = omni_pc_canons_opinion }
+        }
+        debug_log = "OMNI_COUNCIL: Canons of Unity."
+    }
+    omni_pc_finish_effect = yes
+}
+
+# 2. Discipline the Clergy: +3 Authority; the next scandal within five years costs no Authority.
+omni_pc_agenda_discipline_effect = {
+    omni_pc_begin_effect = { AGENDA = 2 }
+    custom_tooltip = omni_pc_discipline_tt
+    hidden_effect = {
+        omni_hc_change_authority_effect = { AMOUNT = 3 }
+        set_variable = { name = omni_pc_clergy_disciplined days = 1825 }
+        debug_log = "OMNI_COUNCIL: Discipline the Clergy."
+    }
+    omni_pc_finish_effect = yes
+}
+
+# 3. Embassy to the Dissenters: chance to move one contesting realm to conditional recognition.
+omni_pc_agenda_embassy_effect = {
+    omni_pc_begin_effect = { AGENDA = 3 }
+    custom_tooltip = omni_pc_embassy_tt
+    hidden_effect = {
+        scope:omni_pc_dissenter = { current_ruler = { save_scope_as = omni_pc_dissenter_ruler } }
+        remove_variable = omni_pc_embassy_success
+        random_list = {
+            40 = {
+                modifier = { factor = 1.5 omni_hc_authority >= 75 }
+                modifier = { factor = 0.5 omni_hc_authority < 25 }
+                set_variable = { name = omni_pc_embassy_success days = 120 }
+                scope:omni_pc_dissenter = {
+                    set_variable = { name = omni_hc_recognition value = 2 }
+                    # Conditional recognition opens the standard concession negotiation, which
+                    # settles on recognition or rejection; the embassy reopens earlier talks.
+                    set_variable = { name = omni_hc_see value = scope:omni_pc_host }
+                    remove_variable = omni_hc_negotiation_holder
+                    omni_hc_begin_negotiation_effect = yes
+                    remove_opinion = { target = scope:omni_pc_host modifier = omni_pc_embassy_opinion }
+                    add_opinion = { target = scope:omni_pc_host modifier = omni_pc_embassy_opinion }
+                }
+                omni_hc_change_authority_effect = { AMOUNT = 2 }
+                debug_log = "OMNI_COUNCIL: embassy reconciled a dissenting realm."
+            }
+            60 = {
+                modifier = { factor = 0.5 omni_hc_authority >= 90 }
+                omni_hc_change_authority_effect = { AMOUNT = -2 }
+                debug_log = "OMNI_COUNCIL: embassy rebuffed."
+            }
+        }
+        trigger_event = { id = omni_pastoral_council.3 }
+    }
+    omni_pc_finish_effect = yes
+}
+
+# 4. Endow the Faith: 100 gold; the host and every full delegation receive the Council's Canons for three years.
+omni_pc_agenda_endow_effect = {
+    omni_pc_begin_effect = { AGENDA = 4 }
+    add_treasury = -100
+    custom_tooltip = omni_pc_endow_tt
+    hidden_effect = {
+        omni_hc_change_authority_effect = { AMOUNT = 3 }
+        remove_country_modifier = omni_pc_council_canons
+        add_country_modifier = { name = omni_pc_council_canons duration = 1095 }
+        every_country = {
+            limit = { omni_pc_delegate_trigger = yes }
+            remove_country_modifier = omni_pc_council_canons
+            add_country_modifier = { name = omni_pc_council_canons duration = 1095 }
+        }
+        debug_log = "OMNI_COUNCIL: Endow the Faith."
+    }
+    omni_pc_finish_effect = yes
+}
+
+# Dismissing a summoned council: the delegates came for nothing.
+omni_pc_dismiss_effect = {
+    custom_tooltip = omni_pc_dismiss_tt
+    hidden_effect = {
+        remove_variable = omni_pc_summons_pending
+        remove_variable = omni_pc_ballot_open
+        save_scope_as = omni_pc_host
+        every_country = {
+            limit = { is_ai = no has_land = yes omni_pc_invited_trigger = yes }
+            trigger_event = { id = omni_pastoral_council.8 }
+        }
+        omni_hc_change_authority_effect = { AMOUNT = -2 }
+        debug_log = "OMNI_COUNCIL: council dismissed without an agenda."
+    }
+}
+
+# AI summons the council at the start of its triennial council, keeping reserves for its decrees.
+omni_pc_ai_convene_effect = {
+    if = {
+        limit = { is_ai = yes omni_hc_council_available_trigger = yes political_influence >= 75 }
+        omni_pc_summon_effect = yes
+        debug_log = "OMNI_COUNCIL: AI Shannah summoned a Pastoral Council."
+    }
+}
+
+# Shared scandal handling: Clergy Discipline absorbs one scandal.
+omni_pc_scandal_effect = {
+    if = {
+        limit = { has_variable = omni_pc_clergy_disciplined }
+        remove_variable = omni_pc_clergy_disciplined
+        set_variable = { name = omni_pc_scandal_shielded days = 30 }
+        debug_log = "OMNI_COUNCIL: scandal absorbed by clergy discipline."
+    }
+    else = {
+        remove_variable = omni_pc_scandal_shielded
+        omni_hc_change_authority_effect = { AMOUNT = -5 }
+    }
+}
+
+# The host proposes an agenda; full delegations have thirty days to answer.
+omni_pc_propose_effect = {
+    hidden_effect = {
+        save_scope_as = omni_pc_host
+        current_ruler = { save_scope_as = omni_pc_shannah }
+        set_variable = { name = omni_pc_proposal value = $AGENDA$ }
+        set_variable = omni_pc_ballot_open
+        every_country = {
+            limit = { omni_pc_delegate_trigger = yes }
+            remove_variable = omni_pc_vote
+            if = {
+                limit = { is_ai = yes }
+                random_list = {
+                    70 = { set_variable = { name = omni_pc_vote value = 1 } }
+                    30 = { set_variable = { name = omni_pc_vote value = 2 } }
+                }
+            }
+            else = { trigger_event = { id = omni_pastoral_council.6 } }
+        }
+        trigger_event = { id = omni_pastoral_council.7 days = 30 }
+    }
+}
+
+omni_pc_resolve_vote_effect = {
+    save_scope_as = omni_pc_host
+    if = { limit = { exists = current_ruler } current_ruler = { save_scope_as = omni_pc_shannah } }
+    # The proposing host casts one supporting vote; a tie retains its proposal.
+    set_variable = { name = omni_pc_votes_for value = 1 }
+    set_variable = { name = omni_pc_votes_against value = 0 }
+    every_country = {
+        limit = { omni_pc_delegate_trigger = yes has_variable = omni_pc_vote }
+        if = {
+            limit = { var:omni_pc_vote = 1 }
+            scope:omni_pc_host = { change_variable = { name = omni_pc_votes_for add = 1 } }
+        }
+        else_if = {
+            limit = { var:omni_pc_vote = 2 }
+            scope:omni_pc_host = { change_variable = { name = omni_pc_votes_against add = 1 } }
+        }
+    }
+    # Arithmetic must happen in effects: var-to-var trigger comparisons are scope
+    # comparisons in Imperator and can interpret vote counts as country IDs.
+    set_variable = { name = omni_pc_vote_margin value = var:omni_pc_votes_for }
+    change_variable = { name = omni_pc_vote_margin subtract = var:omni_pc_votes_against }
+    remove_variable = omni_pc_ballot_open
+    omni_pc_count_effect = yes
+    if = {
+        limit = {
+            var:omni_pc_vote_margin >= 0
+            omni_pc_agenda_available_trigger = yes
+        }
+        if = { limit = { var:omni_pc_proposal = 1 } omni_pc_agenda_canons_effect = yes }
+        else_if = { limit = { var:omni_pc_proposal = 2 } omni_pc_agenda_discipline_effect = yes }
+        else_if = {
+            limit = { var:omni_pc_proposal = 3 exists = scope:omni_pc_dissenter }
+            omni_pc_agenda_embassy_effect = yes
+        }
+        else_if = {
+            limit = { var:omni_pc_proposal = 4 omni_pc_endow_available_trigger = yes }
+            omni_pc_agenda_endow_effect = yes
+        }
+        else = { omni_pc_dismiss_effect = yes }
+    }
+    else = { omni_pc_dismiss_effect = yes }
+}
+
+# Recipient scope. Resolve portraits from the durable host country, not an old ruler.
+omni_pc_refresh_shannah_effect = {
+    if = {
+        limit = { has_variable = omni_pc_invited_by }
+        var:omni_pc_invited_by = {
+            save_scope_as = omni_pc_host
+            if = { limit = { exists = current_ruler } current_ruler = { save_scope_as = omni_pc_shannah } }
+        }
+    }
+}

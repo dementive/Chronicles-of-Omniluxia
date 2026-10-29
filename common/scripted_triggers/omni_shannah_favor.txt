@@ -1,0 +1,294 @@
+﻿# Country scope. The personal faith AND state faith match existing power recipients.
+
+omni_sf_petitioner_trigger = {
+
+    has_land = yes
+
+    religion = helluvian
+
+    exists = current_ruler
+
+    current_ruler = { is_alive = yes has_religion = helluvian NOT = { has_trait = shannah_trait } }
+
+    NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+
+}
+
+omni_sf_shannah_trigger = {
+
+    is_alive = yes is_adult = yes is_ruler = yes prisoner = no
+
+    has_trait = shannah_trait
+
+    exists = employer
+
+    employer = { has_land = yes religion = helluvian }
+
+}
+
+# Saved personal balance is valid only for these two living officeholders.
+
+omni_sf_relationship_trigger = {
+    # Character interactions do not guarantee a root country.
+    save_temporary_scope_as = omni_sf_relationship_country
+
+    omni_sf_petitioner_trigger = yes
+
+    has_variable = omni_sf_patron
+
+    exists = var:omni_sf_patron
+
+    current_ruler = var:omni_sf_patron
+
+    has_variable = omni_sf_shannah
+
+    exists = var:omni_sf_shannah
+
+    exists = var:omni_sf_see
+
+    trigger_if = {
+        limit = {
+            exists = var:omni_sf_shannah
+            exists = var:omni_sf_see
+            has_variable = omni_sf_bound_epoch
+        }
+    var:omni_sf_shannah = { employer = scope:omni_sf_relationship_country.var:omni_sf_see }
+
+    var:omni_sf_shannah = {
+
+        omni_sf_shannah_trigger = yes
+
+        NOT = { employer = scope:omni_sf_relationship_country }
+
+        employer = { trigger_if = { limit = { has_variable = omni_sf_reign_epoch } var:omni_sf_reign_epoch = scope:omni_sf_relationship_country.var:omni_sf_bound_epoch } trigger_else = { always = no } }
+
+    }
+
+    }
+    trigger_else = { always = no }
+}
+
+omni_sf_available_trigger = {
+
+    custom_tooltip = { text = omni_sf_relationship_tt omni_sf_relationship_trigger = yes }
+
+    omni_ruler_available_for_court_action_trigger = yes
+
+    current_ruler = { is_adult = yes prisoner = no }
+
+    var:omni_sf_shannah = { omni_char_available_for_court_action_trigger = yes }
+
+    custom_tooltip = { text = omni_sf_no_pending_tt
+
+        NOT = { has_variable = omni_sf_pending }
+
+        NOT = { has_variable = omni_sf_human_waiting }
+
+        NOT = { has_variable = omni_sf_chain_waiting }
+
+    }
+
+}
+
+omni_sf_can_build_trigger = {
+
+    omni_sf_available_trigger = yes
+
+    custom_tooltip = { text = omni_sf_no_active_tt NOT = { has_variable = omni_sf_active } }
+
+    custom_tooltip = { text = omni_sf_build_cooldown_tt NOT = { has_variable = omni_sf_build_cooldown } }
+
+    custom_tooltip = { text = omni_sf_below_cap_tt omni_sf_favor_value < 100 }
+
+}
+
+
+omni_sf_request_1_trigger = {
+
+    omni_sf_available_trigger = yes
+
+    NOT = { has_variable = omni_sf_active }
+
+    OR = { omni_sf_favor_value >= 20 trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 1 } trigger_else = { always = no } }
+
+    current_ruler = { save_temporary_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_temporary_scope_as = actor }
+
+    omni_sf_bless_potential_trigger = { TARGET = scope:target }
+
+}
+
+
+omni_sf_request_2_trigger = {
+
+    omni_sf_available_trigger = yes
+
+    NOT = { has_variable = omni_sf_active }
+
+    OR = { omni_sf_favor_value >= 30 trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 2 } trigger_else = { always = no } }
+
+    current_ruler = { save_temporary_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_temporary_scope_as = actor }
+
+    omni_sf_holy_mission_potential_trigger = { TARGET = scope:target }
+
+}
+
+
+omni_sf_request_3_trigger = {
+
+    omni_sf_available_trigger = yes
+
+    NOT = { has_variable = omni_sf_active }
+
+    OR = { omni_sf_favor_value >= 40 trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 3 } trigger_else = { always = no } }
+
+    current_ruler = { save_temporary_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_temporary_scope_as = actor }
+
+    omni_shannah_recognize_crown_potential_trigger = { TARGET = scope:target }
+
+}
+
+
+omni_sf_request_4_trigger = {
+
+    omni_sf_available_trigger = yes
+
+    NOT = { has_variable = omni_sf_active }
+
+    OR = { omni_sf_favor_value >= 50 trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 4 } trigger_else = { always = no } }
+
+    current_ruler = { save_temporary_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_temporary_scope_as = actor }
+
+    omni_sf_absolve_potential_trigger = { TARGET = scope:target }
+    has_aggressive_expansion >= 5
+
+}
+
+
+omni_sf_request_5_trigger = {
+
+    omni_sf_available_trigger = yes
+
+    NOT = { has_variable = omni_sf_active }
+
+    OR = { omni_sf_favor_value >= 65 trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 5 } trigger_else = { always = no } }
+
+    current_ruler = { save_temporary_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_temporary_scope_as = actor }
+
+    omni_shannah_lift_excommunication_potential_trigger = { TARGET = scope:target }
+
+}
+
+
+omni_sf_request_6_trigger = {
+
+    omni_sf_available_trigger = yes
+
+    NOT = { has_variable = omni_sf_active }
+
+    OR = { omni_sf_favor_value >= 85 trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 6 } trigger_else = { always = no } }
+
+    exists = var:omni_sf_victim
+    exists = var:omni_sf_victim_country
+    var:omni_sf_victim = { employer = root.var:omni_sf_victim_country }
+    NOT = { has_country_modifier = omni_shannah_excommunicated }
+    var:omni_sf_victim = { save_temporary_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_temporary_scope_as = actor }
+
+    omni_shannah_excommunicate_potential_trigger = { TARGET = scope:target }
+
+}
+
+omni_sf_bless_potential_trigger = {
+
+        exists = scope:actor
+        exists = $TARGET$
+        scope:actor = {
+            has_land = yes
+            religion = helluvian
+            exists = current_ruler
+            current_ruler = { has_trait = shannah_trait }
+        }
+        $TARGET$ = {
+            is_alive = yes
+            is_ruler = yes
+            exists = employer
+            NOT = { employer = scope:actor }
+            employer = {
+                has_land = yes
+                religion = helluvian
+                NOT = { tag = REB }
+                NOT = { tag = BAR }
+                NOT = { tag = MER }
+                NOT = { tag = PIR }
+            }
+        }
+        $TARGET$.employer = { NOT = { has_country_modifier = omni_shannah_excommunicated } }
+    
+}
+
+omni_sf_holy_mission_potential_trigger = {
+
+        exists = scope:actor
+        exists = $TARGET$
+        scope:actor = {
+            has_land = yes
+            religion = helluvian
+            exists = current_ruler
+            current_ruler = { has_trait = shannah_trait }
+        }
+        $TARGET$ = {
+            is_alive = yes
+            is_ruler = yes
+            exists = employer
+            NOT = { employer = scope:actor }
+            employer = {
+                has_land = yes
+                religion = helluvian
+                NOT = { tag = REB }
+                NOT = { tag = BAR }
+                NOT = { tag = MER }
+                NOT = { tag = PIR }
+            }
+        }
+        $TARGET$.employer = { NOT = { has_country_modifier = omni_shannah_excommunicated } }
+    
+}
+
+omni_sf_absolve_potential_trigger = {
+
+        exists = scope:actor
+        exists = $TARGET$
+        scope:actor = {
+            has_land = yes
+            religion = helluvian
+            exists = current_ruler
+            current_ruler = { has_trait = shannah_trait }
+        }
+        $TARGET$ = {
+            is_alive = yes
+            is_ruler = yes
+            exists = employer
+            NOT = { employer = scope:actor }
+            employer = {
+                has_land = yes
+                religion = helluvian
+                NOT = { tag = REB }
+                NOT = { tag = BAR }
+                NOT = { tag = MER }
+                NOT = { tag = PIR }
+            }
+        }
+        $TARGET$.employer = { NOT = { has_country_modifier = omni_shannah_excommunicated } }
+    
+}

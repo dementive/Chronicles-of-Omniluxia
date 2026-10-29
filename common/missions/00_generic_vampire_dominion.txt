@@ -26,6 +26,7 @@
 			state = {
 				any_state_province = {
 					is_state_capital = yes
+					owner = ROOT
 					NOT = { has_province_modifier = generic_vampire_dominion_bloodless_nights_pmod }
 					NOT = { has_province_modifier = generic_vampire_dominion_culled_doubters_pmod }
 					NOT = { has_province_modifier = generic_vampire_dominion_night_tithe_pmod }
@@ -53,6 +54,10 @@
 	abort = {
 		OR = {
 			NOT = { exists = scope:generic_vampire_dominion_target }
+			NOT = { exists = scope:generic_vampire_dominion_capital }
+			scope:generic_vampire_dominion_capital = {
+				NOT = { owner = ROOT }
+			}
 			scope:generic_vampire_dominion_target = {
 				NOT = { owner = ROOT }
 			}
@@ -75,6 +80,7 @@
 				state = {
 					any_state_province = {
 						is_state_capital = yes
+						owner = ROOT
 						NOT = { has_province_modifier = generic_vampire_dominion_bloodless_nights_pmod }
 						NOT = { has_province_modifier = generic_vampire_dominion_culled_doubters_pmod }
 						NOT = { has_province_modifier = generic_vampire_dominion_night_tithe_pmod }
@@ -279,6 +285,15 @@
 
 		allow = {
 			political_influence >= 10
+			custom_tooltip = {
+				text = generic_vampire_dominion_thrall_population_tt
+				scope:generic_vampire_dominion_target.state = {
+					any_state_province = {
+						owner = ROOT
+						total_population >= 6
+					}
+				}
+			}
 		}
 
 		bypass = {
@@ -303,8 +318,8 @@
 				state = {
 					ordered_state_province = {
 						limit = {
-							has_owner = yes
-							total_population > 0
+							owner = ROOT
+							total_population >= 6
 						}
 						order_by = total_population
 						max = 1
@@ -313,40 +328,50 @@
 					}
 				}
 			}
-			scope:generic_vampire_dominion_pop_target = {
-				while = {
-					count = 5
-					random_pops_in_province = {
-						kill_pop = yes
+			if = {
+				limit = {
+					exists = scope:generic_vampire_dominion_pop_target
+					scope:generic_vampire_dominion_pop_target = {
+						owner = ROOT
+						total_population >= 6
 					}
 				}
-			}
-			hidden_effect = {
-				create_character = {
-				female = no
-				age = 35
-				culture = undead
-				religion = scope:generic_vampire_dominion_target.religion
-				add_trait = wraith_trait
-				save_scope_as = generic_vampire_dominion_undead_wraith_commander
-			}
-			}
-			create_unit = {
-				navy = no
-				name = "Undead Wraiths"
-				save_scope_as = generic_vampire_dominion_undead_wraiths_army_scope
-				location = scope:generic_vampire_dominion_capital
-				hidden_effect = {
-					set_as_commander = scope:generic_vampire_dominion_undead_wraith_commander
-				}
-				hidden_effect = {
+				scope:generic_vampire_dominion_pop_target = {
 					while = {
 						count = 5
-						add_subunit = light_infantry
+						random_pops_in_province = {
+							kill_pop = yes
+						}
 					}
-					add_food = 100
-					add_morale = 2
 				}
+				hidden_effect = {
+					create_character = {
+					female = no
+					age = 35
+					culture = undead
+					religion = scope:generic_vampire_dominion_target.religion
+					add_trait = wraith_trait
+					save_scope_as = generic_vampire_dominion_undead_wraith_commander
+				}
+				}
+				create_unit = {
+					navy = no
+					name = generic_vampire_dominion_wraith_army_name
+					save_scope_as = generic_vampire_dominion_undead_wraiths_army_scope
+					location = scope:generic_vampire_dominion_capital
+					hidden_effect = {
+						set_as_commander = scope:generic_vampire_dominion_undead_wraith_commander
+					}
+					hidden_effect = {
+						while = {
+							count = 5
+							add_subunit = light_infantry
+						}
+						add_food = 100
+						add_morale = 2
+					}
+				}
+				trigger_event = { id = me_vampire_dominion.2 }
 			}
 			scope:generic_vampire_dominion_capital = {
 				add_province_modifier = {
@@ -360,7 +385,6 @@
 					duration = 1825
 				}
 			}
-			trigger_event = { id = me_vampire_dominion.2 }
 			random_character = {
 				limit = {
 					NOT = { is_ruler = yes }

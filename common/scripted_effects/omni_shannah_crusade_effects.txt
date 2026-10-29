@@ -3,6 +3,11 @@
 omni_shannah_repair_office_effect = {
     if = {
         limit = { omni_shannah_office_trigger = yes exists = current_ruler }
+        # Migrate existing officeholders to the institutional banner once.
+        if = {
+            limit = { NOT = { has_variable = omni_shahanate_flag_adopted } }
+            omni_shahanate_adopt_flag_effect = yes
+        }
         current_ruler = {
             if = {
                 limit = { NOT = { has_trait = shannah_trait } }
@@ -10,10 +15,12 @@ omni_shannah_repair_office_effect = {
             }
         }
     }
+    # Anyone outside the office (deposed, converted, or no longer a papacy) loses the
+    # trait, so trait-gated interactions and Favor always follow the real office.
     else_if = {
         limit = {
             exists = current_ruler
-            OR = { NOT = { religion = helluvian } has_variable = omni_shannah_deposed }
+            current_ruler = { has_trait = shannah_trait }
         }
         current_ruler = {
             if = { limit = { has_trait = shannah_trait } remove_trait = shannah_trait }
@@ -59,6 +66,17 @@ omni_shannah_revoke_office_effect = {
 
 omni_shannah_claim_office_effect = {
     save_scope_as = omni_shannah_claimant
+    omni_hc_initialize_effect = yes
+    # Transfer the incumbent institution's standing, including on reclamation.
+    every_country = {
+        limit = { omni_shannah_office_trigger = yes NOT = { this = scope:omni_shannah_claimant } }
+        omni_hc_initialize_effect = yes
+        scope:omni_shannah_claimant = {
+            set_variable = { name = omni_hc_authority_base value = prev.var:omni_hc_authority_base }
+        }
+    }
+    omni_hc_change_authority_effect = { AMOUNT = -10 }
+
     # A single scan when the decision is taken; no global monthly claimant scan.
     # Also consolidates any surviving duplicate offices from older saves.
     every_country = {
@@ -83,7 +101,9 @@ omni_shannah_claim_office_effect = {
     set_variable = new_pope_var
     remove_variable = omni_shannah_deposed
     change_government = papacy
+    omni_shahanate_adopt_flag_effect = yes
     current_ruler = { force_add_trait = shannah_trait }
+    omni_shannah_accession_queue_effect = yes
 }
 
 omni_crusade_restore_scopes_effect = {

@@ -480,10 +480,22 @@
 		}
 
 		bypass = {
-			is_ai = yes
+			OR = {
+				is_ai = yes
+				scope:migration_invasion_region = {
+					NOT = {
+						any_region_province = {
+							has_owner = yes
+							NOT = { owner = ROOT }
+							NOT = { owner = { is_subject_of = ROOT } }
+						}
+					}
+				}
+			}
 		}
 
-		on_start = {
+
+		on_completion = {
 			hidden_effect = {
 				scope:migration_invasion_region = {
 					random_region_province = {
@@ -506,24 +518,29 @@
 					}
 				}
 			}
-		}
-
-		on_completion = {
 			custom_tooltip = generic_migration_invasion_burn_fields_reward_tt
-			scope:migration_invasion_burned_fields_province = {
-				add_province_modifier = {
-					name = province_pillaged
-					duration = 1825
-				}
-				add_city_smoke_effect = yes
-				hidden_effect = {
-					state = {
-						add_state_food = generic_migration_invasion_burned_fields_food_pay_svalue
+			if = {
+				limit = {
+                    exists = scope:migration_invasion_burned_fields_province
+                    scope:migration_invasion_burned_fields_province = {
+                        generic_migration_invasion_burnable_province_trigger = yes
+                    }
+                }
+				scope:migration_invasion_burned_fields_province = {
+					add_province_modifier = {
+						name = province_pillaged
+						duration = 1825
+					}
+					add_city_smoke_effect = yes
+					hidden_effect = {
+						state = {
+							add_state_food = generic_migration_invasion_burned_fields_food_pay_svalue
+						}
 					}
 				}
-			}
-			capital_scope.state = {
-				add_state_food = generic_migration_invasion_burned_fields_food_svalue
+				capital_scope.state = {
+					add_state_food = generic_migration_invasion_burned_fields_food_svalue
+				}
 			}
 		}
 	}

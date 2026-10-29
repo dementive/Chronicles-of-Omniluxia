@@ -1,0 +1,78 @@
+﻿# Pastoral Council. Scope: candidate country unless noted. Requires scope:omni_pc_host.
+
+# Who receives a summons: every landed Helluvian realm except the host and condemned realms.
+omni_pc_invitee_trigger = {
+    omni_hc_view_trigger = yes
+    NOT = { this = scope:omni_pc_host }
+    NOT = { has_country_modifier = omni_shannah_excommunicated }
+}
+# Declared stance toward the CURRENT Shannah.
+omni_pc_attendee_base_trigger = {
+    omni_hc_view_trigger = yes
+    NOT = { this = scope:omni_pc_host }
+    exists = scope:omni_pc_host.current_ruler
+    trigger_if = { limit = { has_variable = omni_hc_decided_holder } var:omni_hc_decided_holder = scope:omni_pc_host.current_ruler } trigger_else = { always = no }
+}
+omni_pc_rejecting_trigger = {
+    omni_pc_attendee_base_trigger = yes
+    trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 3 } trigger_else = { always = no }
+}
+omni_pc_recognizing_trigger = {
+    omni_pc_attendee_base_trigger = yes
+    trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 1 } trigger_else = { always = no }
+}
+# Embassy targets contest the Shannah but are not under a sentence.
+omni_pc_dissenter_trigger = {
+    omni_pc_rejecting_trigger = yes
+    NOT = { has_country_modifier = omni_shannah_excommunicated }
+}
+
+# Replies. 1 delegation with gifts, 2 observers, 3 declined, 4 secret agent.
+omni_pc_invited_trigger = {
+    trigger_if = { limit = { has_variable = omni_pc_invited_by } var:omni_pc_invited_by = scope:omni_pc_host } trigger_else = { always = no }
+}
+omni_pc_reply_trigger = {
+    omni_pc_invited_trigger = yes
+    trigger_if = { limit = { has_variable = omni_pc_reply } var:omni_pc_reply = $REPLY$ } trigger_else = { always = no }
+}
+omni_pc_delegate_trigger = { omni_pc_reply_trigger = { REPLY = 1 } NOT = { has_country_modifier = omni_shannah_excommunicated } }
+omni_pc_observer_trigger = { omni_pc_reply_trigger = { REPLY = 2 } NOT = { has_country_modifier = omni_shannah_excommunicated } }
+omni_pc_attending_trigger = { OR = { omni_pc_delegate_trigger = yes omni_pc_observer_trigger = yes } }
+omni_pc_boycott_trigger = { omni_pc_reply_trigger = { REPLY = 3 } }
+omni_pc_spy_trigger = { omni_pc_reply_trigger = { REPLY = 4 } }
+
+# Scope: invitee in omni_pastoral_council.4. The summons is still open and unanswered.
+omni_pc_reply_open_trigger = {
+    has_variable = omni_pc_invited_by
+    NOT = { has_variable = omni_pc_reply }
+    var:omni_pc_invited_by = { has_variable = omni_pc_summons_pending }
+}
+
+# Scope: host.
+omni_pc_turnout_trigger = {
+    trigger_if = { limit = { has_variable = omni_pc_attendees } var:omni_pc_attendees >= $N$ } trigger_else = { always = no }
+}
+omni_pc_delegations_trigger = {
+    trigger_if = { limit = { has_variable = omni_pc_delegates } var:omni_pc_delegates >= $N$ } trigger_else = { always = no }
+}
+omni_pc_agenda_trigger = {
+    trigger_if = { limit = { has_variable = omni_pc_agenda } var:omni_pc_agenda = $AGENDA$ } trigger_else = { always = no }
+}
+omni_pc_agenda_available_trigger = {
+    omni_hc_shannah_trigger = yes omni_ruler_available_for_court_action_trigger = yes
+    has_variable = omni_pc_summons_pending
+    political_influence >= 25
+}
+omni_pc_endow_available_trigger = {
+    omni_pc_agenda_available_trigger = yes
+    treasury >= 100
+    omni_pc_delegations_trigger = { N = 1 }
+}
+
+# Durable country reference makes an old ballot harmless after the council closes.
+omni_pc_vote_open_trigger = {
+    has_variable = omni_pc_invited_by
+    NOT = { has_variable = omni_pc_vote }
+    var:omni_pc_invited_by = { has_variable = omni_pc_ballot_open }
+    omni_pc_delegate_trigger = yes
+}
