@@ -4,8 +4,227 @@
 # SHARED EARLY GAME EVENTS (1–5)
 # ═══════════════════════════════════════
 
+# Ascendic capital preparation, followed by the choice of oath or war.
+me_eptelon_gen.60 = {
+    type = country_event
+    title = me_eptelon_gen.60.t
+    desc = me_eptelon_gen.60.desc
+    picture = hellenistic_army
+    left_portrait = current_ruler
+    option = { name = me_eptelon_gen.60.a 
+            show_as_tooltip = {
+                add_treasury = -75
+            add_political_influence = -20
+            capital_scope = {
+                add_province_modifier = { name = gm_subject_defensive_pmod duration = 5475 }
+            }
+        }
+    }
+}
+
+me_eptelon_gen.61 = {
+    type = country_event
+    title = me_eptelon_gen.61.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { is_subject = yes }
+                desc = me_eptelon_gen.61.subject_desc
+            }
+            triggered_desc = {
+                trigger = { is_subject = no }
+                desc = me_eptelon_gen.61.desc
+            }
+        }
+    }
+    picture = event_elf_councilor
+    left_portrait = current_ruler
+    right_portrait = overlord.current_ruler
+
+    option = {
+        name = me_eptelon_gen.61.offer
+        trigger = { is_subject = yes war = no has_civil_war = no }
+        custom_tooltip = omni_eptelon_oath_offer_tt
+        hidden_effect = {
+            save_scope_as = omni_eptelon_petitioner
+            overlord = {
+                save_scope_as = omni_eptelon_current_overlord
+                scope:omni_eptelon_petitioner = {
+                    set_variable = { name = omni_eptelon_oath_creditor value = scope:omni_eptelon_current_overlord }
+                    set_variable = omni_eptelon_slave_oath
+                }
+                release_subject = scope:omni_eptelon_petitioner
+                trigger_event = me_eptelon_gen.62
+            }
+            omni_eptelon_independence_reward_effect = yes
+            trigger_event = me_eptelon_gen.63
+            trigger_event = { id = me_eptelon_gen.65 days = 1825 }
+        }
+        ai_chance = { factor = 3 }
+    }
+    option = {
+        name = me_eptelon_gen.61.decline
+        trigger = {
+            is_subject = yes
+            war = no
+            has_civil_war = no
+            NOT = { has_truce_with = overlord }
+        }
+        custom_tooltip = omni_eptelon_oath_decline_tt
+        hidden_effect = {
+            # Independence war pattern from me_subject_independence.63.
+            overlord = { save_scope_as = omni_eptelon_current_overlord }
+            declare_war_with_wargoal = {
+                war_goal = independence_wargoal
+                province = capital_scope
+                target = scope:omni_eptelon_current_overlord
+            }
+        }
+        ai_chance = { factor = 1 }
+    }
+    # Only for changed circumstances while the event is open; not a refusal.
+    option = {
+        name = me_eptelon_gen.61.interrupted
+        trigger = {
+            is_subject = yes
+            OR = { war = yes has_civil_war = yes }
+        }
+        custom_tooltip = omni_eptelon_oath_interrupted_tt
+        hidden_effect = { set_variable = omni_eptelon_oath_reconvene }
+    }
+    option = {
+        name = me_eptelon_gen.61.a
+        trigger = { is_subject = no }
+        omni_eptelon_independence_reward_effect = yes
+    }
+}
+
+# Notification only: the subject's acceptance has already enacted the bargain.
+me_eptelon_gen.62 = {
+    type = country_event
+    title = me_eptelon_gen.62.t
+    desc = me_eptelon_gen.62.desc
+    picture = diadochi_coronation
+    left_portrait = current_ruler
+    option = { name = me_eptelon_gen.62.accept }
+}
+
+me_eptelon_gen.63 = {
+    type = country_event
+    title = me_eptelon_gen.63.t
+    desc = me_eptelon_gen.63.desc
+    picture = event_corsair_ships
+    left_portrait = current_ruler
+    option = { name = me_eptelon_gen.63.a custom_tooltip = omni_eptelon_oath_terms_tt }
+}
+
+# Queue the first demand on acceptance; each successful payment queues the next demand.
+# Country variables retain the creditor across saves and mission-tree completion.
+me_eptelon_gen.65 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = omni_eptelon_slave_oath }
+    immediate = {
+        if = {
+            limit = {
+                exists = var:omni_eptelon_oath_creditor
+                var:omni_eptelon_oath_creditor = { num_of_cities > 0 NOT = { this = root } }
+            }
+            var:omni_eptelon_oath_creditor = {
+                capital_scope = { save_scope_as = omni_eptelon_oath_destination }
+            }
+            if = {
+                limit = {
+                    NOT = { has_variable = omni_eptelon_oath_payment_lock }
+                    NOT = { has_variable = omni_eptelon_oath_payment_pending }
+                }
+                set_variable = omni_eptelon_oath_payment_pending
+                trigger_event = me_eptelon_gen.66
+            }
+        }
+        else = {
+            remove_variable = omni_eptelon_oath_payment_pending
+            remove_variable = omni_eptelon_slave_oath
+            remove_variable = omni_eptelon_oath_creditor
+            trigger_event = me_eptelon_gen.67
+        }
+    }
+}
+
+me_eptelon_gen.66 = {
+    type = country_event
+    title = me_eptelon_gen.66.t
+    desc = me_eptelon_gen.66.desc
+    picture = slaves_working
+    left_portrait = current_ruler
+    right_portrait = var:omni_eptelon_oath_creditor.current_ruler
+    option = {
+        name = me_eptelon_gen.66.a
+        trigger = {
+            exists = var:omni_eptelon_oath_creditor
+            var:omni_eptelon_oath_creditor = { num_of_cities > 0 NOT = { this = root } }
+        }
+        custom_tooltip = omni_eptelon_oath_payment_tt
+        hidden_effect = {
+            var:omni_eptelon_oath_creditor = {
+                capital_scope = { save_scope_as = omni_eptelon_oath_destination }
+            }
+            omni_eptelon_slave_oath_payment_effect = yes
+            remove_variable = omni_eptelon_oath_payment_pending
+        }
+        ai_chance = { factor = 9 }
+    }
+    option = {
+        name = me_eptelon_gen.66.refuse
+        trigger = {
+            exists = var:omni_eptelon_oath_creditor
+            var:omni_eptelon_oath_creditor = { num_of_cities > 0 NOT = { this = root } }
+        }
+        custom_tooltip = omni_eptelon_oath_payment_refuse_tt
+        hidden_effect = {
+            if = {
+                limit = { NOT = { war_with = var:omni_eptelon_oath_creditor } }
+                declare_war_with_wargoal = {
+                    war_goal = conquer_wargoal
+                    province = var:omni_eptelon_oath_creditor.capital_scope
+                    target = var:omni_eptelon_oath_creditor
+                }
+            }
+            remove_variable = omni_eptelon_oath_payment_pending
+            remove_variable = omni_eptelon_slave_oath
+            remove_variable = omni_eptelon_oath_creditor
+        }
+        ai_chance = { factor = 1 }
+    }
+    # The creditor may disappear while the player leaves this event open.
+    option = {
+        name = me_eptelon_gen.67.a
+        trigger = {
+            NOT = {
+                exists = var:omni_eptelon_oath_creditor
+                var:omni_eptelon_oath_creditor = { num_of_cities > 0 NOT = { this = root } }
+            }
+        }
+        custom_tooltip = omni_eptelon_oath_payment_expired_tt
+        hidden_effect = {
+            remove_variable = omni_eptelon_oath_payment_pending
+            remove_variable = omni_eptelon_slave_oath
+            remove_variable = omni_eptelon_oath_creditor
+        }
+    }
+}
+
+me_eptelon_gen.67 = {
+    type = country_event
+    title = me_eptelon_gen.67.t
+    desc = me_eptelon_gen.67.desc
+    picture = diadochi_coronation
+    left_portrait = current_ruler
+    option = { name = me_eptelon_gen.67.a }
+}
+
 # Task 1 — Tested by the Shore
-me_eptelon_gen.1 = { 
+me_eptelon_gen.1 = {
 	type = country_event
 	title = me_eptelon_gen.1.t
 	desc = me_eptelon_gen.1.desc
@@ -498,7 +717,11 @@ me_eptelon_gen.47 = {
                     }
             }
         current_ruler = {
-            add_bloodline_effect = { BLOODLINE = blood_of_atheusian_shores }
+            # Recheck the recipient in case the ruler changed after task completion.
+            if = {
+                limit = { omni_eptelon_ascendic_bloodline_eligible = yes }
+                add_bloodline_effect = { BLOODLINE = blood_of_atheusian_shores }
+            }
             }
         }
         else = {

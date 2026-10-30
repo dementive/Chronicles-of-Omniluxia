@@ -58,6 +58,54 @@
         }
     }
 
+    # Capital preparation follows Invictus's subject defense task.
+    03_eptelon_generic_task_ascendic_preparations = {
+        icon = "task_expansion"
+        duration = 60
+        requires = { 03_eptelon_generic_task_12 }
+        bypass = { NOT = { country_culture_group = high_elves } }
+        allow = {
+            war = no
+            capital_scope = {
+                state = {
+                    calc_true_if = {
+                        amount >= 2
+                        state_improvement_military_trigger = yes
+                        state_improvement_civic_trigger = yes
+                        state_improvement_oratory_trigger = yes
+                        state_improvement_religious_trigger = yes
+                    }
+                }
+            }
+            treasury >= 75
+            political_influence >= 20
+        }
+        on_completion = {
+            add_treasury = -75
+            add_political_influence = -20
+            capital_scope = {
+                add_province_modifier = { name = gm_subject_defensive_pmod duration = 5475 }
+            }
+            trigger_event = me_eptelon_gen.60
+        }
+    }
+
+    03_eptelon_generic_task_ascendic_independence = {
+        potential = { country_culture_group = high_elves }
+        icon = "task_diplomatic"
+        requires = { 03_eptelon_generic_task_ascendic_preparations 03_eptelon_generic_task_12}
+        bypass = { NOT = { country_culture_group = high_elves } }
+        allow = {
+            war = no
+            has_civil_war = no
+            trigger_if = {
+                limit = { is_subject = yes }
+                NOT = { has_truce_with = overlord }
+            }
+        }
+        on_completion = { trigger_event = me_eptelon_gen.61 }
+    }
+
     03_eptelon_generic_task_2 = {
         icon = "task_atlas"
         requires = { 03_eptelon_generic_task_5a }
@@ -147,7 +195,7 @@
 
     03_eptelon_generic_task_4 = {
         icon = "task_conquest"
-        requires = { 03_eptelon_generic_task_1 }
+        requires = { 03_eptelon_generic_task_ascendic_independence }
         
         highlight = {
             scope:province = {
@@ -156,6 +204,11 @@
         }
 
         allow = {
+            # Sending an offer does not itself secure freedom: wait for acceptance.
+            trigger_if = {
+                limit = { country_culture_group = high_elves }
+                is_subject = no
+            }
             owns_percent_of_region = {
                 PROVINCE = capital_scope
                 PERCENT = "0.25"
@@ -767,17 +820,6 @@
                 num_of_fortress_building >= 2
                 has_no_ongoing_construction = yes
             }
-            capital_scope = {
-                state = {
-                    calc_true_if = {
-                        amount >= 2
-                        state_improvement_military_trigger = yes
-                        state_improvement_civic_trigger = yes
-                        state_improvement_oratory_trigger = yes
-                        state_improvement_religious_trigger = yes
-                    }
-                }
-            }
         }
 
         highlight = {
@@ -842,6 +884,16 @@
 
         allow = {
             war = no
+            # The shared final task also serves EPT and HPT. Gate its Ascendic branch.
+            trigger_if = {
+                limit = {
+                    OR = { tag = ASE country_culture_group = high_elves }
+                }
+                custom_tooltip = {
+                    text = omni_eptelon_ascendic_ruler_required_tt
+                    current_ruler = { omni_eptelon_ascendic_bloodline_eligible = yes }
+                }
+            }
             custom_tooltip = {
                 text = eptelon_need_to_form_tt
                 OR = {
@@ -888,7 +940,10 @@
                         }
                     }
                     current_ruler = {
-                        add_bloodline_effect = { BLOODLINE = blood_of_atheusian_shores }
+                        if = {
+                            limit = { omni_eptelon_ascendic_bloodline_eligible = yes }
+                            add_bloodline_effect = { BLOODLINE = blood_of_atheusian_shores }
+                        }
                     }
                 }
                 else = {

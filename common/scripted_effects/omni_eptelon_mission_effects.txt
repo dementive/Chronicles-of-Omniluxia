@@ -43,3 +43,67 @@ omni_eptelon_island_claims_effect = {
         }
     }
 }
+
+# Shared by unbound independent countries and accepted independence bargains.
+omni_eptelon_independence_reward_effect = {
+    add_stability = 5
+    add_country_modifier = { name = gm_subject_military_reward_cmod duration = 5475 }
+}
+
+# Country scope; destination is resolved from the persistent creditor at each due date.
+# Invictus me_subject_independence.166 uses move_pop followed by set_pop_type.
+# Never empty a territory. If fewer than five can be spared, send what is available.
+omni_eptelon_slave_oath_payment_effect = {
+    # Guard the effect itself against duplicate prompts and direct repeated calls.
+    if = {
+        limit = {
+            has_variable = omni_eptelon_slave_oath
+            NOT = { has_variable = omni_eptelon_oath_payment_lock }
+            exists = scope:omni_eptelon_oath_destination
+        }
+        set_variable = { name = omni_eptelon_oath_payment_lock days = 1825 }
+        set_variable = { name = omni_eptelon_oath_paid value = 0 }
+        # Exactly five single-pop selections; recheck the source before each.
+        random_owned_province = {
+            limit = { total_population > 1 }
+            random_pops_in_province = {
+                set_pop_type = slaves
+                move_pop = scope:omni_eptelon_oath_destination
+                root = { change_variable = { name = omni_eptelon_oath_paid add = 1 } }
+            }
+        }
+        random_owned_province = {
+            limit = { total_population > 1 }
+            random_pops_in_province = {
+                set_pop_type = slaves
+                move_pop = scope:omni_eptelon_oath_destination
+                root = { change_variable = { name = omni_eptelon_oath_paid add = 1 } }
+            }
+        }
+        random_owned_province = {
+            limit = { total_population > 1 }
+            random_pops_in_province = {
+                set_pop_type = slaves
+                move_pop = scope:omni_eptelon_oath_destination
+                root = { change_variable = { name = omni_eptelon_oath_paid add = 1 } }
+            }
+        }
+        random_owned_province = {
+            limit = { total_population > 1 }
+            random_pops_in_province = {
+                set_pop_type = slaves
+                move_pop = scope:omni_eptelon_oath_destination
+                root = { change_variable = { name = omni_eptelon_oath_paid add = 1 } }
+            }
+        }
+        random_owned_province = {
+            limit = { total_population > 1 }
+            random_pops_in_province = {
+                set_pop_type = slaves
+                move_pop = scope:omni_eptelon_oath_destination
+                root = { change_variable = { name = omni_eptelon_oath_paid add = 1 } }
+            }
+        }
+        trigger_event = { id = me_eptelon_gen.65 days = 1825 }
+    }
+}
