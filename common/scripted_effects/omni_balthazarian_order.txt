@@ -1,0 +1,318 @@
+﻿# All campaign state is country-owned; event-local scopes are reconstructed on use.
+ob_ensure_second_master = {
+    if = {
+        limit = { government = ob_order has_civil_war = no NOT = { has_variable = ob_ultimatum } }
+        if = { limit = { exists = current_co_ruler }
+            set_variable = { name = ob_rival value = root.current_co_ruler }
+        }
+        else = {
+            create_character = {
+                first_name = "Kiuthenara" culture = astvaenic religion = helluvian age = 39
+                no_stats = yes add_martial = 9 add_charisma = 7 add_finesse = 4 add_zeal = 6
+                no_traits = yes add_trait = human_trait add_trait = ambitious add_trait = tactician
+                add_loyalty = ob_dual_mandate
+                save_scope_as = ob_new_master
+            }
+            set_as_coruler = scope:ob_new_master
+            set_variable = { name = ob_rival value = scope:ob_new_master }
+        }
+    }
+}
+ob_initialise = {
+    set_variable = { name = ob_identity }
+    set_variable = { name = ob_support value = 0 }
+    change_government = ob_order
+    # Replace the engine-generated placeholder, but keep it in its own country.
+    if = { limit = { exists = current_co_ruler }
+        current_co_ruler = { remove_all_positions = yes }
+    }
+    create_character = {
+        first_name = "Kiuthenara" culture = astvaenic religion = helluvian age = 39
+        no_stats = yes add_martial = 9 add_charisma = 7 add_finesse = 4 add_zeal = 6
+        no_traits = yes add_trait = human_trait add_trait = ambitious add_trait = tactician
+        add_loyalty = ob_dual_mandate
+        save_scope_as = ob_new_master
+    }
+    set_as_coruler = scope:ob_new_master
+    set_variable = { name = ob_rival value = scope:ob_new_master }
+    create_character = {
+        first_name = "Tethurane" culture = astvaenic religion = helluvian age = 42
+        add_trait = human_trait add_trait = brave add_martial = 3
+        set_variable = { name = ob_frontier_brother }
+    }
+    create_character = {
+        first_name = "Norskulane" culture = herulian religion = helluvian age = 35
+        add_trait = human_trait add_trait = ambitious add_charisma = 2
+        set_variable = { name = ob_frontier_brother }
+    }
+}
+ob_save_rival = {
+    if = { limit = { exists = var:ob_rival var:ob_rival = { is_alive = yes } }
+        var:ob_rival = { save_scope_as = ob_rival }
+    }
+}
+ob_invite_claimants = {
+    save_scope_as = ob_order
+    every_country = {
+        limit = { ob_claimant = yes NOT = { has_variable = ob_invited } }
+        set_variable = { name = ob_invited }
+        set_variable = { name = ob_petitioner value = scope:ob_order }
+        trigger_event = { id = ob_order.100 days = 3 }
+    }
+}
+ob_accept_invitation = {
+    set_variable = { name = ob_conference_guest value = var:ob_petitioner }
+    remove_variable = ob_refused
+}
+ob_roads_effect = {
+    save_scope_as = ob_order
+    every_country = {
+        limit = { ob_member = yes war = no }
+        save_scope_as = ob_signatory
+        scope:ob_order = { add_military_access = scope:ob_signatory }
+        add_military_access = scope:ob_order
+        every_country = {
+            limit = { ob_member = yes war = no NOT = { this = scope:ob_signatory } }
+            add_truce = { target = scope:ob_signatory duration = 1825 }
+        }
+    }
+    set_variable = { name = ob_roads }
+}
+ob_choose_early_host = {
+    # Prefer a reachable enemy of the Order; otherwise threaten a neighbouring northern realm.
+    save_scope_as = ob_order
+    random_neighbour_country = {
+        limit = { country_culture_group = drow is_subject = no is_ai = yes has_civil_war = no
+            NOT = { alliance_with = root } }
+        save_scope_as = ob_early_leader
+    }
+    if = { limit = { exists = scope:ob_early_leader }
+        set_variable = { name = ob_early_target value = root }
+    }
+    else = {
+        random_country = {
+            limit = {
+                country_culture_group = drow is_subject = no is_ai = yes has_civil_war = no
+                any_neighbour_country = {
+                    country_culture_group = norrfallian is_subject = no has_civil_war = no
+                }
+            }
+            save_scope_as = ob_early_leader
+            random_neighbour_country = {
+                limit = { country_culture_group = norrfallian is_subject = no has_civil_war = no
+                    NOT = { alliance_with = scope:ob_early_leader } }
+                save_scope_as = ob_early_target
+            }
+        }
+        if = { limit = { exists = scope:ob_early_target }
+            set_variable = { name = ob_early_target value = scope:ob_early_target }
+        }
+    }
+    if = { limit = { exists = scope:ob_early_leader }
+        set_variable = { name = ob_early_enemy value = scope:ob_early_leader }
+    }
+}
+ob_launch_early_host = {
+    # Deliberately does NOT call drow_invasion_formation_effect or set drow_invasion_fired.
+    ob_choose_early_host = yes
+    set_variable = { name = ob_early_launched }
+    remove_variable = ob_expedition
+    remove_variable = ob_expedition_days
+    remove_country_modifier = ob_expedition_timer
+    if = {
+        limit = { exists = var:ob_early_enemy exists = var:ob_early_target }
+        set_variable = { name = ob_early_active }
+        var:ob_early_target = { save_scope_as = ob_target }
+        var:ob_early_enemy = {
+            save_scope_as = ob_enemy
+            set_variable = { name = ob_early_declaring }
+            if = { limit = { has_truce_with = scope:ob_target } end_truce = scope:ob_target }
+            create_unit = {
+                name = ob_early_army_name location = scope:ob_enemy.capital_scope
+                save_scope_as = ob_early_army
+                while = { count = 6 add_subunit = light_infantry }
+                while = { count = 4 add_subunit = archers }
+                if = { limit = { scope:ob_order = { NOT = { has_variable = ob_watch } } }
+                    while = { count = 2 add_subunit = heavy_infantry }
+                }
+                if = { limit = { scope:ob_order = { NOT = { has_variable = ob_intelligence } } }
+                    while = { count = 2 add_subunit = light_infantry }
+                }
+                add_food = 300 add_morale = 2
+            }
+            set_variable = { name = ob_early_army value = scope:ob_early_army }
+            add_treasury = 150
+            if = { limit = { NOT = { war_with = scope:ob_target } }
+                declare_war_with_wargoal = {
+                    war_goal = ob_early_invasion_wargoal target = scope:ob_target
+                }
+            }
+            remove_variable = ob_early_declaring
+        }
+        trigger_event = { id = ob_order.202 }
+    }
+    else = {
+        # No eligible northern bridgehead remains: do not conjure a host across impassable land.
+        set_variable = { name = ob_early_resolved }
+        set_variable = { name = ob_early_dispersed }
+        trigger_event = { id = ob_order.204 }
+    }
+}
+ob_start_rupture_clock = {
+    set_variable = { name = ob_rupture_clock }
+    set_variable = { name = ob_rupture_grace days = 180 }
+}
+ob_form_herue = {
+    # Same territorial rewards as restore_herue, preserving the Lord Protector government.
+    change_country_name = "HEO" change_country_adjective = "HEOADJ"
+    change_country_color = "herue_hue" change_country_tag = HEO
+    set_capital = 1199
+    add_5_free_province_investments = yes
+    capital_scope = { capital_formable_large_effect = yes formable_capital_modifier_large_effect = yes }
+    add_country_modifier = { name = formable_country_huge_modifier duration = 7600 }
+    mission_claim_region_effect = { REGION = norrfalian_peninsula }
+    mission_claim_region_effect = { REGION = norrfalian_borderland }
+    mission_claim_region_effect = { REGION = west_wild_northland }
+    set_variable = { name = ob_herue_formed }
+}
+
+ob_recognise_claimant = {
+    save_scope_as = ob_order
+    ordered_country = {
+        limit = { ob_claimant = yes ob_member = yes }
+        order_by = num_of_cities position = 0
+        save_scope_as = ob_chosen_king
+        add_opinion = { target = scope:ob_order modifier = ob_agreement_opinion }
+    }
+    if = { limit = { exists = scope:ob_chosen_king }
+        set_variable = { name = ob_recognised_realm value = scope:ob_chosen_king }
+    }
+}
+ob_shannah_friendship = {
+    save_scope_as = ob_order
+    every_country = {
+        limit = { has_land = yes religion = helluvian exists = current_ruler
+            current_ruler = { has_trait = shannah_trait } NOT = { this = root } }
+        add_opinion = { target = scope:ob_order modifier = ob_agreement_opinion }
+    }
+}
+ob_shannah_grievance = {
+    save_scope_as = ob_order
+    every_country = {
+        limit = { has_land = yes religion = helluvian exists = current_ruler
+            current_ruler = { has_trait = shannah_trait } NOT = { this = root } }
+        add_opinion = { target = scope:ob_order modifier = ob_grievance_opinion }
+    }
+}
+ob_dismiss_vampire = {
+    every_character = {
+        limit = { employer = root has_variable = ob_returned_brother }
+        remove_all_positions = yes
+        death = { death_reason = death_obscurity }
+    }
+}
+ob_rival_brothers_loyalty = {
+    every_character = {
+        limit = { employer = root has_variable = ob_frontier_brother }
+        add_loyalty = ob_frontier_heard
+    }
+}
+ob_renew_agreements = {
+    ob_roads_effect = yes
+    save_scope_as = ob_order
+    every_owned_province = {
+        save_scope_as = ob_chapter_land
+        every_country = {
+            limit = { ob_member = yes NOT = { this = scope:ob_order } }
+            save_scope_as = ob_claim_holder
+            scope:ob_chapter_land = { remove_claim = scope:ob_claim_holder }
+        }
+    }
+}
+
+ob_maintenance = { ob_rimebound_maintenance = yes
+
+    if = {
+        limit = { has_variable = ob_expedition NOT = { has_variable = ob_early_launched }
+            OR = { NOT = { ob_frontier_ready = yes } NOT = { ob_supply_ready = yes } } }
+        remove_variable = ob_expedition remove_variable = ob_expedition_days
+        remove_country_modifier = ob_expedition_timer
+        trigger_event = { id = ob_order.206 }
+    }
+    if = {
+        limit = { has_variable = ob_expedition NOT = { has_variable = ob_expedition_days } }
+        trigger_event = { id = ob_order.207 }
+    }
+    if = {
+        limit = { has_variable = ob_watch_army }
+        if = {
+            limit = { OR = { NOT = { has_variable = ob_muster_service }
+                    NOT = { any_current_war = {
+                            any_war_defender = { this = root }
+                            any_war_attacker = { country_culture_group = drow }
+            } } } }
+            if = { limit = { exists = var:ob_watch_army } var:ob_watch_army = { destroy_unit = yes } }
+            remove_variable = ob_watch_army remove_variable = ob_muster_service
+        }
+    }
+    if = {
+        limit = { has_variable = ob_vampire_compact NOT = { has_variable = ob_compact_review }
+            NOT = { has_variable = ob_compact_reviewed } NOT = { has_variable = ob_review_pending } }
+        set_variable = { name = ob_review_pending }
+        trigger_event = { id = ob_order.400 }
+    }
+}
+
+ob_prepare_herue_settlement = {
+    set_variable = { name = ob_conference_failed }
+}
+
+ob_establish_client_herue = {
+    if = { limit = { ob_can_restore_client_herue = yes }
+        save_scope_as = ob_order
+        p:1199 = {
+            set_owned_by = scope:ob_order
+            create_country = {
+                change_country_name = "HEO" change_country_adjective = "HEOADJ"
+                change_country_tag = HEO change_country_color = "herue_hue"
+                change_government = feudal_monarchy
+                set_country_religion = helluvian
+                set_primary_culture_cleanup_effect = { NEW_PRIMARY_CULTURE = herulian MAKE_OLD_CULTURE_INTEGRATED = yes }
+                save_scope_as = ob_client_herue
+                create_character = { culture = herulian religion = helluvian age = 35 female = no add_trait = human_trait save_scope_as = ob_client_king }
+                set_as_ruler = scope:ob_client_king
+            }
+        }
+        make_subject = { target = scope:ob_client_herue type = client_state }
+        every_owned_province = {
+            limit = { is_in_region = great_herue is_capital = no }
+            set_owned_by = scope:ob_client_herue
+        }
+        every_subject = {
+            limit = { NOT = { this = scope:ob_client_herue } }
+            every_owned_province = {
+                limit = { is_in_region = great_herue }
+                set_owned_by = scope:ob_client_herue
+            }
+        }
+        set_variable = { name = ob_recognised_realm value = scope:ob_client_herue }
+    }
+}
+
+ob_demand_herue_submission = {
+    if = { limit = { is_subject = no exists = c:HEO c:HEO = { has_land = yes is_subject = no NOT = { this = root } NOT = { war_with = root } } }
+        save_scope_as = ob_order
+        set_variable = { name = ob_submission_cooldown days = 365 }
+        c:HEO = {
+            set_variable = { name = ob_submission_petitioner value = scope:ob_order }
+            trigger_event = { id = ob_order.171 days = 1 }
+        }
+    }
+}
+
+ob_rimebound_maintenance = {
+    if = { limit = { has_variable = ob_vampire_compact NOT = { AND = { exists = var:ob_returned var:ob_returned = { is_alive = yes employer = root prisoner = yes } } } }
+        remove_country_modifier = ob_compact_cost remove_country_modifier = ob_vampire_intel
+        remove_variable = ob_vampire_compact set_variable = { name = ob_compact_reviewed }
+    }
+}

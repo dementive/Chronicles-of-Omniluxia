@@ -1,0 +1,87 @@
+﻿ob_country = { has_variable = ob_identity }
+
+ob_member = { has_variable = ob_patron var:ob_patron = root }
+
+ob_claimant = {
+
+    has_land = yes is_subject = no religion = helluvian
+
+    OR = { tag = NR5 tag = NR7 tag = NR8 tag = GN2 tag = HEO }
+
+    NOT = { this = root }
+
+}
+
+ob_frontier_ready = {
+
+    any_owned_province = { count >= 2 has_building = fortress_building }
+
+}
+
+ob_supply_ready = {
+
+    has_variable = ob_grain
+
+    capital_scope = { state = { has_state_food >= 200 } }
+
+}
+
+ob_can_expedition = {
+
+    ob_country = yes
+
+    NOT = { has_variable = ob_early_resolved }
+
+    NOT = { has_variable = ob_expedition }
+
+    ob_report_threat < 100
+
+    has_variable = ob_intelligence has_variable = ob_roads
+
+    has_variable = ob_watch ob_frontier_ready = yes ob_supply_ready = yes
+
+    treasury >= 75 manpower >= 2 has_civil_war = no
+
+}
+
+ob_has_herue_settlement = {
+
+    OR = { tag = NFA
+
+        AND = { has_variable = ob_direct_rule owns_region = great_herue }
+
+        AND = { has_variable = ob_crown_route owns_or_subject_owns_region = great_herue
+
+            any_country = { tag = HEO has_land = yes is_subject_of = root } }
+
+        AND = { NOT = { has_variable = ob_crown_route } NOT = { has_variable = ob_direct_rule }
+
+            owns_or_subject_owns_region = great_herue }
+
+    }
+
+}
+
+
+
+ob_herue_consolidated = {
+
+    OR = { owns_or_subject_owns_region = great_herue
+
+        custom_tooltip = { text = ob_restored_herue_requirement_tt any_country = { tag = HEO has_land = yes } } }
+
+}
+
+
+
+ob_can_restore_client_herue = {
+
+    NOT = { exists = c:HEO }
+
+    owns_or_subject_owns_region = great_herue
+
+    p:1199 = { OR = { owner = root owner = { is_subject_of = root } }
+
+        NOT = { AND = { owner = root is_capital = yes } } }
+
+}

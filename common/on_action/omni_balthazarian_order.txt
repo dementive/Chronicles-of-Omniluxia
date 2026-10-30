@@ -1,0 +1,94 @@
+﻿# Additive pulse registration, matching the Shannah and invader hooks.
+on_game_initialized = { on_actions = { ob_startup } }
+ob_startup = {
+    trigger = { tag = BLZ has_land = yes NOT = { has_variable = ob_identity } }
+    effect = { ob_initialise = yes }
+}
+monthly_country_pulse = { on_actions = { ob_monthly } }
+ob_monthly = {
+    trigger = { has_land = yes OR = { tag = BLZ has_variable = ob_identity } }
+    effect = {
+        if = { limit = { NOT = { has_variable = ob_identity } tag = BLZ }
+            ob_initialise = yes
+        }
+        ob_maintenance = yes
+        ob_ensure_second_master = yes
+        if = {
+            limit = {
+                has_variable = ob_ultimatum NOT = { has_variable = ob_internal_resolved }
+                NOT = { has_variable = ob_war_started }
+                OR = {
+                    NOT = { exists = var:ob_rival }
+                    var:ob_rival = { is_alive = no }
+                    var:ob_rival = { NOT = { employer = root } }
+                }
+            }
+            # An absent/dead challenger cannot leave a permanently unanswered ultimatum.
+            remove_variable = ob_ultimatum change_government = ob_order
+            ob_ensure_second_master = yes
+            set_variable = { name = ob_rupture_grace days = 30 }
+        }
+        if = {
+            limit = {
+                current_date >= 1002.1.1 NOT = { has_variable = ob_warning }
+                NOT = { has_variable = ob_early_resolved }
+            }
+            set_variable = { name = ob_warning }
+            trigger_event = { id = ob_order.200 }
+        }
+        if = {
+            limit = { ob_report_threat >= 100 NOT = { has_variable = ob_early_resolved }
+                NOT = { has_variable = ob_early_launched } }
+            ob_launch_early_host = yes
+        }
+        if = {
+            limit = { has_variable = ob_early_active }
+            if = {
+                limit = {
+                    OR = {
+                        NOT = { exists = var:ob_early_enemy }
+                        NOT = { exists = var:ob_early_target }
+                        var:ob_early_enemy = { has_land = no }
+                        var:ob_early_target = { has_land = no }
+                        NOT = { var:ob_early_enemy = { war_with = root.var:ob_early_target } }
+                    }
+                }
+                remove_variable = ob_early_active
+                set_variable = { name = ob_early_resolved }
+                if = { limit = { exists = var:ob_early_enemy }
+                    var:ob_early_enemy = {
+                        if = { limit = { exists = var:ob_early_army }
+                            var:ob_early_army = { destroy_unit = yes }
+                        }
+                        remove_variable = ob_early_army
+                    }
+                }
+                trigger_event = { id = ob_order.203 }
+            }
+        }
+        if = {
+            limit = { has_variable = ob_tree_started has_variable = ob_early_resolved
+                NOT = { has_variable = ob_rupture_clock } }
+            ob_start_rupture_clock = yes
+        }
+        if = {
+            limit = {
+                has_variable = ob_rupture_clock NOT = { has_variable = ob_rupture_grace }
+                NOT = { has_variable = ob_ultimatum } NOT = { has_variable = ob_internal_resolved }
+                has_civil_war = no exists = current_ruler
+            }
+            ob_ensure_second_master = yes
+            ob_save_rival = yes
+            if = { limit = { exists = scope:ob_rival }
+                set_variable = { name = ob_ultimatum }
+                trigger_event = { id = ob_order.300 }
+            }
+        }
+        if = {
+            limit = { has_variable = ob_war_started NOT = { has_civil_war = yes }
+                NOT = { has_variable = ob_internal_resolved } }
+            set_variable = { name = ob_internal_resolved }
+            trigger_event = { id = ob_order.301 }
+        }
+    }
+}

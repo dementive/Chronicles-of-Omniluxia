@@ -1,0 +1,74 @@
+﻿country_decisions = {
+    ob_chapter_report = {
+        potential = { ob_country = yes }
+        allow = { exists = current_ruler }
+        effect = { trigger_event = { id = ob_order.500 } }
+        ai_will_do = { base = 0 }
+    }
+    ob_counter_expedition = {
+        potential = { ob_country = yes has_variable = ob_warning NOT = { has_variable = ob_early_resolved }
+            NOT = { has_variable = ob_early_launched } }
+        allow = { ob_can_expedition = yes }
+        effect = {
+            add_treasury = -75 add_manpower = -2
+            set_variable = { name = ob_expedition }
+            set_variable = { name = ob_expedition_days days = 180 }
+            add_country_modifier = { name = ob_expedition_timer duration = 180 }
+            trigger_event = { id = ob_order.205 }
+            trigger_event = { id = ob_order.207 days = 180 }
+        }
+        ai_will_do = { base = 100 }
+    }
+    ob_muster_watch = {
+        potential = { ob_country = yes has_variable = ob_watch_unlocked }
+        allow = {
+            war = yes has_civil_war = no treasury >= 75 manpower >= 2
+            NOT = { has_variable = ob_muster_cooldown }
+            NOT = { has_variable = ob_watch_army }
+            any_current_war = {
+                any_war_defender = { this = root }
+                any_war_attacker = { country_culture_group = drow }
+            }
+        }
+        effect = {
+            add_treasury = -75 add_manpower = -2
+            set_variable = { name = ob_muster_cooldown days = 3650 }
+            set_variable = { name = ob_muster_service days = 730 }
+            create_unit = {
+                name = ob_watch_army_name location = root.capital_scope save_scope_as = ob_muster
+                while = { count = 4 add_subunit = light_infantry }
+                while = { count = 2 add_subunit = archers }
+                add_food = 200 add_morale = 2
+            }
+            set_variable = { name = ob_watch_army value = scope:ob_muster }
+        }
+        ai_will_do = { base = 100 }
+    }
+
+    
+
+    ob_reconsider_crown = {
+        potential = { ob_country = yes has_variable = ob_scene_17 NOT = { has_variable = ob_tree_finished } }
+        allow = { war = no NOT = { has_variable = ob_crown_review_cooldown } }
+        effect = {
+            remove_variable = ob_crown_route remove_variable = ob_concord remove_variable = ob_protector_route
+            remove_variable = ob_recognised_realm remove_variable = ob_direct_rule remove_variable = ob_scene_17
+            set_variable = { name = ob_crown_review_cooldown days = 365 }
+            trigger_event = { id = ob_order.17 }
+        }
+        ai_will_do = { base = 0 }
+    }
+    ob_norrfalia_epilogue = {
+        potential = { ob_country = yes has_variable = ob_tree_finished tag = NFA NOT = { has_variable = ob_task_done_25 } }
+        allow = { war = no }
+        effect = { set_variable = { name = ob_task_done_25 } trigger_event = { id = ob_order.402 } }
+        ai_will_do = { base = 10 }
+    }
+
+    ob_herue_submission = {
+        potential = { ob_country = yes has_variable = ob_crown_route exists = c:HEO c:HEO = { has_land = yes is_subject = no NOT = { this = root } } }
+        allow = { war = no NOT = { has_variable = ob_submission_cooldown } }
+        effect = { ob_demand_herue_submission = yes }
+        ai_will_do = { base = 10 }
+    }
+}
