@@ -22,7 +22,6 @@ ob_order.1 = { type = country_event
     immediate = {
         if = { limit = { NOT = { has_variable = ob_event_reward_1 } }
             set_variable = { name = ob_event_reward_1 }
-            add_country_modifier = { name = ob_returned_veterans duration = -1 }
             capital_scope = {
                 while = {
                     count = 4
@@ -264,15 +263,51 @@ ob_order.11 = { type = country_event
     }
 }
 
-ob_order.12 = { type = country_event
-    title = ob_order.12.t desc = ob_order.12.desc picture = Event_north_lord_hall left_portrait = root.current_ruler
+ob_order.12 = {
+    type = country_event
+    title = ob_order.12.t
+    desc = ob_order.12.desc
+    picture = Event_north_lord_hall
+    left_portrait = root.current_ruler
+    right_portrait = root.current_co_ruler
 
     option = {
         name = ob_order.12.a
+        trigger = { treasury >= 40 }
         ai_chance = { factor = 50 }
-
-        if = { limit = { NOT = { has_variable = ob_scene_12 } } hidden_effect = { set_variable = { name = ob_scene_12 } } add_political_influence = 5 }
-
+        if = {
+            limit = { NOT = { has_variable = ob_scene_12 } }
+            hidden_effect = {
+                set_variable = { name = ob_scene_12 }
+                set_variable = { name = ob_requisition_paid }
+                change_variable = { name = ob_support add = 1 }
+            }
+            add_treasury = -40
+            add_stability = 3
+            add_military_experience = 5
+            if = {
+                limit = { exists = current_co_ruler }
+                current_co_ruler = { add_loyalty = ob_warrant_honoured }
+            }
+        }
+    }
+    option = {
+        name = ob_order.12.b
+        ai_chance = { factor = 50 }
+        if = {
+            limit = { NOT = { has_variable = ob_scene_12 } }
+            hidden_effect = {
+                set_variable = { name = ob_scene_12 }
+                set_variable = { name = ob_hospice_exemption }
+                change_variable = { name = ob_support subtract = 1 }
+            }
+            add_political_influence = 10
+            add_stability = 2
+            if = {
+                limit = { exists = current_co_ruler }
+                current_co_ruler = { add_loyalty = ob_warrant_refused }
+            }
+        }
     }
 }
 
@@ -317,7 +352,7 @@ ob_order.16 = { type = country_event
         trigger = { OR = { NOT = { has_variable = ob_rival_won } AND = { treasury >= 75 political_influence >= 15 } } }
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_16 } } hidden_effect = { set_variable = { name = ob_scene_16 } } if = { limit = { has_variable = ob_rival_won } add_treasury = -75 add_political_influence = -15 } change_government = ob_order hidden_effect = { remove_variable = ob_ultimatum } hidden_effect = { set_variable = { name = ob_constitution } } ob_ensure_second_master = yes add_country_modifier = { name = ob_shared duration = -1 } }
+        if = { limit = { NOT = { has_variable = ob_scene_16 } } hidden_effect = { set_variable = { name = ob_scene_16 } } if = { limit = { has_variable = ob_rival_won } add_treasury = -75 add_political_influence = -15 } change_government = ob_order hidden_effect = { remove_variable = ob_ultimatum } hidden_effect = { set_variable = { name = ob_constitution } } ob_ensure_second_master = yes current_ruler = { add_zeal = 1 } if = { limit = { exists = current_co_ruler } current_co_ruler = { add_martial = 1 } } add_country_modifier = { name = ob_shared duration = -1 } }
 
     } option = {
 
@@ -390,14 +425,14 @@ ob_order.19 = { type = country_event
         name = ob_order.19.a
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_19 } } hidden_effect = { set_variable = { name = ob_scene_19 } } hidden_effect = { set_variable = { name = ob_charter } } add_country_modifier = { name = ob_charter duration = 3650 } ob_shannah_friendship = yes }
+        if = { limit = { NOT = { has_variable = ob_scene_19 } } hidden_effect = { set_variable = { name = ob_scene_19 } } hidden_effect = { set_variable = { name = ob_charter } } add_country_modifier = { name = ob_charter duration = 3650 } ob_shannah_friendship = yes add_stability = 3 }
 
     } option = {
 
         name = ob_order.19.b
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_19 } } hidden_effect = { set_variable = { name = ob_scene_19 } } hidden_effect = { set_variable = { name = ob_charter } } add_political_influence = 10 ob_shannah_grievance = yes }
+        if = { limit = { NOT = { has_variable = ob_scene_19 } } hidden_effect = { set_variable = { name = ob_scene_19 } } hidden_effect = { set_variable = { name = ob_charter } } add_political_influence = 10 add_tyranny = 2 ob_shannah_grievance = yes }
 
     }
 }
@@ -450,7 +485,7 @@ ob_order.22 = { type = country_event
         name = ob_order.22.a
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_22 } } hidden_effect = { set_variable = { name = ob_scene_22 } } add_2_free_province_investments = yes }
+        if = { limit = { NOT = { has_variable = ob_scene_22 } } hidden_effect = { set_variable = { name = ob_scene_22 } } add_2_free_province_investments = yes current_ruler = { add_finesse = 1 } }
 
     }
 
@@ -460,7 +495,7 @@ ob_order.22 = { type = country_event
         ai_chance = { factor = 50 }
 
         if = { limit = { NOT = { has_variable = ob_scene_22 } }
-            hidden_effect = { set_variable = { name = ob_scene_22 } } add_1_free_province_investments = yes add_stability = 5
+            hidden_effect = { set_variable = { name = ob_scene_22 } } add_1_free_province_investments = yes add_stability = 5 capital_scope = { add_state_loyalty = 10 }
         }
 
     }
@@ -474,11 +509,25 @@ ob_order.23 = { type = country_event
         name = ob_order.23.a
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_23 } } hidden_effect = { set_variable = { name = ob_scene_23 } } hidden_effect = { set_variable = { name = ob_watch_unlocked } } }
+        if = { limit = { NOT = { has_variable = ob_scene_23 } } hidden_effect = { set_variable = { name = ob_scene_23 } } hidden_effect = { set_variable = { name = ob_watch_unlocked } } add_military_experience = 10 add_stability = 3 }
 
     }
-}
 
+    option = {
+        name = ob_order.23.b
+        ai_chance = { factor = 50 }
+        if = {
+            limit = { NOT = { has_variable = ob_scene_23 } }
+            hidden_effect = {
+                set_variable = { name = ob_scene_23 }
+                set_variable = { name = ob_watch_unlocked }
+            }
+            capital_scope = { state = { add_state_food = 200 } }
+            add_manpower = 1
+            add_stability = 3
+        }
+    }
+}
 ob_order.24 = { type = country_event
     title = ob_order.24.t desc = ob_order.24.desc picture = event_humans_court left_portrait = root.current_ruler
 

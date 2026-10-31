@@ -30,8 +30,23 @@
                 set_variable = { name = ob_task_done_1 }
                 add_treasury = -50
                 add_political_influence = -25
+                create_unit = {
+                    navy = no
+                    name = ob_broken_lances_name
+                    location = root.capital_scope
+                    hidden_effect = {
+                        # Five 500-man cohorts: 2,500 troops.
+                        add_subunit = heavy_infantry
+                        add_subunit = heavy_infantry
+                        add_subunit = heavy_infantry
+                        add_subunit = heavy_cavalry
+                        add_subunit = heavy_cavalry
+                        add_food = 200
+                        add_morale = 2
+                    }
+                }
                 trigger_event = { id = ob_order.1 }
-                show_as_tooltip = { add_country_modifier = { name = ob_returned_veterans duration = -1 } capital_scope = { while = { count = 4 define_pop = { type = freemen culture = root.culture religion = root.religion } } } }
+                capital_scope = { while = { count = 4 define_pop = { type = freemen culture = root.culture religion = root.religion } } }
                 mission_claim_region_effect = { REGION = norrfalian_borderland }
 
             }
@@ -294,18 +309,14 @@
         bypass = { has_variable = ob_task_done_12 }
         allow = {
             has_variable = ob_rupture_clock
-            owns = 870 custom_tooltip = { text = ob_owned_court_building_or_library_building_1_tt
-                any_owned_province = { OR = { has_building = court_building has_building = library_building } }
-            }
+            owns = 870 any_owned_province = { OR = { has_building = court_building has_building = library_building } }
         }
         on_completion = {
             if = {
                 limit = { NOT = { has_variable = ob_task_done_12 } }
                 set_variable = { name = ob_task_done_12 }
                 trigger_event = { id = ob_order.12 }
-                show_as_tooltip = {
-                    add_political_influence = 5
-                }
+
             }
         }
 
@@ -394,7 +405,9 @@
         bypass = { has_variable = ob_task_done_16 }
         allow = {
             political_influence >= 20
-            stability >= 50 capital_scope = { has_building = court_building has_no_ongoing_construction = yes }
+            stability >= 50
+            has_variable = ob_scene_12
+            capital_scope = { has_building = court_building has_no_ongoing_construction = yes }
         }
         on_completion = {
             if = {
@@ -441,9 +454,7 @@
             }
             treasury >= 50
             war = no
-            custom_tooltip = { text = ob_owned_commerce_building_1_tt
-                any_owned_province = { has_building = commerce_building }
-            }
+            any_owned_province = { has_building = commerce_building }
         }
         on_completion = {
             if = {
@@ -464,9 +475,7 @@
         bypass = { has_variable = ob_task_done_19 }
         allow = {
             political_influence >= 20
-            religion = helluvian stability >= 50 custom_tooltip = { text = ob_owned_temple_building_1_tt
-                any_owned_province = { has_building = temple_building }
-            } custom_tooltip = { text = ob_shannah_relationship_requirement_tt
+            religion = helluvian stability >= 50 any_owned_province = { has_building = temple_building } custom_tooltip = { text = ob_shannah_relationship_requirement_tt
                 omni_sf_relationship_trigger = yes
             } custom_tooltip = { text = ob_shannah_favor_requirement_tt
                 omni_sf_favor_value >= 40
@@ -548,9 +557,7 @@
             treasury >= 75
             OR = { NOT = { has_variable = ob_vampire_compact } has_variable = ob_compact_reviewed }
             has_completed_mission_task = ob_task_19
-            war = no stability >= 55 custom_tooltip = { text = ob_owned_court_building_1_tt
-                any_owned_province = { has_building = court_building }
-            } custom_tooltip = { text = ob_owned_all_loyal_tt
+            war = no stability >= 55 any_owned_province = { has_building = court_building } custom_tooltip = { text = ob_owned_all_loyal_tt
                 NOT = { any_owned_province = { state = { state_level_loyalty < 40 } } }
             }
         }
@@ -573,13 +580,9 @@
 
         bypass = { has_variable = ob_task_done_23 }
         allow = {
-            custom_tooltip = { text = ob_owned_fortress_building_3_tt
-                any_owned_province = { count >= 3 has_building = fortress_building }
-            }
+            any_owned_province = { count >= 3 has_building = fortress_building }
             treasury >= 100
-            manpower >= 4 military_experience >= 20 custom_tooltip = { text = ob_owned_military_building_1_tt
-                any_owned_province = { has_building = military_building }
-            } capital_scope = { state = { has_state_food >= 300 } }
+            manpower >= 4 military_experience >= 20 any_owned_province = { has_building = military_building } capital_scope = { state = { has_state_food >= 300 } }
         }
         on_completion = {
             if = {
@@ -588,9 +591,7 @@
                 add_treasury = -100
                 add_manpower = -2
                 trigger_event = { id = ob_order.23 }
-                show_as_tooltip = {
-                    custom_tooltip = ob_preview_note_23
-                }
+
             }
         }
 
