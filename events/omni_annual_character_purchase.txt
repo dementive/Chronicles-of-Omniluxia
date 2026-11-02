@@ -11,9 +11,15 @@ omni_annual_purchase.1 = {
 		# Must be in a country to participate
 		exists = employer
 		# Poor AI characters still need to equip items already in their inventory.
+		# PERF: was OR = { wealth >= 30 employer = { is_ai = yes } }, which let every adult AI character
+		# fire this event yearly even with nothing to do. The equipment check below needs wealth >= 40 and
+		# the auto-equip needs an inventory, so only characters that can do one of the two get through.
 		OR = {
-			wealth >= 30
-			employer = { is_ai = yes }
+			wealth >= 40
+			AND = {
+				has_variable_list = item_list
+				employer = { is_ai = yes }
+			}
 		}
 		# Don't run for very young characters
 		age >= 16

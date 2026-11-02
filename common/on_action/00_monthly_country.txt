@@ -96,7 +96,7 @@ omni_monthly_flavor_pulse = {
 
 		orc_flavor.13 #Embracing the Black Flame
 
-		me_zorgo_magic_focus.23 # Kill Warborn
+		# me_zorgo_magic_focus.23 (Kill Warborn) moved to omni_monthly_warborn_pulse below - PERF gate
 
 		me_zorgo_magic_focus.31 # AI besieging mage-general auto-casts a siege spell
 
@@ -118,6 +118,59 @@ omni_monthly_flavor_pulse = {
 
 		#me_zorgo_magic_focus.28 # Mana Death
 
+		razani_civil_war.24 # Imperial Council Support Check
+
+	}
+
+	on_actions = {
+		omni_monthly_graduation_pulse
+		omni_monthly_warborn_pulse
+	}
+
+	effect = {
+		# One-time migration for saves made before the warborn gate existed: if any warborn is
+		# already alive, open the gate so me_zorgo_magic_focus.23 keeps working for them.
+		if = {
+			limit = { NOT = { has_global_variable = omni_warborn_gate_v1 } }
+			set_global_variable = omni_warborn_gate_v1
+			if = {
+				limit = { any_living_character = { has_culture = warborn } }
+				set_global_variable = omni_warborn_summoned
+			}
+		}
+	}
+
+}
+
+
+
+# PERF: the five graduation events used to sit in the flavor list above, so every country ran five
+# separate court scans every month. One combined scan now gates all five; the events (and their own
+# triggers) only run for a country that actually has a grown-up pupil. Same events, same result.
+omni_monthly_graduation_pulse = {
+
+	trigger = {
+		any_character = {
+			OR = {
+				has_variable = ec_land_var
+				has_variable = ec_sea_var
+				has_variable = ec_sophistry_var
+				has_variable = ec_law_var
+				has_variable = ec_admin_var
+				has_variable = ec_trade_var
+				has_variable = ec_secular_var
+				has_variable = ec_religious_var
+				has_variable = ec_omnic_var
+				has_variable = ec_aldic_var
+				has_variable = ec_amten_var
+				has_variable = ec_melodian_var
+			}
+			is_adult = yes
+		}
+	}
+
+	events = {
+
 		omni_educate_child.7 #Graduation
 
 		omni_educate_child.8 #Graduation
@@ -128,7 +181,23 @@ omni_monthly_flavor_pulse = {
 
 		omni_educate_child.11 #Graduation
 
-		razani_civil_war.24 # Imperial Council Support Check
+	}
+
+}
+
+
+
+# PERF: warborn only exist after someone casts Summon Warborn (me_zorgo_magic_focus.6), which sets
+# the global flag. Until then no country scans its court for them.
+omni_monthly_warborn_pulse = {
+
+	trigger = {
+		has_global_variable = omni_warborn_summoned
+	}
+
+	events = {
+
+		me_zorgo_magic_focus.23 # Kill Warborn
 
 	}
 

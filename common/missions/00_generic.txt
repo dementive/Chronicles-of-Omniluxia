@@ -9,7 +9,9 @@ generic_mission_conquer_region = { #Conquer Region
 	chance = {}
 
 	ai_chance = {
-		factor = 1
+		# PERF/PACING: was 1. This is a relative weight against the AI's other available missions; halving it
+		# means fewer AI countries run the claim-and-conquer chain at the same time.
+		factor = 0.5
 		modifier = {
 			factor = 0
 			is_tribal = yes
@@ -31,20 +33,29 @@ generic_mission_conquer_region = { #Conquer Region
 	potential = {
 		trigger_if = {
 			limit = { is_ai = yes }
+			# PERF: cheap AI-only gates first, so most AI countries never reach the province/region sweep below.
+			# Start-of-game stagger (common/on_action/omni_conquer_mission_pacing.txt).
+			NOT = { has_variable = omni_conquer_mission_delay }
+			# Rest period after finishing or abandoning this mission (set in on_completion / on_abort).
+			NOT = { has_variable = omni_conquer_mission_rest }
 			is_subject = no
 			war = no
 			has_civil_war = no
+			# Mirrors the factor = 0 ai_chance modifiers above: the AI could never pick the mission in these
+			# cases anyway, but the potential sweep still ran for every small or tribal AI country.
+			is_tribal = no
+			num_of_cities >= 5
 			treasury >= 50
 			manpower_percentage >= 0.25
 		}
+		has_civil_war = no
 		choo_generic_mission_blocker = yes
 		any_owned_province = {
 			any_neighbor_province = {
-				is_sea = no
+				# Cheapest rejections first: most neighbors are our own provinces.
 				has_owner = yes
-				NOT = { 
-					owner = root
-				} 
+				NOT = { owner = root }
+				is_sea = no
 				exists = region
 				region = {
 					any_region_province = {
@@ -59,7 +70,6 @@ generic_mission_conquer_region = { #Conquer Region
 			}
 		}
 		# omniluxia_mission_block_trigger = yes
-		has_civil_war = no
 	} 
 
 	abort = {
@@ -73,6 +83,11 @@ generic_mission_conquer_region = { #Conquer Region
 	on_abort = {
 		destroy_generic_mission_variables_effect = yes
 		add_stability = -5
+		# PERF/PACING: AI rest period before it may take this mission again.
+		if = {
+			limit = { is_ai = yes }
+			set_variable = { name = omni_conquer_mission_rest days = 730 }
+		}
 	} 
 	
 	on_potential = {
@@ -591,6 +606,11 @@ generic_mission_conquer_region = { #Conquer Region
 
 	on_completion = {
 		complete_mission_effect = yes
+		# PERF/PACING: AI rest period before it may take this mission again.
+		if = {
+			limit = { is_ai = yes }
+			set_variable = { name = omni_conquer_mission_rest days = 730 }
+		}
 	}
 
 	generic_mission_conquer_region_branch_1 = { 

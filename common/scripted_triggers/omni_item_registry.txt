@@ -1,9 +1,20 @@
 ﻿# Check actual contents rather than a migration flag that may outlive the lists.
+#
+# PERF: the full content check walks item lists hundreds of entries long (is_target_in_* is a linear
+# search) and this trigger runs for every character's yearly equipment pass. Once the full check has
+# passed, omni_ensure_item_registry records omni_item_registry_verified_v1 and later calls only do the
+# constant-time non-empty checks. Cleared lists still fail those checks immediately, and
+# omni_achievements.txt drops the flag before its rebuild.
+# If the item catalogue's IDs change in a future version, rename the flag (v2, v3...) so old saves
+# re-run the full check once.
 omni_item_registry_ready = {
-    is_target_in_global_variable_list = { name = item_weapon target = flag:item_sword }
-    is_target_in_global_variable_list = { name = item_weapon target = flag:item_gen_alaguric_1 }
-    is_target_in_global_variable_list = { name = omni_price_tier_2 target = flag:item_gen_alaguric_1 }
     has_non_empty_global_variable_list = { name = item_common_rarity }
     has_non_empty_global_variable_list = { name = item_uncommon_rarity }
     has_non_empty_global_variable_list = { name = item_rare_rarity }
+    trigger_if = {
+        limit = { NOT = { has_global_variable = omni_item_registry_verified_v1 } }
+        is_target_in_global_variable_list = { name = item_weapon target = flag:item_sword }
+        is_target_in_global_variable_list = { name = item_weapon target = flag:item_gen_alaguric_1 }
+        is_target_in_global_variable_list = { name = omni_price_tier_2 target = flag:item_gen_alaguric_1 }
+    }
 }
