@@ -12,6 +12,7 @@ omni_pc_summon_effect = {
         if = { limit = { is_ai = yes } set_variable = { name = omni_hc_council_cooldown days = 1000 } }
         else = { set_variable = { name = omni_hc_council_cooldown days = 1095 } }
         set_variable = { name = omni_pc_summons_pending }
+        set_variable = { name = omni_pc_gift_total value = 0 }
         remove_variable = omni_pc_votes_for
         remove_variable = omni_pc_votes_against
         remove_variable = omni_pc_proposal
@@ -40,7 +41,15 @@ omni_pc_reply_delegation_effect = {
     custom_tooltip = omni_pc_reply_delegation_tt
     hidden_effect = {
         omni_pc_set_reply_effect = { REPLY = 1 }
-        var:omni_pc_invited_by = { add_treasury = 50 }
+        # BALANCE: the palace keeps 15 of the 50 (was all 50), at most 300 per council.
+        var:omni_pc_invited_by = {
+            if = { limit = { NOT = { has_variable = omni_pc_gift_total } } set_variable = { name = omni_pc_gift_total value = 0 } }
+            if = {
+                limit = { var:omni_pc_gift_total < 300 }
+                add_treasury = 15
+                change_variable = { name = omni_pc_gift_total add = 15 }
+            }
+        }
         remove_variable = omni_pc_refusals
         if = {
             limit = {

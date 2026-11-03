@@ -8,13 +8,13 @@
 		# ------------------------------------------------------------------
 		# PERF: racial-trait backfill sweep.
 		#
-		# every_character is a GLOBAL iterator - it walks every living character
-		# in the world, not just this country's court. (Compare the deliberate
-		# "employer = root" filters in omni_vampire_spread_effect and the
-		# mercenary scans in 00_on_action_effects.txt, which only make sense
-		# against a global list.) Because biyearly_country_pulse fires once per
-		# country, this block used to cost
-		#     ~750 countries x every character in the world x 20 has_trait checks
+		# Uses every_living_character so the sweep is explicitly world-wide.
+		# (It used every_character, whose list in country scope is that
+		# country's own characters - behind the global cooldown below, that
+		# would only ever backfill the first country to reach the pulse.)
+		# Because biyearly_country_pulse fires once per country, the old
+		# per-country version of this block cost
+		#     ~750 countries x each court x 20 has_trait checks
 		# in a single Jan 1 tick, every other year.
 		#
 		# It is pure backfill: set_racial_trait_effect is already hooked to both
@@ -34,7 +34,7 @@
 				name = omni_racial_trait_sweep_cd
 				years = 10
 			}
-			every_character = {
+			every_living_character = {
 				limit = {
 					NOR = {
 						has_trait = forest_elf_trait

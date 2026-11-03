@@ -49,8 +49,9 @@
             var:omni_hc_see = {
                 if = { limit = { NOT = { has_variable = omni_hc_recognition_gains } } set_variable = { name = omni_hc_recognition_gains value = 0 } }
                 if = { limit = { NOT = { has_variable = omni_hc_recognition_losses } } set_variable = { name = omni_hc_recognition_losses value = 0 } }
-                if = { limit = { scope:omni_hc_recognizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 1 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_gains } var:omni_hc_recognition_gains < 20 } trigger_else = { always = no } }
-                    change_variable = { name = omni_hc_recognition_gains add = 2 }
+                if = { limit = { scope:omni_hc_recognizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 1 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_gains } var:omni_hc_recognition_gains < 10 } trigger_else = { always = no } }
+                    # BALANCE: +1 per recognition, capped at 10 per accession (was +2, cap 20).
+                    change_variable = { name = omni_hc_recognition_gains add = 1 }
                     omni_hc_change_authority_effect = { AMOUNT = $AMOUNT$ }
                 }
                 if = { limit = { scope:omni_hc_recognizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 3 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_losses } var:omni_hc_recognition_losses < 20 } trigger_else = { always = no } }
@@ -96,7 +97,7 @@ omni_hc_ai_recognition_effect = {
                     modifier = { factor = 1.25 omni_hc_authority >= 75 }
                     modifier = { factor = 0.75 omni_hc_authority < 50 }
                     modifier = { factor = 0.5 omni_hc_authority < 25 }
-                    omni_hc_recognition_effect = { STANCE = 1 AMOUNT = 2 }
+                    omni_hc_recognition_effect = { STANCE = 1 AMOUNT = 1 }
                 }
                 20 = { omni_hc_recognition_effect = { STANCE = 2 AMOUNT = 0 } }
                 10 = {

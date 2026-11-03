@@ -70,9 +70,19 @@
 			hidden_effect = {
 				random_country = {
 					limit = {
+						has_land = yes
+						NOT = { this = scope:actor }
 						in_diplomatic_range = scope:actor
 					}
 					save_scope_as = random_target
+				}
+				# AUDIT FIX: no country in range left random_target unset (error.log spam).
+				if = {
+					limit = { NOT = { exists = scope:random_target } }
+					random_country = {
+						limit = { has_land = yes NOT = { this = scope:actor } }
+						save_scope_as = random_target
+					}
 				}
 				banish = scope:random_target
 				scope:target = {

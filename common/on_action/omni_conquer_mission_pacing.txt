@@ -1,0 +1,40 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# OMNI - PERF/PACING: stagger the AI's generic_mission_conquer_region (common/missions/00_generic.txt)
+#
+# Without this, ~130 AI countries pick the mission in the first days of 1001. Its first task lasts exactly
+# 365 days and ends by granting provincial claims, so ~110 countries got claims in the same week of 1002 and
+# active wars jumped from ~21 to ~219 (custom_automated_stats.log) - the "slowdown 1-2 years in".
+#
+# At game start every country gets a blocker variable that a hidden event removes after a random 0-3 years,
+# so AI countries take the mission (and later declare their claim wars) spread across the first years instead
+# of all at once. The mission potential only checks the blocker for AI countries; players are unaffected.
+# Existing saves never received the blocker, so they behave exactly as before.
+# on_game_initialized fires once per country (see 00_specific_from_code.txt); the stagger flag stops a
+# second initialization pass from re-delaying a country.
+# ----------------------------------------------------------------------------------------------------------------------
+on_game_initialized = {
+	on_actions = { omni_conquer_mission_stagger }
+}
+
+omni_conquer_mission_stagger = {
+	trigger = {
+		NOT = { has_variable = omni_conquer_mission_stagger_set }
+	}
+	effect = {
+		set_variable = omni_conquer_mission_stagger_set
+		set_variable = omni_conquer_mission_delay
+		trigger_event = {
+			id = omni_conquer_pacing.1
+			days = { 0 1095 }
+		}
+		# Second test run (1002 -> 1003: 19 -> 218 active wars, with the mission already staggered)
+		# showed the wave is the AI's own war planning: every AI starts preparing on day one and
+		# is ready at about the same time. Each AI country now stays out of offensive war planning
+		# until a random point in its first two years (common/ai_plan_goals/omni_early_peace.txt).
+		set_variable = omni_ai_early_peace
+		trigger_event = {
+			id = omni_conquer_pacing.2
+			days = { 0 730 }
+		}
+	}
+}

@@ -17,7 +17,7 @@
 
     ob_task_1 = {
         duration = 90
-        icon = "task_battle"
+        icon = "task_heracles"
 
         bypass = { has_variable = ob_task_done_1 }
         allow = {
@@ -90,7 +90,7 @@
                 limit = { NOT = { has_variable = ob_task_done_3 } }
                 set_variable = { name = ob_task_done_3 }
                 trigger_event = { id = ob_order.3 }
-
+                show_as_tooltip = { capital_scope = { add_province_modifier = { name = ob_relief duration = 3650 } } }
             }
         }
 
@@ -99,10 +99,11 @@
 
     ob_task_4 = {
         duration = 90
-        icon = "task_political" requires = { ob_task_2 }
+        icon = "task_diplomatic" requires = { ob_task_2 }
 
         bypass = { has_variable = ob_task_done_4 }
         allow = {
+            custom_tooltip = { text = ob_inquiry_verdict_required_tt has_variable = ob_dispute_resolved }
             political_influence >= 25
             hidden:capital_scope = {
                 has_building = library_building
@@ -124,7 +125,7 @@
 
     ob_task_5 = {
         duration = 30
-        icon = "task_political" requires = { ob_task_2 }
+        icon = "task_diplomatic" requires = { ob_task_2 }
 
         bypass = {
             OR = {
@@ -152,31 +153,32 @@
             }
         }
 
-        highlight = { scope:province = { OR = { is_in_region = great_herue owner = { ob_claimant = yes } } } }
+        highlight = { scope:province = { is_in_region = great_herue } }
 
         on_start = { ob_invite_claimants = yes }
     }
 
     ob_task_6 = {
-        icon = "task_atlas" requires = { ob_task_5 }
+        icon = "task_conquest" requires = { ob_task_5 }
+        duration = 30
         bypass = { has_variable = ob_task_done_6 }
-        allow = { has_civil_war = no }
+        allow = { has_civil_war = no political_influence >= 25 }
         on_completion = {
             if = {
                 limit = { NOT = { has_variable = ob_task_done_6 } }
                 set_variable = { name = ob_task_done_6 }
+                add_political_influence = -25
                 mission_claim_region_effect = { REGION = great_herue }
                 # Preserve the campaign milestone used by the northern expedition.
                 hidden_effect = { set_variable = { name = ob_roads } }
                 trigger_event = { id = ob_order.6 }
-                show_as_tooltip = { add_political_influence = 3 }
             }
         }
         highlight = { scope:province = { is_in_region = great_herue } }
     }
 
     ob_task_7 = {
-        icon = "task_economical" requires = { ob_task_6 }
+        icon = "task_expansion" requires = { ob_task_6 }
 
         bypass = { has_variable = ob_task_done_7 }
         allow = {
@@ -208,7 +210,6 @@
         icon = "task_economical" requires = { ob_task_3 }
         bypass = { has_variable = ob_task_done_8 }
         allow = {
-            custom_tooltip = { text = ob_requirements_8_tt ob_requirement_8 = yes }
             current_ruler = {
                 is_friend = p:380.state.governor_or_ruler
             }
@@ -229,7 +230,7 @@
     }
 
     ob_task_9 = {
-        icon = "task_battle" requires = { ob_task_4 ob_task_6 }
+        icon = "task_golem_guardian" requires = { ob_task_4 ob_task_6 }
 
         bypass = { has_variable = ob_task_done_9 }
         allow = {
@@ -256,7 +257,7 @@
 
     ob_task_10 = {
 
-        icon = "task_atlas" requires = { ob_task_4 }
+        icon = "task_wood_elf_ranger" requires = { ob_task_1 }
 
         bypass = { has_variable = ob_task_done_10 }
 
@@ -304,7 +305,7 @@
     }
 
     ob_task_12 = {
-        icon = "task_political" requires = { ob_task_11 }
+        icon = "task_atlas" requires = { ob_task_11 }
 
         bypass = { has_variable = ob_task_done_12 }
         allow = {
@@ -324,7 +325,7 @@
     }
 
     ob_task_13 = {
-        icon = "task_political" requires = { ob_task_12 }
+        icon = "task_religion" requires = { ob_task_12 }
 
         bypass = { has_variable = ob_task_done_13 }
         allow = {
@@ -351,7 +352,7 @@
     }
 
     ob_task_14 = {
-        icon = "task_battle" requires = { ob_task_13 }
+        icon = "task_calm" requires = { ob_task_13 }
 
         bypass = { has_variable = ob_task_done_14 }
         allow = {
@@ -374,7 +375,7 @@
     }
 
     ob_task_15 = {
-        icon = "task_economical" requires = { ob_task_11 }
+        icon = "task_expansion" requires = { ob_task_11 }
 
         bypass = { has_variable = ob_task_done_15 }
         allow = {
@@ -423,7 +424,7 @@
     }
 
     ob_task_17 = {
-        icon = "task_political" requires = { ob_task_11 }
+        icon = "task_viza" requires = { ob_task_11 }
 
         bypass = { has_variable = ob_task_done_17 }
         allow = {
@@ -445,7 +446,7 @@
     }
 
     ob_task_18 = {
-        icon = "task_economical" requires = { ob_task_17 }
+        icon = "task_happiness" requires = { ob_task_17 }
 
         bypass = { has_variable = ob_task_done_18 }
         allow = {
@@ -470,7 +471,7 @@
     }
 
     ob_task_19 = {
-        icon = "task_religion" requires = { ob_task_18 }
+        icon = "task_viza" requires = { ob_task_18 }
 
         bypass = { has_variable = ob_task_done_19 }
         allow = {
@@ -496,42 +497,51 @@
     }
 
     ob_task_20 = {
-        icon = "task_atlas" requires = { ob_task_10 }
+        icon = "task_wood_elf_ranger" requires = { ob_task_10 }
 
         bypass = { has_variable = ob_task_done_20 }
         allow = {
-            treasury >= 30
-            manpower >= 1 custom_tooltip = { text = ob_owned_army_2_commanded_tt
-                any_unit = { is_army = yes unit_owner = root unit_size >= 2 exists = commander }
-            } custom_tooltip = { text = ob_owned_fortress_building_1_borderland_tt
-                any_owned_province = { is_in_region = norrfalian_borderland has_building = fortress_building }
+            owns_or_subject_owns = 1153
+            custom_tooltip = { text = ob_rimebound_pursuit_army_tt
+                any_unit = { ob_rimebound_pursuit_army = yes }
             }
             custom_tooltip = { text = ob_cave_returned_tt has_variable = ob_cave_returned } }
         on_completion = {
             if = {
                 limit = { NOT = { has_variable = ob_task_done_20 } }
                 set_variable = { name = ob_task_done_20 }
-                add_treasury = -30
-                trigger_event = { id = ob_order.20 }
-                show_as_tooltip = {
-                    add_military_experience = 2
-                    custom_tooltip = ob_preview_note_20
+                random_unit = {
+                    limit = { ob_rimebound_pursuit_army = yes }
+                    save_scope_as = ob_rimebound_army
                 }
+                trigger_event = { id = ob_order.920 }
             }
         }
 
-        highlight = { scope:province = { OR = { province_id = 1135 province_id = 1138 province_id = 1153 province_id = 1271 province_id = 1313 province_id = 1339 province_id = 5709 province_id = 5710 province_id = 5711 province_id = 5714 province_id = 5715 } } }
+        highlight = { scope:province = { province_id = 1153 } }
     }
 
     ob_task_21 = {
-        icon = "task_religion" requires = { ob_task_20 }
+        icon = "task_calm" requires = { ob_task_20 }
 
-        bypass = { has_variable = ob_task_done_21 }
+        bypass = {
+            OR = {
+                has_variable = ob_task_done_21
+                AND = {
+                    has_variable = ob_rimebound_found
+                    NOT = { exists = var:ob_returned var:ob_returned = { is_alive = yes } }
+                }
+            }
+        }
         allow = {
             has_variable = ob_rimebound_found
-            has_completed_mission_task = ob_task_16
-            stability >= 45 political_influence >= 10 custom_tooltip = { text = ob_owned_temple_building_or_library_building_1_tt
-                any_owned_province = { OR = { has_building = temple_building has_building = library_building } }
+            trigger_if = {
+                limit = { has_completed_mission_task = ob_task_20 has_variable = ob_rimebound_found }
+                custom_tooltip = {
+                    text = ob_lanuthua_alive_tt
+                    exists = var:ob_returned
+                    var:ob_returned = { is_alive = yes employer = root prisoner = yes }
+                }
             }
         }
         on_completion = {
@@ -547,7 +557,7 @@
     }
 
     ob_task_22 = {
-        icon = "task_political" requires = { ob_task_11 ob_task_21 }
+        icon = "task_diplomatic" requires = { ob_task_11 ob_task_21 }
 
         bypass = { has_variable = ob_task_done_22 }
         allow = {
@@ -555,7 +565,6 @@
                 ob_has_herue_settlement = yes
             }
             treasury >= 75
-            OR = { NOT = { has_variable = ob_vampire_compact } has_variable = ob_compact_reviewed }
             has_completed_mission_task = ob_task_19
             war = no stability >= 55 any_owned_province = { has_building = court_building } custom_tooltip = { text = ob_owned_all_loyal_tt
                 NOT = { any_owned_province = { state = { state_level_loyalty < 40 } } }
@@ -576,7 +585,7 @@
     }
 
     ob_task_23 = {
-        icon = "task_battle" requires = { ob_task_22 }
+        icon = "task_golem_guardian" requires = { ob_task_22 }
 
         bypass = { has_variable = ob_task_done_23 }
         allow = {
@@ -599,7 +608,7 @@
     }
 
     ob_task_24 = {
-        icon = "task_political" requires = { ob_task_23 } final = yes
+        icon = "task_viza" requires = { ob_task_23 } final = yes
 
         bypass = { has_variable = ob_task_done_24 }
         allow = { tag = NFA war = no has_civil_war = no has_variable = ob_constitution has_variable = ob_charter stability >= 60 custom_tooltip = { text = ob_herue_settlement_requirement_tt
@@ -623,7 +632,7 @@
     }
 
     ob_task_25 = {
-        icon = "task_atlas" requires = { ob_task_23 }
+        icon = "task_conquest" requires = { ob_task_23 }
 
         bypass = { has_variable = ob_task_done_25 }
         allow = {

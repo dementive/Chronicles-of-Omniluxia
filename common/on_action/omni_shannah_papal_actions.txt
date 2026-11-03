@@ -78,5 +78,19 @@ monthly_country_pulse = {
             }
             omni_shannah_remove_recognized_crown_effect = yes
         }
+        # AUDIT FIX: a realm that leaves the faith stops being excommunicated. Otherwise the
+        # permanent -10% same-religion happiness penalty landed on its new religion's pops.
+        if = {
+            limit = {
+                has_country_modifier = omni_shannah_excommunicated
+                NOT = { religion = helluvian }
+            }
+            save_scope_as = omni_shannah_lapsed_realm
+            remove_country_modifier = omni_shannah_excommunicated
+            if = { limit = { has_variable = omni_shannah_penance_period } remove_variable = omni_shannah_penance_period }
+            every_country = {
+                remove_opinion = { target = scope:omni_shannah_lapsed_realm modifier = omni_shannah_excommunication_opinion }
+            }
+        }
     }
 }

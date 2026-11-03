@@ -11,6 +11,14 @@ ob_monthly = {
         if = { limit = { NOT = { has_variable = ob_identity } tag = BLZ }
             ob_initialise = yes
         }
+        if = {
+            limit = {
+                has_variable = ob_rimebound_blade_pending
+                NOT = { exists = var:ob_rimebound_invader var:ob_rimebound_invader = { has_land = yes } }
+            }
+            remove_variable = ob_rimebound_blade_pending
+            trigger_event = { id = ob_order.925 }
+        }
         ob_maintenance = yes
         ob_ensure_second_master = yes
         if = {
@@ -31,6 +39,7 @@ ob_monthly = {
         if = {
             limit = {
                 current_date >= 1002.1.1 NOT = { has_variable = ob_warning }
+                NOT = { has_variable = ob_cave_active }
                 NOT = { has_variable = ob_early_resolved }
             }
             set_variable = { name = ob_warning }
@@ -89,6 +98,29 @@ ob_monthly = {
                 NOT = { has_variable = ob_internal_resolved } }
             set_variable = { name = ob_internal_resolved }
             trigger_event = { id = ob_order.301 }
+        }
+    }
+}
+
+on_province_occupied = {
+    effect = {
+        if = {
+            limit = {
+                exists = controller
+                controller = {
+                    exists = var:ob_rimebound_war_target
+                    war_with = var:ob_rimebound_war_target
+                    var:ob_rimebound_war_target = { NOT = { has_variable = ob_rimebound_gate_seen } }
+                    OR = {
+                        root.owner = var:ob_rimebound_war_target
+                        root.owner = this
+                    }
+                }
+            }
+            controller.var:ob_rimebound_war_target = {
+                set_variable = { name = ob_rimebound_gate_seen }
+                trigger_event = { id = ob_order.924 days = 1 }
+            }
         }
     }
 }

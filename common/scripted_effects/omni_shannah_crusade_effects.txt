@@ -1,6 +1,23 @@
 ﻿# Country references follow omni_dynastic_union_effects.txt; they survive
 # succession and do not depend on delayed events retaining a ruler scope.
 omni_shannah_repair_office_effect = {
+    # AUDIT FIX: only one Shahanat. A second Helluvian papacy (e.g. a rebel
+    # split off the see in a civil war) used to receive shannah_trait here
+    # every month. If another office holder sits on the see (2706), this one
+    # is revoked instead of crowned.
+    save_scope_as = omni_shannah_office_check
+    if = {
+        limit = {
+            omni_shannah_office_trigger = yes
+            NOT = { owns = 2706 }
+            any_country = {
+                NOT = { this = scope:omni_shannah_office_check }
+                omni_shannah_office_trigger = yes
+                owns = 2706
+            }
+        }
+        omni_shannah_revoke_office_effect = yes
+    }
     if = {
         limit = { omni_shannah_office_trigger = yes exists = current_ruler }
         # Migrate existing officeholders to the institutional banner once.

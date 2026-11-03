@@ -1,0 +1,52 @@
+﻿# Adventurer's Guild "Go On Adventure" tuning block.
+#
+# Every number that decides how an expedition scores lives here so it can be
+# rebalanced without touching events. tools/adventure/mc_adventure.py parses
+# this file (and the press weights in OMNI_adventure_effects.txt) and reruns
+# the outcome Monte Carlo, so rerun it after any change.
+#
+# Score flow: base + preparation + travel + arrival + contract + contract
+# scene + theme scene + 2-4 encounters, then tier thresholds below.
+# A "press" option is a gamble (win/loss) whose odds improve with a matching
+# preparation and a matching companion specialist. A "hedge" option scores
+# little but pays something tangible (gold, attribute chance, better loot,
+# a shorter trip, or simply no wound risk).
+
+# Targets (tools/adventure/mc_adventure.py): skilled + matching specialist
+# ~35/40/20/5 legendary/success/mixed/failure, skilled with no specialist and
+# free scouts ~15/45/30/10, coin-flip ~3/20/40/37, always-worst ~100% failure.
+
+# --- Outcome tiers (score needed) ---
+omni_adv_tier_legendary = 90
+omni_adv_tier_success = 72
+omni_adv_tier_mixed = 56
+
+# --- Starting readiness ---
+omni_adv_base_score = 56
+
+# --- Preparation (adventure.3) ---
+omni_adv_prep_supplies = 1		# costs 80 gold; its real value is better physical+social odds and half wound risk
+omni_adv_prep_scouts = 0		# free
+omni_adv_prep_rituals = 3		# costs 10 political influence; better lore odds
+omni_adv_prep_pious = 4		# pious ruler variant of rituals, 5 influence
+omni_adv_prep_brave = 1		# brave ruler, free, popularity
+omni_adv_prep_cautious = 2		# cautious ruler, 50 gold, scouts
+
+# --- Travel (adventure.4 / .4000-.4004) ---
+omni_adv_travel_quiet = 1		# a tick with no event
+
+# --- Arrival (adventure.5) ---
+omni_adv_arrival_careful = 3	# question the locals (slower)
+omni_adv_arrival_trait = 5		# trait-gated arrival options
+
+# --- Contract (adventure.50 and the contract scenes .59-.64) ---
+omni_adv_contract_base = 2
+omni_adv_specialist_bonus = 2	# matching specialist, applied on arrival (plus better odds and the specialist-only contract option)
+omni_adv_contract_specialist_scene = 6	# specialist-only option in the contract scene
+omni_adv_contract_paid = 4		# paid / compromise option in the contract scene
+
+# --- Press / hedge results ---
+omni_adv_press_win = 7
+omni_adv_press_loss = -5
+omni_adv_hedge = -4		# readiness cost of every safe option
+omni_adv_hedge_gold = 25		# gold the realm receives from a gold hedge
