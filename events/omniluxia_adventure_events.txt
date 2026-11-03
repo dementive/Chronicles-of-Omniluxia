@@ -3,8 +3,16 @@
 adventure.1 = {
 	type = character_event
 	title = adventure.1.t
-	desc = adventure.1.desc
-	picture = aqueducts
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { OR = { has_variable = adventure_contract_rescue has_variable = adventure_contract_intrigue } } desc = adventure.1.desc_diplomat }
+			triggered_desc = { trigger = { OR = { has_variable = adventure_contract_monster has_variable = adventure_contract_escort } } desc = adventure.1.desc_warrior }
+			triggered_desc = { trigger = { has_variable = adventure_contract_ruin } desc = adventure.1.desc_scout }
+			triggered_desc = { trigger = { has_variable = adventure_contract_relic } desc = adventure.1.desc_scholar }
+			desc = adventure.1.desc
+		}
+	}
+	picture = event_marketplace
 
 	left_portrait = ROOT
 	left_portrait = scope:adventurer_candidate_1
@@ -362,7 +370,14 @@ adventure.1 = {
 			NOT = { exists = scope:adventurer_candidate_1 }
 		}
 		custom_tooltip = adventure_no_valid_companions_tt
-		trigger_event = { id = omni_items.9 }
+		# Nobody left to recruit: release the ruler cleanly, no cooldown.
+		omni_adventure_abort_effect = yes
+	}
+	option = {
+		name = adventure.1.h
+		trigger = { exists = scope:adventurer_candidate_1 }
+		custom_tooltip = adventure_not_now_tt
+		omni_adventure_abort_effect = yes
 	}
 }
 
@@ -378,7 +393,7 @@ adventure.10 = {
 				exists = var:adventure_party_3
 			}
 			omni_adventure_calculate_party_roles_effect = yes
-			trigger_event = adventure.2
+			trigger_event = adventure.3
 		}
 		else = {
 			trigger_event = adventure.1
@@ -390,17 +405,14 @@ adventure.2 = {
 	type = character_event
 	title = adventure.2.t
 	desc = adventure.2.desc
-	picture = persia_marching
+	picture = Event_citadel_library
 
 	left_portrait = ROOT
-	left_portrait = var:adventure_party_1
-	right_portrait = var:adventure_party_2
-	right_portrait = var:adventure_party_3
 
+	# The contract is chosen first so the party screen can show who fits it.
 	trigger = {
-		exists = var:adventure_party_1
-		exists = var:adventure_party_2
-		exists = var:adventure_party_3
+		has_variable = on_omni_adventure
+		NOT = { has_variable = adventure_province }
 	}
 
 	immediate = {
@@ -495,7 +507,7 @@ adventure.2 = {
 		custom_tooltip = adventure_province_1_tt
 		set_variable = adventure_contract_rescue
 		save_adventure_province = { SCOPE = adventure_province_1 }
-		trigger_event = adventure.3
+		trigger_event = adventure.1
 	}
 	option = {
 		trigger = { exists = scope:adventure_province_2 }
@@ -503,7 +515,7 @@ adventure.2 = {
 		custom_tooltip = adventure_province_2_tt
 		set_variable = adventure_contract_monster
 		save_adventure_province = { SCOPE = adventure_province_2 }
-		trigger_event = adventure.3
+		trigger_event = adventure.1
 	}
 	option = {
 		trigger = { exists = scope:adventure_province_3 }
@@ -511,7 +523,7 @@ adventure.2 = {
 		custom_tooltip = adventure_province_3_tt
 		set_variable = adventure_contract_intrigue
 		save_adventure_province = { SCOPE = adventure_province_3 }
-		trigger_event = adventure.3
+		trigger_event = adventure.1
 	}
 	option = {
 		trigger = { exists = scope:adventure_province_4 }
@@ -519,7 +531,7 @@ adventure.2 = {
 		custom_tooltip = adventure_province_4_tt
 		set_variable = adventure_contract_ruin
 		save_adventure_province = { SCOPE = adventure_province_4 }
-		trigger_event = adventure.3
+		trigger_event = adventure.1
 	}
 	option = {
 		trigger = { exists = scope:adventure_province_5 }
@@ -527,7 +539,7 @@ adventure.2 = {
 		custom_tooltip = adventure_province_5_tt
 		set_variable = adventure_contract_relic
 		save_adventure_province = { SCOPE = adventure_province_5 }
-		trigger_event = adventure.3
+		trigger_event = adventure.1
 	}
 	option = {
 		trigger = { exists = scope:adventure_province_6 }
@@ -535,7 +547,12 @@ adventure.2 = {
 		custom_tooltip = adventure_province_6_tt
 		set_variable = adventure_contract_escort
 		save_adventure_province = { SCOPE = adventure_province_6 }
-		trigger_event = adventure.3
+		trigger_event = adventure.1
+	}
+	option = {
+		name = adventure.2.g
+		custom_tooltip = adventure_not_now_tt
+		omni_adventure_abort_effect = yes
 	}
 }
 
@@ -543,7 +560,7 @@ adventure.3 = {
 	type = character_event
 	title = adventure.3.t
 	desc = adventure.3.desc
-	picture = romans_marching
+	picture = event_dale
 
 	goto_location = var:adventure_province
 	left_portrait = ROOT
@@ -559,7 +576,7 @@ adventure.3 = {
 		omni_adventure_mark_party_busy_effect = yes
 		set_variable = {
 			name = adventure_score
-			value = 30
+			value = omni_adv_base_score
 		}
 	}
 
@@ -567,11 +584,10 @@ adventure.3 = {
 		name = adventure.3.a
 		trigger = { employer = { treasury >= 80 } }
 		custom_tooltip = adventure_preparation_supplies_tt
-		employer = {
-			add_treasury = -80
-		}
+		custom_tooltip = adventure_away_status_tt
+		employer = { add_treasury = -80 }
 		set_variable = adventure_supplies
-		omni_adventure_add_score_effect = { VALUE = 15 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_prep_supplies }
 		trigger_event = {
 			id = adventure.4
 			days = { 30 60 }
@@ -584,8 +600,9 @@ adventure.3 = {
 	option = {
 		name = adventure.3.b
 		custom_tooltip = adventure_preparation_scouts_tt
+		custom_tooltip = adventure_away_status_tt
 		set_variable = adventure_scouts
-		omni_adventure_add_score_effect = { VALUE = 10 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_prep_scouts }
 		trigger_event = {
 			id = adventure.4
 			days = { 30 60 }
@@ -599,11 +616,10 @@ adventure.3 = {
 		name = adventure.3.c
 		trigger = { employer = { political_influence >= 10 } }
 		custom_tooltip = adventure_preparation_rituals_tt
-		employer = {
-			add_political_influence = -10
-		}
+		custom_tooltip = adventure_away_status_tt
+		employer = { add_political_influence = -10 }
 		set_variable = adventure_rituals
-		omni_adventure_add_score_effect = { VALUE = 20 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_prep_rituals }
 		trigger_event = {
 			id = adventure.4
 			days = { 30 60 }
@@ -618,11 +634,10 @@ adventure.3 = {
 		name = adventure.3.d
 		trigger = { has_trait = pious employer = { political_influence >= 5 } }
 		custom_tooltip = adventure_option_trait_pious_tt
-		employer = {
-			add_political_influence = -5
-		}
+		custom_tooltip = adventure_away_status_tt
+		employer = { add_political_influence = -5 }
 		set_variable = adventure_rituals
-		omni_adventure_add_score_effect = { VALUE = 22 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_prep_pious }
 		trigger_event = {
 			id = adventure.4
 			days = { 30 60 }
@@ -637,7 +652,8 @@ adventure.3 = {
 		name = adventure.3.e
 		trigger = { has_trait = brave }
 		custom_tooltip = adventure_option_trait_brave_tt
-		omni_adventure_add_score_effect = { VALUE = 10 }
+		custom_tooltip = adventure_away_status_tt
+		omni_adventure_add_score_effect = { VALUE = omni_adv_prep_brave }
 		add_popularity = 8
 		trigger_event = {
 			id = adventure.4
@@ -653,11 +669,10 @@ adventure.3 = {
 		name = adventure.3.f
 		trigger = { has_trait = cautious employer = { treasury >= 50 } }
 		custom_tooltip = adventure_option_trait_cautious_tt
-		employer = {
-			add_treasury = -50
-		}
+		custom_tooltip = adventure_away_status_tt
+		employer = { add_treasury = -50 }
 		set_variable = adventure_scouts
-		omni_adventure_add_score_effect = { VALUE = 18 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_prep_cautious }
 		trigger_event = {
 			id = adventure.4
 			days = { 30 60 }
@@ -680,8 +695,8 @@ adventure.4 = {
 
 	immediate = {
 		random_list = {
-			75 = { trigger_event = adventure.4000 }
-			25 = { omni_adventure_add_score_effect = { VALUE = 5 } }
+			75 = { omni_adventure_roll_travel_event_effect = yes }
+			25 = { omni_adventure_add_score_effect = { VALUE = omni_adv_travel_quiet } }
 		}
 		if = {
 			limit = {
@@ -700,7 +715,7 @@ adventure.4000 = {
 	type = character_event
 	title = adventure.4000.t
 	desc = adventure.4000.desc
-	picture = event_barrow_white
+	picture = event_deep_forest
 
 	goto_location = var:adventure_province
 	left_portrait = ROOT
@@ -710,31 +725,27 @@ adventure.4000 = {
 
 	trigger = {
 		has_variable = adventure_province
+		NOT = { has_variable = arrived_at_adventure_target }
+	}
+
+	immediate = {
+		set_variable = adventure_seen_4000
 	}
 
 	option = {
 		name = adventure.4000.a
-		omni_adventure_add_score_effect = { VALUE = 10 }
-		if = {
-			limit = { NOT = { has_trait = cautious } }
-			add_trait = cautious
+		omni_adventure_hedge_safe_effect = yes
+		add_character_modifier = {
+			name = omni_adventure_road_wary
+			duration = 365
 		}
 	}
 	option = {
 		name = adventure.4000.b
-		omni_adventure_add_score_effect = { VALUE = -10 }
-		if = {
-			limit = { NOT = { has_trait = reckless } }
-			add_trait = reckless
-		}
-		random_list = {
-			35 = {
-				if = {
-					limit = { NOT = { has_trait = wounded } }
-					add_trait = wounded
-				}
-			}
-			65 = {}
+		omni_adventure_press_wits_effect = yes
+		add_character_modifier = {
+			name = omni_adventure_road_bold
+			duration = 365
 		}
 	}
 	option = {
@@ -742,23 +753,25 @@ adventure.4000 = {
 		name = adventure.4000.c
 		trigger = { has_trait = cautious }
 		custom_tooltip = adventure_option_trait_cautious_tt
+		custom_tooltip = adventure_hedge_hurry_tt
 		if = {
 			limit = { NOT = { has_variable = cautious_reward_4000_taken } }
 			set_variable = cautious_reward_4000_taken
-			omni_adventure_add_score_effect = { VALUE = 18 }
+			omni_adventure_add_score_effect = { VALUE = omni_adv_arrival_trait }
 			omni_adventure_gain_finesse_effect = yes
 		}
-		trigger_event = { id = adventure.5 days = { 1 3 } }
+		hidden_effect = { trigger_event = { id = adventure.5 days = { 1 3 } } }
 	}
 	option = {
 		highlight = yes
 		name = adventure.4000.d
 		trigger = { has_trait = brave }
 		custom_tooltip = adventure_option_trait_brave_tt
+		custom_tooltip = adventure_hedge_hurry_tt
 		if = {
 			limit = { NOT = { has_variable = brave_reward_4000_taken } }
 			set_variable = brave_reward_4000_taken
-			omni_adventure_add_score_effect = { VALUE = 8 }
+			omni_adventure_add_score_effect = { VALUE = omni_adv_arrival_trait }
 			add_popularity = 8
 		}
 		random_list = {
@@ -770,7 +783,137 @@ adventure.4000 = {
 			}
 			80 = {}
 		}
-		trigger_event = { id = adventure.5 days = { 3 7 } }
+		hidden_effect = { trigger_event = { id = adventure.5 days = { 3 7 } } }
+	}
+}
+
+adventure.4001 = {
+	type = character_event
+	title = adventure.4001.t
+	desc = adventure.4001.desc
+	picture = event_boat_storm
+
+	goto_location = var:adventure_province
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = {
+		has_variable = adventure_province
+		NOT = { has_variable = arrived_at_adventure_target }
+	}
+
+	immediate = {
+		set_variable = adventure_seen_4001
+	}
+
+	option = {
+		name = adventure.4001.a
+		omni_adventure_press_physical_effect = yes
+	}
+	option = {
+		name = adventure.4001.b
+		trigger = { employer = { treasury >= 20 } }
+		employer = { add_treasury = -20 }
+		omni_adventure_hedge_hurry_effect = yes
+	}
+	option = {
+		name = adventure.4001.c
+		omni_adventure_hedge_safe_effect = yes
+	}
+}
+
+adventure.4002 = {
+	type = character_event
+	title = adventure.4002.t
+	desc = adventure.4002.desc
+	picture = event_harbor_night
+
+	goto_location = var:adventure_province
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = {
+		has_variable = adventure_province
+		NOT = { has_variable = arrived_at_adventure_target }
+	}
+
+	immediate = {
+		set_variable = adventure_seen_4002
+	}
+
+	option = {
+		name = adventure.4002.a
+		omni_adventure_press_wits_effect = yes
+	}
+	option = {
+		name = adventure.4002.b
+		omni_adventure_hedge_safe_effect = yes
+	}
+}
+
+adventure.4003 = {
+	type = character_event
+	title = adventure.4003.t
+	desc = adventure.4003.desc
+	picture = event_dale
+
+	goto_location = var:adventure_province
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = {
+		has_variable = adventure_province
+		NOT = { has_variable = arrived_at_adventure_target }
+	}
+
+	immediate = {
+		set_variable = adventure_seen_4003
+	}
+
+	option = {
+		name = adventure.4003.a
+		omni_adventure_press_social_effect = yes
+	}
+	option = {
+		name = adventure.4003.b
+		omni_adventure_hedge_attribute_effect = { ATTR = zeal }
+	}
+}
+
+adventure.4004 = {
+	type = character_event
+	title = adventure.4004.t
+	desc = adventure.4004.desc
+	picture = mountains
+
+	goto_location = var:adventure_province
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = {
+		has_variable = adventure_province
+		NOT = { has_variable = arrived_at_adventure_target }
+	}
+
+	immediate = {
+		set_variable = adventure_seen_4004
+	}
+
+	option = {
+		name = adventure.4004.a
+		omni_adventure_press_physical_effect = yes
+	}
+	option = {
+		name = adventure.4004.b
+		omni_adventure_hedge_gold_effect = yes
 	}
 }
 
@@ -778,7 +921,7 @@ adventure.5 = {
 	type = character_event
 	title = adventure.5.t
 	desc = adventure.5.desc
-	picture = event_dwarven_hall
+	picture = event_forest_rangers
 
 	goto_location = var:adventure_province
 	left_portrait = ROOT
@@ -859,7 +1002,7 @@ adventure.5 = {
 
 	option = {
 		name = adventure.5.a
-		omni_adventure_add_score_effect = { VALUE = 10 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_arrival_careful }
 		trigger_event = {
 			id = adventure.50
 			days = { 20 45 }
@@ -867,10 +1010,10 @@ adventure.5 = {
 	}
 	option = {
 		name = adventure.5.b
-		omni_adventure_add_score_effect = { VALUE = -5 }
+		custom_tooltip = adventure_arrival_fast_tt
 		trigger_event = {
 			id = adventure.50
-			days = { 20 45 }
+			days = { 3 8 }
 		}
 	}
 	option = {
@@ -878,7 +1021,7 @@ adventure.5 = {
 		name = adventure.5.c
 		trigger = { has_trait = brave }
 		custom_tooltip = adventure_option_trait_brave_tt
-		omni_adventure_add_score_effect = { VALUE = 16 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_arrival_trait }
 		omni_adventure_gain_martial_effect = yes
 		add_popularity = 8
 		trigger_event = {
@@ -891,7 +1034,7 @@ adventure.5 = {
 		name = adventure.5.d
 		trigger = { has_trait = suspicious }
 		custom_tooltip = adventure_option_trait_suspicious_tt
-		omni_adventure_add_score_effect = { VALUE = 16 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_arrival_trait }
 		omni_adventure_gain_finesse_effect = yes
 		trigger_event = {
 			id = adventure.50
@@ -903,8 +1046,8 @@ adventure.5 = {
 		name = adventure.5.e
 		trigger = { has_trait = scholar }
 		custom_tooltip = adventure_option_trait_scholar_tt
-		omni_adventure_add_score_effect = { VALUE = 14 }
-		omni_adventure_gain_finesse_effect = yes
+		omni_adventure_add_score_effect = { VALUE = omni_adv_arrival_trait }
+		omni_adventure_gain_zeal_effect = yes
 		trigger_event = {
 			id = adventure.50
 			days = { 20 45 }
@@ -960,7 +1103,12 @@ adventure.6001 = {
 	type = character_event
 	title = adventure.6001.t
 	desc = adventure.6001.desc
-	picture = event_barrow_white
+	picture = event_dwarven_hall
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -969,15 +1117,20 @@ adventure.6001 = {
 		set_variable = adventure_seen_6001
 	}
 
-	option = { name = adventure.6001.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_pre_catalysm_sword } trigger_event = adventure.6 }
-	option = { name = adventure.6001.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_chainmail } trigger_event = adventure.6 }
+	option = { name = adventure.6001.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_pre_catalysm_sword } trigger_event = adventure.6 }
+	option = { name = adventure.6001.b omni_adventure_hedge_gold_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6002 = {
 	type = character_event
 	title = adventure.6002.t
 	desc = adventure.6002.desc
-	picture = event_barrow_white
+	picture = event_deep_forest
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -986,8 +1139,8 @@ adventure.6002 = {
 		set_variable = adventure_seen_6002
 	}
 
-	option = { name = adventure.6002.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_spirits_essence } trigger_event = adventure.6 }
-	option = { name = adventure.6002.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_ring_1 } trigger_event = adventure.6 }
+	option = { name = adventure.6002.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_spirits_essence } trigger_event = adventure.6 }
+	option = { name = adventure.6002.b omni_adventure_hedge_safe_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6003 = {
@@ -996,6 +1149,11 @@ adventure.6003 = {
 	desc = adventure.6003.desc
 	picture = event_barrow_white
 
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
 	trigger = { has_variable = adventure_province }
 
 	immediate = {
@@ -1003,15 +1161,20 @@ adventure.6003 = {
 		set_variable = adventure_seen_6003
 	}
 
-	option = { name = adventure.6003.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_long_axe } trigger_event = adventure.6 }
-	option = { name = adventure.6003.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_shield } trigger_event = adventure.6 }
+	option = { name = adventure.6003.a omni_adventure_press_lore_effect = yes trigger_event = adventure.6 }
+	option = { name = adventure.6003.b omni_adventure_hedge_attribute_effect = { ATTR = zeal } trigger_event = adventure.6 }
 }
 
 adventure.6004 = {
 	type = character_event
 	title = adventure.6004.t
 	desc = adventure.6004.desc
-	picture = persia_marching
+	picture = temple
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1020,15 +1183,20 @@ adventure.6004 = {
 		set_variable = adventure_seen_6004
 	}
 
-	option = { name = adventure.6004.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_glorious_lance } trigger_event = adventure.6 }
-	option = { name = adventure.6004.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_spear } trigger_event = adventure.6 }
+	option = { name = adventure.6004.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_wreath_of_joy } trigger_event = adventure.6 }
+	option = { name = adventure.6004.b omni_adventure_hedge_loot_effect = yes omni_adventure_give_item_effect = { item_ID = item_precious_gemstone } trigger_event = adventure.6 }
 }
 
 adventure.6005 = {
 	type = character_event
 	title = adventure.6005.t
 	desc = adventure.6005.desc
-	picture = persia_marching
+	picture = event_dwarven_hall
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1037,15 +1205,20 @@ adventure.6005 = {
 		set_variable = adventure_seen_6005
 	}
 
-	option = { name = adventure.6005.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_conquerors_banner } trigger_event = adventure.6 }
-	option = { name = adventure.6005.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_royal_banner } trigger_event = adventure.6 }
+	option = { name = adventure.6005.a omni_adventure_press_physical_effect = yes omni_adventure_give_item_effect = { item_ID = item_masterwork_helmet } trigger_event = adventure.6 }
+	option = { name = adventure.6005.b omni_adventure_hedge_shortcut_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6006 = {
 	type = character_event
 	title = adventure.6006.t
 	desc = adventure.6006.desc
-	picture = persia_marching
+	picture = event_marketplace
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1054,15 +1227,20 @@ adventure.6006 = {
 		set_variable = adventure_seen_6006
 	}
 
-	option = { name = adventure.6006.a trigger = { employer = { treasury >= 15 } } employer = { add_treasury = -15 } omni_adventure_add_score_effect = { VALUE = 7 } omni_adventure_give_item_effect = { item_ID = item_groms_warhammer } trigger_event = adventure.6 }
-	option = { name = adventure.6006.b omni_adventure_add_score_effect = { VALUE = 1 } random_list = { 25 = { omni_adventure_risk_companion_wound_effect = yes } 75 = {} } omni_adventure_give_item_effect = { item_ID = item_mace } trigger_event = adventure.6 }
+	option = { name = adventure.6006.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_daggers } trigger_event = adventure.6 }
+	option = { name = adventure.6006.b omni_adventure_hedge_shortcut_effect = yes omni_adventure_give_item_effect = { item_ID = item_mace } trigger_event = adventure.6 }
 }
 
 adventure.6007 = {
 	type = character_event
 	title = adventure.6007.t
 	desc = adventure.6007.desc
-	picture = romans_marching
+	picture = event_dwarven_hall
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1071,15 +1249,20 @@ adventure.6007 = {
 		set_variable = adventure_seen_6007
 	}
 
-	option = { name = adventure.6007.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_masterwork_sword } trigger_event = adventure.6 }
-	option = { name = adventure.6007.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_sword } trigger_event = adventure.6 }
+	option = { name = adventure.6007.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_book_of_skills_oratory } trigger_event = adventure.6 }
+	option = { name = adventure.6007.b omni_adventure_hedge_loot_effect = yes omni_adventure_give_item_effect = { item_ID = item_precious_gemstone } trigger_event = adventure.6 }
 }
 
 adventure.6008 = {
 	type = character_event
 	title = adventure.6008.t
 	desc = adventure.6008.desc
-	picture = romans_marching
+	picture = event_swamp_city
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1088,15 +1271,20 @@ adventure.6008 = {
 		set_variable = adventure_seen_6008
 	}
 
-	option = { name = adventure.6008.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_pre_catalysm_armour } trigger_event = adventure.6 }
-	option = { name = adventure.6008.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_plate_armour } trigger_event = adventure.6 }
+	option = { name = adventure.6008.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_spirits_essence } trigger_event = adventure.6 }
+	option = { name = adventure.6008.b omni_adventure_hedge_attribute_effect = { ATTR = finesse } trigger_event = adventure.6 }
 }
 
 adventure.6009 = {
 	type = character_event
 	title = adventure.6009.t
 	desc = adventure.6009.desc
-	picture = romans_marching
+	picture = event_dwarven_hall
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1105,15 +1293,20 @@ adventure.6009 = {
 		set_variable = adventure_seen_6009
 	}
 
-	option = { name = adventure.6009.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_statuatory_treaty } trigger_event = adventure.6 }
-	option = { name = adventure.6009.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_legislative_code } trigger_event = adventure.6 }
+	option = { name = adventure.6009.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_shield_of_father_protector } trigger_event = adventure.6 }
+	option = { name = adventure.6009.b omni_adventure_hedge_gold_effect = yes omni_adventure_give_item_effect = { item_ID = item_precious_jewelry } trigger_event = adventure.6 }
 }
 
 adventure.6010 = {
 	type = character_event
 	title = adventure.6010.t
 	desc = adventure.6010.desc
-	picture = event_dwarven_hall
+	picture = mountains
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1122,15 +1315,20 @@ adventure.6010 = {
 		set_variable = adventure_seen_6010
 	}
 
-	option = { name = adventure.6010.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_masterwork_great_sword } trigger_event = adventure.6 }
-	option = { name = adventure.6010.b employer = { add_treasury = 20 } omni_adventure_add_score_effect = { VALUE = 1 } omni_adventure_give_item_effect = { item_ID = item_precious_gemstone } trigger_event = adventure.6 }
+	option = { name = adventure.6010.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_book_of_skills_military } trigger_event = adventure.6 }
+	option = { name = adventure.6010.b omni_adventure_hedge_gold_effect = yes omni_adventure_give_item_effect = { item_ID = item_masterwork_great_sword } trigger_event = adventure.6 }
 }
 
 adventure.6011 = {
 	type = character_event
 	title = adventure.6011.t
 	desc = adventure.6011.desc
-	picture = event_dwarven_hall
+	picture = event_marketplace
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1139,15 +1337,20 @@ adventure.6011 = {
 		set_variable = adventure_seen_6011
 	}
 
-	option = { name = adventure.6011.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_crown_of_zanis } trigger_event = adventure.6 }
-	option = { name = adventure.6011.b employer = { add_treasury = 15 } omni_adventure_add_score_effect = { VALUE = -4 } random_list = { 30 = { add_trait = wounded } 70 = {} } omni_adventure_give_item_effect = { item_ID = item_precious_jewelry } trigger_event = adventure.6 }
+	option = { name = adventure.6011.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_ring_1 } trigger_event = adventure.6 }
+	option = { name = adventure.6011.b omni_adventure_hedge_gold_effect = yes omni_adventure_give_item_effect = { item_ID = item_precious_jewelry } trigger_event = adventure.6 }
 }
 
 adventure.6012 = {
 	type = character_event
 	title = adventure.6012.t
 	desc = adventure.6012.desc
-	picture = event_barrow_white
+	picture = temple
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1156,15 +1359,20 @@ adventure.6012 = {
 		set_variable = adventure_seen_6012
 	}
 
-	option = { name = adventure.6012.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_holy_scripture_wishteon } trigger_event = adventure.6 }
-	option = { name = adventure.6012.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_ring_2 } trigger_event = adventure.6 }
+	option = { name = adventure.6012.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_holy_scripture_wishteon } trigger_event = adventure.6 }
+	option = { name = adventure.6012.b omni_adventure_hedge_loot_effect = yes omni_adventure_give_item_effect = { item_ID = item_statue_of_grom } trigger_event = adventure.6 }
 }
 
 adventure.6013 = {
 	type = character_event
 	title = adventure.6013.t
 	desc = adventure.6013.desc
-	picture = event_barrow_white
+	picture = event_swamp
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1173,15 +1381,20 @@ adventure.6013 = {
 		set_variable = adventure_seen_6013
 	}
 
-	option = { name = adventure.6013.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_light_armour } trigger_event = adventure.6 }
-	option = { name = adventure.6013.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_crossbow } trigger_event = adventure.6 }
+	option = { name = adventure.6013.a omni_adventure_press_physical_effect = yes omni_adventure_give_item_effect = { item_ID = item_light_armour } trigger_event = adventure.6 }
+	option = { name = adventure.6013.b omni_adventure_hedge_safe_effect = yes omni_adventure_give_item_effect = { item_ID = item_crossbow } trigger_event = adventure.6 }
 }
 
 adventure.6014 = {
 	type = character_event
 	title = adventure.6014.t
 	desc = adventure.6014.desc
-	picture = persia_marching
+	picture = event_marketplace
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1190,15 +1403,20 @@ adventure.6014 = {
 		set_variable = adventure_seen_6014
 	}
 
-	option = { name = adventure.6014.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_royal_emblem } trigger_event = adventure.6 }
-	option = { name = adventure.6014.b employer = { add_treasury = 15 } omni_adventure_add_score_effect = { VALUE = 1 } add_popularity = -2 omni_adventure_give_item_effect = { item_ID = item_treaty_about_diplomatic_managment } trigger_event = adventure.6 }
+	option = { name = adventure.6014.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_treaty_about_diplomatic_managment } trigger_event = adventure.6 }
+	option = { name = adventure.6014.b omni_adventure_hedge_gold_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6015 = {
 	type = character_event
 	title = adventure.6015.t
 	desc = adventure.6015.desc
-	picture = persia_marching
+	picture = Event_citadel_library
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1207,8 +1425,8 @@ adventure.6015 = {
 		set_variable = adventure_seen_6015
 	}
 
-	option = { name = adventure.6015.a trigger = { employer = { treasury >= 10 } } employer = { add_treasury = -10 } omni_adventure_add_score_effect = { VALUE = 7 } omni_adventure_give_item_effect = { item_ID = item_administrative_cenus } trigger_event = adventure.6 }
-	option = { name = adventure.6015.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_bow } trigger_event = adventure.6 }
+	option = { name = adventure.6015.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_administrative_cenus } trigger_event = adventure.6 }
+	option = { name = adventure.6015.b omni_adventure_hedge_shortcut_effect = yes omni_adventure_give_item_effect = { item_ID = item_plans_of_grand_desing } trigger_event = adventure.6 }
 }
 
 adventure.6016 = {
@@ -1217,6 +1435,11 @@ adventure.6016 = {
 	desc = adventure.6016.desc
 	picture = event_dwarven_hall
 
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
 	trigger = { has_variable = adventure_province }
 
 	immediate = {
@@ -1224,15 +1447,20 @@ adventure.6016 = {
 		set_variable = adventure_seen_6016
 	}
 
-	option = { name = adventure.6016.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_elven_bow } trigger_event = adventure.6 }
-	option = { name = adventure.6016.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_axe } trigger_event = adventure.6 }
+	option = { name = adventure.6016.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_elven_bow } trigger_event = adventure.6 }
+	option = { name = adventure.6016.b omni_adventure_hedge_safe_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6017 = {
 	type = character_event
 	title = adventure.6017.t
 	desc = adventure.6017.desc
-	picture = event_dwarven_hall
+	picture = event_swamp_city
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1241,15 +1469,20 @@ adventure.6017 = {
 		set_variable = adventure_seen_6017
 	}
 
-	option = { name = adventure.6017.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_book_of_skills_zeal } trigger_event = adventure.6 }
-	option = { name = adventure.6017.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_daggers } trigger_event = adventure.6 }
+	option = { name = adventure.6017.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_book_of_skills_zeal } trigger_event = adventure.6 }
+	option = { name = adventure.6017.b omni_adventure_hedge_loot_effect = yes omni_adventure_give_item_effect = { item_ID = item_precious_gemstone } trigger_event = adventure.6 }
 }
 
 adventure.6018 = {
 	type = character_event
 	title = adventure.6018.t
 	desc = adventure.6018.desc
-	picture = event_barrow_white
+	picture = event_dwarven_hall
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1258,15 +1491,20 @@ adventure.6018 = {
 		set_variable = adventure_seen_6018
 	}
 
-	option = { name = adventure.6018.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_grand_helmet } trigger_event = adventure.6 }
-	option = { name = adventure.6018.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_lance } trigger_event = adventure.6 }
+	option = { name = adventure.6018.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_grand_helmet } trigger_event = adventure.6 }
+	option = { name = adventure.6018.b omni_adventure_hedge_gold_effect = yes omni_adventure_give_item_effect = { item_ID = item_rooftile } trigger_event = adventure.6 }
 }
 
 adventure.6019 = {
 	type = character_event
 	title = adventure.6019.t
 	desc = adventure.6019.desc
-	picture = romans_marching
+	picture = event_marketplace
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1275,15 +1513,20 @@ adventure.6019 = {
 		set_variable = adventure_seen_6019
 	}
 
-	option = { name = adventure.6019.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_ring_of_confidence } trigger_event = adventure.6 }
-	option = { name = adventure.6019.b employer = { add_treasury = 15 } omni_adventure_add_score_effect = { VALUE = -2 } omni_adventure_give_item_effect = { item_ID = item_book_of_skills_oratory } trigger_event = adventure.6 }
+	option = { name = adventure.6019.a omni_adventure_press_social_effect = yes trigger_event = adventure.6 }
+	option = { name = adventure.6019.b omni_adventure_hedge_gold_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6020 = {
 	type = character_event
 	title = adventure.6020.t
 	desc = adventure.6020.desc
-	picture = romans_marching
+	picture = event_swamp
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1292,15 +1535,20 @@ adventure.6020 = {
 		set_variable = adventure_seen_6020
 	}
 
-	option = { name = adventure.6020.a trigger = { employer = { treasury >= 20 } } employer = { add_treasury = -20 } omni_adventure_add_score_effect = { VALUE = 8 } omni_adventure_give_item_effect = { item_ID = item_dark_arts_scripture } trigger_event = adventure.6 }
-	option = { name = adventure.6020.b omni_adventure_add_score_effect = { VALUE = -5 } random_list = { 35 = { add_trait = wounded } 65 = {} } omni_adventure_give_item_effect = { item_ID = item_chainmail_coif } trigger_event = adventure.6 }
+	option = { name = adventure.6020.a omni_adventure_press_physical_effect = yes omni_adventure_give_item_effect = { item_ID = item_chainmail_coif } trigger_event = adventure.6 }
+	option = { name = adventure.6020.b omni_adventure_hedge_safe_effect = yes omni_adventure_give_item_effect = { item_ID = item_dark_arts_scripture } trigger_event = adventure.6 }
 }
 
 adventure.6021 = {
 	type = character_event
 	title = adventure.6021.t
 	desc = adventure.6021.desc
-	picture = romans_marching
+	picture = temple
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1309,15 +1557,20 @@ adventure.6021 = {
 		set_variable = adventure_seen_6021
 	}
 
-	option = { name = adventure.6021.a omni_adventure_add_score_effect = { VALUE = 7 } add_popularity = 3 omni_adventure_give_item_effect = { item_ID = item_great_contract_of_subjects_rights } trigger_event = adventure.6 }
-	option = { name = adventure.6021.b omni_adventure_add_score_effect = { VALUE = -3 } add_popularity = -4 omni_adventure_give_item_effect = { item_ID = item_statue_of_grom } trigger_event = adventure.6 }
+	option = { name = adventure.6021.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_great_contract_of_subjects_rights } trigger_event = adventure.6 }
+	option = { name = adventure.6021.b omni_adventure_hedge_attribute_effect = { ATTR = charisma } trigger_event = adventure.6 }
 }
 
 adventure.6022 = {
 	type = character_event
 	title = adventure.6022.t
 	desc = adventure.6022.desc
-	picture = persia_marching
+	picture = event_marketplace
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1326,15 +1579,20 @@ adventure.6022 = {
 		set_variable = adventure_seen_6022
 	}
 
-	option = { name = adventure.6022.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_book_of_skills_military } trigger_event = adventure.6 }
-	option = { name = adventure.6022.b employer = { add_treasury = 10 } omni_adventure_add_score_effect = { VALUE = -4 } add_popularity = -5 omni_adventure_give_item_effect = { item_ID = item_masterwork_crossbow } trigger_event = adventure.6 }
+	option = { name = adventure.6022.a omni_adventure_press_social_effect = yes trigger_event = adventure.6 }
+	option = { name = adventure.6022.b omni_adventure_hedge_shortcut_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6023 = {
 	type = character_event
 	title = adventure.6023.t
 	desc = adventure.6023.desc
-	picture = event_barrow_white
+	picture = event_dwarven_hall
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1343,15 +1601,20 @@ adventure.6023 = {
 		set_variable = adventure_seen_6023
 	}
 
-	option = { name = adventure.6023.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_crown } trigger_event = adventure.6 }
-	option = { name = adventure.6023.b employer = { add_treasury = 30 } omni_adventure_add_score_effect = { VALUE = -5 } random_list = { 25 = { omni_adventure_risk_companion_wound_effect = yes } 75 = {} } omni_adventure_give_item_effect = { item_ID = item_rooftile } trigger_event = adventure.6 }
+	option = { name = adventure.6023.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_crown } trigger_event = adventure.6 }
+	option = { name = adventure.6023.b omni_adventure_hedge_gold_effect = yes omni_adventure_give_item_effect = { item_ID = item_precious_jewelry } trigger_event = adventure.6 }
 }
 
 adventure.6024 = {
 	type = character_event
 	title = adventure.6024.t
 	desc = adventure.6024.desc
-	picture = event_dwarven_hall
+	picture = mountains
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1360,8 +1623,8 @@ adventure.6024 = {
 		set_variable = adventure_seen_6024
 	}
 
-	option = { name = adventure.6024.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_armet_helmet } trigger_event = adventure.6 }
-	option = { name = adventure.6024.b omni_adventure_add_score_effect = { VALUE = 3 } omni_adventure_give_item_effect = { item_ID = item_plated_coat } trigger_event = adventure.6 }
+	option = { name = adventure.6024.a omni_adventure_press_physical_effect = yes trigger_event = adventure.6 }
+	option = { name = adventure.6024.b omni_adventure_hedge_safe_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6025 = {
@@ -1370,6 +1633,11 @@ adventure.6025 = {
 	desc = adventure.6025.desc
 	picture = event_barrow_white
 
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
 	trigger = { has_variable = adventure_province }
 
 	immediate = {
@@ -1377,15 +1645,20 @@ adventure.6025 = {
 		set_variable = adventure_seen_6025
 	}
 
-	option = { name = adventure.6025.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_wreath_of_joy } trigger_event = adventure.6 }
-	option = { name = adventure.6025.b omni_adventure_add_score_effect = { VALUE = 8 } add_popularity = -5 set_variable = adventure_silver_bargain omni_adventure_give_item_effect = { item_ID = item_book_of_skills_fineese } trigger_event = adventure.6 }
+	option = { name = adventure.6025.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_wreath_of_joy } trigger_event = adventure.6 }
+	option = { name = adventure.6025.b set_variable = adventure_silver_bargain omni_adventure_hedge_shortcut_effect = yes omni_adventure_give_item_effect = { item_ID = item_book_of_skills_fineese } trigger_event = adventure.6 }
 }
 
 adventure.6026 = {
 	type = character_event
 	title = adventure.6026.t
 	desc = adventure.6026.desc
-	picture = event_dwarven_hall
+	picture = event_barrow_white
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1394,15 +1667,20 @@ adventure.6026 = {
 		set_variable = adventure_seen_6026
 	}
 
-	option = { name = adventure.6026.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_gift_of_the_god_of_blood } trigger_event = adventure.6 }
-	option = { name = adventure.6026.b employer = { add_treasury = 20 } omni_adventure_add_score_effect = { VALUE = -3 } omni_adventure_give_item_effect = { item_ID = item_memento_for_people } trigger_event = adventure.6 }
+	option = { name = adventure.6026.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_memento_for_people } trigger_event = adventure.6 }
+	option = { name = adventure.6026.b omni_adventure_hedge_gold_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6027 = {
 	type = character_event
 	title = adventure.6027.t
 	desc = adventure.6027.desc
-	picture = event_barrow_white
+	picture = event_swamp_city
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1411,15 +1689,20 @@ adventure.6027 = {
 		set_variable = adventure_seen_6027
 	}
 
-	option = { name = adventure.6027.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_shield_of_father_protector } trigger_event = adventure.6 }
-	option = { name = adventure.6027.b omni_adventure_add_score_effect = { VALUE = -2 } random_list = { 35 = { add_trait = wounded } 65 = { omni_adventure_gain_finesse_effect = yes } } omni_adventure_give_item_effect = { item_ID = item_masterwork_bow } trigger_event = adventure.6 }
+	option = { name = adventure.6027.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_spirits_essence } trigger_event = adventure.6 }
+	option = { name = adventure.6027.b omni_adventure_hedge_gold_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6028 = {
 	type = character_event
 	title = adventure.6028.t
 	desc = adventure.6028.desc
-	picture = romans_marching
+	picture = event_harbor_night
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
 
 	trigger = { has_variable = adventure_province }
 
@@ -1428,8 +1711,8 @@ adventure.6028 = {
 		set_variable = adventure_seen_6028
 	}
 
-	option = { name = adventure.6028.a trigger = { employer = { treasury >= 30 } } employer = { add_treasury = -30 } omni_adventure_add_score_effect = { VALUE = 8 } omni_adventure_give_item_effect = { item_ID = item_dragon_slayer_spear } trigger_event = adventure.6 }
-	option = { name = adventure.6028.b trigger = { employer = { treasury >= 10 } } employer = { add_treasury = -10 } omni_adventure_add_score_effect = { VALUE = -3 } random_list = { 25 = { add_popularity = -5 } 75 = {} } omni_adventure_give_item_effect = { item_ID = item_angelic_spear } trigger_event = adventure.6 }
+	option = { name = adventure.6028.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_dragon_slayer_spear } trigger_event = adventure.6 }
+	option = { name = adventure.6028.b omni_adventure_hedge_loot_effect = yes omni_adventure_give_item_effect = { item_ID = item_angelic_spear } trigger_event = adventure.6 }
 }
 
 adventure.6029 = {
@@ -1438,6 +1721,11 @@ adventure.6029 = {
 	desc = adventure.6029.desc
 	picture = event_dwarven_hall
 
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
 	trigger = { has_variable = adventure_province }
 
 	immediate = {
@@ -1445,8 +1733,8 @@ adventure.6029 = {
 		set_variable = adventure_seen_6029
 	}
 
-	option = { name = adventure.6029.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_masterwork_armour } trigger_event = adventure.6 }
-	option = { name = adventure.6029.b omni_adventure_add_score_effect = { VALUE = -5 } random_list = { 40 = { omni_adventure_risk_companion_wound_effect = yes } 60 = {} } omni_adventure_give_item_effect = { item_ID = item_masterwork_helmet } trigger_event = adventure.6 }
+	option = { name = adventure.6029.a omni_adventure_press_physical_effect = yes omni_adventure_give_item_effect = { item_ID = item_masterwork_armour } trigger_event = adventure.6 }
+	option = { name = adventure.6029.b omni_adventure_hedge_shortcut_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.6030 = {
@@ -1455,6 +1743,11 @@ adventure.6030 = {
 	desc = adventure.6030.desc
 	picture = event_barrow_white
 
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
 	trigger = { has_variable = adventure_province }
 
 	immediate = {
@@ -1462,8 +1755,338 @@ adventure.6030 = {
 		set_variable = adventure_seen_6030
 	}
 
-	option = { name = adventure.6030.a omni_adventure_add_score_effect = { VALUE = 5 } omni_adventure_give_item_effect = { item_ID = item_bow_of_the_hunter } trigger_event = adventure.6 }
-	option = { name = adventure.6030.b employer = { add_treasury = 10 } omni_adventure_add_score_effect = { VALUE = -3 } random_list = { 20 = { omni_adventure_risk_companion_wound_effect = yes } 80 = {} } omni_adventure_give_item_effect = { item_ID = item_plans_of_grand_desing } trigger_event = adventure.6 }
+	option = { name = adventure.6030.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_bow_of_the_hunter } trigger_event = adventure.6 }
+	option = { name = adventure.6030.b omni_adventure_hedge_loot_effect = yes omni_adventure_give_item_effect = { item_ID = item_plans_of_grand_desing } trigger_event = adventure.6 }
+}
+
+adventure.6031 = {
+	type = character_event
+	title = adventure.6031.t
+	desc = adventure.6031.desc
+	picture = mountains
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6031
+	}
+
+	option = { name = adventure.6031.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_ring_of_confidence } trigger_event = adventure.6 }
+	option = { name = adventure.6031.b omni_adventure_hedge_shortcut_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6032 = {
+	type = character_event
+	title = adventure.6032.t
+	desc = adventure.6032.desc
+	picture = mountains
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6032
+	}
+
+	option = { name = adventure.6032.a omni_adventure_press_physical_effect = yes omni_adventure_give_item_effect = { item_ID = item_conquerors_banner } trigger_event = adventure.6 }
+	option = { name = adventure.6032.b omni_adventure_hedge_safe_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6033 = {
+	type = character_event
+	title = adventure.6033.t
+	desc = adventure.6033.desc
+	picture = temple
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6033
+	}
+
+	option = { name = adventure.6033.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_angelic_spear } trigger_event = adventure.6 }
+	option = { name = adventure.6033.b omni_adventure_hedge_gold_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6034 = {
+	type = character_event
+	title = adventure.6034.t
+	desc = adventure.6034.desc
+	picture = temple
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6034
+	}
+
+	option = { name = adventure.6034.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_holy_scripture_wishteon } trigger_event = adventure.6 }
+	option = { name = adventure.6034.b omni_adventure_hedge_attribute_effect = { ATTR = zeal } trigger_event = adventure.6 }
+}
+
+adventure.6035 = {
+	type = character_event
+	title = adventure.6035.t
+	desc = adventure.6035.desc
+	picture = Event_citadel_library
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6035
+	}
+
+	option = { name = adventure.6035.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_dark_arts_scripture } trigger_event = adventure.6 }
+	option = { name = adventure.6035.b omni_adventure_hedge_attribute_effect = { ATTR = charisma } trigger_event = adventure.6 }
+}
+
+adventure.6036 = {
+	type = character_event
+	title = adventure.6036.t
+	desc = adventure.6036.desc
+	picture = event_dwarven_hall
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6036
+	}
+
+	option = { name = adventure.6036.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_masterwork_sword } trigger_event = adventure.6 }
+	option = { name = adventure.6036.b omni_adventure_hedge_safe_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6037 = {
+	type = character_event
+	title = adventure.6037.t
+	desc = adventure.6037.desc
+	picture = event_marketplace
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6037
+	}
+
+	option = { name = adventure.6037.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_legislative_code } trigger_event = adventure.6 }
+	option = { name = adventure.6037.b omni_adventure_hedge_shortcut_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6038 = {
+	type = character_event
+	title = adventure.6038.t
+	desc = adventure.6038.desc
+	picture = event_great_city
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6038
+	}
+
+	option = { name = adventure.6038.a omni_adventure_press_physical_effect = yes omni_adventure_give_item_effect = { item_ID = item_daggers } trigger_event = adventure.6 }
+	option = { name = adventure.6038.b omni_adventure_hedge_attribute_effect = { ATTR = finesse } trigger_event = adventure.6 }
+}
+
+adventure.6039 = {
+	type = character_event
+	title = adventure.6039.t
+	desc = adventure.6039.desc
+	picture = event_harbor_night
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6039
+	}
+
+	option = { name = adventure.6039.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_spear } trigger_event = adventure.6 }
+	option = { name = adventure.6039.b omni_adventure_hedge_gold_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6040 = {
+	type = character_event
+	title = adventure.6040.t
+	desc = adventure.6040.desc
+	picture = event_boat_storm
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6040
+	}
+
+	option = { name = adventure.6040.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_ring_2 } trigger_event = adventure.6 }
+	option = { name = adventure.6040.b omni_adventure_hedge_safe_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6041 = {
+	type = character_event
+	title = adventure.6041.t
+	desc = adventure.6041.desc
+	picture = event_desert_coast
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6041
+	}
+
+	option = { name = adventure.6041.a omni_adventure_press_physical_effect = yes omni_adventure_give_item_effect = { item_ID = item_shield } trigger_event = adventure.6 }
+	option = { name = adventure.6041.b omni_adventure_hedge_loot_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6042 = {
+	type = character_event
+	title = adventure.6042.t
+	desc = adventure.6042.desc
+	picture = event_deep_forest
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6042
+	}
+
+	option = { name = adventure.6042.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_axe } trigger_event = adventure.6 }
+	option = { name = adventure.6042.b omni_adventure_hedge_shortcut_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6043 = {
+	type = character_event
+	title = adventure.6043.t
+	desc = adventure.6043.desc
+	picture = event_forest_rangers
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6043
+	}
+
+	option = { name = adventure.6043.a omni_adventure_press_lore_effect = yes omni_adventure_give_item_effect = { item_ID = item_spirits_essence } trigger_event = adventure.6 }
+	option = { name = adventure.6043.b omni_adventure_hedge_safe_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6044 = {
+	type = character_event
+	title = adventure.6044.t
+	desc = adventure.6044.desc
+	picture = event_dwarven_hall
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6044
+	}
+
+	option = { name = adventure.6044.a omni_adventure_press_wits_effect = yes omni_adventure_give_item_effect = { item_ID = item_masterwork_crossbow } trigger_event = adventure.6 }
+	option = { name = adventure.6044.b omni_adventure_hedge_shortcut_effect = yes trigger_event = adventure.6 }
+}
+
+adventure.6045 = {
+	type = character_event
+	title = adventure.6045.t
+	desc = adventure.6045.desc
+	picture = event_dwarf_city
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = adventure_province }
+
+	immediate = {
+		omni_adventure_advance_encounter_effect = yes
+		set_variable = adventure_seen_6045
+	}
+
+	option = { name = adventure.6045.a omni_adventure_press_social_effect = yes omni_adventure_give_item_effect = { item_ID = item_precious_gemstone } trigger_event = adventure.6 }
+	option = { name = adventure.6045.b omni_adventure_hedge_loot_effect = yes trigger_event = adventure.6 }
 }
 
 adventure.7 = {
@@ -1516,99 +2139,382 @@ adventure.500 = {
 }
 
 adventure.59 = {
-	type = character_event title = adventure.59.t desc = adventure.59.desc picture = persia_marching goto_location = var:adventure_province
-	option = { name = adventure.59.a trigger = { has_variable = adventure_party_diplomat } custom_tooltip = adventure_party_diplomat_used_tt omni_adventure_add_score_effect = { VALUE = 10 } add_popularity = 4 trigger_event = adventure.500 }
-	option = { name = adventure.59.b omni_adventure_add_score_effect = { VALUE = -4 } random_list = { 30 = { omni_adventure_risk_companion_wound_effect = yes } 70 = {} } trigger_event = adventure.500 }
+	type = character_event
+	title = adventure.59.t
+	desc = adventure.59.desc
+	picture = event_dale
+	goto_location = var:adventure_province
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.59.a
+		trigger = { has_variable = adventure_party_diplomat }
+		custom_tooltip = adventure_party_diplomat_used_tt
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_specialist_scene }
+		add_popularity = 4
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.59.b
+		omni_adventure_press_physical_effect = yes
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.59.c
+		trigger = { employer = { treasury >= 30 } }
+		custom_tooltip = adventure_contract_paid_tt
+		employer = { add_treasury = -30 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_paid }
+		trigger_event = adventure.500
+	}
 }
 
 adventure.60 = {
-	type = character_event title = adventure.60.t desc = adventure.60.desc picture = event_barrow_white goto_location = var:adventure_province
-	option = { name = adventure.60.a trigger = { has_variable = adventure_party_warrior } custom_tooltip = adventure_party_warrior_used_tt omni_adventure_add_score_effect = { VALUE = 10 } trigger_event = adventure.500 }
-	option = { name = adventure.60.b omni_adventure_add_score_effect = { VALUE = -6 } random_list = { 40 = { omni_adventure_risk_companion_wound_effect = yes } 60 = {} } trigger_event = adventure.500 }
+	type = character_event
+	title = adventure.60.t
+	desc = adventure.60.desc
+	picture = event_swamp
+	goto_location = var:adventure_province
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.60.a
+		trigger = { has_variable = adventure_party_warrior }
+		custom_tooltip = adventure_party_warrior_used_tt
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_specialist_scene }
+		add_popularity = 3
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.60.b
+		omni_adventure_press_physical_effect = yes
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.60.c
+		trigger = { employer = { treasury >= 30 } }
+		custom_tooltip = adventure_contract_paid_tt
+		employer = { add_treasury = -30 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_paid }
+		trigger_event = adventure.500
+	}
 }
 
 adventure.61 = {
-	type = character_event title = adventure.61.t desc = adventure.61.desc picture = persia_marching goto_location = var:adventure_province
-	option = { name = adventure.61.a trigger = { has_variable = adventure_party_diplomat } custom_tooltip = adventure_party_diplomat_used_tt omni_adventure_add_score_effect = { VALUE = 10 } employer = { add_treasury = 20 } trigger_event = adventure.500 }
-	option = { name = adventure.61.b omni_adventure_add_score_effect = { VALUE = -5 } add_popularity = -3 trigger_event = adventure.500 }
+	type = character_event
+	title = adventure.61.t
+	desc = adventure.61.desc
+	picture = Event_citadel_library
+	goto_location = var:adventure_province
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.61.a
+		trigger = { has_variable = adventure_party_diplomat }
+		custom_tooltip = adventure_party_diplomat_used_tt
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_specialist_scene }
+		employer = { add_treasury = 20 }
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.61.b
+		omni_adventure_press_social_effect = yes
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.61.c
+		trigger = { employer = { treasury >= 30 } }
+		custom_tooltip = adventure_contract_paid_tt
+		employer = { add_treasury = -30 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_paid }
+		trigger_event = adventure.500
+	}
 }
 
 adventure.62 = {
-	type = character_event title = adventure.62.t desc = adventure.62.desc picture = event_dwarven_hall goto_location = var:adventure_province
-	option = { name = adventure.62.a trigger = { has_variable = adventure_party_scout } custom_tooltip = adventure_party_scout_used_tt omni_adventure_add_score_effect = { VALUE = 10 } trigger_event = adventure.500 }
-	option = { name = adventure.62.b omni_adventure_add_score_effect = { VALUE = -5 } random_list = { 30 = { omni_adventure_risk_companion_wound_effect = yes } 70 = {} } trigger_event = adventure.500 }
+	type = character_event
+	title = adventure.62.t
+	desc = adventure.62.desc
+	picture = event_dwarven_hall
+	goto_location = var:adventure_province
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.62.a
+		trigger = { has_variable = adventure_party_scout }
+		custom_tooltip = adventure_party_scout_used_tt
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_specialist_scene }
+		custom_tooltip = adventure_hedge_loot_tt
+		hidden_effect = { set_variable = adventure_fine_loot }
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.62.b
+		omni_adventure_press_wits_effect = yes
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.62.c
+		trigger = { employer = { treasury >= 30 } }
+		custom_tooltip = adventure_contract_paid_tt
+		employer = { add_treasury = -30 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_paid }
+		trigger_event = adventure.500
+	}
 }
 
 adventure.63 = {
-	type = character_event title = adventure.63.t desc = adventure.63.desc picture = event_barrow_white goto_location = var:adventure_province
-	option = { name = adventure.63.a trigger = { has_variable = adventure_party_scholar } custom_tooltip = adventure_party_scholar_used_tt omni_adventure_add_score_effect = { VALUE = 10 } trigger_event = adventure.500 }
-	option = { name = adventure.63.b omni_adventure_add_score_effect = { VALUE = -5 } add_popularity = -5 trigger_event = adventure.500 }
+	type = character_event
+	title = adventure.63.t
+	desc = adventure.63.desc
+	picture = temple
+	goto_location = var:adventure_province
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.63.a
+		trigger = { has_variable = adventure_party_scholar }
+		custom_tooltip = adventure_party_scholar_used_tt
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_specialist_scene }
+		add_popularity = 3
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.63.b
+		omni_adventure_press_lore_effect = yes
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.63.c
+		trigger = { employer = { treasury >= 30 } }
+		custom_tooltip = adventure_contract_paid_tt
+		employer = { add_treasury = -30 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_paid }
+		trigger_event = adventure.500
+	}
 }
 
 adventure.64 = {
-	type = character_event title = adventure.64.t desc = adventure.64.desc picture = persia_marching goto_location = var:adventure_province
-	option = { name = adventure.64.a trigger = { has_variable = adventure_party_warrior } custom_tooltip = adventure_party_warrior_used_tt omni_adventure_add_score_effect = { VALUE = 8 } add_popularity = 3 trigger_event = adventure.500 }
-	option = { name = adventure.64.b omni_adventure_add_score_effect = { VALUE = -4 } random_list = { 25 = { omni_adventure_risk_companion_wound_effect = yes } 75 = {} } trigger_event = adventure.500 }
+	type = character_event
+	title = adventure.64.t
+	desc = adventure.64.desc
+	picture = event_forest_rangers
+	goto_location = var:adventure_province
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.64.a
+		trigger = { has_variable = adventure_party_warrior }
+		custom_tooltip = adventure_party_warrior_used_tt
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_specialist_scene }
+		omni_adventure_reward_companions_small_effect = yes
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.64.b
+		omni_adventure_press_physical_effect = yes
+		trigger_event = adventure.500
+	}
+	option = {
+		name = adventure.64.c
+		trigger = { employer = { treasury >= 30 } }
+		custom_tooltip = adventure_contract_paid_tt
+		employer = { add_treasury = -30 }
+		omni_adventure_add_score_effect = { VALUE = omni_adv_contract_paid }
+		trigger_event = adventure.500
+	}
 }
 
 adventure.51 = {
 	type = character_event
 	title = adventure.51.t
 	desc = adventure.51.desc
-	picture = event_barrow_white
+	picture = mountains
 	goto_location = var:adventure_province
-	option = { name = adventure.51.a omni_adventure_add_score_effect = { VALUE = 8 } trigger_event = { id = adventure.6 days = { 3 7 } } }
-	option = { name = adventure.51.b omni_adventure_add_score_effect = { VALUE = -2 } random_list = { 25 = { omni_adventure_risk_companion_wound_effect = yes } 75 = { omni_adventure_gain_martial_effect = yes } } trigger_event = { id = adventure.6 days = { 3 7 } } }
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.51.a
+		omni_adventure_press_physical_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
+	option = {
+		name = adventure.51.b
+		omni_adventure_hedge_shortcut_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
 }
 
 adventure.52 = {
 	type = character_event
 	title = adventure.52.t
 	desc = adventure.52.desc
-	picture = event_barrow_white
+	picture = temple
 	goto_location = var:adventure_province
-	option = { name = adventure.52.a omni_adventure_add_score_effect = { VALUE = 8 } omni_adventure_gain_zeal_effect = yes trigger_event = { id = adventure.6 days = { 3 7 } } }
-	option = { name = adventure.52.b omni_adventure_add_score_effect = { VALUE = 3 } employer = { add_treasury = 15 } trigger_event = { id = adventure.6 days = { 3 7 } } }
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.52.a
+		omni_adventure_press_lore_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
+	option = {
+		name = adventure.52.b
+		omni_adventure_hedge_attribute_effect = { ATTR = zeal }
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
 }
 
 adventure.53 = {
 	type = character_event
 	title = adventure.53.t
 	desc = adventure.53.desc
-	picture = event_dwarven_hall
+	picture = event_swamp_city
 	goto_location = var:adventure_province
-	option = { name = adventure.53.a omni_adventure_add_score_effect = { VALUE = 8 } omni_adventure_gain_finesse_effect = yes trigger_event = { id = adventure.6 days = { 3 7 } } }
-	option = { name = adventure.53.b omni_adventure_add_score_effect = { VALUE = -2 } set_variable = adventure_rituals random_list = { 20 = { add_trait = wounded } 80 = {} } trigger_event = { id = adventure.6 days = { 3 7 } } }
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.53.a
+		omni_adventure_press_lore_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
+	option = {
+		name = adventure.53.b
+		omni_adventure_hedge_loot_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
 }
 
 adventure.54 = {
 	type = character_event
 	title = adventure.54.t
 	desc = adventure.54.desc
-	picture = persia_marching
+	picture = event_great_city
 	goto_location = var:adventure_province
-	option = { name = adventure.54.a omni_adventure_add_score_effect = { VALUE = 8 } add_popularity = 5 trigger_event = { id = adventure.6 days = { 3 7 } } }
-	option = { name = adventure.54.b trigger = { employer = { treasury >= 20 } } employer = { add_treasury = -20 } omni_adventure_add_score_effect = { VALUE = 6 } trigger_event = { id = adventure.6 days = { 3 7 } } }
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.54.a
+		omni_adventure_press_social_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
+	option = {
+		name = adventure.54.b
+		omni_adventure_hedge_gold_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
 }
 
 adventure.55 = {
 	type = character_event
 	title = adventure.55.t
 	desc = adventure.55.desc
-	picture = event_dwarven_hall
+	picture = event_boat_storm
 	goto_location = var:adventure_province
-	option = { name = adventure.55.a omni_adventure_add_score_effect = { VALUE = 8 } set_variable = adventure_scouts trigger_event = { id = adventure.6 days = { 3 7 } } }
-	option = { name = adventure.55.b omni_adventure_add_score_effect = { VALUE = -3 } random_list = { 25 = { omni_adventure_risk_companion_wound_effect = yes } 75 = { omni_adventure_gain_martial_effect = yes } } trigger_event = { id = adventure.6 days = { 3 7 } } }
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.55.a
+		omni_adventure_press_wits_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
+	option = {
+		name = adventure.55.b
+		omni_adventure_hedge_safe_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
 }
 
 adventure.56 = {
 	type = character_event
 	title = adventure.56.t
 	desc = adventure.56.desc
-	picture = event_barrow_white
+	picture = event_deep_forest
 	goto_location = var:adventure_province
-	option = { name = adventure.56.a omni_adventure_add_score_effect = { VALUE = 8 } set_variable = adventure_scouts trigger_event = { id = adventure.6 days = { 3 7 } } }
-	option = { name = adventure.56.b omni_adventure_add_score_effect = { VALUE = -5 } random_list = { 30 = { omni_adventure_risk_companion_wound_effect = yes } 70 = { omni_adventure_gain_martial_effect = yes } } trigger_event = { id = adventure.6 days = { 3 7 } } }
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.56.a
+		omni_adventure_press_wits_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
+	option = {
+		name = adventure.56.b
+		omni_adventure_hedge_shortcut_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
 }
 
 adventure.57 = {
@@ -1617,52 +2523,164 @@ adventure.57 = {
 	desc = adventure.57.desc
 	picture = event_dwarven_hall
 	goto_location = var:adventure_province
-	option = { name = adventure.57.a omni_adventure_add_score_effect = { VALUE = 8 } set_variable = adventure_supplies trigger_event = { id = adventure.6 days = { 3 7 } } }
-	option = { name = adventure.57.b omni_adventure_add_score_effect = { VALUE = -4 } random_list = { 25 = { add_trait = wounded } 75 = {} } trigger_event = { id = adventure.6 days = { 3 7 } } }
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.57.a
+		omni_adventure_press_physical_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
+	option = {
+		name = adventure.57.b
+		omni_adventure_hedge_safe_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
 }
 
 adventure.58 = {
 	type = character_event
 	title = adventure.58.t
 	desc = adventure.58.desc
-	picture = persia_marching
+	picture = event_dale
 	goto_location = var:adventure_province
-	option = { name = adventure.58.a omni_adventure_add_score_effect = { VALUE = 6 } trigger_event = { id = adventure.6 days = { 3 7 } } }
-	option = { name = adventure.58.b omni_adventure_add_score_effect = { VALUE = -4 } random_list = { 30 = { add_popularity = -5 } 70 = { employer = { add_treasury = 15 } } } trigger_event = { id = adventure.6 days = { 3 7 } } }
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	trigger = { has_variable = arrived_at_adventure_target }
+
+	option = {
+		name = adventure.58.a
+		omni_adventure_press_social_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
+	option = {
+		name = adventure.58.b
+		omni_adventure_hedge_gold_effect = yes
+		trigger_event = { id = adventure.6 days = { 3 7 } }
+	}
 }
 
 adventure.71 = {
 	type = character_event
 	title = adventure.71.t
 	desc = adventure.71.desc
-	picture = event_barrow_white
-	option = { name = adventure.71.a employer = { add_treasury = 150 } add_popularity = 20 omni_adventure_reward_companions_effect = yes omni_adventure_clear_variables_effect = yes }
-	option = { name = adventure.71.b if = { limit = { exists = var:adventure_party_1 } var:adventure_party_1 = { add_popularity = 12 } } if = { limit = { exists = var:adventure_party_2 } var:adventure_party_2 = { add_popularity = 12 } } if = { limit = { exists = var:adventure_party_3 } var:adventure_party_3 = { add_popularity = 12 } } add_popularity = 8 omni_adventure_clear_variables_effect = yes }
+	picture = event_great_city
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	option = {
+		name = adventure.71.a
+		employer = { add_treasury = 250 }
+		add_popularity = 20
+		omni_adventure_reward_companions_effect = yes
+		omni_adventure_clear_variables_effect = yes
+	}
+	option = {
+		name = adventure.71.b
+		if = { limit = { exists = var:adventure_party_1 var:adventure_party_1 = { is_alive = yes } } var:adventure_party_1 = { add_popularity = 12 } }
+		if = { limit = { exists = var:adventure_party_2 var:adventure_party_2 = { is_alive = yes } } var:adventure_party_2 = { add_popularity = 12 } }
+		if = { limit = { exists = var:adventure_party_3 var:adventure_party_3 = { is_alive = yes } } var:adventure_party_3 = { add_popularity = 12 } }
+		employer = { add_treasury = 100 }
+		add_popularity = 8
+		omni_adventure_clear_variables_effect = yes
+	}
+	option = {
+		name = adventure.71.c
+		custom_tooltip = adventure_legendary_attribute_tt
+		omni_adventure_legendary_attribute_effect = yes
+		employer = { add_treasury = 75 }
+		add_popularity = 10
+		omni_adventure_reward_companions_effect = yes
+		omni_adventure_clear_variables_effect = yes
+	}
 }
 
 adventure.72 = {
 	type = character_event
 	title = adventure.72.t
 	desc = adventure.72.desc
-	picture = persia_marching
-	option = { name = adventure.72.a employer = { add_treasury = 80 } add_popularity = 12 omni_adventure_reward_companions_effect = yes omni_adventure_clear_variables_effect = yes }
-	option = { name = adventure.72.b random_list = { 50 = { omni_adventure_gain_finesse_effect = yes } 50 = { omni_adventure_gain_zeal_effect = yes } } omni_adventure_reward_companions_effect = yes omni_adventure_clear_variables_effect = yes }
+	picture = event_dale
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	option = {
+		name = adventure.72.a
+		employer = { add_treasury = 125 }
+		add_popularity = 12
+		omni_adventure_reward_companions_effect = yes
+		omni_adventure_clear_variables_effect = yes
+	}
+	option = {
+		name = adventure.72.b
+		employer = { add_treasury = 40 }
+		random_list = {
+			50 = { omni_adventure_gain_finesse_effect = yes }
+			50 = { omni_adventure_gain_zeal_effect = yes }
+		}
+		omni_adventure_reward_companions_effect = yes
+		omni_adventure_clear_variables_effect = yes
+	}
 }
 
 adventure.73 = {
 	type = character_event
 	title = adventure.73.t
 	desc = adventure.73.desc
-	picture = persia_marching
-	option = { name = adventure.73.a employer = { add_treasury = 35 } add_popularity = 5 omni_adventure_reward_companions_effect = yes omni_adventure_clear_variables_effect = yes }
-	option = { name = adventure.73.b if = { limit = { has_trait = brave } omni_adventure_gain_martial_effect = yes } else_if = { limit = { has_trait = cautious } omni_adventure_gain_finesse_effect = yes } else = { omni_adventure_gain_zeal_effect = yes } omni_adventure_reward_companions_effect = yes omni_adventure_clear_variables_effect = yes }
+	picture = event_forest_rangers
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
+	option = {
+		name = adventure.73.a
+		employer = { add_treasury = 50 }
+		add_popularity = 5
+		omni_adventure_reward_companions_effect = yes
+		omni_adventure_clear_variables_effect = yes
+	}
+	option = {
+		name = adventure.73.b
+		random_list = {
+			40 = {
+				if = { limit = { has_trait = brave } omni_adventure_gain_martial_effect = yes }
+				else_if = { limit = { has_trait = cautious } omni_adventure_gain_finesse_effect = yes }
+				else = { omni_adventure_gain_zeal_effect = yes }
+			}
+			60 = { add_popularity = 3 }
+		}
+		omni_adventure_reward_companions_effect = yes
+		omni_adventure_clear_variables_effect = yes
+	}
 }
 
 adventure.74 = {
 	type = character_event
 	title = adventure.74.t
 	desc = adventure.74.desc
-	picture = event_barrow_white
+	picture = event_swamp
+
+	left_portrait = ROOT
+	left_portrait = var:adventure_party_1
+	right_portrait = var:adventure_party_2
+	right_portrait = var:adventure_party_3
+
 	immediate = {
 		random_list = {
 			50 = { if = { limit = { NOT = { has_trait = wounded } } add_trait = wounded } }
@@ -1670,12 +2688,24 @@ adventure.74 = {
 		}
 		random_list = { 35 = { omni_adventure_risk_companion_wound_effect = yes } 65 = {} }
 	}
-	option = { name = adventure.74.a employer = { add_treasury = -30 } add_popularity = -8 omni_adventure_clear_variables_effect = yes }
-	option = { name = adventure.74.b random_list = { 25 = { omni_adventure_gain_zeal_effect = yes } 75 = { add_popularity = 3 } } omni_adventure_clear_variables_effect = yes }
+
+	option = {
+		name = adventure.74.a
+		employer = { add_treasury = -30 }
+		add_popularity = -8
+		omni_adventure_clear_variables_effect = yes
+	}
+	option = {
+		name = adventure.74.b
+		random_list = { 25 = { omni_adventure_gain_zeal_effect = yes } 75 = { add_popularity = 3 } }
+		omni_adventure_clear_variables_effect = yes
+	}
 }
+
 
 # Console/debug hook: trigger adventure.90 on an adventurer after arrival to
 # force a deterministic theme, length, and item result for smoke testing.
+# Options d-f exercise the coast pool, the stall-free fallback, and the tiers.
 adventure.90 = {
 	type = character_event
 	title = adventure.90.t
@@ -1712,4 +2742,40 @@ adventure.90 = {
 		set_variable = adventure_grants_item
 		trigger_event = adventure.50
 	}
+	option = {
+		name = adventure.90.d
+		omni_adventure_clear_theme_effect = yes
+		set_variable = beachside_adventure
+		remove_variable = adventure_need_2
+		remove_variable = adventure_need_3
+		set_variable = adventure_need_4
+		set_variable = adventure_grants_item
+		remove_variable = adventure_item_given
+		trigger_event = adventure.50
+	}
+	option = {
+		name = adventure.90.e
+		# Mark the whole mountain and generic pools as seen: the dispatcher
+		# must fall back cleanly to adventure.7 instead of stalling.
+		omni_adventure_clear_theme_effect = yes
+		set_variable = mountain_adventure
+		set_variable = adventure_seen_6005 set_variable = adventure_seen_6013 set_variable = adventure_seen_6018
+		set_variable = adventure_seen_6024 set_variable = adventure_seen_6031 set_variable = adventure_seen_6032
+		set_variable = adventure_seen_6010 set_variable = adventure_seen_6011 set_variable = adventure_seen_6016
+		set_variable = adventure_seen_6025 set_variable = adventure_seen_6026 set_variable = adventure_seen_6029
+		set_variable = adventure_seen_6030
+		remove_variable = adventure_scouts remove_variable = adventure_supplies remove_variable = adventure_rituals
+		trigger_event = adventure.6
+	}
+	option = {
+		name = adventure.90.f
+		set_variable = { name = adventure_score value = omni_adv_tier_legendary }
+		set_variable = adventure_encounter_1_done set_variable = adventure_encounter_2_done
+		set_variable = adventure_encounter_3_done set_variable = adventure_encounter_4_done
+		trigger_event = adventure.6
+	}
 }
+
+
+
+
