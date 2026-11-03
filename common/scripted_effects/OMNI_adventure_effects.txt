@@ -100,6 +100,26 @@ omni_adventure_clear_variables_effect = {
 	remove_variable = adventure_seen_6028
 	remove_variable = adventure_seen_6029
 	remove_variable = adventure_seen_6030
+	remove_variable = adventure_seen_6031
+	remove_variable = adventure_seen_6032
+	remove_variable = adventure_seen_6033
+	remove_variable = adventure_seen_6034
+	remove_variable = adventure_seen_6035
+	remove_variable = adventure_seen_6036
+	remove_variable = adventure_seen_6037
+	remove_variable = adventure_seen_6038
+	remove_variable = adventure_seen_6039
+	remove_variable = adventure_seen_6040
+	remove_variable = adventure_seen_6041
+	remove_variable = adventure_seen_6042
+	remove_variable = adventure_seen_6043
+	remove_variable = adventure_seen_6044
+	remove_variable = adventure_seen_6045
+	remove_variable = adventure_seen_4000
+	remove_variable = adventure_seen_4001
+	remove_variable = adventure_seen_4002
+	remove_variable = adventure_seen_4003
+	remove_variable = adventure_seen_4004
 	remove_variable = adventure_supplies
 	remove_variable = adventure_scouts
 	remove_variable = adventure_rituals
@@ -135,12 +155,24 @@ omni_adventure_clear_variables_effect = {
 	remove_variable = adventure_attribute_gained
 	remove_variable = cautious_reward_4000_taken
 	remove_variable = brave_reward_4000_taken
+	remove_variable = adventure_fine_loot
+	remove_variable = adventure_hurried
+	remove_variable = adventure_contract_settled
 }
 
 omni_adventure_mark_party_busy_effect = {
 	set_variable = {
 		name = on_omni_adventure
 		days = 1200
+	}
+	# Visible "away" status on the ruler. Timed to the same 1200 days as the
+	# busy flag so it can never outlive a broken chain.
+	if = {
+		limit = { NOT = { has_character_modifier = omni_adventure_on_the_road } }
+		add_character_modifier = {
+			name = omni_adventure_on_the_road
+			duration = 1200
+		}
 	}
 	if = {
 		limit = { exists = var:adventure_party_1 }
@@ -174,13 +206,15 @@ omni_adventure_mark_party_busy_effect = {
 	}
 }
 
+# Contract first (adventure.2), then the party (adventure.1) so the party
+# screen can say which candidates suit the job, then preparations (adventure.3).
 omni_start_adventure_effect = {
 	omni_adventure_clear_variables_effect = yes
 	set_variable = {
 		name = on_omni_adventure
 		days = 1200
 	}
-	trigger_event = { id = adventure.1 }
+	trigger_event = { id = adventure.2 }
 }
 
 omni_adventure_add_score_effect = {
@@ -233,6 +267,30 @@ omni_adventure_candidate_role_tooltips_effect = {
 	if = { limit = { scope:$SCOPE$ = { OR = { finesse >= 9 has_trait = cautious has_trait = suspicious } } } custom_tooltip = adventure_candidate_scout_tt }
 	if = { limit = { scope:$SCOPE$ = { OR = { zeal >= 9 has_trait = scholar has_trait = pious has_trait = mage_trait has_trait = cleric_trait } } } custom_tooltip = adventure_candidate_scholar_tt }
 	if = { limit = { scope:$SCOPE$ = { charisma >= 9 } } custom_tooltip = adventure_candidate_diplomat_tt }
+	# The contract is chosen before the party, so say plainly who fits it.
+	if = {
+		limit = {
+			OR = {
+				AND = {
+					OR = { has_variable = adventure_contract_monster has_variable = adventure_contract_escort }
+					scope:$SCOPE$ = { OR = { martial >= 9 has_trait = brave } }
+				}
+				AND = {
+					has_variable = adventure_contract_ruin
+					scope:$SCOPE$ = { OR = { finesse >= 9 has_trait = cautious has_trait = suspicious } }
+				}
+				AND = {
+					has_variable = adventure_contract_relic
+					scope:$SCOPE$ = { OR = { zeal >= 9 has_trait = scholar has_trait = pious has_trait = mage_trait has_trait = cleric_trait } }
+				}
+				AND = {
+					OR = { has_variable = adventure_contract_rescue has_variable = adventure_contract_intrigue }
+					scope:$SCOPE$ = { charisma >= 9 }
+				}
+			}
+		}
+		custom_tooltip = adventure_candidate_matches_contract_tt
+	}
 }
 
 # Recalculate specialties once all three companions have been chosen.
@@ -282,10 +340,19 @@ omni_adventure_reward_companions_effect = {
 }
 
 omni_adventure_risk_companion_wound_effect = {
-	random_list = {
-		1 = { trigger = { var:adventure_party_1 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_1 = { add_trait = wounded } }
-		1 = { trigger = { var:adventure_party_2 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_2 = { add_trait = wounded } }
-		1 = { trigger = { var:adventure_party_3 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_3 = { add_trait = wounded } }
+	if = {
+		limit = {
+			OR = {
+				var:adventure_party_1 = { is_alive = yes NOT = { has_trait = wounded } }
+				var:adventure_party_2 = { is_alive = yes NOT = { has_trait = wounded } }
+				var:adventure_party_3 = { is_alive = yes NOT = { has_trait = wounded } }
+			}
+		}
+		random_list = {
+			1 = { trigger = { var:adventure_party_1 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_1 = { add_trait = wounded } }
+			1 = { trigger = { var:adventure_party_2 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_2 = { add_trait = wounded } }
+			1 = { trigger = { var:adventure_party_3 = { is_alive = yes NOT = { has_trait = wounded } } } var:adventure_party_3 = { add_trait = wounded } }
+		}
 	}
 }
 
@@ -298,6 +365,7 @@ omni_adventure_advance_encounter_effect = {
 
 omni_adventure_release_party_effect = {
 	remove_variable = on_omni_adventure
+	omni_adventure_remove_road_modifier_effect = yes
 	set_variable = {
 		name = omni_adventure_cooldown
 		days = 1095
@@ -322,10 +390,18 @@ omni_adventure_release_party_effect = {
 	}
 }
 
+omni_adventure_remove_road_modifier_effect = {
+	if = {
+		limit = { has_character_modifier = omni_adventure_on_the_road }
+		remove_character_modifier = omni_adventure_on_the_road
+	}
+}
+
 # Emergency cleanup for death, succession, or other hard interruption. Unlike a
 # completed expedition this does not impose a cooldown on a dead/former ruler.
 omni_adventure_abort_effect = {
 	remove_variable = on_omni_adventure
+	omni_adventure_remove_road_modifier_effect = yes
 	if = { limit = { exists = var:adventure_party_1 } var:adventure_party_1 = { remove_variable = on_omni_adventure } }
 	if = { limit = { exists = var:adventure_party_2 } var:adventure_party_2 = { remove_variable = on_omni_adventure } }
 	if = { limit = { exists = var:adventure_party_3 } var:adventure_party_3 = { remove_variable = on_omni_adventure } }
@@ -335,17 +411,18 @@ omni_adventure_abort_effect = {
 # Shared bookkeeping for the new destination scenes. The existing legacy
 # encounters keep their individual seen flags, while all arrival scenes use
 # this one state machine to avoid duplicating reward and return plumbing.
+# Tier thresholds are script values in common/script_values/OMNI_adventure_values.txt.
 omni_adventure_finish_contract_effect = {
 	if = {
-		limit = { var:adventure_score >= 90 }
+		limit = { var:adventure_score >= omni_adv_tier_legendary }
 		set_variable = adventure_outcome_legendary
 	}
 	else_if = {
-		limit = { var:adventure_score >= 70 }
+		limit = { var:adventure_score >= omni_adv_tier_success }
 		set_variable = adventure_outcome_success
 	}
 	else_if = {
-		limit = { var:adventure_score >= 50 }
+		limit = { var:adventure_score >= omni_adv_tier_mixed }
 		set_variable = adventure_outcome_mixed
 	}
 	else = { set_variable = adventure_outcome_failure }
@@ -353,39 +430,18 @@ omni_adventure_finish_contract_effect = {
 
 # Contract choice is intentionally modest: it makes the selected job matter
 # before the location scene and also nudges its final score tier.
+# Applied once on arrival. Every contract gets the same small base; the party
+# gets the specialist bonus only when it brought the specialist the contract
+# board asked for (see omni_adventure_has_contract_specialist_trigger).
 omni_adventure_apply_contract_bonus_effect = {
+	omni_adventure_add_score_effect = { VALUE = omni_adv_contract_base }
 	if = {
-		limit = { has_variable = adventure_contract_rescue }
-		omni_adventure_add_score_effect = { VALUE = 3 }
-		add_popularity = 3
-		if = { limit = { has_variable = adventure_party_diplomat } omni_adventure_add_score_effect = { VALUE = 8 } }
+		limit = { omni_adventure_has_contract_specialist_trigger = yes }
+		custom_tooltip = adventure_contract_specialist_bonus_tt
+		omni_adventure_add_score_effect = { VALUE = omni_adv_specialist_bonus }
 	}
-	else_if = {
-		limit = { has_variable = adventure_contract_ruin }
-		omni_adventure_add_score_effect = { VALUE = 4 }
-		if = { limit = { has_variable = adventure_party_scout } omni_adventure_add_score_effect = { VALUE = 8 } }
-	}
-	else_if = {
-		limit = { has_variable = adventure_contract_monster }
-		omni_adventure_add_score_effect = { VALUE = 3 }
-		if = { limit = { has_variable = adventure_party_warrior } omni_adventure_add_score_effect = { VALUE = 8 } }
-	}
-	else_if = {
-		limit = { has_variable = adventure_contract_relic }
-		omni_adventure_add_score_effect = { VALUE = 4 }
-		if = { limit = { has_variable = adventure_party_scholar } omni_adventure_add_score_effect = { VALUE = 8 } }
-	}
-	else_if = {
-		limit = { has_variable = adventure_contract_escort }
-		omni_adventure_add_score_effect = { VALUE = 3 }
-		add_popularity = 5
-		if = { limit = { has_variable = adventure_party_warrior } omni_adventure_add_score_effect = { VALUE = 5 } }
-	}
-	else_if = {
-		limit = { has_variable = adventure_contract_intrigue }
-		omni_adventure_add_score_effect = { VALUE = 3 }
-		if = { limit = { has_variable = adventure_party_diplomat } omni_adventure_add_score_effect = { VALUE = 8 } }
-	}
+	if = { limit = { has_variable = adventure_contract_rescue } add_popularity = 3 }
+	else_if = { limit = { has_variable = adventure_contract_escort } add_popularity = 3 }
 }
 
 omni_adventure_clear_theme_effect = {
@@ -402,160 +458,238 @@ omni_adventure_clear_theme_effect = {
 }
 
 omni_adventure_roll_mountain_encounter_effect = {
+	# Only called behind omni_adventure_pool_mountain_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6005 } } trigger_event = adventure.6005 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6013 } } trigger_event = adventure.6013 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6018 } } trigger_event = adventure.6018 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6024 } } trigger_event = adventure.6024 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6031 } } trigger_event = adventure.6031 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6032 } } trigger_event = adventure.6032 }
 	}
 }
 
 omni_adventure_roll_holy_encounter_effect = {
+	# Only called behind omni_adventure_pool_holy_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6004 } } trigger_event = adventure.6004 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6009 } } trigger_event = adventure.6009 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6012 } } trigger_event = adventure.6012 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6021 } } trigger_event = adventure.6021 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6033 } } trigger_event = adventure.6033 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6034 } } trigger_event = adventure.6034 }
 	}
 }
 
 omni_adventure_roll_magic_encounter_effect = {
+	# Only called behind omni_adventure_pool_magic_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6003 } } trigger_event = adventure.6003 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6007 } } trigger_event = adventure.6007 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6008 } } trigger_event = adventure.6008 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6017 } } trigger_event = adventure.6017 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6020 } } trigger_event = adventure.6020 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6035 } } trigger_event = adventure.6035 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6036 } } trigger_event = adventure.6036 }
 	}
 }
 
 omni_adventure_roll_city_encounter_effect = {
+	# Only called behind omni_adventure_pool_city_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6006 } } trigger_event = adventure.6006 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6014 } } trigger_event = adventure.6014 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6015 } } trigger_event = adventure.6015 }
-		10 = { trigger = { NOT = { has_variable = adventure_seen_6022 } } trigger_event = adventure.6022 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6019 } } trigger_event = adventure.6019 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6022 } } trigger_event = adventure.6022 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6037 } } trigger_event = adventure.6037 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6038 } } trigger_event = adventure.6038 }
 	}
 }
 
 omni_adventure_roll_coast_encounter_effect = {
+	# Only called behind omni_adventure_pool_coast_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
-		10 = { trigger = { NOT = { has_variable = adventure_seen_6002 } } trigger_event = adventure.6002 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6006 } } trigger_event = adventure.6006 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6014 } } trigger_event = adventure.6014 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6028 } } trigger_event = adventure.6028 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6039 } } trigger_event = adventure.6039 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6040 } } trigger_event = adventure.6040 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6041 } } trigger_event = adventure.6041 }
 	}
 }
 
 omni_adventure_roll_forest_encounter_effect = {
+	# Only called behind omni_adventure_pool_forest_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6001 } } trigger_event = adventure.6001 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6002 } } trigger_event = adventure.6002 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6003 } } trigger_event = adventure.6003 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6027 } } trigger_event = adventure.6027 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6042 } } trigger_event = adventure.6042 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6043 } } trigger_event = adventure.6043 }
 	}
 }
 
 omni_adventure_roll_cavern_encounter_effect = {
+	# Only called behind omni_adventure_pool_cavern_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6001 } } trigger_event = adventure.6001 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6005 } } trigger_event = adventure.6005 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6013 } } trigger_event = adventure.6013 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6023 } } trigger_event = adventure.6023 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6044 } } trigger_event = adventure.6044 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6045 } } trigger_event = adventure.6045 }
 	}
 }
 
 omni_adventure_roll_generic_encounter_effect = {
+	# Only called behind omni_adventure_pool_generic_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6010 } } trigger_event = adventure.6010 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6011 } } trigger_event = adventure.6011 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6016 } } trigger_event = adventure.6016 }
-		10 = { trigger = { NOT = { has_variable = adventure_seen_6030 } } trigger_event = adventure.6030 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6025 } } trigger_event = adventure.6025 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6026 } } trigger_event = adventure.6026 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6029 } } trigger_event = adventure.6029 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6030 } } trigger_event = adventure.6030 }
 	}
 }
 
+# Stall-free: a theme whose pool is used up falls through to the generic pool,
+# and if even that is empty the expedition simply ends (adventure.7). Pools are
+# 6+ deep and at most 4 encounters are drawn, so the fallbacks are insurance.
 omni_adventure_roll_theme_encounter_base_effect = {
-	if = { limit = { has_variable = mountain_adventure } omni_adventure_roll_mountain_encounter_effect = yes }
-	else_if = { limit = { has_variable = holy_site_adventure } omni_adventure_roll_holy_encounter_effect = yes }
-	else_if = { limit = { OR = { has_variable = magical_adventure has_variable = soulgems_adventure has_variable = elixir_adventure } } omni_adventure_roll_magic_encounter_effect = yes }
-	else_if = { limit = { has_variable = metropolis_adventure } omni_adventure_roll_city_encounter_effect = yes }
-	else_if = { limit = { has_variable = beachside_adventure } omni_adventure_roll_coast_encounter_effect = yes }
-	else_if = { limit = { has_variable = eldritch_forest_adventure } omni_adventure_roll_forest_encounter_effect = yes }
-	else_if = { limit = { has_variable = caverns_adventure } omni_adventure_roll_cavern_encounter_effect = yes }
-	else = { omni_adventure_roll_generic_encounter_effect = yes }
+	if = { limit = { has_variable = mountain_adventure omni_adventure_pool_mountain_open_trigger = yes } omni_adventure_roll_mountain_encounter_effect = yes }
+	else_if = { limit = { has_variable = holy_site_adventure omni_adventure_pool_holy_open_trigger = yes } omni_adventure_roll_holy_encounter_effect = yes }
+	else_if = { limit = { OR = { has_variable = magical_adventure has_variable = soulgems_adventure has_variable = elixir_adventure } omni_adventure_pool_magic_open_trigger = yes } omni_adventure_roll_magic_encounter_effect = yes }
+	else_if = { limit = { has_variable = metropolis_adventure omni_adventure_pool_city_open_trigger = yes } omni_adventure_roll_city_encounter_effect = yes }
+	else_if = { limit = { has_variable = beachside_adventure omni_adventure_pool_coast_open_trigger = yes } omni_adventure_roll_coast_encounter_effect = yes }
+	else_if = { limit = { has_variable = eldritch_forest_adventure omni_adventure_pool_forest_open_trigger = yes } omni_adventure_roll_forest_encounter_effect = yes }
+	else_if = { limit = { has_variable = caverns_adventure omni_adventure_pool_cavern_open_trigger = yes } omni_adventure_roll_cavern_encounter_effect = yes }
+	else_if = { limit = { omni_adventure_pool_generic_open_trigger = yes } omni_adventure_roll_generic_encounter_effect = yes }
+	else = { trigger_event = adventure.7 }
 }
 
 # Preparations bias the next encounter before the location pool is consulted.
 # They do not remove the destination identity; the base roll remains dominant.
 omni_adventure_roll_scouted_encounter_effect = {
+	# Only called behind omni_adventure_pool_scouted_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6001 } } trigger_event = adventure.6001 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6002 } } trigger_event = adventure.6002 }
-		10 = { trigger = { NOT = { has_variable = adventure_seen_6007 } } trigger_event = adventure.6007 }
-		10 = { trigger = { NOT = { has_variable = adventure_seen_6015 } } trigger_event = adventure.6015 }
-		10 = { trigger = { NOT = { has_variable = adventure_seen_6022 } } trigger_event = adventure.6022 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6011 } } trigger_event = adventure.6011 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6016 } } trigger_event = adventure.6016 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6018 } } trigger_event = adventure.6018 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6023 } } trigger_event = adventure.6023 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6030 } } trigger_event = adventure.6030 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6039 } } trigger_event = adventure.6039 }
 	}
 }
 
 omni_adventure_roll_supplied_encounter_effect = {
+	# Only called behind omni_adventure_pool_supplied_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
-		10 = { trigger = { NOT = { has_variable = adventure_seen_6001 } } trigger_event = adventure.6001 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6005 } } trigger_event = adventure.6005 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6013 } } trigger_event = adventure.6013 }
-		10 = { trigger = { NOT = { has_variable = adventure_seen_6018 } } trigger_event = adventure.6018 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6020 } } trigger_event = adventure.6020 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6024 } } trigger_event = adventure.6024 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6029 } } trigger_event = adventure.6029 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6032 } } trigger_event = adventure.6032 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6038 } } trigger_event = adventure.6038 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6041 } } trigger_event = adventure.6041 }
 	}
 }
 
 omni_adventure_roll_ritual_encounter_effect = {
+	# Only called behind omni_adventure_pool_ritual_open_trigger, so at least one
+	# entry is always valid.
 	random_list = {
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6004 } } trigger_event = adventure.6004 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6007 } } trigger_event = adventure.6007 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6008 } } trigger_event = adventure.6008 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6012 } } trigger_event = adventure.6012 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6017 } } trigger_event = adventure.6017 }
 		10 = { trigger = { NOT = { has_variable = adventure_seen_6026 } } trigger_event = adventure.6026 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6034 } } trigger_event = adventure.6034 }
+		10 = { trigger = { NOT = { has_variable = adventure_seen_6035 } } trigger_event = adventure.6035 }
 	}
 }
 
+# Preparations bias the next encounter toward the kind of trouble they are
+# good at (35 vs 65). The bias entry is only valid while its pool has unseen
+# encounters, and the base entry always resolves, so this cannot stall.
 omni_adventure_roll_theme_encounter_effect = {
-	if = {
-		limit = { has_variable = adventure_scouts }
-		random_list = {
-			35 = { omni_adventure_roll_scouted_encounter_effect = yes }
-			65 = { omni_adventure_roll_theme_encounter_base_effect = yes }
+	random_list = {
+		35 = {
+			trigger = { has_variable = adventure_scouts omni_adventure_pool_scouted_open_trigger = yes }
+			omni_adventure_roll_scouted_encounter_effect = yes
 		}
-	}
-	else_if = {
-		limit = { has_variable = adventure_supplies }
-		random_list = {
-			35 = { omni_adventure_roll_supplied_encounter_effect = yes }
-			65 = { omni_adventure_roll_theme_encounter_base_effect = yes }
+		35 = {
+			trigger = { has_variable = adventure_supplies omni_adventure_pool_supplied_open_trigger = yes }
+			omni_adventure_roll_supplied_encounter_effect = yes
 		}
-	}
-	else_if = {
-		limit = { has_variable = adventure_rituals }
-		random_list = {
-			35 = { omni_adventure_roll_ritual_encounter_effect = yes }
-			65 = { omni_adventure_roll_theme_encounter_base_effect = yes }
+		35 = {
+			trigger = { has_variable = adventure_rituals omni_adventure_pool_ritual_open_trigger = yes }
+			omni_adventure_roll_ritual_encounter_effect = yes
 		}
+		65 = { omni_adventure_roll_theme_encounter_base_effect = yes }
 	}
-	else = { omni_adventure_roll_theme_encounter_base_effect = yes }
 }
 
+# Travel tick (adventure.4): one unseen travel event, or a quiet stretch.
+omni_adventure_roll_travel_event_effect = {
+	if = {
+		limit = { omni_adventure_pool_travel_open_trigger = yes }
+		random_list = {
+			10 = { trigger = { NOT = { has_variable = adventure_seen_4000 } } trigger_event = adventure.4000 }
+			10 = { trigger = { NOT = { has_variable = adventure_seen_4001 } } trigger_event = adventure.4001 }
+			10 = { trigger = { NOT = { has_variable = adventure_seen_4002 } } trigger_event = adventure.4002 }
+			10 = { trigger = { NOT = { has_variable = adventure_seen_4003 } } trigger_event = adventure.4003 }
+			10 = { trigger = { NOT = { has_variable = adventure_seen_4004 } } trigger_event = adventure.4004 }
+		}
+	}
+	else = { omni_adventure_add_score_effect = { VALUE = omni_adv_travel_quiet } }
+}
+
+# Loot is drawn from the destination owner's culture (normally the realm
+# itself). A legendary-grade score or a "fine loot" hedge upgrades the odds.
 omni_adventure_roll_generated_item_effect = {
 	if = {
-		limit = { var:adventure_score >= 90 }
+		limit = { exists = var:adventure_province.owner }
+		var:adventure_province.owner = { save_scope_as = omni_adventure_loot_realm }
+	}
+	else = {
+		employer = { save_scope_as = omni_adventure_loot_realm }
+	}
+	if = {
+		limit = {
+			OR = {
+				var:adventure_score >= omni_adv_tier_legendary
+				has_variable = adventure_fine_loot
+			}
+		}
 		random_list = {
-			40 = { var:adventure_province.owner = { omni_adventure_roll_local_common_item_effect = yes } }
-			35 = { var:adventure_province.owner = { omni_adventure_roll_local_uncommon_item_effect = yes } }
-			25 = { var:adventure_province.owner = { omni_adventure_roll_local_rare_item_effect = yes } }
+			40 = { scope:omni_adventure_loot_realm = { omni_adventure_roll_local_common_item_effect = yes } }
+			35 = { scope:omni_adventure_loot_realm = { omni_adventure_roll_local_uncommon_item_effect = yes } }
+			25 = { scope:omni_adventure_loot_realm = { omni_adventure_roll_local_rare_item_effect = yes } }
 		}
 	}
 	else = {
 		random_list = {
-			65 = { var:adventure_province.owner = { omni_adventure_roll_local_common_item_effect = yes } }
-			25 = { var:adventure_province.owner = { omni_adventure_roll_local_uncommon_item_effect = yes } }
-			10 = { var:adventure_province.owner = { omni_adventure_roll_local_rare_item_effect = yes } }
+			65 = { scope:omni_adventure_loot_realm = { omni_adventure_roll_local_common_item_effect = yes } }
+			25 = { scope:omni_adventure_loot_realm = { omni_adventure_roll_local_uncommon_item_effect = yes } }
+			10 = { scope:omni_adventure_loot_realm = { omni_adventure_roll_local_rare_item_effect = yes } }
 		}
 	}
 }
@@ -585,5 +719,155 @@ omni_adventure_give_item_effect = {
 				}
 			}
 		}
+	}
+}
+
+
+# ===========================================================================
+# PRESS / HEDGE
+# Every scene and encounter offers a "press" option (a gamble) and a "hedge"
+# option (little or no readiness, but something tangible).
+#
+# Press odds: 50 win / 50 loss. The win weight is multiplied by 1.6 with the
+# matching preparation and by 1.4 with the matching specialist (both: ~69%).
+# Wound chance on a loss is 30%, halved by supplies. Scores come from
+# omni_adv_press_win / omni_adv_press_loss / omni_adv_hedge. The Monte Carlo in
+# tools/adventure/mc_adventure.py reads the numbers from the effect itself.
+# Kinds: physical = supplies + warrior, wits = scouts + scout,
+#        lore = rituals + scholar, social = supplies + diplomat.
+# ===========================================================================
+omni_adventure_press_effect = {
+	custom_tooltip = adventure_press_$KIND$_tt
+	if = { limit = { has_variable = adventure_$PREP$ } custom_tooltip = adventure_press_has_$PREP$_tt }
+	if = { limit = { has_variable = adventure_party_$SPEC$ } custom_tooltip = adventure_press_has_$SPEC$_tt }
+	random_list = {
+		50 = {
+			modifier = { factor = 1.6 has_variable = adventure_$PREP$ }
+			modifier = { factor = 1.4 has_variable = adventure_party_$SPEC$ }
+			custom_tooltip = adventure_press_win_tt
+			hidden_effect = { omni_adventure_add_score_effect = { VALUE = omni_adv_press_win } }
+		}
+		50 = {
+			custom_tooltip = adventure_press_loss_tt
+			hidden_effect = { omni_adventure_add_score_effect = { VALUE = omni_adv_press_loss } }
+			omni_adventure_press_wound_effect = yes
+		}
+	}
+}
+
+omni_adventure_press_wound_effect = {
+	random_list = {
+		30 = {
+			modifier = { factor = 0.5 has_variable = adventure_supplies }
+			omni_adventure_risk_companion_wound_effect = yes
+		}
+		70 = {}
+	}
+}
+
+omni_adventure_press_physical_effect = { omni_adventure_press_effect = { KIND = physical PREP = supplies SPEC = warrior } }
+
+omni_adventure_press_wits_effect = { omni_adventure_press_effect = { KIND = wits PREP = scouts SPEC = scout } }
+
+omni_adventure_press_lore_effect = { omni_adventure_press_effect = { KIND = lore PREP = rituals SPEC = scholar } }
+
+omni_adventure_press_social_effect = { omni_adventure_press_effect = { KIND = social PREP = supplies SPEC = diplomat } }
+
+
+# Hedges all cost the same readiness (omni_adv_hedge) and never wound.
+omni_adventure_hedge_score_effect = {
+	custom_tooltip = adventure_hedge_tt
+	hidden_effect = { omni_adventure_add_score_effect = { VALUE = omni_adv_hedge } }
+}
+
+omni_adventure_hedge_gold_effect = {
+	omni_adventure_hedge_score_effect = yes
+	employer = { add_treasury = omni_adv_hedge_gold }
+}
+
+omni_adventure_hedge_attribute_effect = {
+	omni_adventure_hedge_score_effect = yes
+	random_list = {
+		35 = { omni_adventure_gain_$ATTR$_effect = yes }
+		65 = { add_popularity = 2 }
+	}
+}
+
+omni_adventure_hedge_loot_effect = {
+	omni_adventure_hedge_score_effect = yes
+	custom_tooltip = adventure_hedge_loot_tt
+	hidden_effect = {
+		set_variable = adventure_fine_loot
+		if = {
+			limit = { NOT = { has_variable = adventure_grants_item } NOT = { has_variable = adventure_item_given } }
+			random_list = {
+				30 = { set_variable = adventure_grants_item }
+				70 = {}
+			}
+		}
+	}
+}
+
+# Shorter expedition: one fewer encounter. Only offered once the encounter
+# count is known (theme scenes and encounters).
+omni_adventure_hedge_shortcut_effect = {
+	omni_adventure_hedge_score_effect = yes
+	custom_tooltip = adventure_hedge_shortcut_tt
+	hidden_effect = { omni_adventure_advance_encounter_effect = yes }
+}
+
+# Travel-only: reach the destination sooner.
+omni_adventure_hedge_hurry_effect = {
+	omni_adventure_hedge_score_effect = yes
+	custom_tooltip = adventure_hedge_hurry_tt
+	if = {
+		limit = { NOT = { has_variable = adventure_hurried } }
+		set_variable = adventure_hurried
+		hidden_effect = { trigger_event = { id = adventure.5 days = { 5 15 } } }
+	}
+}
+
+omni_adventure_hedge_safe_effect = {
+	omni_adventure_hedge_score_effect = yes
+	custom_tooltip = adventure_hedge_safe_tt
+	if = {
+		limit = { has_trait = wounded }
+		remove_trait = wounded
+	}
+	else = {
+		omni_adventure_reward_companions_small_effect = yes
+	}
+}
+
+omni_adventure_reward_companions_small_effect = {
+	if = { limit = { exists = var:adventure_party_1 var:adventure_party_1 = { is_alive = yes } } var:adventure_party_1 = { add_popularity = 2 } }
+	if = { limit = { exists = var:adventure_party_2 var:adventure_party_2 = { is_alive = yes } } var:adventure_party_2 = { add_popularity = 2 } }
+	if = { limit = { exists = var:adventure_party_3 var:adventure_party_3 = { is_alive = yes } } var:adventure_party_3 = { add_popularity = 2 } }
+}
+
+# Legendary attribute path: the contract decides which attribute the story
+# is about. Still bounded by the one-permanent-point rule; if the point was
+# already earned on the road the ruler takes gold and renown instead.
+omni_adventure_legendary_attribute_effect = {
+	if = {
+		limit = { has_variable = adventure_attribute_gained }
+		custom_tooltip = adventure_legendary_attribute_taken_tt
+		employer = { add_treasury = 100 }
+		add_popularity = 10
+	}
+	else_if = {
+		limit = { OR = { has_variable = adventure_contract_monster has_variable = adventure_contract_escort } }
+		omni_adventure_gain_martial_effect = yes
+	}
+	else_if = {
+		limit = { has_variable = adventure_contract_ruin }
+		omni_adventure_gain_finesse_effect = yes
+	}
+	else_if = {
+		limit = { has_variable = adventure_contract_relic }
+		omni_adventure_gain_zeal_effect = yes
+	}
+	else = {
+		omni_adventure_gain_charisma_effect = yes
 	}
 }
