@@ -1,0 +1,516 @@
+﻿namespace = omni_pastoral_council
+
+# The Shannah issues the summons. Free; the agenda is chosen sixty days later.
+omni_pastoral_council.1 = {
+    type = country_event
+    title = omni_pastoral_council.1.t
+    desc = omni_pastoral_council.1.desc
+    picture = omni_shannah_petition
+    left_portrait = current_ruler
+    option = {
+        name = omni_pastoral_council.1.a
+        trigger = { omni_hc_council_available_trigger = yes }
+        custom_tooltip = omni_pastoral_council.1.a_tt
+        omni_pc_summon_effect = yes
+    }
+    option = {
+        name = omni_pastoral_council.1.b
+        custom_tooltip = omni_pastoral_council.1.b_tt
+    }
+}
+
+# Announcement to human Helluvian realms. Gameplay is already applied.
+omni_pastoral_council.2 = {
+    type = country_event
+    title = omni_pastoral_council.2.t
+    desc = {
+        desc = omni_pastoral_council.2.desc
+        first_valid = {
+            triggered_desc = {
+                trigger = { scope:omni_pc_host = { has_variable = omni_pc_votes_for has_variable = omni_pc_votes_against } }
+                desc = omni_pastoral_council.vote_tally
+            }
+        }
+        first_valid = {
+            triggered_desc = { trigger = { scope:omni_pc_host = { omni_pc_agenda_trigger = { AGENDA = 1 } } } desc = omni_pastoral_council.2.canons }
+            triggered_desc = { trigger = { scope:omni_pc_host = { omni_pc_agenda_trigger = { AGENDA = 2 } } } desc = omni_pastoral_council.2.discipline }
+            triggered_desc = { trigger = { scope:omni_pc_host = { omni_pc_agenda_trigger = { AGENDA = 3 } has_variable = omni_pc_embassy_success } } desc = omni_pastoral_council.2.embassy_won }
+            triggered_desc = { trigger = { scope:omni_pc_host = { omni_pc_agenda_trigger = { AGENDA = 3 } } } desc = omni_pastoral_council.2.embassy_lost }
+            triggered_desc = { trigger = { scope:omni_pc_host = { omni_pc_agenda_trigger = { AGENDA = 4 } } } desc = omni_pastoral_council.2.endow }
+        }
+        first_valid = {
+            triggered_desc = { trigger = { omni_pc_delegate_trigger = yes } desc = omni_pastoral_council.2.we_attended }
+            triggered_desc = { trigger = { omni_pc_observer_trigger = yes } desc = omni_pastoral_council.2.we_observed }
+            triggered_desc = { trigger = { omni_pc_spy_trigger = yes } desc = omni_pastoral_council.2.we_spied }
+            triggered_desc = { trigger = { omni_pc_boycott_trigger = yes } desc = omni_pastoral_council.2.we_boycotted }
+            triggered_desc = { trigger = { omni_pc_invited_trigger = yes } desc = omni_pastoral_council.2.we_ignored }
+            triggered_desc = { trigger = { always = yes } desc = omni_pastoral_council.2.not_invited }
+        }
+    }
+    picture = omni_shannah_petition
+    left_portrait = current_ruler
+    right_portrait = scope:omni_pc_shannah
+    immediate = { omni_pc_refresh_shannah_effect = yes }
+    option = { name = omni_pastoral_council.2.a }
+}
+
+# Embassy result for the host.
+omni_pastoral_council.3 = {
+    type = country_event
+    title = omni_pastoral_council.3.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = omni_pc_embassy_success } desc = omni_pastoral_council.3.won }
+            triggered_desc = { trigger = { always = yes } desc = omni_pastoral_council.3.lost }
+        }
+    }
+    picture = omni_shannah_recognition
+    left_portrait = current_ruler
+    right_portrait = scope:omni_pc_dissenter_ruler
+    option = {
+        name = omni_pastoral_council.3.a
+        trigger = { has_variable = omni_pc_embassy_success }
+        custom_tooltip = omni_pastoral_council.3.won_tt
+    }
+    option = {
+        name = omni_pastoral_council.3.b
+        trigger = { NOT = { has_variable = omni_pc_embassy_success } }
+        custom_tooltip = omni_pastoral_council.3.lost_tt
+    }
+}
+
+# The summons reaches a human Helluvian realm. AI realms reply through omni_pc_ai_reply_effect.
+omni_pastoral_council.4 = {
+    type = country_event
+    title = omni_pastoral_council.4.t
+    desc = {
+        desc = omni_pastoral_council.4.desc
+        first_valid = {
+            triggered_desc = { trigger = { omni_pc_rejecting_trigger = yes } desc = omni_pastoral_council.4.rejecting }
+            triggered_desc = { trigger = { omni_pc_recognizing_trigger = yes } desc = omni_pastoral_council.4.recognizing }
+            triggered_desc = { trigger = { always = yes } desc = omni_pastoral_council.4.conditional }
+        }
+        desc = omni_pastoral_council.4.rules
+    }
+    picture = omni_shannah_petition
+    left_portrait = current_ruler
+    right_portrait = scope:omni_pc_shannah
+    option = { # Full delegation with gifts
+        name = omni_pastoral_council.4.a
+        trigger = { omni_pc_reply_open_trigger = yes NOT = { omni_pc_rejecting_trigger = yes } treasury >= 50 }
+        omni_pc_reply_delegation_effect = yes
+    }
+    option = { # Observers
+        name = omni_pastoral_council.4.b
+        trigger = { omni_pc_reply_open_trigger = yes NOT = { omni_pc_rejecting_trigger = yes } }
+        omni_pc_reply_observers_effect = yes
+    }
+    option = { # Decline
+        name = omni_pastoral_council.4.c
+        trigger = { omni_pc_reply_open_trigger = yes }
+        omni_pc_reply_decline_effect = yes
+    }
+    option = { # Secret agent (contesting realms only)
+        name = omni_pastoral_council.4.d
+        trigger = { omni_pc_reply_open_trigger = yes omni_pc_rejecting_trigger = yes }
+        omni_pc_reply_spy_effect = yes
+    }
+    option = { # Too late
+        name = omni_pastoral_council.4.e
+        trigger = { NOT = { omni_pc_reply_open_trigger = yes } }
+    }
+}
+
+# Sixty days after the summons: the council opens and the host chooses its agenda.
+omni_pastoral_council.5 = {
+    type = country_event
+    title = omni_pastoral_council.5.t
+    desc = {
+        desc = omni_pastoral_council.5.desc
+        first_valid = {
+            triggered_desc = { trigger = { NOT = { omni_pc_turnout_trigger = { N = 1 } } } desc = omni_pastoral_council.5.empty }
+            triggered_desc = { trigger = { always = yes } desc = omni_pastoral_council.5.attendance }
+        }
+        first_valid = {
+            triggered_desc = { trigger = { trigger_if = { limit = { has_variable = omni_pc_spies_caught } var:omni_pc_spies_caught >= 1 } trigger_else = { always = no } } desc = omni_pastoral_council.5.spies }
+        }
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:omni_pc_dissenter } desc = omni_pastoral_council.5.dissenter }
+        }
+        desc = omni_pastoral_council.5.rules
+    }
+    picture = omni_shannah_petition
+    left_portrait = current_ruler
+    trigger = { has_variable = omni_pc_summons_pending NOT = { has_variable = omni_pc_ballot_open } }
+
+    immediate = {
+        omni_pc_count_effect = yes
+        omni_pc_catch_spies_effect = yes
+        if = {
+            limit = { exists = scope:omni_pc_dissenter }
+            scope:omni_pc_dissenter = { current_ruler = { save_scope_as = omni_pc_dissenter_ruler } }
+        }
+    }
+
+    option = { # Canons of Unity
+        name = omni_pastoral_council.5.a
+        trigger = { omni_pc_agenda_available_trigger = yes }
+        custom_tooltip = omni_pc_proposal_tt
+        omni_pc_propose_effect = { AGENDA = 1 }
+        ai_chance = { factor = 40 }
+    }
+    option = { # Discipline the Clergy
+        name = omni_pastoral_council.5.b
+        trigger = { omni_pc_agenda_available_trigger = yes }
+        custom_tooltip = omni_pc_proposal_tt
+        omni_pc_propose_effect = { AGENDA = 2 }
+        ai_chance = { factor = 20 modifier = { factor = 2 omni_hc_authority < 50 } }
+    }
+    option = { # Embassy to the Dissenters
+        name = omni_pastoral_council.5.c
+        trigger = { omni_pc_agenda_available_trigger = yes exists = scope:omni_pc_dissenter scope:omni_pc_dissenter = { omni_pc_dissenter_trigger = yes } }
+        custom_tooltip = omni_pc_proposal_tt
+        omni_pc_propose_effect = { AGENDA = 3 }
+        ai_chance = { factor = 20 }
+    }
+    option = { # Endow the Faith
+        name = omni_pastoral_council.5.d
+        trigger = { omni_pc_endow_available_trigger = yes }
+        custom_tooltip = omni_pc_proposal_tt
+        omni_pc_propose_effect = { AGENDA = 4 }
+        ai_chance = { factor = 20 modifier = { factor = 0 treasury < 350 } }
+    }
+    option = { # Dismiss
+        name = omni_pastoral_council.5.e
+        omni_pc_dismiss_effect = yes
+        ai_chance = { factor = 0.01 modifier = { factor = 0 omni_hc_shannah_trigger = yes } }
+    }
+    option = {
+        name = omni_pastoral_council.5.f
+        trigger = { omni_hc_shannah_trigger = yes NOT = { omni_pc_agenda_available_trigger = yes } }
+        custom_tooltip = omni_pastoral_council.5.f_tt
+        hidden_effect = { trigger_event = { id = omni_pastoral_council.9 days = 15 } }
+        ai_chance = { factor = 100 }
+    }
+}
+
+# Incident dispatcher, 30-60 days after the council. Trouble is likelier for a weak Shahanat.
+omni_pastoral_council.10 = {
+    type = country_event
+    hidden = yes
+    trigger = { omni_hc_shannah_trigger = yes }
+    immediate = {
+        omni_pc_count_effect = yes
+        current_ruler = { save_scope_as = omni_pc_shannah }
+        clear_saved_scope = omni_pc_rival_a
+        clear_saved_scope = omni_pc_rival_b
+        if = {
+            limit = { omni_pc_turnout_trigger = { N = 2 } }
+            random_country = { limit = { omni_pc_attending_trigger = yes } save_scope_as = omni_pc_rival_a }
+            random_country = { limit = { omni_pc_attending_trigger = yes NOT = { this = scope:omni_pc_rival_a } } save_scope_as = omni_pc_rival_b }
+        }
+        random_list = {
+            25 = {
+                modifier = { factor = 2 omni_hc_authority < 50 }
+                modifier = { factor = 0.5 omni_hc_authority >= 75 }
+                trigger_event = { id = omni_pastoral_council.11 }
+            }
+            25 = {
+                modifier = { factor = 0 NOT = { exists = scope:omni_pc_rival_b } }
+                trigger_event = { id = omni_pastoral_council.12 }
+            }
+            20 = {
+                modifier = { factor = 2 omni_hc_authority >= 75 }
+                modifier = { factor = 0.5 omni_hc_authority < 25 }
+                trigger_event = { id = omni_pastoral_council.13 }
+            }
+            20 = {
+                modifier = { factor = 1.5 omni_hc_authority < 50 }
+                trigger_event = { id = omni_pastoral_council.14 }
+            }
+            10 = { debug_log = "OMNI_COUNCIL: the council closed without incident." }
+        }
+    }
+}
+
+# A firebrand bishop denounces the council.
+omni_pastoral_council.11 = {
+    type = country_event
+    title = omni_pastoral_council.11.t
+    desc = omni_pastoral_council.11.desc
+    picture = omni_shannah_judgment
+    left_portrait = current_ruler
+    option = {
+        name = omni_pastoral_council.11.a
+        custom_tooltip = omni_pastoral_council.11.a_tt
+        hidden_effect = { omni_hc_change_authority_effect = { AMOUNT = -2 } }
+        add_stability = 3
+        ai_chance = { factor = 40 }
+    }
+    option = {
+        name = omni_pastoral_council.11.b
+        custom_tooltip = omni_pastoral_council.11.b_tt
+        hidden_effect = {
+            random_list = {
+                50 = {
+                    modifier = { factor = 1.5 omni_hc_authority >= 75 }
+                    omni_hc_change_authority_effect = { AMOUNT = 2 }
+                    trigger_event = { id = omni_pastoral_council.15 }
+                }
+                50 = {
+                    modifier = { factor = 1.5 omni_hc_authority < 50 }
+                    omni_pc_scandal_effect = yes
+                    trigger_event = { id = omni_pastoral_council.16 }
+                }
+            }
+        }
+        ai_chance = {
+            factor = 60
+            modifier = { factor = 0.5 omni_hc_authority < 50 NOT = { has_variable = omni_pc_clergy_disciplined } }
+        }
+    }
+}
+
+# Two delegations quarrel over precedence.
+omni_pastoral_council.12 = {
+    type = country_event
+    title = omni_pastoral_council.12.t
+    desc = omni_pastoral_council.12.desc
+    picture = omni_shannah_petition
+    left_portrait = scope:omni_pc_rival_a.current_ruler
+    right_portrait = scope:omni_pc_rival_b.current_ruler
+    option = {
+        name = omni_pastoral_council.12.a
+        trigger = { exists = scope:omni_pc_rival_a exists = scope:omni_pc_rival_b }
+        custom_tooltip = omni_pastoral_council.12.a_tt
+        hidden_effect = {
+            scope:omni_pc_rival_a = {
+                remove_opinion = { target = root modifier = omni_pc_precedence_favored_opinion }
+                add_opinion = { target = root modifier = omni_pc_precedence_favored_opinion }
+            }
+            scope:omni_pc_rival_b = {
+                remove_opinion = { target = root modifier = omni_pc_precedence_slighted_opinion }
+                add_opinion = { target = root modifier = omni_pc_precedence_slighted_opinion }
+            }
+        }
+        ai_chance = { factor = 40 modifier = { factor = 2 opinion = { target = scope:omni_pc_rival_a value >= 25 } } }
+    }
+    option = {
+        name = omni_pastoral_council.12.b
+        trigger = { exists = scope:omni_pc_rival_a exists = scope:omni_pc_rival_b }
+        custom_tooltip = omni_pastoral_council.12.b_tt
+        hidden_effect = {
+            scope:omni_pc_rival_b = {
+                remove_opinion = { target = root modifier = omni_pc_precedence_favored_opinion }
+                add_opinion = { target = root modifier = omni_pc_precedence_favored_opinion }
+            }
+            scope:omni_pc_rival_a = {
+                remove_opinion = { target = root modifier = omni_pc_precedence_slighted_opinion }
+                add_opinion = { target = root modifier = omni_pc_precedence_slighted_opinion }
+            }
+        }
+        ai_chance = { factor = 40 modifier = { factor = 2 opinion = { target = scope:omni_pc_rival_b value >= 25 } } }
+    }
+    option = {
+        name = omni_pastoral_council.12.c
+        custom_tooltip = omni_pastoral_council.12.c_tt
+        hidden_effect = { omni_hc_change_authority_effect = { AMOUNT = -1 } }
+        ai_chance = { factor = 20 }
+    }
+}
+
+# A miracle is reported during the closing liturgy.
+omni_pastoral_council.13 = {
+    type = country_event
+    title = omni_pastoral_council.13.t
+    desc = omni_pastoral_council.13.desc
+    picture = omni_shannah_blessing
+    left_portrait = current_ruler
+    option = {
+        name = omni_pastoral_council.13.a
+        custom_tooltip = omni_pastoral_council.13.a_tt
+        hidden_effect = {
+            omni_hc_change_authority_effect = { AMOUNT = 3 }
+            every_country = {
+                limit = { is_ai = no has_land = yes religion = helluvian NOT = { this = root } }
+                trigger_event = { id = omni_pastoral_council.20 }
+            }
+        }
+        ai_chance = { factor = 70 }
+    }
+    option = {
+        name = omni_pastoral_council.13.b
+        custom_tooltip = omni_pastoral_council.13.b_tt
+        hidden_effect = { omni_hc_change_authority_effect = { AMOUNT = 1 } }
+        add_stability = 2
+        ai_chance = { factor = 30 }
+    }
+}
+
+# A heretical tract circulates among the delegates.
+omni_pastoral_council.14 = {
+    type = country_event
+    title = omni_pastoral_council.14.t
+    desc = omni_pastoral_council.14.desc
+    picture = omni_shannah_judgment
+    left_portrait = current_ruler
+    option = {
+        name = omni_pastoral_council.14.a
+        custom_tooltip = omni_pastoral_council.14.a_tt
+        hidden_effect = { omni_hc_change_authority_effect = { AMOUNT = 1 } }
+        add_tyranny = 2
+        ai_chance = { factor = 40 }
+    }
+    option = {
+        name = omni_pastoral_council.14.b
+        custom_tooltip = omni_pastoral_council.14.b_tt
+        hidden_effect = {
+            random_list = {
+                60 = {
+                    modifier = { factor = 1.5 omni_hc_authority >= 75 }
+                    modifier = { factor = 0.5 omni_hc_authority < 25 }
+                    omni_hc_change_authority_effect = { AMOUNT = 3 }
+                    trigger_event = { id = omni_pastoral_council.17 }
+                }
+                40 = {
+                    omni_hc_change_authority_effect = { AMOUNT = -3 }
+                    trigger_event = { id = omni_pastoral_council.18 }
+                }
+            }
+        }
+        ai_chance = { factor = 40 modifier = { factor = 0.5 omni_hc_authority < 50 } }
+    }
+    option = {
+        name = omni_pastoral_council.14.c
+        custom_tooltip = omni_pastoral_council.14.c_tt
+        hidden_effect = { omni_hc_change_authority_effect = { AMOUNT = -1 } }
+        ai_chance = { factor = 20 }
+    }
+}
+
+# Outcomes. Gameplay is already applied by the triggering option.
+omni_pastoral_council.15 = {
+    type = country_event
+    title = omni_pastoral_council.15.t
+    desc = omni_pastoral_council.15.desc
+    picture = omni_shannah_blessing
+    left_portrait = current_ruler
+    option = { name = omni_pastoral_council.15.a custom_tooltip = omni_pastoral_council.15.a_tt }
+}
+omni_pastoral_council.16 = {
+    type = country_event
+    title = omni_pastoral_council.16.t
+    desc = {
+        desc = omni_pastoral_council.16.desc
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = omni_pc_scandal_shielded } desc = omni_pastoral_council.16.shielded }
+            triggered_desc = { trigger = { always = yes } desc = omni_pastoral_council.16.exposed }
+        }
+    }
+    picture = omni_shannah_judgment
+    left_portrait = current_ruler
+    option = { name = omni_pastoral_council.16.a }
+}
+omni_pastoral_council.17 = {
+    type = country_event
+    title = omni_pastoral_council.17.t
+    desc = omni_pastoral_council.17.desc
+    picture = omni_shannah_blessing
+    left_portrait = current_ruler
+    option = { name = omni_pastoral_council.17.a custom_tooltip = omni_pastoral_council.17.a_tt }
+}
+omni_pastoral_council.18 = {
+    type = country_event
+    title = omni_pastoral_council.18.t
+    desc = omni_pastoral_council.18.desc
+    picture = omni_shannah_judgment
+    left_portrait = current_ruler
+    option = { name = omni_pastoral_council.18.a custom_tooltip = omni_pastoral_council.18.a_tt }
+}
+
+# Miracle announcement to human Helluvian realms.
+omni_pastoral_council.20 = {
+    type = country_event
+    title = omni_pastoral_council.20.t
+    desc = omni_pastoral_council.20.desc
+    picture = omni_shannah_blessing
+    left_portrait = scope:omni_pc_shannah
+    option = { name = omni_pastoral_council.20.a }
+}
+
+# A delegation votes on the Shannah's proposal, rather than silently attending.
+omni_pastoral_council.6 = {
+    type = country_event
+    title = omni_pastoral_council.6.t
+    desc = {
+        desc = omni_pastoral_council.6.desc
+        triggered_desc = { trigger = { scope:omni_pc_host = { var:omni_pc_proposal = 1 } } desc = omni_pastoral_council.6.canons }
+        triggered_desc = { trigger = { scope:omni_pc_host = { var:omni_pc_proposal = 2 } } desc = omni_pastoral_council.6.discipline }
+        triggered_desc = { trigger = { scope:omni_pc_host = { var:omni_pc_proposal = 3 } } desc = omni_pastoral_council.6.embassy }
+        triggered_desc = { trigger = { scope:omni_pc_host = { var:omni_pc_proposal = 4 } } desc = omni_pastoral_council.6.endow }
+    }
+    picture = omni_shannah_petition
+    left_portrait = current_ruler
+    right_portrait = scope:omni_pc_shannah
+    immediate = { omni_pc_refresh_shannah_effect = yes }
+    option = {
+        name = omni_pastoral_council.6.a
+        trigger = { omni_pc_vote_open_trigger = yes }
+        custom_tooltip = omni_pastoral_council.6.vote_tt
+        hidden_effect = { set_variable = { name = omni_pc_vote value = 1 } }
+    }
+    option = {
+        name = omni_pastoral_council.6.b
+        trigger = { omni_pc_vote_open_trigger = yes }
+        custom_tooltip = omni_pastoral_council.6.vote_tt
+        hidden_effect = { set_variable = { name = omni_pc_vote value = 2 } }
+    }
+    option = {
+        name = omni_pastoral_council.6.c
+        trigger = { NOT = { omni_pc_vote_open_trigger = yes } }
+    }
+}
+
+omni_pastoral_council.7 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = omni_pc_ballot_open }
+    immediate = { omni_pc_resolve_vote_effect = yes }
+}
+
+omni_pastoral_council.8 = {
+    type = country_event
+    title = omni_pastoral_council.8.t
+    desc = {
+        desc = omni_pastoral_council.8.desc
+        first_valid = {
+            triggered_desc = {
+                trigger = { scope:omni_pc_host = { has_variable = omni_pc_votes_for has_variable = omni_pc_votes_against } }
+                desc = omni_pastoral_council.vote_tally
+            }
+        }
+    }
+    left_portrait = current_ruler
+    right_portrait = scope:omni_pc_shannah
+    immediate = { omni_pc_refresh_shannah_effect = yes }
+    picture = omni_shannah_judgment
+    option = { name = omni_pastoral_council.2.a }
+}
+
+# Adjourn instead of silently abandoning paid delegations when the host is busy.
+omni_pastoral_council.9 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = omni_pc_summons_pending NOT = { has_variable = omni_pc_ballot_open } }
+    immediate = {
+        if = {
+            limit = { omni_pc_agenda_available_trigger = yes }
+            trigger_event = { id = omni_pastoral_council.5 }
+        }
+        else_if = {
+            limit = { omni_hc_shannah_trigger = yes }
+            trigger_event = { id = omni_pastoral_council.9 days = 15 }
+        }
+        else = { omni_pc_dismiss_effect = yes }
+    }
+}

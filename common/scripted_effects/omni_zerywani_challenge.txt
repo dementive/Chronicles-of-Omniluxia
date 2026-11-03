@@ -1,0 +1,99 @@
+﻿# Governor-led revolt follows the pattern in me_nazani.8. The incumbent keeps
+# the original country; the claimant commands the rebel country.
+z2_challenge_effect = {
+    z2_restore_effect = yes
+    save_scope_as = z2_incumbent_country
+    set_global_variable = { name = z2_succession_war }
+    set_global_variable = { name = z2_challenge_origin value = scope:z2_incumbent_country }
+    set_global_variable = { name = z2_challenge_goal value = var:z2_goal }
+    set_variable = { name = z2_challenge_side }
+    set_variable = { name = z2_challenge_packs value = z2_challenge_packs }
+    remove_variable = z2_preparing
+    remove_variable = z2_player_project
+    if = { limit = { exists = global_var:z2_player_claim global_var:z2_player_claim = this } remove_global_variable = z2_player_claim }
+    ordered_owned_province = {
+        limit = { is_capital = no }
+        order_by = z2_challenge_seat_score
+        position = 0
+        # Capital-region governorship belongs to the ruler. Only appoint the
+        # claimant where the engine permits a separate governor.
+        if = {
+            limit = { NOT = { is_in_region = scope:z2_incumbent_country.capital_scope } }
+            set_as_governor = scope:z2_founder
+        }
+    }
+    scope:z2_founder = { add_loyalty = loyalty_picked_other_side }
+    start_civil_war = scope:z2_founder
+    if = {
+        limit = {
+            exists = scope:z2_founder.employer
+            scope:z2_founder.employer = { NOT = { this = scope:z2_incumbent_country } civil_war_with = scope:z2_incumbent_country }
+        }
+        scope:z2_founder.employer = {
+            save_scope_as = z2_claimant_country
+            set_variable = { name = z2_challenge_side }
+            set_variable = { name = z2_challenge_packs value = scope:z2_incumbent_country.var:z2_challenge_packs }
+            change_country_name = z2_claimant_revolt_name
+            add_treasury = 500
+            add_manpower = 20
+            capital_scope = { save_scope_as = z2_challenge_spawn }
+            create_unit = {
+                name = z2_army_name
+                location = scope:z2_challenge_spawn
+                set_as_commander = scope:z2_founder
+                while = {
+                    count = scope:z2_claimant_country.var:z2_challenge_packs
+                    add_subunit = light_cavalry
+                    add_subunit = light_cavalry
+                    add_subunit = light_cavalry
+                    add_subunit = heavy_cavalry
+                    add_subunit = heavy_cavalry
+                }
+                add_food = 1000
+                add_morale = 3
+                add_unit_modifier = { name = z2_riders duration = -1 }
+            }
+        }
+        every_country = { limit = { is_ai = no } trigger_event = { id = zerywani_second.142 days = 1 } }
+    }
+    else = {
+        # An engine refusal must leave a playable choice, not a stranded crisis.
+        remove_global_variable = z2_succession_war
+        remove_global_variable = z2_challenge_origin
+        remove_global_variable = z2_challenge_goal
+        remove_variable = z2_challenge_side
+        set_variable = { name = z2_preparing }
+        trigger_event = { id = zerywani_second.141 days = 1 }
+    }
+}
+
+# Both result hooks run in the victorious country's scope. Capture the outcome
+# before the losing side is annexed, then launch after the engine finishes peace.
+z2_challenge_victory_effect = {
+    if = {
+        limit = {
+            has_global_variable = z2_succession_war
+            OR = { has_variable = z2_challenge_side scope:losing_side = { has_variable = z2_challenge_side } }
+        }
+        save_scope_as = z2_victor
+        if = { limit = { this = global_var:z2_challenge_origin } set_variable = { name = z2_incumbent_victory } }
+        set_global_variable = { name = z2_host value = scope:z2_victor }
+        set_variable = { name = z2_goal value = global_var:z2_challenge_goal }
+        current_ruler = { save_scope_as = z2_victorious_ruler set_variable = { name = z2_founder_character } }
+        set_variable = { name = z2_founder value = scope:z2_victorious_ruler }
+        set_variable = { name = z2_preparing }
+        set_variable = { name = z2_challenge_victor_pending }
+        if = { limit = { NOT = { has_variable = z2_player_support } } set_variable = { name = z2_player_support value = 0 } }
+        every_country = {
+            limit = { exists = var:z2_pledged_to var:z2_pledged_to = global_var:z2_challenge_origin }
+            set_variable = { name = z2_pledged_to value = scope:z2_victor }
+        }
+        every_unit = { limit = { has_unit_modifier = z2_riders } destroy_unit = yes }
+        remove_variable = z2_challenge_side
+        remove_variable = z2_challenge_packs
+        remove_global_variable = z2_succession_war
+        remove_global_variable = z2_challenge_origin
+        remove_global_variable = z2_challenge_goal
+        trigger_event = { id = zerywani_second.143 days = 1 }
+    }
+}

@@ -1,0 +1,72 @@
+﻿# Siege window: use carried siege supplies. Root is the besieging commander.
+omni_siege_kit_button = {
+	scope = character
+	saved_scopes = {
+		player
+	}
+
+	is_shown = {
+		is_alive = yes
+		OR = {
+			country = scope:player
+			employer = scope:player
+		}
+		scope:player = { is_ai = no }
+		omni_character_is_besieging = { COUNTRY = scope:player }
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	is_valid = {
+		custom_tooltip = {
+			text = omni_siege_kit_button_tt
+		}
+		custom_tooltip = {
+			text = omni_siege_kit_button_none_tt
+			omni_kit_has_any = yes
+		}
+	}
+
+	effect = {
+		save_scope_as = omni_gear_holder
+		scope:player = { save_scope_as = omni_gear_country }
+		scope:player.current_ruler = { trigger_event = { id = omni_cmd_gear.4 } }
+	}
+}
+
+# Siege window: use the realm's defensive stores on one of our besieged cities.
+# Root is the besieged province.
+omni_siege_defense_button = {
+	scope = province
+	saved_scopes = {
+		player
+	}
+
+	is_shown = {
+		has_siege = yes
+		has_owner = yes
+		owner = scope:player
+		scope:player = { is_ai = no }
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	is_valid = {
+		custom_tooltip = {
+			text = omni_siege_defense_button_tt
+		}
+		custom_tooltip = {
+			text = omni_siege_defense_button_none_tt
+			scope:player = { omni_def_has_any = yes }
+		}
+	}
+
+	effect = {
+		save_scope_as = omni_defense_province
+		scope:player.current_ruler = { trigger_event = { id = omni_siege_supply.20 } }
+	}
+}

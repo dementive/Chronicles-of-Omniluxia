@@ -22,7 +22,7 @@
 # great_work_*_workrate_character_modifier are real engine modifiers used
 # elsewhere; scaling at the reader keeps trait balance untouched and keeps the
 # displayed and granted rate identical, so the tooltip stays truthful.
-# Resulting rates (max mana is 100 + freemen bonus):
+# Resulting rates (max mana is the freemen bonus, with zero base capacity):
 #   mage_trait      0.01 -> 5/month  (60/yr)
 #   diviner/etc.    0.02 -> 10/month (120/yr)
 #   archmage_trait  0.03 -> 15/month (180/yr)
@@ -31,6 +31,10 @@
 omni_character_monthly_mana_value = {
 	value = modifier:great_work_tribals_workrate_character_modifier
 	multiply = 500
+	if = {
+		limit = { has_variable = omni_folk_practitioner }
+		min = 2
+	}
 	if = {
 		limit = {
 			has_trait = cramming_fatigue_trait
@@ -54,8 +58,12 @@ omni_character_max_mana_bonus_value = {
 }
 
 omni_character_magic_max_value = {
-	value = 100
+	value = 0
 	add = omni_character_max_mana_bonus_value
+	if = {
+		limit = { has_variable = omni_folk_practitioner }
+		min = 100
+	}
 	min = 0
 }
 
@@ -83,7 +91,7 @@ omni_scaled_spell_cost_value = {
 		multiply = 0.85
 	}
 	if = {
-		limit = { has_trait = archmage_trait }
+		limit = { OR = { has_trait = archmage_trait has_trait = grand_archmage_trait has_trait = magus_supreme_trait } }
 		multiply = 0.6
 	}
 }
@@ -109,7 +117,7 @@ omni_plant_growth_spell_cost = {
 		multiply = 0.85
 	}
 	if = {
-		limit = { has_trait = archmage_trait }
+		limit = { OR = { has_trait = archmage_trait has_trait = grand_archmage_trait has_trait = magus_supreme_trait } }
 		multiply = 0.6
 	}
 }
@@ -135,7 +143,7 @@ omni_summon_dryads_spell_cost = {
 		multiply = 0.85
 	}
 	if = {
-		limit = { has_trait = archmage_trait }
+		limit = { OR = { has_trait = archmage_trait has_trait = grand_archmage_trait has_trait = magus_supreme_trait } }
 		multiply = 0.6
 	}
 }
@@ -152,7 +160,7 @@ omni_dryad_cohort_count = {
 			scope:target = {
 				OR = {
 					has_trait = druid_trait
-					has_trait = archmage_trait
+					OR = { has_trait = archmage_trait has_trait = grand_archmage_trait has_trait = magus_supreme_trait }
 				}
 			}
 		}
@@ -162,7 +170,7 @@ omni_dryad_cohort_count = {
 		limit = {
 			scope:target = {
 				has_trait = druid_trait
-				has_trait = archmage_trait
+				OR = { has_trait = archmage_trait has_trait = grand_archmage_trait has_trait = magus_supreme_trait }
 			}
 		}
 		add = 4
@@ -201,7 +209,7 @@ omni_spell_affordable_budget = {
 		divide = 0.85
 	}
 	if = {
-		limit = { has_trait = archmage_trait }
+		limit = { OR = { has_trait = archmage_trait has_trait = grand_archmage_trait has_trait = magus_supreme_trait } }
 		divide = 0.6
 	}
 }

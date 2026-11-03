@@ -1,0 +1,56 @@
+﻿# Automatically assigned only while Engage in Piracy is active.
+# Below the vanilla disloyal (100) and rebel (200) objectives.
+omni_objective_piracy = {
+	priority = 60
+	allow = {
+		is_navy = yes
+		has_variable = engage_in_piracy_active
+		has_unit_modifier = engage_in_piracy_unit_modifier
+		is_exiled = no
+	}
+	interface_allow = { always = no }
+
+	pure_weight = yes
+	is_focus_objective = yes
+	mode = replace
+
+	# Evaluated by the engine's existing objective planner, not an on_action.
+	# Only a candidate sea tile's immediate neighbours are inspected.
+	# Scores above 1,000,000 exclude a destination (vanilla objective convention).
+	weight = {
+		modifier = {
+			trigger = {
+				scope:province = { is_sea = no }
+			}
+			add = { value = 2000000 }
+		}
+		modifier = {
+			trigger = {
+				scope:province = {
+					is_sea = yes
+					has_enemy_navy = root.unit_owner
+				}
+			}
+			add = { value = 2000000 }
+		}
+		modifier = {
+			trigger = {
+				scope:province = {
+					is_sea = yes
+					NOT = {
+						any_neighbor_province = {
+							engage_in_piracy_target_province_trigger = yes
+							NOT = { has_province_modifier = engage_in_piracy_raided_port_modifier }
+							NOT = { owner = root.unit_owner }
+							owner = {
+								NOT = { alliance_with = root.unit_owner }
+								NOT = { is_subject_of = root.unit_owner }
+							}
+						}
+					}
+				}
+			}
+			add = { value = 2000000 }
+		}
+	}
+}

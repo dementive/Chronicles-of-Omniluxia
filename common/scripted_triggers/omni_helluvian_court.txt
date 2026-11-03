@@ -1,0 +1,103 @@
+﻿omni_hc_view_trigger = {
+        has_land = yes religion = helluvian exists = current_ruler
+        NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+    }
+    omni_hc_shannah_trigger = {
+        omni_hc_view_trigger = yes omni_shannah_office_trigger = yes
+        current_ruler = { is_alive = yes has_trait = shannah_trait }
+    }
+    omni_hc_recognition_available_trigger = {
+        omni_hc_view_trigger = yes is_subject = no
+        NOT = { omni_hc_shannah_trigger = yes }
+        exists = var:omni_hc_see
+        var:omni_hc_see = { omni_hc_shannah_trigger = yes }
+        NOT = { trigger_if = { limit = { has_variable = omni_hc_decided_holder } var:omni_hc_decided_holder = var:omni_hc_see.current_ruler } trigger_else = { always = no } }
+    }
+    omni_hc_recipient_trigger = {
+        has_land = yes exists = current_ruler
+        scope:actor = { omni_hc_view_trigger = yes trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action >= 1 } trigger_else = { always = no } trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action <= 9 } trigger_else = { always = no } }
+        NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+        NOT = { this = scope:actor }
+    trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 1 } trigger_else = { always = no } } }
+            omni_shannah_bless_potential_trigger = { TARGET = current_ruler }
+        }
+trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 2 } trigger_else = { always = no } } }
+            omni_shannah_holy_mission_potential_trigger = { TARGET = current_ruler }
+        }
+trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 3 } trigger_else = { always = no } } }
+            omni_shannah_recognize_crown_potential_trigger = { TARGET = current_ruler }
+        }
+trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 4 } trigger_else = { always = no } } }
+            omni_shannah_absolve_potential_trigger = { TARGET = current_ruler }
+        }
+trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 5 } trigger_else = { always = no } } }
+            omni_shannah_lift_excommunication_potential_trigger = { TARGET = current_ruler }
+        }
+trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 6 } trigger_else = { always = no } } }
+            omni_shannah_excommunicate_potential_trigger = { TARGET = current_ruler }
+        }
+trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 7 } trigger_else = { always = no } } }
+        religion = helluvian current_ruler = { is_alive = yes }
+        scope:actor = { omni_sf_available_trigger = yes NOT = { has_variable = omni_sf_active } omni_sf_favor_value >= 85 NOT = { has_country_modifier = omni_shannah_excommunicated } }
+        NOT = { this = scope:actor.var:omni_sf_see }
+        NOT = { has_country_modifier = omni_shannah_excommunicated }
+    }
+    trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 8 } trigger_else = { always = no } } } omni_crusade_target_trigger = yes scope:actor = { omni_crusade_host_ready_trigger = yes treasury >= 250 political_influence >= 50 NOT = { has_variable = called_helluvian_crusade_var } NOT = { has_global_variable = omni_crusade_world_busy } NOT = { has_variable = omni_crusade_preparing } NOT = { has_variable = omni_crusade_active } } }
+    trigger_if = { limit = { scope:actor = { trigger_if = { limit = { has_variable = omni_hc_action } var:omni_hc_action = 9 } trigger_else = { always = no } } }
+        has_variable = omni_sf_pending has_variable = omni_sf_human_waiting
+        trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:actor.current_ruler } trigger_else = { always = no }
+        omni_hc_petition_relationship_trigger = yes
+    }
+    }
+    omni_hc_council_available_trigger = {
+        omni_hc_shannah_trigger = yes omni_ruler_available_for_court_action_trigger = yes
+        political_influence >= 25 NOT = { has_variable = omni_hc_council_cooldown }
+    }
+
+omni_hc_inbox_available_trigger = {
+    omni_hc_shannah_trigger = yes
+    save_temporary_scope_as = actor
+    any_country = {
+        has_land = yes exists = current_ruler
+        NOT = { this = scope:actor }
+        NOT = { tag = REB } NOT = { tag = BAR } NOT = { tag = MER } NOT = { tag = PIR }
+        has_variable = omni_sf_pending has_variable = omni_sf_human_waiting
+        trigger_if = {
+            limit = { has_variable = omni_sf_shannah }
+            var:omni_sf_shannah = scope:actor.current_ruler
+        }
+        trigger_else = { always = no }
+        omni_hc_petition_relationship_trigger = yes
+    }
+}
+
+omni_hc_petition_relationship_trigger = {
+    save_temporary_scope_as = omni_hc_petitioner
+
+    omni_sf_petitioner_trigger = yes
+
+    has_variable = omni_sf_patron
+
+    exists = var:omni_sf_patron
+
+    current_ruler = var:omni_sf_patron
+
+    has_variable = omni_sf_shannah
+
+    exists = var:omni_sf_shannah
+
+    exists = var:omni_sf_see
+
+    var:omni_sf_shannah = { employer = scope:omni_hc_petitioner.var:omni_sf_see }
+
+    var:omni_sf_shannah = {
+
+        omni_sf_shannah_trigger = yes
+
+        NOT = { employer = scope:omni_hc_petitioner }
+
+        employer = { trigger_if = { limit = { has_variable = omni_sf_reign_epoch } var:omni_sf_reign_epoch = scope:omni_hc_petitioner.var:omni_sf_bound_epoch } trigger_else = { always = no } }
+
+    }
+
+}

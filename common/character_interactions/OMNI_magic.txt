@@ -13,11 +13,14 @@ omniluxia_magic_plant_growth_target = {
 		exists = scope:actor
 		exists = scope:target
 		hidden:scope:target = {
-			employer = scope:actor
+			OR = { country = scope:actor employer = scope:actor }
 			is_alive = yes
 			is_adult = yes
 			has_variable = omni_pending_plant_growth_spell
+			omni_knows_spell = { SPELL = plant_growth }
+			omni_can_afford_spell = { BASE = 25 }
 			has_variable = druid_t2_unlocked_var
+			omni_character_is_eligible_caster = yes
 		}
 		scope:actor = {
 			is_ai = no
@@ -28,7 +31,10 @@ omniluxia_magic_plant_growth_target = {
 		exists = scope:target
 		scope:target = {
 			has_variable = omni_pending_plant_growth_spell
+			omni_knows_spell = { SPELL = plant_growth }
+			omni_can_afford_spell = { BASE = 25 }
 			has_variable = druid_t2_unlocked_var
+			omni_character_is_eligible_caster = yes
 		}
 	}
 
@@ -42,13 +48,10 @@ omniluxia_magic_plant_growth_target = {
 	effect = {
 		scope:target = {
 			remove_variable = omni_pending_plant_growth_spell
-			change_variable = {
-				name = magic
-				subtract = var:omni_plant_growth_cost
-			}
-			clamp_character_magic_to_max = yes
+			omni_spell_mana_cost_effect = { BASE = 25 }
 		}
 		scope:recipient = {
+			if = { limit = { has_province_modifier = amten_druid_spell_t1_mod } remove_province_modifier = amten_druid_spell_t1_mod }
 			add_province_modifier = {
 				name = amten_druid_spell_t1_mod
 				duration = 180
@@ -69,11 +72,14 @@ omniluxia_magic_summon_dryads_target = {
 		exists = scope:actor
 		exists = scope:target
 		hidden:scope:target = {
-			employer = scope:actor
+			OR = { country = scope:actor employer = scope:actor }
 			is_alive = yes
 			is_adult = yes
 			has_variable = omni_pending_summon_dryads_spell
+			omni_knows_spell = { SPELL = summon_dryads }
+			omni_can_afford_spell = { BASE = 50 }
 			has_variable = druid_t2_unlocked_var
+			omni_character_is_eligible_caster = yes
 		}
 		scope:actor = {
 			is_ai = no
@@ -84,7 +90,10 @@ omniluxia_magic_summon_dryads_target = {
 		exists = scope:target
 		scope:target = {
 			has_variable = omni_pending_summon_dryads_spell
+			omni_knows_spell = { SPELL = summon_dryads }
+			omni_can_afford_spell = { BASE = 50 }
 			has_variable = druid_t2_unlocked_var
+			omni_character_is_eligible_caster = yes
 		}
 	}
 
@@ -106,27 +115,22 @@ omniluxia_magic_summon_dryads_target = {
 	effect = {
 		scope:target = {
 			remove_variable = omni_pending_summon_dryads_spell
-			change_variable = {
-				name = magic
-				subtract = var:omni_summon_dryads_cost
-			}
-			clamp_character_magic_to_max = yes
+			omni_spell_mana_cost_effect = { BASE = 50 }
 		}
-		create_unit = {
-			navy = no
-			name = "Dryad Auxiliaries"
-			location = scope:recipient
-			hidden_effect = {
-				while = {
-					count = 4
-					add_subunit = heavy_infantry
+		# create_unit is a COUNTRY effect; the interaction root is a character.
+		scope:actor = {
+			create_unit = {
+				navy = no
+				name = "Dryad Auxiliaries"
+				location = scope:recipient
+				hidden_effect = {
+					while = {
+						count = omni_dryad_cohort_count
+						add_subunit = heavy_infantry
+					}
+					add_food = 800
+					add_morale = 5
 				}
-				while = {
-					count = 4
-					add_subunit = light_infantry
-				}
-				add_food = 800
-				add_morale = 5
 			}
 		}
 		scope:recipient = {

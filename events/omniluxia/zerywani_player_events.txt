@@ -1,0 +1,382 @@
+﻿namespace = zerywani_second
+
+zerywani_second.100 = {
+    left_portrait = current_ruler
+    type = country_event
+    title = z2_player_offer_title
+    desc = z2_player_offer_desc
+    picture = war_council
+    trigger = { is_ai = no NOT = { has_global_variable = z2_warned } NOT = { has_variable = z2_player_project } }
+    option = {
+        name = z2_player_offer.a
+        trigger = { z2_player_candidate_trigger = yes treasury >= z2_project_gold_cost political_influence >= z2_project_influence_cost }
+        custom_tooltip = z2_player_project_tt
+        hidden_effect = { z2_player_claim_effect = yes }
+    }
+    option = {
+        name = z2_player_offer.b
+        custom_tooltip = z2_ui_decline_leadership_tt
+        hidden_effect = { remove_variable = z2_player_offer_pending set_variable = { name = z2_player_declined } }
+    }
+}
+zerywani_second.101 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_player_project_title desc = z2_player_project_desc picture = war_council
+    option = { name = z2_player_project.a custom_tooltip = z2_player_preparations_tt }
+}
+zerywani_second.102 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_player_lapsed_title desc = z2_player_lapsed_desc picture = war_council
+    option = { name = z2_player_lapsed.a }
+}
+zerywani_second.110 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_chief_council_title desc = z2_chief_council_desc picture = war_council
+    trigger = { has_variable = z2_player_project }
+    immediate = { z2_player_restore_choices_effect = yes set_variable = { name = z2_chief_menu_open } }
+    option = {
+        name = z2_chief_choice_1
+        trigger = { exists = var:z2_chief_1 var:z2_chief_1 = { z2_tribe_trigger = yes NOT = { has_variable = z2_pledged_to } } }
+        custom_tooltip = z2_ui_chief_visit_tt
+        hidden_effect = { remove_variable = z2_chief_menu_open save_scope_as = z2_player_host var:z2_chief_1 = { z2_player_offer_chief_effect = yes } }
+    }
+    option = {
+        name = z2_chief_choice_2
+        trigger = { exists = var:z2_chief_2 var:z2_chief_2 = { z2_tribe_trigger = yes NOT = { has_variable = z2_pledged_to } } }
+        custom_tooltip = z2_ui_chief_visit_tt
+        hidden_effect = { remove_variable = z2_chief_menu_open save_scope_as = z2_player_host var:z2_chief_2 = { z2_player_offer_chief_effect = yes } }
+    }
+    option = {
+        name = z2_chief_choice_3
+        trigger = { exists = var:z2_chief_3 var:z2_chief_3 = { z2_tribe_trigger = yes NOT = { has_variable = z2_pledged_to } } }
+        custom_tooltip = z2_ui_chief_visit_tt
+        hidden_effect = { remove_variable = z2_chief_menu_open save_scope_as = z2_player_host var:z2_chief_3 = { z2_player_offer_chief_effect = yes } }
+    }
+    option = {
+        name = z2_council.leave
+        hidden_effect = { remove_variable = z2_chief_menu_open }
+    }
+}
+zerywani_second.111 = {
+    left_portrait = current_ruler
+    right_portrait = scope:z2_player_host.current_ruler
+    type = country_event title = z2_pledge_request_title desc = z2_pledge_request_desc picture = war_council
+    trigger = {
+        z2_tribe_trigger = yes exists = var:z2_oath_patron
+        var:z2_oath_patron = { has_variable = z2_player_project }
+        NOT = { has_variable = z2_pledged_to }
+    }
+    immediate = { save_scope_as = z2_negotiating_chief var:z2_oath_patron = { save_scope_as = z2_player_host } }
+    option = {
+        name = z2_pledge_request.a
+        ai_chance = { factor = 30 modifier = { factor = 2 num_of_cities <= 6 } }
+        custom_tooltip = z2_ui_pledge_effect_tt
+        hidden_effect = { z2_player_accept_pledge_effect = yes }
+    }
+    option = {
+        name = z2_pledge_request.b
+        ai_chance = { factor = 65 }
+        custom_tooltip = z2_ui_negotiate_effect_tt
+        hidden_effect = { var:z2_oath_patron = { trigger_event = { id = zerywani_second.112 days = 1 } } }
+    }
+    option = {
+        name = z2_pledge_request.c
+        ai_chance = { factor = 5 }
+        custom_tooltip = z2_ui_refuse_pledge_tt
+        hidden_effect = { set_variable = { name = z2_pledge_refused days = 1825 } var:z2_oath_patron = { remove_variable = z2_negotiation_pending trigger_event = { id = zerywani_second.114 days = 1 } } }
+    }
+}
+zerywani_second.112 = {
+    left_portrait = current_ruler
+    right_portrait = scope:z2_negotiating_chief.current_ruler
+    type = country_event title = z2_pledge_price_title desc = z2_pledge_price_desc picture = war_council
+    trigger = {
+        has_variable = z2_player_project exists = scope:z2_negotiating_chief
+        scope:z2_negotiating_chief = { z2_tribe_trigger = yes NOT = { has_variable = z2_pledged_to } }
+    }
+    option = {
+        name = z2_pledge_price.a
+        trigger = { treasury >= 100 }
+        add_treasury = -100
+        custom_tooltip = z2_ui_secure_pledge_tt
+        hidden_effect = { scope:z2_negotiating_chief = { add_treasury = 100 z2_player_accept_pledge_effect = yes } }
+    }
+    option = {
+        name = z2_pledge_price.b
+        trigger = { political_influence >= 25 }
+        add_political_influence = -25
+        custom_tooltip = z2_ui_privileges_effect_tt
+        hidden_effect = { scope:z2_negotiating_chief = { set_variable = { name = z2_privileges_promised } z2_player_accept_pledge_effect = yes } }
+    }
+    option = {
+        name = z2_pledge_price.c
+        custom_tooltip = z2_ui_refuse_pledge_tt
+        hidden_effect = { remove_variable = z2_negotiation_pending scope:z2_negotiating_chief = { set_variable = { name = z2_pledge_refused days = 1825 } } }
+    }
+}
+zerywani_second.113 = {
+    left_portrait = current_ruler
+    right_portrait = scope:z2_negotiating_chief.current_ruler
+    type = country_event title = z2_pledge_won_title desc = z2_pledge_won_desc picture = war_council
+    option = { name = z2_pledge_won.a }
+}
+zerywani_second.114 = {
+    left_portrait = current_ruler
+    right_portrait = scope:z2_negotiating_chief.current_ruler
+    type = country_event title = z2_pledge_refused_title desc = z2_pledge_refused_desc picture = war_council
+    option = { name = z2_pledge_refused.a }
+}
+zerywani_second.120 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_son_arrives_title desc = z2_son_arrives_desc picture = war_council
+    trigger = { has_variable = z2_player_project NOT = { has_global_variable = z2_warned } }
+    option = {
+        name = z2_son_arrives.a
+        trigger = { war = no z2_player_project_valid_trigger = yes }
+        custom_tooltip = z2_ui_receive_effect_tt
+        hidden_effect = { z2_prepare_effect = yes }
+    }
+    option = { name = z2_son_arrives.b }
+    option = {
+        name = z2_son_arrives.c
+        custom_tooltip = z2_ui_abandon_effect_tt
+        hidden_effect = { z2_player_release_claim_effect = yes }
+    }
+}
+zerywani_second.125 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_not_ready_title desc = z2_not_ready_desc picture = war_council
+    trigger = { has_variable = z2_preparing is_ai = no NOT = { has_variable = z2_coronation_pending } }
+    option = {
+        name = z2_not_ready.a
+        trigger = { var:z2_player_extensions < 2 }
+        custom_tooltip = z2_ui_extension_effect_tt
+        hidden_effect = { change_variable = { name = z2_player_extensions add = 1 } trigger_event = { id = zerywani_second.2 days = 365 } }
+    }
+    option = {
+        name = z2_not_ready.b
+        custom_tooltip = z2_ui_abandon_effect_tt
+        hidden_effect = { z2_player_release_claim_effect = yes }
+    }
+}
+zerywani_second.126 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_player_gathering_title desc = z2_player_gathering_desc picture = war_council
+    trigger = { has_variable = z2_preparing }
+    option = { name = z2_player_gathering.a custom_tooltip = z2_player_preparations_tt }
+}
+zerywani_second.130 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_city_council_title desc = z2_city_council_desc picture = war_council
+    trigger = { has_variable = z2_preparing is_ai = no }
+    immediate = { z2_player_restore_choices_effect = yes set_variable = { name = z2_city_menu_open } }
+    option = {
+        name = z2_city_choice_1
+        trigger = { exists = var:z2_city_1 var:z2_city_1 = { z2_prize_city_trigger = yes } }
+        custom_tooltip = z2_ui_city_choice_tt
+        hidden_effect = { set_variable = { name = z2_goal value = var:z2_city_1 } set_variable = { name = z2_player_goal_chosen } set_variable = { name = z2_city_council_cooldown days = 365 } remove_variable = z2_city_menu_open }
+    }
+    option = {
+        name = z2_city_choice_2
+        trigger = { exists = var:z2_city_2 var:z2_city_2 = { z2_prize_city_trigger = yes } }
+        custom_tooltip = z2_ui_city_choice_tt
+        hidden_effect = { set_variable = { name = z2_goal value = var:z2_city_2 } set_variable = { name = z2_player_goal_chosen } set_variable = { name = z2_city_council_cooldown days = 365 } remove_variable = z2_city_menu_open }
+    }
+    option = {
+        name = z2_city_choice_3
+        trigger = { exists = var:z2_city_3 var:z2_city_3 = { z2_prize_city_trigger = yes } }
+        custom_tooltip = z2_ui_city_choice_tt
+        hidden_effect = { set_variable = { name = z2_goal value = var:z2_city_3 } set_variable = { name = z2_player_goal_chosen } set_variable = { name = z2_city_council_cooldown days = 365 } remove_variable = z2_city_menu_open }
+    }
+    option = {
+        name = z2_city_council.later
+        hidden_effect = { remove_variable = z2_city_menu_open }
+    }
+}
+zerywani_second.140 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_player_coronation_title desc = z2_player_coronation_desc picture = war_council
+    trigger = { has_variable = z2_preparing has_variable = z2_player_coronation_unlocked is_ai = no NOT = { has_global_variable = z2_started } NOT = { has_global_variable = z2_ended } }
+    immediate = { z2_restore_effect = yes }
+    right_portrait = scope:z2_founder
+    option = {
+        name = z2_player_coronation.a
+        trigger = { z2_tribe_trigger = yes exists = var:z2_founder var:z2_founder = { is_alive = yes } }
+        custom_tooltip = z2_player_coronation_tt
+        hidden_effect = { remove_variable = z2_coronation_pending z2_start_effect = yes }
+    }
+    option = {
+        name = z2_player_coronation.b
+        trigger = { z2_tribe_trigger = yes exists = var:z2_founder var:z2_founder = { is_alive = yes } any_owned_province = { is_capital = no } }
+        custom_tooltip = z2_challenge_tt
+        hidden_effect = { remove_variable = z2_coronation_pending z2_challenge_effect = yes }
+    }
+}
+zerywani_second.141 = {
+    type = country_event
+    title = z2_challenge_delayed_title
+    desc = z2_challenge_delayed_desc
+    picture = war_council
+    left_portrait = current_ruler
+    right_portrait = scope:z2_founder
+    immediate = { z2_restore_effect = yes }
+    option = { name = z2_challenge_delayed.a trigger_event = { id = zerywani_second.140 } }
+}
+zerywani_second.142 = {
+    type = country_event
+    title = z2_challenge_news_title
+    desc = z2_challenge_news_desc
+    picture = war_council
+    trigger = { has_global_variable = z2_succession_war exists = global_var:z2_challenge_origin }
+    immediate = { z2_restore_effect = yes global_var:z2_challenge_origin.current_ruler = { save_scope_as = z2_incumbent_ruler } }
+    left_portrait = scope:z2_incumbent_ruler
+    right_portrait = scope:z2_founder
+    option = { name = z2_challenge_news.a }
+}
+zerywani_second.143 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = z2_preparing NOT = { has_global_variable = z2_started } NOT = { has_global_variable = z2_ended } }
+    immediate = {
+        if = {
+            limit = { has_civil_war = yes }
+            trigger_event = { id = zerywani_second.143 days = 7 }
+        }
+        else_if = {
+            limit = { has_land = yes is_subject = no exists = var:z2_founder var:z2_founder = { is_alive = yes } exists = var:z2_goal var:z2_goal = { has_owner = yes } }
+            z2_start_effect = yes
+        }
+        else = { z2_cancel_preparation_effect = yes }
+    }
+}
+zerywani_second.150 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_war_council_title desc = z2_war_council_desc picture = war_council
+    trigger = { has_variable = z2_active is_ai = no }
+    immediate = { z2_player_restore_choices_effect = yes set_variable = { name = z2_war_menu_open } }
+    option = {
+        name = z2_frontier_choice_1
+        trigger = { exists = var:z2_frontier_1 var:z2_frontier_1 = { z2_frontier_target_trigger = yes } }
+        custom_tooltip = z2_ui_send_demand_tt
+        hidden_effect = { remove_variable = z2_war_menu_open set_variable = { name = z2_player_demand_pending days = 180 } set_variable = { name = z2_player_council_cooldown days = 90 } var:z2_frontier_1 = { trigger_event = { id = zerywani_second.10 days = 1 } } }
+    }
+    option = {
+        name = z2_frontier_choice_2
+        trigger = { exists = var:z2_frontier_2 var:z2_frontier_2 = { z2_frontier_target_trigger = yes } }
+        custom_tooltip = z2_ui_send_demand_tt
+        hidden_effect = { remove_variable = z2_war_menu_open set_variable = { name = z2_player_demand_pending days = 180 } set_variable = { name = z2_player_council_cooldown days = 90 } var:z2_frontier_2 = { trigger_event = { id = zerywani_second.10 days = 1 } } }
+    }
+    option = {
+        name = z2_frontier_choice_3
+        trigger = { exists = var:z2_frontier_3 var:z2_frontier_3 = { z2_frontier_target_trigger = yes } }
+        custom_tooltip = z2_ui_send_demand_tt
+        hidden_effect = { remove_variable = z2_war_menu_open set_variable = { name = z2_player_demand_pending days = 180 } set_variable = { name = z2_player_council_cooldown days = 90 } var:z2_frontier_3 = { trigger_event = { id = zerywani_second.10 days = 1 } } }
+    }
+    option = {
+        name = z2_council.leave
+        hidden_effect = { remove_variable = z2_war_menu_open }
+    }
+}
+zerywani_second.155 = {
+    left_portrait = current_ruler
+    right_portrait = scope:z2_defender.current_ruler
+    type = country_event title = z2_defiance_report_title desc = z2_defiance_report_desc picture = war_council
+    trigger = { has_variable = z2_active is_ai = no exists = scope:z2_defender }
+    immediate = { z2_restore_effect = yes remove_variable = z2_player_demand_pending }
+    option = {
+        name = z2_defiance_report.a
+        trigger = { z2_founder_rules_trigger = yes scope:z2_defender = { z2_frontier_target_trigger = yes NOT = { war_with = scope:z2_host } } }
+        declare_war_with_wargoal = { war_goal = z2_banner_conquest target = scope:z2_defender }
+    }
+    option = { name = z2_defiance_report.b }
+}
+zerywani_second.160 = {
+    left_portrait = current_ruler
+    type = country_event title = z2_oaths_strained_title desc = z2_oaths_strained_desc picture = war_council
+    trigger = { has_variable = z2_active is_ai = no }
+    option = {
+        name = z2_oaths_strained.a
+        trigger = { treasury >= 200 political_influence >= 25 }
+        add_treasury = -200
+        add_political_influence = -25
+        custom_tooltip = z2_ui_restore_twenty_tt
+        hidden_effect = { change_variable = { name = z2_cohesion add = 20 } z2_player_clamp_cohesion_effect = yes }
+    }
+    option = {
+        name = z2_oaths_strained.b
+        trigger = { any_subject = { is_subject_type = z2_oath_subject is_ai = yes } }
+        custom_tooltip = z2_ui_release_chief_tt
+        hidden_effect = { ordered_subject = { limit = { is_subject_type = z2_oath_subject is_ai = yes } order_by = num_of_cities position = 0 save_scope_as = z2_departing_chief remove_variable = z2_member remove_variable = z2_pledged_to remove_country_modifier = z2_chief_privileges set_variable = { name = z2_invited } set_variable = { name = z2_paid_reprieve days = 3650 } } release_subject = scope:z2_departing_chief change_variable = { name = z2_cohesion add = 15 } z2_player_clamp_cohesion_effect = yes }
+    }
+    option = {
+        name = z2_oaths_strained.c
+        add_stability = -10
+        custom_tooltip = z2_ui_restore_five_tt
+        hidden_effect = { change_variable = { name = z2_cohesion add = 5 } z2_player_clamp_cohesion_effect = yes }
+    }
+}
+
+# Console-only helpers for a disposable player-route test. No one-time crisis
+# gate is reset. The setup refuses an unresolved first invasion.
+zerywani_second.995 = {
+    type = country_event
+    title = z2_player_test_diagnostic_title
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = z2_test_setup_ok } desc = z2_player_test_desc }
+            triggered_desc = { trigger = { is_ai = yes } desc = z2_test_not_player }
+            triggered_desc = { trigger = { has_land = no } desc = z2_test_no_land }
+            triggered_desc = { trigger = { is_tribal = no } desc = z2_test_not_tribal }
+            triggered_desc = { trigger = { is_subject = yes } desc = z2_test_subject }
+            triggered_desc = { trigger = { has_civil_war = yes } desc = z2_test_civil_war }
+            triggered_desc = { trigger = { capital_scope = { z2_homeland_trigger = no } } desc = z2_test_wrong_region }
+            triggered_desc = { trigger = { capital_scope = { z2_mainland_trigger = no } } desc = z2_test_wrong_landmass }
+            triggered_desc = { trigger = { war = yes } desc = z2_test_at_war }
+            triggered_desc = { trigger = { OR = { has_global_variable = z2_warned has_global_variable = z2_ended } } desc = z2_test_already_used }
+            triggered_desc = { trigger = { has_global_variable = zerywani_horde_formed NOT = { has_global_variable = zerywani_first_ended } } desc = z2_test_first_active }
+            triggered_desc = { trigger = { z2_tribe_count < 1 } desc = z2_test_too_few_tribes }
+            triggered_desc = { trigger = { z2_tribal_land < 24 } desc = z2_test_too_little_land }
+            triggered_desc = { trigger = { always = yes } desc = z2_test_other_failure }
+        }
+    }
+    picture = war_council
+    immediate = {
+        remove_variable = z2_test_setup_ok
+        if = {
+            limit = {
+                is_ai = no war = no z2_tribe_trigger = yes z2_base_survives_trigger = yes
+                NOT = { has_global_variable = z2_warned }
+                NOT = { has_global_variable = z2_ended }
+                OR = { NOT = { has_global_variable = zerywani_horde_formed } has_global_variable = zerywani_first_ended }
+            }
+            if = {
+                limit = { NOT = { has_global_variable = zerywani_first_ended } }
+                set_global_variable = { name = zerywani_horde_formed }
+                set_global_variable = { name = zerywani_first_ended }
+                set_global_variable = { name = zerywani_first_capital_not_taken }
+            }
+            set_global_variable = { name = z2_debug_testing }
+            add_treasury = 2000
+            add_political_influence = 200
+            add_manpower = 100
+            set_variable = { name = z2_test_setup_ok }
+        }
+    }
+    option = { name = z2_player_test.a trigger = { has_variable = z2_test_setup_ok } }
+    option = { name = z2_player_test.blocked trigger = { NOT = { has_variable = z2_test_setup_ok } } }
+}
+zerywani_second.994 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { is_ai = no has_global_variable = z2_debug_testing has_variable = z2_player_project }
+            remove_variable = z2_household_cooldown
+            if = { limit = { has_variable = z2_preparing } set_variable = { name = z2_player_coronation_unlocked } }
+        }
+    }
+}
+zerywani_second.990 = {
+    type = country_event title = z2_player_test_title desc = z2_player_test_desc picture = war_council
+    option = { name = z2_player_test.a }
+}

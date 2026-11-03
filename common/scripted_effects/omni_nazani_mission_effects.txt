@@ -1,0 +1,39 @@
+﻿# Country scope; TARGET and PROVINCE are supplied by the mission event.
+nazani_declare_mission_war_effect = {
+    declare_war_with_wargoal = {
+        war_goal = conquer_wargoal
+        target = $TARGET$
+        province = $PROVINCE$
+    }
+    every_current_war = {
+        limit = {
+            any_war_attacker = { THIS = ROOT }
+            any_war_defender = { THIS = $TARGET$ }
+            is_war_leader = ROOT
+        }
+        save_scope_as = nazani_mission_war
+    }
+    if = {
+        limit = { exists = scope:nazani_mission_war }
+        every_subject = {
+            limit = {
+                OR = {
+                    is_subject_type = feudatory
+                    is_subject_type = satrapy
+                    is_subject_type = client_state
+                    is_subject_type = subject_mercenary_city_state
+                    is_subject_type = princedom_vassal
+                    is_subject_type = county_vassal
+                    is_subject_type = march_vassal
+                    is_subject_type = dynastic_union_subject
+                }
+                NOT = { war_with = $TARGET$ }
+            }
+            add_to_war = {
+                target = scope:nazani_mission_war
+                attacker = yes
+                leader = no
+            }
+        }
+    }
+}

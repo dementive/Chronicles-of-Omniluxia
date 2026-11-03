@@ -1,0 +1,53 @@
+﻿# Siege supplies - see common/scripted_triggers/omni_siege_supplies_triggers.txt.
+
+# CHARACTER scope.
+omni_kit_init = {
+	if = { limit = { NOT = { has_variable = omni_kit_ram } } set_variable = { name = omni_kit_ram value = 0 } }
+	if = { limit = { NOT = { has_variable = omni_kit_sapper } } set_variable = { name = omni_kit_sapper value = 0 } }
+	if = { limit = { NOT = { has_variable = omni_kit_fire } } set_variable = { name = omni_kit_fire value = 0 } }
+	if = { limit = { NOT = { has_variable = omni_kit_plague } } set_variable = { name = omni_kit_plague value = 0 } }
+}
+omni_kit_gain = {
+	if = { limit = { NOT = { has_variable = omni_kit_$KIT$ } } set_variable = { name = omni_kit_$KIT$ value = 0 } }
+	change_variable = { name = omni_kit_$KIT$ add = 1 }
+}
+omni_kit_spend = {
+	change_variable = { name = omni_kit_$KIT$ subtract = 1 }
+	if = { limit = { var:omni_kit_$KIT$ < 0 } set_variable = { name = omni_kit_$KIT$ value = 0 } }
+}
+
+# CHARACTER scope (the carrier). Saves the settlement this character's army is
+# besieging as scope:omni_kit_target. Needs scope:omni_gear_country.
+omni_kit_find_target = {
+	random_character_unit = {
+		limit = {
+			is_army = yes
+			unit_location = {
+				has_siege = yes
+				NOT = { controller = scope:omni_gear_country }
+			}
+		}
+		unit_location = { save_scope_as = omni_kit_target }
+	}
+}
+
+# PROVINCE scope. Refresh (never stack) a timed province modifier.
+omni_supply_refresh_province_mod = {
+	if = { limit = { has_province_modifier = $MOD$ } remove_province_modifier = $MOD$ }
+	add_province_modifier = { name = $MOD$ duration = $DAYS$ }
+}
+
+# COUNTRY scope.
+omni_def_init = {
+	if = { limit = { NOT = { has_variable = omni_def_stores } } set_variable = { name = omni_def_stores value = 0 } }
+	if = { limit = { NOT = { has_variable = omni_def_gates } } set_variable = { name = omni_def_gates value = 0 } }
+	if = { limit = { NOT = { has_variable = omni_def_wards } } set_variable = { name = omni_def_wards value = 0 } }
+}
+omni_def_gain = {
+	if = { limit = { NOT = { has_variable = omni_def_$KIT$ } } set_variable = { name = omni_def_$KIT$ value = 0 } }
+	change_variable = { name = omni_def_$KIT$ add = 1 }
+}
+omni_def_spend = {
+	change_variable = { name = omni_def_$KIT$ subtract = 1 }
+	if = { limit = { var:omni_def_$KIT$ < 0 } set_variable = { name = omni_def_$KIT$ value = 0 } }
+}

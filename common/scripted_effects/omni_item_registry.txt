@@ -1,0 +1,21 @@
+﻿# COUNTRY scope. The catalogue is compiled once behind an event boundary.
+omni_ensure_item_registry = {
+    if = {
+        limit = { NOT = { omni_item_registry_ready = yes } NOT = { has_global_variable = omni_item_registry_pending } }
+        set_global_variable = { name = omni_item_registry_pending days = 7 }
+        trigger_event = { id = omni_item_registry.1 }
+    }
+}
+
+# One catch-up after installing this repair, even if a later save already has
+# valid registries. This is a normal paid purchase pass, not a starting-kit grant.
+omni_ai_ruler_item_catchup = {
+    if = {
+        limit = { omni_item_registry_ready = yes NOT = { has_global_variable = omni_ai_ruler_item_catchup_v1 } }
+        set_global_variable = { name = omni_ai_ruler_item_catchup_v1 }
+        every_country = {
+            limit = { is_ai = yes exists = current_ruler }
+            current_ruler = { trigger_event = { id = omni_annual_purchase.1 days = 2 } }
+        }
+    }
+}

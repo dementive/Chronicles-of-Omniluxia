@@ -1,0 +1,397 @@
+﻿# Country scope. All petition state is private to one country, never global.
+
+omni_sf_clear_effect = {
+
+    remove_variable = omni_sf_favor
+
+    remove_variable = omni_sf_patron
+
+    remove_variable = omni_sf_shannah
+
+    remove_variable = omni_sf_see
+
+    remove_variable = omni_sf_active
+
+    remove_variable = omni_sf_pending
+
+    remove_variable = omni_sf_ai_decided
+    remove_variable = omni_sf_ai_accepts
+    remove_variable = omni_sf_paid_request
+    remove_variable = omni_sf_request
+
+    remove_variable = omni_sf_victim
+
+    remove_variable = omni_sf_victim_country
+
+    remove_variable = omni_sf_complicity
+
+    remove_variable = omni_sf_stage
+
+    remove_variable = omni_sf_scene
+
+    remove_variable = omni_sf_bound_epoch
+
+}
+
+omni_sf_succession_effect = {
+
+    # No global scans. Reign epochs also invalidate a Shannah who later returns.
+
+    if = { limit = { NOT = { has_variable = omni_sf_reign_epoch } }
+
+        set_variable = { name = omni_sf_reign_epoch value = 0 }
+
+    }
+
+    change_variable = { name = omni_sf_reign_epoch add = 1 }
+
+    if = { limit = { has_variable = omni_sf_patron } omni_sf_clear_effect = yes }
+
+}
+
+omni_sf_bind_effect = {
+
+    omni_sf_clear_effect = yes
+
+    scope:omni_sf_new_shannah.employer = {
+
+        if = { limit = { NOT = { has_variable = omni_sf_reign_epoch } }
+
+            set_variable = { name = omni_sf_reign_epoch value = 0 }
+
+        }
+
+    }
+
+    set_variable = { name = omni_sf_favor value = 0 }
+
+    set_variable = { name = omni_sf_patron value = current_ruler }
+
+    set_variable = { name = omni_sf_shannah value = scope:omni_sf_new_shannah }
+
+    set_variable = { name = omni_sf_see value = scope:omni_sf_new_shannah.employer }
+
+    set_variable = { name = omni_sf_bound_epoch value = scope:omni_sf_new_shannah.employer.var:omni_sf_reign_epoch }
+
+}
+
+omni_sf_open_effect = {
+
+    if = {
+
+        limit = { NOT = { omni_sf_relationship_trigger = yes } }
+
+        omni_sf_clear_effect = yes
+
+        random_country = {
+
+            limit = {
+
+                NOT = { this = root }
+
+                has_land = yes religion = helluvian exists = current_ruler
+
+                current_ruler = { omni_sf_shannah_trigger = yes }
+
+            }
+
+            current_ruler = { save_scope_as = omni_sf_new_shannah }
+
+        }
+
+        if = { limit = { exists = scope:omni_sf_new_shannah } omni_sf_bind_effect = yes }
+
+    }
+
+}
+
+omni_sf_gain_effect = {
+
+    change_variable = { name = omni_sf_favor add = $AMOUNT$ }
+
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_favor } var:omni_sf_favor > 100 } trigger_else = { always = no } } set_variable = { name = omni_sf_favor value = 100 } }
+
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_favor } var:omni_sf_favor < 0 } trigger_else = { always = no } } set_variable = { name = omni_sf_favor value = 0 } }
+
+}
+
+omni_sf_start_effect = {
+
+    set_variable = omni_sf_active
+
+    # Do not recycle the slot behind an unanswered cultivation event either.
+
+    set_variable = omni_sf_chain_waiting
+
+    set_variable = { name = omni_sf_build_cooldown days = 365 }
+
+    set_variable = { name = omni_sf_stage value = 0 }
+
+    set_variable = { name = omni_sf_scene value = 0 }
+
+    # Bind this delayed chain to its actual participants, not later country rulers.
+
+    current_ruler = { save_scope_as = omni_sf_chain_patron }
+
+    var:omni_sf_shannah = { save_scope_as = omni_sf_chain_shannah }
+
+    trigger_event = { id = omni_shannah_favor.10 days = { 15 30 } }
+
+}
+
+omni_sf_next_effect = {
+
+    change_variable = { name = omni_sf_stage add = 1 }
+
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_stage } var:omni_sf_stage >= 3 } trigger_else = { always = no } }
+
+        remove_variable = omni_sf_active
+
+        remove_variable = omni_sf_chain_waiting
+
+        trigger_event = { id = omni_shannah_favor.12 }
+
+    }
+
+    else = { trigger_event = { id = omni_shannah_favor.10 days = { 20 40 } } }
+
+}
+
+omni_sf_prepare_request_effect = {
+    # Each request captures its own serial, including requests from the same rulers.
+    if = { limit = { NOT = { has_variable = omni_hc_request_serial } }
+        set_variable = { name = omni_hc_request_serial value = 0 }
+    }
+    change_variable = { name = omni_hc_request_serial add = 1 }
+    var:omni_hc_request_serial = { save_scope_as = omni_hc_request_serial }
+
+
+    set_variable = omni_sf_pending
+
+    set_variable = { name = omni_sf_request value = $ACTION$ }
+
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 1 } trigger_else = { always = no } } change_variable = { name = omni_sf_favor subtract = 20 } }
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 2 } trigger_else = { always = no } } change_variable = { name = omni_sf_favor subtract = 30 } }
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 3 } trigger_else = { always = no } } change_variable = { name = omni_sf_favor subtract = 40 } }
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 4 } trigger_else = { always = no } } change_variable = { name = omni_sf_favor subtract = 50 } }
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 5 } trigger_else = { always = no } } change_variable = { name = omni_sf_favor subtract = 65 } }
+    if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 6 } trigger_else = { always = no } } change_variable = { name = omni_sf_favor subtract = 85 } }
+    set_variable = { name = omni_sf_paid_request value = var:omni_sf_request }
+    save_scope_as = omni_sf_petitioner
+
+    current_ruler = { save_scope_as = omni_sf_request_patron }
+
+    var:omni_sf_shannah = { save_scope_as = omni_sf_request_shannah }
+
+    # Human requests stay locked until the actual response. Never recycle a
+
+    # timed request slot while its old event can still be on another player's screen.
+
+    if = { limit = { exists = var:omni_sf_victim } var:omni_sf_victim = { save_scope_as = omni_sf_request_victim } }
+
+    if = {
+
+        limit = { var:omni_sf_shannah.employer = { is_ai = no } }
+
+        set_variable = omni_sf_human_waiting
+
+        var:omni_sf_shannah.employer = { trigger_event = { id = omni_shannah_favor.60 } }
+
+    }
+
+    else = { trigger_event = { id = omni_shannah_favor.51 } }
+
+}
+
+omni_sf_finish_request_effect = {
+
+    remove_variable = omni_sf_pending
+
+    remove_variable = omni_sf_human_waiting
+
+    remove_variable = omni_sf_ai_decided
+    remove_variable = omni_sf_ai_accepts
+    remove_variable = omni_sf_paid_request
+    remove_variable = omni_sf_request
+
+    remove_variable = omni_sf_victim
+
+    remove_variable = omni_sf_victim_country
+
+}
+
+
+
+omni_sf_execute_1_effect = {
+
+    if = { limit = { NOT = { trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 1 } trigger_else = { always = no } } } change_variable = { name = omni_sf_favor subtract = 20 } }
+
+    current_ruler = { save_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_scope_as = actor }
+
+    omni_sf_paid_bless_effect = yes
+
+}
+
+
+
+omni_sf_execute_2_effect = {
+
+    if = { limit = { NOT = { trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 2 } trigger_else = { always = no } } } change_variable = { name = omni_sf_favor subtract = 30 } }
+
+    current_ruler = { save_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_scope_as = actor }
+
+    omni_sf_paid_holy_mission_effect = yes
+
+}
+
+
+
+omni_sf_execute_3_effect = {
+
+    if = { limit = { NOT = { trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 3 } trigger_else = { always = no } } } change_variable = { name = omni_sf_favor subtract = 40 } }
+
+    current_ruler = { save_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_scope_as = actor }
+
+    omni_sf_paid_recognize_crown_effect = yes
+
+}
+
+
+
+omni_sf_execute_4_effect = {
+
+    if = { limit = { NOT = { trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 4 } trigger_else = { always = no } } } change_variable = { name = omni_sf_favor subtract = 50 } }
+
+    current_ruler = { save_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_scope_as = actor }
+
+    omni_sf_paid_absolve_effect = yes
+
+}
+
+
+
+omni_sf_execute_5_effect = {
+
+    if = { limit = { NOT = { trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 5 } trigger_else = { always = no } } } change_variable = { name = omni_sf_favor subtract = 65 } }
+
+    current_ruler = { save_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_scope_as = actor }
+
+    omni_sf_paid_lift_excommunication_effect = yes
+
+}
+
+
+
+omni_sf_execute_6_effect = {
+
+    if = { limit = { NOT = { trigger_if = { limit = { has_variable = omni_sf_paid_request } var:omni_sf_paid_request = 6 } trigger_else = { always = no } } } change_variable = { name = omni_sf_favor subtract = 85 } }
+
+    var:omni_sf_victim = { save_scope_as = target }
+
+    var:omni_sf_shannah.employer = { save_scope_as = actor }
+
+    omni_sf_paid_excommunicate_effect = yes
+
+}
+
+
+omni_sf_paid_bless_effect = {
+omni_shannah_apply_blessing_effect = yes
+    
+}
+
+omni_sf_paid_holy_mission_effect = {
+
+        scope:target.employer = { remove_country_modifier = omni_shannah_holy_mission add_country_modifier = { name = omni_shannah_holy_mission duration = 1825 } }
+        hidden_effect = {
+            scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.15 } }
+        }
+    
+}
+
+omni_sf_paid_recognize_crown_effect = {
+scope:target = { set_variable = omni_shannah_crown_recognized }
+        scope:target.employer = {
+            add_legitimacy = 10
+            set_variable = omni_shannah_crown_recognized
+            save_scope_as = omni_shannah_recognized_scope
+        }
+        hidden_effect = {
+            every_country = {
+                limit = {
+                    has_land = yes
+                    religion = helluvian
+                    NOT = { this = scope:omni_shannah_recognized_scope }
+                }
+                save_scope_as = omni_helluvian_country
+                remove_opinion = { target = scope:omni_shannah_recognized_scope modifier = omni_shannah_recognized_crown_opinion }
+                add_opinion = { target = scope:omni_shannah_recognized_scope modifier = omni_shannah_recognized_crown_opinion }
+                scope:omni_shannah_recognized_scope = {
+                    remove_opinion = { target = scope:omni_helluvian_country modifier = omni_shannah_recognized_crown_opinion }
+                    add_opinion = { target = scope:omni_helluvian_country modifier = omni_shannah_recognized_crown_opinion }
+                }
+            }
+        }
+        hidden_effect = {
+            scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.13 } }
+        }
+    
+}
+
+omni_sf_paid_absolve_effect = {
+scope:target.employer = {
+            add_aggressive_expansion = -10
+        }
+        hidden_effect = {
+            scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.14 } }
+        }
+    
+}
+
+omni_sf_paid_lift_excommunication_effect = {
+        scope:target.employer = { remove_country_modifier = omni_shannah_excommunicated }
+        hidden_effect = {
+            every_country = {
+                remove_opinion = { target = scope:target.employer modifier = omni_shannah_excommunication_opinion }
+            }
+        }
+        hidden_effect = {
+            scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.11 } }
+        }
+    
+}
+
+omni_sf_paid_excommunicate_effect = {
+scope:target.employer = {
+            add_country_modifier = { name = omni_shannah_excommunicated duration = -1 }
+            if = {
+                limit = { has_variable = omni_shannah_crown_recognized }
+                omni_shannah_remove_recognized_crown_effect = yes
+            }
+        }
+        hidden_effect = {
+            every_country = {
+                limit = {
+                    has_land = yes
+                    religion = helluvian
+                    NOT = { this = scope:target.employer }
+                }
+                remove_opinion = { target = scope:target.employer modifier = omni_shannah_excommunication_opinion }
+                add_opinion = { target = scope:target.employer modifier = omni_shannah_excommunication_opinion }
+            }
+        }
+        hidden_effect = {
+            scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.10 } }
+        }
+    
+}

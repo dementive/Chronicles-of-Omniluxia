@@ -1,0 +1,273 @@
+﻿# Country scope; actor/target scopes are reconstructed from country variables.
+# Invictus flavor_cap.3 supplies the war membership/leadership pattern.
+omni_shannah_office_trigger = {
+    has_land = yes
+    religion = helluvian
+    government = papacy
+    NOT = { has_variable = omni_shannah_deposed }
+}
+
+omni_crusade_target_trigger = {
+    has_land = yes
+    is_subject = no
+    has_civil_war = no
+    NOT = { religion = helluvian }
+    NOT = { this = scope:omni_crusade_actor }
+    in_diplomatic_range = scope:omni_crusade_actor
+    # Neighbors remain eligible even when a sprawling realm's capital is far.
+    # Other targets must have a nearby capital; this also allows coastal reach.
+    OR = {
+        any_neighbour_country = { this = scope:omni_crusade_actor }
+        capital_scope = {
+            distance_from = {
+                province = scope:omni_crusade_actor.capital_scope
+                value <= omni_crusade_target_distance_svalue
+            }
+        }
+    }
+    NOT = { alliance_with = scope:omni_crusade_actor }
+    NOT = { has_truce_with = scope:omni_crusade_actor }
+    NOT = { war_with = scope:omni_crusade_actor }
+}
+
+omni_crusade_invitee_trigger = {
+    NOR = { has_variable = omni_crusade_defense_invited has_variable = omni_crusade_defense_pledged has_variable = omni_crusade_defense_refused }
+    has_land = yes
+    religion = helluvian
+    is_subject = no
+    has_civil_war = no
+    NOT = { this = scope:omni_crusade_actor }
+    in_diplomatic_range = scope:omni_crusade_actor
+    in_diplomatic_range = scope:omni_crusade_target
+    NOT = { war_with = scope:omni_crusade_actor }
+    NOT = { war_with = scope:omni_crusade_target }
+    NOT = { alliance_with = scope:omni_crusade_target }
+    NOT = { has_truce_with = scope:omni_crusade_target }
+}
+
+omni_crusade_host_ready_trigger = {
+    has_land = yes
+    religion = helluvian
+    is_subject = no
+    has_civil_war = no
+    war = no
+    exists = current_ruler
+    current_ruler = { has_trait = shannah_trait }
+}
+
+# Preparation survives temporary launch blockers. Peace, diplomatic range,
+# civil wars and treaties are rechecked when actually declaring, not used as
+# reasons to discard months of preparation on every country pulse.
+omni_crusade_preparation_valid_trigger = {
+    has_land = yes
+    religion = helluvian
+    is_subject = no
+    exists = current_ruler
+    current_ruler = { has_trait = shannah_trait }
+    exists = var:omni_crusade_target
+    var:omni_crusade_target = {
+        has_land = yes
+        is_subject = no
+        NOT = { religion = helluvian }
+    }
+}
+
+# Used before declaration, both at confirmation and after preparation.
+omni_crusade_target_still_valid_trigger = {
+    exists = var:omni_crusade_target
+    var:omni_crusade_target = { omni_crusade_target_trigger = yes }
+}
+
+# No generic random war fallback. The original host must still lead the war
+# against its recorded target. Concurrent crusades are globally locked out.
+omni_crusade_matching_war_trigger = {
+    is_war_leader = scope:omni_crusade_actor
+    any_war_attacker = { this = scope:omni_crusade_actor }
+    any_war_defender = { this = scope:omni_crusade_target }
+}
+
+omni_crusade_invitation_live_trigger = {
+    has_variable = omni_crusade_invited
+    exists = var:omni_crusade_host
+    var:omni_crusade_host = {
+        this = scope:omni_crusade_actor
+        has_variable = omni_crusade_preparing
+        NOT = { has_variable = omni_crusade_declaring }
+        exists = var:omni_crusade_target
+        var:omni_crusade_target = { this = scope:omni_crusade_target }
+    }
+}
+
+# Country scope while building the current host's review tooltip.
+omni_crusade_roster_member_trigger = {
+    has_land = yes
+    exists = var:omni_crusade_host
+    var:omni_crusade_host = { this = scope:omni_crusade_actor }
+}
+
+# Primary-culture affinity mirrors choo_effects racial-assimilation boundaries.
+# No ruler-race inference and no population/culture-record iteration.
+omni_crusade_human_realm_trigger = { NOR = {
+    country_culture_group = angel_elves
+    country_culture_group = austropetolian
+    country_culture_group = castaway_dwarves
+    country_culture_group = chivix
+    country_culture_group = common_dwarves
+    country_culture_group = deep_gnome
+    country_culture_group = dissolved
+    country_culture_group = dissolved_revant
+    country_culture_group = dragkhanic
+    country_culture_group = dragkhanic_eastern
+    country_culture_group = dragkhanic_jarenam
+    country_culture_group = dragkhanic_western
+    country_culture_group = drow
+    country_culture_group = eastern_golems
+    country_culture_group = forest_elves
+    country_culture_group = gnome
+    country_culture_group = goblin
+    country_culture_group = gold_dwarves
+    country_culture_group = halfling
+    country_culture_group = high_elves
+    country_culture_group = high_half_elves
+    country_culture_group = hobgoblin
+    country_culture_group = islander_mycelar
+    country_culture_group = kinones
+    country_culture_group = morrigon_forest_elves
+    country_culture_group = mycelar
+    country_culture_group = orcish
+    country_culture_group = orcish_humano
+    country_culture_group = polarian_arame
+    country_culture_group = saurthi
+    country_culture_group = savannah_arame
+    country_culture_group = sea_elves
+    country_culture_group = sea_giants
+    country_culture_group = silver_dwarves
+    country_culture_group = silver_halfling
+    country_culture_group = snakefolk
+    country_culture_group = southern_arame
+    country_culture_group = southern_forest_elves
+    country_culture_group = sporling
+    country_culture_group = sunset_elves
+    country_culture_group = tenmari
+    country_culture_group = tsaalan
+    country_culture_group = ulvenar
+    country_culture_group = vothkin
+    country_culture_group = werhenssian
+    country_culture_group = western_half_elves
+    country_culture_group = yedidyah
+    country_culture_group = zorg
+} }
+omni_crusade_race_1_trigger = { OR = { country_culture_group = forest_elves country_culture_group = morrigon_forest_elves country_culture_group = southern_forest_elves country_culture_group = sunset_elves } }
+omni_crusade_race_2_trigger = { OR = { country_culture_group = western_half_elves country_culture_group = high_half_elves country_culture_group = werhenssian } }
+omni_crusade_race_3_trigger = { OR = { country_culture_group = kinones } }
+omni_crusade_race_4_trigger = { OR = { country_culture_group = high_elves } }
+omni_crusade_race_5_trigger = { OR = { country_culture_group = orcish country_culture_group = orcish_humano } }
+omni_crusade_race_6_trigger = { OR = { country_culture_group = common_dwarves } }
+omni_crusade_race_7_trigger = { OR = { country_culture_group = gold_dwarves } }
+omni_crusade_race_8_trigger = { OR = { country_culture_group = silver_dwarves } }
+omni_crusade_race_9_trigger = { OR = { country_culture_group = snakefolk } }
+omni_crusade_race_10_trigger = { OR = { country_culture_group = austropetolian } }
+omni_crusade_race_11_trigger = { OR = { country_culture_group = goblin } }
+omni_crusade_race_12_trigger = { OR = { country_culture_group = hobgoblin } }
+omni_crusade_race_13_trigger = { OR = { country_culture_group = dragkhanic country_culture_group = dragkhanic_jarenam country_culture_group = dragkhanic_western } }
+omni_crusade_race_14_trigger = { OR = { country_culture_group = drow } }
+omni_crusade_race_15_trigger = { OR = { country_culture_group = sea_elves } }
+omni_crusade_race_16_trigger = { OR = { country_culture_group = yedidyah } }
+omni_crusade_race_17_trigger = { OR = { country_culture_group = gnome } }
+omni_crusade_race_18_trigger = { OR = { country_culture_group = deep_gnome } }
+omni_crusade_race_19_trigger = { OR = { country_culture_group = halfling } }
+omni_crusade_race_20_trigger = { OR = { country_culture_group = silver_halfling } }
+omni_crusade_race_21_trigger = { OR = { country_culture_group = dissolved country_culture_group = dissolved_revant } }
+omni_crusade_race_22_trigger = { OR = { country_culture_group = zorg } }
+omni_crusade_race_23_trigger = { OR = { country_culture_group = chivix } }
+omni_crusade_race_24_trigger = { OR = { country_culture_group = angel_elves } }
+omni_crusade_race_25_trigger = { OR = { country_culture_group = mycelar country_culture_group = islander_mycelar country_culture_group = sporling } }
+omni_crusade_race_26_trigger = { OR = { country_culture_group = sea_giants } }
+omni_crusade_race_27_trigger = { OR = { country_culture_group = castaway_dwarves } }
+omni_crusade_race_28_trigger = { OR = { country_culture_group = eastern_golems } }
+omni_crusade_race_29_trigger = { OR = { country_culture_group = savannah_arame country_culture_group = polarian_arame country_culture_group = southern_arame } }
+omni_crusade_race_30_trigger = { OR = { country_culture_group = saurthi } }
+omni_crusade_race_31_trigger = { OR = { country_culture_group = tsaalan } }
+omni_crusade_race_32_trigger = { OR = { country_culture_group = vothkin } }
+omni_crusade_race_33_trigger = { OR = { country_culture_group = ulvenar } }
+omni_crusade_race_34_trigger = { OR = { country_culture_group = tenmari } }
+omni_crusade_race_35_trigger = { OR = { country_culture_group = dragkhanic_eastern } }
+omni_crusade_shared_race_trigger = { OR = {
+    AND = { omni_crusade_human_realm_trigger = yes scope:omni_crusade_target = { omni_crusade_human_realm_trigger = yes } }
+    AND = { omni_crusade_race_1_trigger = yes scope:omni_crusade_target = { omni_crusade_race_1_trigger = yes } }
+    AND = { omni_crusade_race_2_trigger = yes scope:omni_crusade_target = { omni_crusade_race_2_trigger = yes } }
+    AND = { omni_crusade_race_3_trigger = yes scope:omni_crusade_target = { omni_crusade_race_3_trigger = yes } }
+    AND = { omni_crusade_race_4_trigger = yes scope:omni_crusade_target = { omni_crusade_race_4_trigger = yes } }
+    AND = { omni_crusade_race_5_trigger = yes scope:omni_crusade_target = { omni_crusade_race_5_trigger = yes } }
+    AND = { omni_crusade_race_6_trigger = yes scope:omni_crusade_target = { omni_crusade_race_6_trigger = yes } }
+    AND = { omni_crusade_race_7_trigger = yes scope:omni_crusade_target = { omni_crusade_race_7_trigger = yes } }
+    AND = { omni_crusade_race_8_trigger = yes scope:omni_crusade_target = { omni_crusade_race_8_trigger = yes } }
+    AND = { omni_crusade_race_9_trigger = yes scope:omni_crusade_target = { omni_crusade_race_9_trigger = yes } }
+    AND = { omni_crusade_race_10_trigger = yes scope:omni_crusade_target = { omni_crusade_race_10_trigger = yes } }
+    AND = { omni_crusade_race_11_trigger = yes scope:omni_crusade_target = { omni_crusade_race_11_trigger = yes } }
+    AND = { omni_crusade_race_12_trigger = yes scope:omni_crusade_target = { omni_crusade_race_12_trigger = yes } }
+    AND = { omni_crusade_race_13_trigger = yes scope:omni_crusade_target = { omni_crusade_race_13_trigger = yes } }
+    AND = { omni_crusade_race_14_trigger = yes scope:omni_crusade_target = { omni_crusade_race_14_trigger = yes } }
+    AND = { omni_crusade_race_15_trigger = yes scope:omni_crusade_target = { omni_crusade_race_15_trigger = yes } }
+    AND = { omni_crusade_race_16_trigger = yes scope:omni_crusade_target = { omni_crusade_race_16_trigger = yes } }
+    AND = { omni_crusade_race_17_trigger = yes scope:omni_crusade_target = { omni_crusade_race_17_trigger = yes } }
+    AND = { omni_crusade_race_18_trigger = yes scope:omni_crusade_target = { omni_crusade_race_18_trigger = yes } }
+    AND = { omni_crusade_race_19_trigger = yes scope:omni_crusade_target = { omni_crusade_race_19_trigger = yes } }
+    AND = { omni_crusade_race_20_trigger = yes scope:omni_crusade_target = { omni_crusade_race_20_trigger = yes } }
+    AND = { omni_crusade_race_21_trigger = yes scope:omni_crusade_target = { omni_crusade_race_21_trigger = yes } }
+    AND = { omni_crusade_race_22_trigger = yes scope:omni_crusade_target = { omni_crusade_race_22_trigger = yes } }
+    AND = { omni_crusade_race_23_trigger = yes scope:omni_crusade_target = { omni_crusade_race_23_trigger = yes } }
+    AND = { omni_crusade_race_24_trigger = yes scope:omni_crusade_target = { omni_crusade_race_24_trigger = yes } }
+    AND = { omni_crusade_race_25_trigger = yes scope:omni_crusade_target = { omni_crusade_race_25_trigger = yes } }
+    AND = { omni_crusade_race_26_trigger = yes scope:omni_crusade_target = { omni_crusade_race_26_trigger = yes } }
+    AND = { omni_crusade_race_27_trigger = yes scope:omni_crusade_target = { omni_crusade_race_27_trigger = yes } }
+    AND = { omni_crusade_race_28_trigger = yes scope:omni_crusade_target = { omni_crusade_race_28_trigger = yes } }
+    AND = { omni_crusade_race_29_trigger = yes scope:omni_crusade_target = { omni_crusade_race_29_trigger = yes } }
+    AND = { omni_crusade_race_30_trigger = yes scope:omni_crusade_target = { omni_crusade_race_30_trigger = yes } }
+    AND = { omni_crusade_race_31_trigger = yes scope:omni_crusade_target = { omni_crusade_race_31_trigger = yes } }
+    AND = { omni_crusade_race_32_trigger = yes scope:omni_crusade_target = { omni_crusade_race_32_trigger = yes } }
+    AND = { omni_crusade_race_33_trigger = yes scope:omni_crusade_target = { omni_crusade_race_33_trigger = yes } }
+    AND = { omni_crusade_race_34_trigger = yes scope:omni_crusade_target = { omni_crusade_race_34_trigger = yes } }
+    AND = { omni_crusade_race_35_trigger = yes scope:omni_crusade_target = { omni_crusade_race_35_trigger = yes } }
+} }
+
+# Defensive eligibility is independent of attacker faith; commitments are exclusive.
+omni_crusade_defender_trigger = {
+    has_land = yes
+    is_subject = no
+    has_civil_war = no
+    NOT = { this = scope:omni_crusade_actor }
+    NOT = { this = scope:omni_crusade_target }
+    in_diplomatic_range = scope:omni_crusade_target
+    in_diplomatic_range = scope:omni_crusade_actor
+    NOT = { war_with = scope:omni_crusade_actor }
+    NOT = { war_with = scope:omni_crusade_target }
+    NOT = { alliance_with = scope:omni_crusade_actor }
+    NOT = { has_truce_with = scope:omni_crusade_actor }
+    NOR = { has_variable = omni_crusade_pledged has_variable = omni_crusade_donated }
+}
+omni_crusade_defensive_invitation_live_trigger = {
+    has_variable = omni_crusade_defense_invited
+    exists = var:omni_crusade_host
+    var:omni_crusade_host = {
+        this = scope:omni_crusade_actor
+        has_variable = omni_crusade_preparing
+        NOT = { has_variable = omni_crusade_declaring }
+        exists = var:omni_crusade_target
+        var:omni_crusade_target = { this = scope:omni_crusade_target }
+    }
+}
+
+omni_crusade_roster_category_trigger = { OR = {
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 1 } has_variable = omni_crusade_pledged }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 2 } has_variable = omni_crusade_donated }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 3 } has_variable = omni_crusade_refused }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 4 } has_variable = omni_crusade_invited }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 5 } has_variable = omni_crusade_defense_pledged }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 6 } has_variable = omni_crusade_defense_refused }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 7 } has_variable = omni_crusade_defense_invited }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 8 } has_variable = omni_crusade_joined }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 9 } has_variable = omni_crusade_defense_joined }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 10 } has_variable = omni_crusade_pledged NOT = { has_variable = omni_crusade_joined } }
+    AND = { scope:omni_crusade_roster_viewer = { var:omni_crusade_roster_category = 11 } has_variable = omni_crusade_defense_pledged NOT = { has_variable = omni_crusade_defense_joined } }
+} }

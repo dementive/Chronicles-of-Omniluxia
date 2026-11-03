@@ -1,0 +1,224 @@
+﻿namespace = omni_ashes
+
+omni_ashes.1 = {
+
+ type = country_event
+
+ title = omni_ashes.1.t
+
+ desc = omni_ashes.1.desc
+
+ picture = omni_shannah_accession
+
+ left_portrait = current_ruler
+ right_portrait = scope:omni_ashes_shannah
+ immediate = {
+  random_country = {
+   limit = {
+    has_land = yes
+    religion = helluvian
+    exists = current_ruler
+    current_ruler = { has_trait = shannah_trait }
+   }
+   current_ruler = { save_scope_as = omni_ashes_shannah }
+  }
+  if = {
+   limit = { omni_ashes_eligible = yes }
+   set_variable = omni_ashes_envoy_pending
+   trigger_event = { id = omni_ashes.7 days = { 90 180 } }
+  }
+ }
+
+ option = {
+  name = omni_ashes.1.a
+  custom_tooltip = omni_ashes.1.a.tt
+ }
+
+}
+
+omni_ashes.2 = {
+
+ type = country_event
+
+ title = omni_ashes.2.t
+
+ desc = omni_ashes.2.desc
+
+ picture = omni_shannah_petition
+ left_portrait = current_ruler
+ right_portrait = scope:omni_ashes_shannah
+
+ # The hidden envoy dispatcher retries if the realm is temporarily ineligible.
+ trigger = { omni_ashes_eligible = yes NOT = { has_variable = omni_ashes_invited } }
+
+ immediate = {
+  set_variable = omni_ashes_invited
+  remove_variable = omni_ashes_envoy_pending
+  random_country = {
+   limit = {
+    has_land = yes
+    religion = helluvian
+    exists = current_ruler
+    current_ruler = { has_trait = shannah_trait }
+   }
+   current_ruler = { save_scope_as = omni_ashes_shannah }
+  }
+ }
+ option = {
+
+  name = omni_ashes.2.a
+
+  ai_chance = { base = 33 }
+
+  custom_tooltip = omni_ashes.2.a.tt
+  hidden_effect = {
+  set_variable = omni_ashes_pledged
+  remove_variable = omni_ashes_restraint_released
+  if = {
+   limit = { is_ai = yes }
+   random = {
+    chance = 10
+    trigger_event = { id = omni_ashes.6 days = { 60 150 } }
+   }
+  }
+
+  add_country_modifier = { name = omni_ashes_oath duration = 730 }
+
+  trigger_event = { id = omni_ashes.5 days = 730 }
+
+  }
+ }
+
+ option = { name = omni_ashes.2.b ai_chance = { base = 67 } }
+
+}
+
+omni_ashes.3 = {
+
+ type = country_event
+
+ title = omni_ashes.3.t
+
+ desc = omni_ashes.3.desc
+
+ picture = omni_shannah_blessing
+ left_portrait = current_ruler
+ right_portrait = scope:omni_ashes_shannah
+
+ trigger = {
+  has_variable = omni_ashes_pledged
+  NOT = { any_current_war = { is_war_leader = root any_war_attacker = { this = root } } }
+ }
+
+ immediate = {
+  random_country = {
+   limit = {
+    has_land = yes
+    religion = helluvian
+    exists = current_ruler
+    current_ruler = { has_trait = shannah_trait }
+   }
+   current_ruler = { save_scope_as = omni_ashes_shannah }
+  }
+
+
+  remove_variable = omni_ashes_pledged
+  remove_variable = omni_ashes_restraint_released
+
+  remove_country_modifier = omni_ashes_oath
+
+  add_political_influence = 25
+
+  add_country_modifier = { name = omni_ashes_blessing duration = 730 }
+
+ }
+
+ option = { name = omni_ashes.3.a }
+
+}
+
+omni_ashes.4 = {
+
+ type = country_event
+
+ title = omni_ashes.4.t
+
+ desc = omni_ashes.4.desc
+
+ picture = omni_shannah_judgment
+ left_portrait = current_ruler
+ right_portrait = scope:omni_ashes_shannah
+
+ immediate = {
+  random_country = {
+   limit = {
+    has_land = yes
+    religion = helluvian
+    exists = current_ruler
+    current_ruler = { has_trait = shannah_trait }
+   }
+   current_ruler = { save_scope_as = omni_ashes_shannah }
+  }
+ hidden_effect = {
+ remove_variable = omni_ashes_pledged
+  remove_variable = omni_ashes_restraint_released
+ remove_country_modifier = omni_ashes_oath
+ add_country_modifier = { name = omni_ashes_broken duration = 730 }
+ }
+ }
+
+ option = { name = omni_ashes.4.a custom_tooltip = omni_ashes.4.a.tt }
+
+}
+
+
+# Resolve before choosing a visible outcome, including between monthly checks.
+omni_ashes.5 = {
+ type = country_event
+ hidden = yes
+ immediate = {
+  if = {
+   limit = { has_variable = omni_ashes_pledged }
+   if = {
+    limit = { any_current_war = { is_war_leader = root any_war_attacker = { this = root } } }
+    trigger_event = omni_ashes.4
+   }
+   else = { trigger_event = omni_ashes.3 }
+  }
+ }
+}
+
+# A minority may return to ordinary ambitions before their oath expires.
+# This neither declares war nor increases their normal aggression.
+omni_ashes.6 = {
+ type = country_event
+ hidden = yes
+ immediate = {
+  if = {
+   limit = { is_ai = yes has_variable = omni_ashes_pledged }
+   set_variable = omni_ashes_restraint_released
+  }
+ }
+}
+
+# Do not lose the envoy permanently because a war starts during the journey.
+omni_ashes.7 = {
+ type = country_event
+ hidden = yes
+ immediate = {
+  if = {
+   limit = { omni_ashes_eligible = yes NOT = { has_variable = omni_ashes_invited } }
+   trigger_event = omni_ashes.2
+  }
+  else_if = {
+   limit = {
+    current_date < 1003.1.1
+    has_land = yes
+    religion = helluvian
+    NOT = { has_variable = omni_ashes_invited }
+   }
+   trigger_event = { id = omni_ashes.7 days = 30 }
+  }
+  else = { remove_variable = omni_ashes_envoy_pending }
+ }
+}

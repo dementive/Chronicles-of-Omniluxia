@@ -1,0 +1,94 @@
+﻿namespace = omni_shannah_accession
+
+# Validate the captured holder: a second succession/deposition cancels stale news.
+omni_shannah_accession.1 = {
+    type = country_event
+    hidden = yes
+    trigger = {
+        omni_shannah_office_trigger = yes
+        exists = scope:omni_accession_shannah
+        current_ruler = scope:omni_accession_shannah
+        NOT = { trigger_if = { limit = { has_variable = omni_accession_announced_holder } var:omni_accession_announced_holder = scope:omni_accession_shannah } trigger_else = { always = no } }
+    }
+    immediate = {
+        set_variable = { name = omni_accession_announced_holder value = scope:omni_accession_shannah }
+        every_country = {
+            limit = { has_land = yes }
+            trigger_event = { id = omni_shannah_accession.2 }
+            if = {
+                limit = { religion = helluvian NOT = { this = scope:omni_accession_see } }
+                trigger_event = { id = omni_shannah_accession.3 days = 1 }
+            }
+        }
+    }
+}
+
+omni_shannah_accession.2 = {
+    type = country_event
+    title = omni_shannah_accession.2.t
+    desc = omni_shannah_accession.2.desc
+    picture = omni_shannah_accession
+    left_portrait = current_ruler
+    right_portrait = scope:omni_accession_shannah
+    option = { name = omni_shannah_accession.2.a }
+}
+
+omni_shannah_accession.3 = {
+    type = country_event
+    title = omni_shannah_accession.3.t
+    desc = omni_shannah_accession.3.desc
+    picture = omni_shannah_accession
+    left_portrait = current_ruler
+    right_portrait = scope:omni_accession_shannah
+    trigger = {
+        has_land = yes
+        religion = helluvian
+        exists = current_ruler
+        exists = scope:omni_accession_see
+        exists = scope:omni_accession_shannah
+        NOT = { this = scope:omni_accession_see }
+        scope:omni_accession_see = {
+            omni_shannah_office_trigger = yes
+            current_ruler = scope:omni_accession_shannah
+        }
+    }
+    option = {
+        name = omni_shannah_accession.3.a
+        trigger = {
+            treasury >= 25
+            omni_sf_petitioner_trigger = yes
+            scope:omni_accession_shannah = { omni_sf_shannah_trigger = yes }
+            scope:omni_accession_see = {
+                omni_shannah_office_trigger = yes
+                current_ruler = scope:omni_accession_shannah
+            }
+        }
+        ai_chance = {
+            factor = 80
+            modifier = { factor = 0 war_with = scope:omni_accession_see }
+            modifier = { factor = 0.25 has_country_modifier = omni_shannah_excommunicated }
+        }
+        add_treasury = -25
+        scope:omni_accession_see = { add_treasury = 25 }
+        scope:omni_accession_shannah = { save_scope_as = omni_sf_new_shannah }
+        if = {
+            limit = {
+                NOT = {
+                    AND = {
+                        omni_sf_relationship_trigger = yes
+                        var:omni_sf_shannah = scope:omni_accession_shannah
+                    }
+                }
+            }
+            omni_sf_bind_effect = yes
+        }
+        omni_sf_gain_effect = { AMOUNT = 15 }
+    }
+    option = {
+        name = omni_shannah_accession.3.b
+        ai_chance = { factor = 20 }
+        scope:omni_accession_see = {
+            add_opinion = { target = root modifier = omni_shannah_accession_rejected }
+        }
+    }
+}

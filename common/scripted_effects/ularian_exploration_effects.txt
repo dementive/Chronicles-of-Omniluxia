@@ -1,0 +1,237 @@
+﻿# Country scope: remember anyone who allowed the expedition to continue.
+ularian_explorer_follow_departure_effect = {
+    if = {
+        limit = { NOT = { has_variable = ularian_explorer_awaiting_news } }
+        set_variable = ularian_explorer_awaiting_news
+        trigger_event = { id = ularianexplorer.90 days = 90 }
+    }
+}
+
+# Country scope: deliver the ending only to countries awaiting news.
+# Clear immediately so scheduled death checks cannot send a second ending.
+ularian_explorer_report_outcome_effect = {
+    every_country = {
+        limit = { has_variable = ularian_explorer_awaiting_news }
+        remove_variable = ularian_explorer_awaiting_news
+        trigger_event = { id = $OUTCOME_EVENT$ days = { 30 60 } }
+    }
+}
+
+# Character scope: safety and a home bring relief after the voyage.
+ularian_explorer_found_home_effect = {
+    set_variable = ularian_explorer_settled
+    if = {
+        limit = { has_trait = depressed }
+        remove_trait = depressed
+    }
+    add_character_modifier = {
+        name = ularian_explorer_found_home_modifier
+        duration = 1825
+    }
+}
+
+# Country scope: shared real effects and native tooltip preview.
+# pop_religion is the pop trigger; religion is a country trigger in-game.
+ularian_explorer_opm_settlement_benefits_effect = {
+    char:330 = { ularian_explorer_found_home_effect = yes }
+    $SETTLEMENT$ = {
+        random_pops_in_province = {
+            limit = { NOT = { pop_religion = helluvian } }
+            set_pop_religion = helluvian
+        }
+        random_pops_in_province = {
+            limit = { NOT = { pop_religion = helluvian } }
+            set_pop_religion = helluvian
+        }
+        random_pops_in_province = {
+            limit = { NOT = { pop_religion = helluvian } }
+            set_pop_religion = helluvian
+        }
+        define_pop = { type = freemen culture = ularian religion = helluvian }
+        define_pop = { type = freemen culture = ularian religion = helluvian }
+        add_province_modifier = {
+            name = ularian_refugee_settlement_modifier
+            duration = 1825
+        }
+    }
+}
+
+# Called only from an option's hidden_effect; the preview never executes this.
+# Explicitly transfer the founding territory before configuring the new country.
+ularian_explorer_create_opm_subject_effect = {
+    save_scope_as = ularian_settlement_overlord
+    $SETTLEMENT$ = { save_scope_as = ularian_subject_settlement }
+    if = {
+        limit = {
+            is_subject = no
+            char:330 = {
+                is_alive = yes
+                NOT = { has_variable = ularian_explorer_settled }
+            }
+            $SETTLEMENT$ = {
+                owner = root
+                controller = root
+                is_capital = no
+            }
+        }
+        $SETTLEMENT$ = {
+            create_country = {
+                save_scope_as = ularian_opm_subject
+                scope:ularian_subject_settlement = {
+                    if = {
+                        limit = { NOT = { owner = scope:ularian_opm_subject } }
+                        set_owned_by = scope:ularian_opm_subject
+                    }
+                    set_controller = scope:ularian_opm_subject
+                }
+            }
+        }
+        if = {
+            limit = {
+                exists = scope:ularian_opm_subject
+                $SETTLEMENT$ = { owner = scope:ularian_opm_subject }
+            }
+            scope:ularian_opm_subject = {
+                set_capital = $SETTLEMENT$
+                set_country_religion = helluvian
+                change_country_name = "Etenazun"
+                change_country_adjective = "Ularian"
+                change_country_color = "holy_bhaxian"
+                change_government = theocratic_monarchy
+                change_country_flag = ULARIAN_SETTLEMENT_FLAG
+                set_primary_culture_cleanup_effect = {
+                    NEW_PRIMARY_CULTURE = ularian
+                    MAKE_OLD_CULTURE_INTEGRATED = yes
+                }
+            }
+            char:330 = {
+                remove_all_positions = yes
+                move_country = scope:ularian_opm_subject
+                set_home_country = scope:ularian_opm_subject
+                remove_character_modifier = foreign_citizen
+            }
+            scope:ularian_opm_subject = {
+                set_as_ruler = char:330
+                add_treasury = 100
+                add_manpower = 5
+            }
+            $SETTLEMENT$ = { change_province_name = "Na Uosdunn" }
+            make_subject = { target = scope:ularian_opm_subject type = feudatory }
+            if = {
+                limit = {
+                    scope:ularian_opm_subject = {
+                        num_of_cities = 1
+                        is_subject_of = root
+                        current_ruler = { this = char:330 }
+                    }
+                }
+                ularian_explorer_opm_settlement_benefits_effect = { SETTLEMENT = $SETTLEMENT$ }
+                ularian_explorer_report_outcome_effect = { OUTCOME_EVENT = ularianexplorer.15 }
+                trigger_event = { id = ularianexplorer.16 days = 1 }
+            }
+            else = { trigger_event = { id = ularianexplorer.17 days = 1 } }
+        }
+        else = { trigger_event = { id = ularianexplorer.17 days = 1 } }
+    }
+    else = { trigger_event = { id = ularianexplorer.17 days = 1 } }
+}
+
+
+# Shared native preview and real benefits for the independent island settlement.
+ularian_explorer_independent_benefits_effect = {
+    ularian_explorer_opm_settlement_benefits_effect = { SETTLEMENT = p:5600 }
+    p:5600 = {
+        define_pop = { type = freemen culture = ularian religion = helluvian }
+        random_pops_in_province = {
+            limit = { NOT = { pop_religion = helluvian } }
+            set_pop_religion = helluvian
+        }
+        random_pops_in_province = {
+            limit = { NOT = { pop_religion = helluvian } }
+            set_pop_religion = helluvian
+        }
+        if = {
+            limit = { can_build_building = fortress_building }
+            add_building_level = fortress_building
+        }
+    }
+}
+
+# Country scope. Player-switching and future-country scopes stay out of previews.
+ularian_explorer_create_independent_effect = {
+    p:5600 = { save_scope_as = ularian_subject_settlement }
+    if = {
+        limit = {
+            p:5600 = { NOT = { exists = owner } }
+            char:330 = {
+                is_alive = yes
+                NOT = { has_variable = ularian_explorer_settled }
+            }
+        }
+        p:5600 = {
+            create_country = {
+                save_scope_as = ularian_state
+                p:5600 = {
+                    if = {
+                        limit = { NOT = { owner = scope:ularian_state } }
+                        set_owned_by = scope:ularian_state
+                    }
+                    set_controller = scope:ularian_state
+                }
+            }
+        }
+        if = {
+            limit = {
+                exists = scope:ularian_state
+                p:5600 = { owner = scope:ularian_state }
+            }
+            scope:ularian_state = {
+                set_capital = p:5600
+                set_country_religion = helluvian
+                change_country_name = "Etenazun"
+                change_country_adjective = "Ularian"
+                change_country_color = "holy_bhaxian"
+                change_government = theocratic_monarchy
+                change_country_flag = ULARIAN_SETTLEMENT_FLAG
+                if = {
+                    limit = { NOT = { exists = c:ULR } }
+                    change_country_tag = ULR
+                }
+                set_primary_culture_cleanup_effect = {
+                    NEW_PRIMARY_CULTURE = ularian
+                    MAKE_OLD_CULTURE_INTEGRATED = yes
+                }
+                add_treasury = 1000
+                add_manpower = 20
+            }
+            char:330 = {
+                remove_all_positions = yes
+                move_country = scope:ularian_state
+                set_home_country = scope:ularian_state
+                remove_character_modifier = foreign_citizen
+            }
+            scope:ularian_state = { set_as_ruler = char:330 }
+            if = {
+                limit = {
+                    scope:ularian_state = {
+                        is_subject = no
+                        current_ruler = { this = char:330 }
+                    }
+                    p:5600 = { owner = scope:ularian_state }
+                }
+                p:5600 = { change_province_name = "Na Uosdunn" }
+                ularian_explorer_independent_benefits_effect = yes
+                ularian_explorer_report_outcome_effect = { OUTCOME_EVENT = ularianexplorer.12 }
+                if = {
+                    limit = { always = $PLAY_AS$ is_ai = no }
+                    scope:ularian_state = { trigger_event = { id = ularianexplorer.18 days = 1 } }
+                    set_player_country = scope:ularian_state
+                }
+                else = { trigger_event = { id = ularianexplorer.18 days = 1 } }
+            }
+            else = { trigger_event = { id = ularianexplorer.17 days = 1 } }
+        }
+        else = { trigger_event = { id = ularianexplorer.17 days = 1 } }
+    }
+    else = { trigger_event = { id = ularianexplorer.17 days = 1 } }
+}

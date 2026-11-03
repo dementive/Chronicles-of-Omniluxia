@@ -1,0 +1,49 @@
+﻿# Imperator syntax follows Invictus events/tribal_flavour_events.txt.
+# Country scope. Special campaigns retain their own rise/collapse rules.
+omni_tribal_cycle_protected_trigger = {
+	OR = {
+		has_variable = is_zerywani_horde_leader
+		has_variable = is_zerywani_horde_participant
+		has_variable = z2_preparing
+		has_variable = z2_active
+		has_variable = z2_member
+		has_variable = z2_player_project
+		has_variable = z2_pledged_to
+		has_country_modifier = z2_successor_ambition
+		has_variable = is_drow_invasion_leader
+		has_variable = is_not_allowed_to_go_broke
+	}
+}
+
+# Country scope; exactly the same seed geography used by the transfer effect.
+# A large realm confined to its capital region cannot meaningfully split here.
+omni_tribal_cycle_has_outer_region_trigger = {
+	any_owned_province = {
+		is_state_capital = yes
+		NOT = { this.region = prev.capital_scope.state.region }
+	}
+}
+
+# Rechecked during the rise and immediately before any ownership changes.
+# Instability only starts the cycle; recovering stability does not reset its clock.
+omni_tribal_cycle_valid_realm_trigger = {
+	is_ai = yes
+	is_tribal = yes
+	is_subject = no
+	has_land = yes
+	num_of_cities >= 110
+	NOT = { omni_tribal_cycle_protected_trigger = yes }
+	omni_tribal_cycle_has_outer_region_trigger = yes
+}
+
+omni_tribal_cycle_can_start_trigger = {
+	NOT = { has_variable = is_facing_tribal_crisis }
+	NOT = { has_variable = omni_tribal_cycle_cooldown }
+	war = no
+	has_civil_war = no
+	omni_tribal_cycle_valid_realm_trigger = yes
+	OR = {
+		stability <= 30
+		centralization < -90
+	}
+}

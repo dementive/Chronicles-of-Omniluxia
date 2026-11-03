@@ -1,0 +1,95 @@
+﻿omni_hc_recognition_event_effect = {
+        current_ruler = { save_scope_as = omni_hc_declaration_ruler }
+        var:omni_hc_decided_holder = { save_scope_as = omni_hc_declaration_shannah }
+        if = { limit = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 1 } trigger_else = { always = no } is_ai = no }
+            trigger_event = { id = omni_recognition.10 }
+        }
+        if = { limit = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 3 } trigger_else = { always = no } is_ai = no }
+            trigger_event = { id = omni_recognition.20 }
+        }
+        if = { limit = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 2 } trigger_else = { always = no } }
+            omni_hc_begin_negotiation_effect = yes
+        }
+    }
+    omni_hc_begin_negotiation_effect = {
+        if = { limit = { omni_hc_negotiation_available_trigger = yes }
+            save_scope_as = omni_hc_negotiator
+            current_ruler = { save_scope_as = omni_hc_negotiator_ruler }
+            var:omni_hc_see = {
+                save_scope_as = omni_hc_negotiation_see
+                current_ruler = { save_scope_as = omni_hc_negotiation_shannah }
+            }
+            set_variable = { name = omni_hc_negotiation_holder value = scope:omni_hc_negotiation_shannah }
+            if = { limit = { NOT = { has_variable = omni_hc_negotiation_serial } }
+                set_variable = { name = omni_hc_negotiation_serial value = 0 }
+            }
+            change_variable = { name = omni_hc_negotiation_serial add = 1 }
+            var:omni_hc_negotiation_serial = { save_scope_as = omni_hc_negotiation_serial }
+            set_variable = { name = omni_hc_negotiation_stage value = 1 }
+            if = { limit = { is_ai = no } trigger_event = { id = omni_recognition.100 } }
+            else = {
+                random_list = {
+                    2 = { omni_hc_submit_concession_effect = { TYPE = 1 } }
+                    3 = { omni_hc_submit_concession_effect = { TYPE = 2 } }
+                    1 = { omni_hc_submit_concession_effect = { TYPE = 3 } }
+                }
+            }
+        }
+    }
+    omni_hc_submit_concession_effect = {
+        if = { limit = { omni_hc_negotiation_valid_trigger = yes trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage = 1 } trigger_else = { always = no } }
+            set_variable = { name = omni_hc_concession value = $TYPE$ }
+            set_variable = { name = omni_hc_negotiation_stage value = 2 }
+            scope:omni_hc_negotiation_see = {
+                if = { limit = { is_ai = no } trigger_event = { id = omni_recognition.110 } }
+                else = { trigger_event = { id = omni_recognition.111 days = 1 } }
+            }
+        }
+    }
+    omni_hc_finalize_recognition_effect = {
+        set_variable = { name = omni_hc_recognition value = $STANCE$ }
+        set_variable = { name = omni_hc_negotiation_stage value = 4 }
+        save_scope_as = omni_hc_finalizing_realm
+        scope:omni_hc_negotiation_see = {
+            if = { limit = { scope:omni_hc_finalizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 1 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_gains } var:omni_hc_recognition_gains < 20 } trigger_else = { always = no } }
+                change_variable = { name = omni_hc_recognition_gains add = 2 }
+                omni_hc_change_authority_effect = { AMOUNT = 2 }
+            }
+            if = { limit = { scope:omni_hc_finalizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 3 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_losses } var:omni_hc_recognition_losses < 20 } trigger_else = { always = no } }
+                change_variable = { name = omni_hc_recognition_losses add = 2 }
+                omni_hc_change_authority_effect = { AMOUNT = -2 }
+            }
+        }
+    }
+    omni_hc_accept_concession_effect = {
+        if = { limit = { omni_hc_concession_payable_trigger = yes scope:omni_hc_negotiator = { trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage = 2 } trigger_else = { always = no } } }
+            scope:omni_hc_negotiator = {
+                if = { limit = { trigger_if = { limit = { has_variable = omni_hc_concession } var:omni_hc_concession = 1 } trigger_else = { always = no } }
+                    scope:omni_hc_negotiation_see = { add_treasury = -50 }
+                    add_treasury = 50
+                }
+                if = { limit = { trigger_if = { limit = { has_variable = omni_hc_concession } var:omni_hc_concession = 2 } trigger_else = { always = no } }
+                    add_country_modifier = { name = omni_hc_negotiated_mission duration = 1825 }
+                }
+                if = { limit = { trigger_if = { limit = { has_variable = omni_hc_concession } var:omni_hc_concession = 3 } trigger_else = { always = no } }
+                    add_country_modifier = { name = omni_hc_local_customs duration = 1825 }
+                }
+                omni_hc_finalize_recognition_effect = { STANCE = 1 }
+                if = { limit = { is_ai = no } trigger_event = { id = omni_recognition.130 } }
+            }
+        }
+    }
+    omni_hc_refuse_concession_effect = {
+        if = { limit = { omni_hc_negotiation_valid_trigger = yes scope:omni_hc_negotiator = { trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage = 2 } trigger_else = { always = no } } }
+            scope:omni_hc_negotiator = {
+                set_variable = { name = omni_hc_negotiation_stage value = 3 }
+                if = { limit = { is_ai = no } trigger_event = { id = omni_recognition.120 } }
+                else = {
+                    random_list = {
+                        3 = { omni_hc_finalize_recognition_effect = { STANCE = 1 } }
+                        1 = { omni_hc_finalize_recognition_effect = { STANCE = 3 } }
+                    }
+                }
+            }
+        }
+    }

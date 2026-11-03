@@ -401,7 +401,7 @@ me_zorgoomni.11 = {
     option = {
         name = "me_zorgoomni.10.a"
         current_ruler = {
-            force_add_trait = blood_of_rendun
+            omni_add_racial_bloodline_effect = { BLOODLINE = blood_of_rendun }
         }
     }
 }
@@ -2551,100 +2551,23 @@ me_zorgoomni.54 = {
     }
 }
 
+# Legacy pending expeditions are refunded instead of invoking the retired chain.
+# New expeditions enter through omni_crusade.1 from the decision.
 me_zorgoomni.55 = {
     type = country_event
-
-    title = me_zorgoomni.55_title
-    desc = me_zorgoomni.55_desc
-    picture = event_marching_army
-    left_portrait = current_ruler
-    right_portrait = scope:helluvian_crusade_target.current_ruler
-
+    hidden = yes
     immediate = {
-        random_neighbour_country = {
-            limit = {
-                has_land = yes
-                in_diplomatic_range = root
-            }
-            save_scope_as = helluvian_crusade_target
-        }
-        root = { save_scope_as = helluvian_crusade_actor }
-    }
-
-    option = {
-        name = "me_zorgoomni.55.a"
-        set_variable = {
-            name = called_helluvian_crusade_var
-            days = 3650
-        }
-        if = {
-            limit = { exists = scope:helluvian_crusade_target }
-            scope:helluvian_crusade_target = {
-                capital_scope = {
-                    add_claim = root
-                    save_scope_as = helluvian_crusade_capital
-                }
-            }
-        }
-        trigger_event = {
-            id = me_zorgoomni.56
-            days = { 30 31 }
-        }
+        debug_log = "OMNI_CRUSADE: retired console event me_zorgoomni.55 invoked; refunding legacy expedition. Use omni_crusade.1 to start a new crusade."
+        trigger_event = { id = omni_crusade.90 }
     }
 }
 
 me_zorgoomni.56 = {
     type = country_event
-
-    title = me_zorgoomni.56_title
-    desc = me_zorgoomni.56_desc
-    picture = Event_royal_chamber
-    left_portrait = current_ruler
-    right_portrait = scope:helluvian_crusade_target.current_ruler
-
-    option = {
-        name = "me_zorgoomni.56.a"
-        create_unit = {
-            navy = no
-            name = "Helluvian Crusaders"
-            location = capital_scope
-            hidden_effect = {
-            add_subunit = heavy_infantry
-            add_subunit = heavy_infantry
-            add_subunit = heavy_infantry
-            add_subunit = light_infantry
-            add_subunit = light_infantry
-            add_subunit = heavy_cavalry
-            add_subunit = heavy_cavalry
-            add_subunit = supply_train
-            add_subunit = supply_train                                          
-            add_food = 100
-            add_morale = 2
-            }
-        }
-        ROOT = {
-            declare_war_with_wargoal = {
-                war_goal = helluvian_crusade_wargoal
-                province = scope:helluvian_crusade_capital 
-                target = scope:helluvian_crusade_capital.owner
-            }
-        }
-        every_country = {
-            limit = {
-                NOT = {
-                    religion = helluvian
-                }
-            }
-            trigger_event = {
-                id = me_zorgoomni.58
-                days = { 6 7 }
-            }
-        }
-    }
-
-    option = {
-        name = "me_zorgoomni.56.b"
-        add_stability = -3
+    hidden = yes
+    immediate = {
+        debug_log = "OMNI_CRUSADE: retired console event me_zorgoomni.56 invoked; refunding legacy expedition. Use omni_crusade.1 to start a new crusade."
+        trigger_event = { id = omni_crusade.90 }
     }
 }
 
@@ -2677,23 +2600,12 @@ me_zorgoomni.58 = {
     picture = Event_royal_chamber
     left_portrait = current_ruler
     right_portrait = p:2706.state.governor_or_ruler
-    right_portrait = scope:helluvian_crusade_target.current_ruler
     
 
     option = {
         name = "me_zorgoomni.58.a"
-        show_as_tooltip = {
-            if = {
-                limit = { exists = scope:helluvian_crusade_actor }
-                scope:helluvian_crusade_actor = {
-                    declare_war_with_wargoal = {
-                        war_goal = helluvian_crusade_wargoal
-                        province = scope:helluvian_crusade_capital 
-                        target = scope:helluvian_crusade_capital.owner
-                    }
-                }
-            }
-        }
+        # Legacy news only. The retired .55/.56 chain no longer sets its old
+        # actor, target or capital scopes. Keep old queued news safe to dismiss.
     }
 }
 
@@ -3134,8 +3046,11 @@ me_zorgoomni.67 = { # High Elf Disease
                 char_valid_for_country_events_trigger = yes
                 age > 100
                 has_trait = high_elf_trait
+                NOT = { has_trait = high_elf_disease_trait }
+                NOT = { has_variable = high_elf_disease_pending }
             }
             save_scope_as = dead_guy_walking
+            set_variable = { name = high_elf_disease_pending days = 5379 }
             add_trait = depressed
         }
     }
@@ -3148,6 +3063,8 @@ me_zorgoomni.67 = { # High Elf Disease
             char_valid_for_country_events_trigger = yes
             age > 100
             has_trait = high_elf_trait
+            NOT = { has_trait = high_elf_disease_trait }
+            NOT = { has_variable = high_elf_disease_pending }
         }
     }
 
@@ -3177,30 +3094,23 @@ me_zorgoomni.68 = { # High Elf Disease 2
     picture = Event_royal_chamber
     left_portrait = scope:dead_guy_walking
 
-    immediate = {
-        random_character = {
-            limit = {
-                char_valid_for_country_events_trigger = yes
-                age > 100
-                has_trait = high_elf_trait
-            }
-            save_scope_as = dead_guy_walking
-            add_trait = high_elf_disease_trait
-        }
-        if = {
-            limit = { exists = scope:dead_guy_walking }
-            trigger_event = {
-                id = me_zorgoomni.69
-                days = { 365 1825 }
-            }
+    trigger = {
+        exists = scope:dead_guy_walking
+        scope:dead_guy_walking = {
+            is_alive = yes
+            has_trait = high_elf_trait
+            NOT = { has_trait = high_elf_disease_trait }
         }
     }
 
-    trigger = {
-        any_character = {
-            char_valid_for_country_events_trigger = yes
-            age > 100
-            has_trait = high_elf_trait
+    immediate = {
+        scope:dead_guy_walking = {
+            remove_variable = high_elf_disease_pending
+            add_trait = high_elf_disease_trait
+        }
+        trigger_event = {
+            id = me_zorgoomni.69
+            days = { 365 1825 }
         }
     }
 
@@ -3232,6 +3142,7 @@ me_zorgoomni.69 = { # High Elf Disease Death
     trigger = {
         exists = scope:dead_guy_walking
         scope:dead_guy_walking = {
+            is_alive = yes
             has_trait = high_elf_disease_trait
         }
     }
@@ -3325,7 +3236,6 @@ me_zorgoomni.72 = { # Draconic Madness 1
     desc = me_zorgoomni.72_desc
     picture = greek_theater
     left_portrait = current_ruler
-    right_portrait = scope:insane_guy
     right_portrait = scope:insane_guy_victim
 
     trigger = {
@@ -3334,6 +3244,20 @@ me_zorgoomni.72 = { # Draconic Madness 1
             country_culture_group = dragkhanic_jarenam
             country_culture_group = dragkhanic_eastern
             country_culture_group = dragkhanic_western
+        }
+        any_character = {
+            char_valid_for_country_events_trigger = yes
+            age > 40
+            has_trait = dragkhanic_trait
+            health > 3
+            is_ruler = no
+            NOT = { has_trait = dragkhanic_insanity_trait }
+            save_temporary_scope_as = madness_candidate
+        }
+        any_character = {
+            char_valid_for_country_events_trigger = yes
+            age > 13
+            NOT = { THIS = scope:madness_candidate }
         }
     }
 
@@ -3344,6 +3268,8 @@ me_zorgoomni.72 = { # Draconic Madness 1
                 age > 40
                 has_trait = dragkhanic_trait
                 health > 3
+                is_ruler = no
+                NOT = { has_trait = dragkhanic_insanity_trait }
             }
             save_scope_as = insane_guy
         }
@@ -3352,6 +3278,7 @@ me_zorgoomni.72 = { # Draconic Madness 1
             limit = {
                 char_valid_for_country_events_trigger = yes
                 age > 13
+                NOT = { THIS = scope:insane_guy }
             }
             save_scope_as = insane_guy_victim
         }
@@ -3364,7 +3291,7 @@ me_zorgoomni.72 = { # Draconic Madness 1
             imprison = { target = scope:insane_guy }
         }
         if = {
-            limit = { exists = scope:insane_guy_victim }
+            limit = { exists = scope:insane_guy exists = scope:insane_guy_victim }
             scope:insane_guy_victim = {
                 death = {
                     death_reason = death_pulled_limb_by_limb
@@ -3383,14 +3310,14 @@ me_zorgoomni.72 = { # Draconic Madness 1
             40 = {
                 custom_tooltip = dragkhan_insane_ttp
                 trigger_event = {
-                    id = me_zorgoomni.73
+                    id = me_zorgoomni.74
                     days = { 90 180 }
                 }
             }
             60 = {
                 custom_tooltip = dragkhan_safe_ttp
                 trigger_event = {
-                    id = me_zorgoomni.74
+                    id = me_zorgoomni.73
                     days = { 90 180 }
                 }
             }
@@ -3405,14 +3332,14 @@ me_zorgoomni.72 = { # Draconic Madness 1
             80 = {
                 custom_tooltip = dragkhan_insane_ttp
                 trigger_event = {
-                    id = me_zorgoomni.73
+                    id = me_zorgoomni.74
                     days = { 7 14 }
                 }
             }
             20 = {
                 custom_tooltip = dragkhan_safe_ttp
                 trigger_event = {
-                    id = me_zorgoomni.74
+                    id = me_zorgoomni.73
                     days = { 7 14 }
                 }
             }
@@ -3428,6 +3355,14 @@ me_zorgoomni.73 = { # Saved from Insanity
     picture = oration
     left_portrait = scope:insane_guy
 
+    trigger = {
+        exists = scope:insane_guy
+        scope:insane_guy = {
+            is_alive = yes
+            has_trait = dragkhanic_insanity_trait
+        }
+    }
+
     option = {
         name = "me_zorgoomni.73.a"
         add_stability = 3
@@ -3435,6 +3370,10 @@ me_zorgoomni.73 = { # Saved from Insanity
             limit = { exists = scope:insane_guy scope:insane_guy = { is_alive = yes } }
             scope:insane_guy = {
                 remove_trait = dragkhanic_insanity_trait
+            }
+            if = {
+                limit = { scope:insane_guy = { prisoner = yes employer = root } }
+                release_prisoner = { target = scope:insane_guy }
             }
         }
     }
@@ -3447,6 +3386,14 @@ me_zorgoomni.74 = { # Goes Insane
     desc = me_zorgoomni.74_desc
     picture = peaceful_integration_or_crucifixion
     left_portrait = scope:insane_guy
+
+    trigger = {
+        exists = scope:insane_guy
+        scope:insane_guy = {
+            is_alive = yes
+            has_trait = dragkhanic_insanity_trait
+        }
+    }
 
     option = {
         name = "me_zorgoomni.74.a"
@@ -3474,6 +3421,13 @@ me_zorgoomni.75 = { # Mushroom Spots
         OR = {
             country_culture_group = drow
         }
+        any_character = {
+            char_valid_for_country_events_trigger = yes
+            age > 20
+            is_female = no
+            has_trait = drow_trait
+            NOT = { has_trait = drow_mushroom_spots_trait }
+        }
     }
 
     immediate = {
@@ -3483,6 +3437,7 @@ me_zorgoomni.75 = { # Mushroom Spots
                 age > 20
                 is_female = no
                 has_trait = drow_trait
+                NOT = { has_trait = drow_mushroom_spots_trait }
             }
             save_scope_as = mushroom_man
         }
@@ -3514,6 +3469,12 @@ me_zorgoomni.76 = { # Cursed Child
         current_ruler = {
             has_trait = human_trait
         }
+        any_character = {
+            char_valid_for_country_events_trigger = yes
+            age < 5
+            has_trait = human_trait
+            NOT = { has_trait = wishtheon_curse_trait }
+        }
     }
 
     immediate = {
@@ -3522,6 +3483,7 @@ me_zorgoomni.76 = { # Cursed Child
                 char_valid_for_country_events_trigger = yes
                 age < 5
                 has_trait = human_trait
+                NOT = { has_trait = wishtheon_curse_trait }
             }
             save_scope_as = cursed_kiddy
         }
@@ -3534,17 +3496,20 @@ me_zorgoomni.76 = { # Cursed Child
             }
         }
 
-        capital_scope = {
-            ordered_pops_in_province = {
-                order_by = pop_hapiness
-                max = {
-                    value = total_population
-                    divide = 10
+        if = {
+            limit = { exists = scope:cursed_kiddy }
+            capital_scope = {
+                ordered_pops_in_province = {
+                    order_by = pop_hapiness
+                    max = {
+                        value = total_population
+                        divide = 10
+                    }
+                    min = {
+                        value = 0
+                    }
+                    kill_pop = yes
                 }
-                min = {
-                    value = 0
-                }
-                kill_pop = yes
             }
         }
     }
@@ -3579,7 +3544,7 @@ me_zorgoomni.76 = { # Cursed Child
         if = {
             limit = { exists = scope:cursed_kiddy }
             scope:cursed_kiddy = {
-                set_family = current_ruler.family
+                set_family = root.current_ruler.family
             }
         }
     }
@@ -3660,7 +3625,7 @@ me_zorgoomni.76 = { # Cursed Child
         if = {
             limit = { exists = scope:cursed_kiddy }
             scope:cursed_kiddy = {
-                set_family = current_ruler.family
+                set_family = root.current_ruler.family
             }
         }
     }
@@ -3734,7 +3699,7 @@ me_zorgoomni.76 = { # Cursed Child
             limit = { exists = scope:cursed_kiddy }
             scope:cursed_kiddy = {
                 set_family = root.current_ruler.family
-                force_add_trait = blood_of_myahudya
+                omni_add_racial_bloodline_effect = { BLOODLINE = blood_of_myahudya }
                 add_prominence = 50
             }
         }
@@ -5705,6 +5670,7 @@ me_zorgoomni.999 = { # DEBUG: grant all ruler magic
                 omni_learn_spell = { SPELL = sculpt_buildings_stone_magic }
             set_variable = palpan_unlocked_var
                 omni_learn_spell = { SPELL = palpan }
+            omni_check_magic_prestige = yes
         }
     }
 }
@@ -5774,6 +5740,7 @@ me_zorgoomni.997 = { # DEBUG: spawn a random court archmage (tests court casting
             set_variable = palpan_unlocked_var
                 omni_learn_spell = { SPELL = palpan }
             save_scope_as = new_archmage
+            omni_check_magic_prestige = yes
         }
         }
         hidden_effect = {

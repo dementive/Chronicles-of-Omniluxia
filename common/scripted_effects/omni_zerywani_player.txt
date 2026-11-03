@@ -1,0 +1,188 @@
+﻿z2_player_claim_effect = {
+    save_scope_as = z2_player_host
+    set_global_variable = { name = z2_player_claim value = scope:z2_player_host }
+    add_treasury = z2_project_gold_payment
+    add_political_influence = z2_project_influence_payment
+    remove_variable = z2_player_offer_pending
+    remove_variable = z2_player_generation_offered
+    remove_variable = z2_player_claim_deadline
+    remove_variable = z2_player_remounts
+    remove_variable = z2_chief_menu_open
+    remove_variable = z2_city_menu_open
+    remove_variable = z2_negotiation_pending
+    set_variable = { name = z2_player_project }
+    set_variable = { name = z2_player_support value = 0 }
+    if = { limit = { has_variable = zerywani_first_veterans } change_variable = { name = z2_player_support add = 1 } }
+    trigger_event = { id = zerywani_second.101 days = 1 }
+}
+z2_player_release_claim_effect = {
+    save_scope_as = z2_player_host
+    every_country = {
+        limit = { exists = var:z2_pledged_to var:z2_pledged_to = scope:z2_player_host }
+        remove_variable = z2_pledged_to
+        remove_variable = z2_privileges_promised
+    }
+    if = {
+        limit = { exists = global_var:z2_player_claim global_var:z2_player_claim = this }
+        remove_global_variable = z2_player_claim
+    }
+    remove_variable = z2_player_project
+    remove_variable = z2_player_offer_pending
+    set_variable = { name = z2_player_declined }
+    set_variable = { name = z2_player_claim_cooldown days = 1825 }
+    if = { limit = { has_variable = z2_preparing } z2_cancel_preparation_effect = yes }
+}
+z2_player_restore_choices_effect = {
+    z2_restore_effect = yes
+    if = { limit = { exists = var:z2_chief_1 } var:z2_chief_1 = { save_scope_as = z2_chief_1 } }
+    if = { limit = { exists = var:z2_chief_2 } var:z2_chief_2 = { save_scope_as = z2_chief_2 } }
+    if = { limit = { exists = var:z2_chief_3 } var:z2_chief_3 = { save_scope_as = z2_chief_3 } }
+    if = { limit = { exists = var:z2_frontier_1 } var:z2_frontier_1 = { save_scope_as = z2_frontier_1 } }
+    if = { limit = { exists = var:z2_frontier_2 } var:z2_frontier_2 = { save_scope_as = z2_frontier_2 } }
+    if = { limit = { exists = var:z2_frontier_3 } var:z2_frontier_3 = { save_scope_as = z2_frontier_3 } }
+    if = { limit = { exists = var:z2_city_1 } var:z2_city_1 = { save_scope_as = z2_city_1 } }
+    if = { limit = { exists = var:z2_city_2 } var:z2_city_2 = { save_scope_as = z2_city_2 } }
+    if = { limit = { exists = var:z2_city_3 } var:z2_city_3 = { save_scope_as = z2_city_3 } }
+}
+z2_player_offer_chief_effect = {
+    save_scope_as = z2_negotiating_chief
+    scope:z2_player_host = { set_variable = { name = z2_negotiation_pending days = 180 } }
+    set_variable = { name = z2_oath_patron value = scope:z2_player_host }
+    trigger_event = { id = zerywani_second.111 days = 1 }
+}
+z2_player_accept_pledge_effect = {
+    save_scope_as = z2_negotiating_chief
+    set_variable = { name = z2_pledged_to value = var:z2_oath_patron }
+    if = {
+        limit = { exists = var:z2_oath_patron }
+        var:z2_oath_patron = {
+            remove_variable = z2_negotiation_pending
+            trigger_event = { id = zerywani_second.113 days = 1 }
+        }
+    }
+}
+z2_player_clamp_cohesion_effect = { set_variable = { name = z2_cohesion value = z2_player_cohesion_clamped } }
+
+z2_player_chief_choices_effect = {
+    save_scope_as = z2_player_host
+    save_scope_as = z2_host
+    remove_variable = z2_chief_1
+    remove_variable = z2_chief_2
+    remove_variable = z2_chief_3
+    ordered_country = {
+        limit = { z2_tribe_trigger = yes war = no NOT = { this = scope:z2_player_host } NOT = { has_variable = z2_pledged_to } NOT = { has_variable = z2_pledge_refused } }
+        order_by = num_of_cities
+        position = 0
+        save_scope_as = z2_menu_country
+        scope:z2_player_host = { set_variable = { name = z2_chief_1 value = scope:z2_menu_country } }
+    }
+    ordered_country = {
+        limit = { z2_tribe_trigger = yes war = no NOT = { this = scope:z2_player_host } NOT = { has_variable = z2_pledged_to } NOT = { has_variable = z2_pledge_refused } }
+        order_by = num_of_cities
+        position = 1
+        save_scope_as = z2_menu_country
+        scope:z2_player_host = { set_variable = { name = z2_chief_2 value = scope:z2_menu_country } }
+    }
+    ordered_country = {
+        limit = { z2_tribe_trigger = yes war = no NOT = { this = scope:z2_player_host } NOT = { has_variable = z2_pledged_to } NOT = { has_variable = z2_pledge_refused } }
+        order_by = num_of_cities
+        position = 2
+        save_scope_as = z2_menu_country
+        scope:z2_player_host = { set_variable = { name = z2_chief_3 value = scope:z2_menu_country } }
+    }
+}
+
+z2_player_frontier_choices_effect = {
+    save_scope_as = z2_player_host
+    z2_restore_effect = yes
+    remove_variable = z2_frontier_1
+    remove_variable = z2_frontier_2
+    remove_variable = z2_frontier_3
+    ordered_country = {
+        limit = { z2_frontier_target_trigger = yes }
+        order_by = z2_frontier_score
+        position = 0
+        save_scope_as = z2_menu_country
+        scope:z2_player_host = { set_variable = { name = z2_frontier_1 value = scope:z2_menu_country } }
+    }
+    ordered_country = {
+        limit = { z2_frontier_target_trigger = yes }
+        order_by = z2_frontier_score
+        position = 1
+        save_scope_as = z2_menu_country
+        scope:z2_player_host = { set_variable = { name = z2_frontier_2 value = scope:z2_menu_country } }
+    }
+    ordered_country = {
+        limit = { z2_frontier_target_trigger = yes }
+        order_by = z2_frontier_score
+        position = 2
+        save_scope_as = z2_menu_country
+        scope:z2_player_host = { set_variable = { name = z2_frontier_3 value = scope:z2_menu_country } }
+    }
+}
+
+z2_player_city_choices_effect = {
+    save_scope_as = z2_player_host
+    z2_restore_effect = yes
+    remove_variable = z2_city_1
+    remove_variable = z2_city_2
+    remove_variable = z2_city_3
+    ordered_country = {
+        limit = { has_land = yes any_owned_province = { z2_prize_city_trigger = yes } }
+        order_by = z2_country_prize_score
+        position = 0
+        ordered_owned_province = {
+            limit = { z2_prize_city_trigger = yes }
+            order_by = z2_city_score
+            position = 0
+            save_scope_as = z2_selected_city
+            scope:z2_player_host = { set_variable = { name = z2_city_1 value = scope:z2_selected_city } }
+        }
+    }
+    ordered_country = {
+        limit = { has_land = yes any_owned_province = { z2_prize_city_trigger = yes } }
+        order_by = z2_country_prize_score
+        position = 1
+        ordered_owned_province = {
+            limit = { z2_prize_city_trigger = yes }
+            order_by = z2_city_score
+            position = 0
+            save_scope_as = z2_selected_city
+            scope:z2_player_host = { set_variable = { name = z2_city_2 value = scope:z2_selected_city } }
+        }
+    }
+    ordered_country = {
+        limit = { has_land = yes any_owned_province = { z2_prize_city_trigger = yes } }
+        order_by = z2_country_prize_score
+        position = 2
+        ordered_owned_province = {
+            limit = { z2_prize_city_trigger = yes }
+            order_by = z2_city_score
+            position = 0
+            save_scope_as = z2_selected_city
+            scope:z2_player_host = { set_variable = { name = z2_city_3 value = scope:z2_selected_city } }
+        }
+    }
+}
+
+# An optional contribution gives human tribes an actual route to veteran status,
+# without declaring a war or forcing them into the first expedition's diplomacy.
+z2_player_support_first_effect = {
+    save_scope_as = z2_volunteer_country
+    ordered_country = {
+        limit = { has_variable = is_zerywani_horde_leader war = yes has_land = yes }
+        order_by = num_of_cities
+        position = 0
+        add_treasury = 100
+        add_manpower = 10
+        scope:z2_volunteer_country = {
+            add_treasury = -100
+            add_manpower = -10
+            set_variable = { name = zerywani_first_veterans }
+            set_variable = { name = is_zerywani_horde_participant }
+            current_ruler = { set_variable = { name = zerywani_first_generation } }
+            every_owned_province = { set_variable = { name = zerywani_first_home_ground } }
+            add_country_modifier = { name = zerywani_horde_participant_modifier duration = 7300 }
+        }
+    }
+}

@@ -1,8 +1,8 @@
 ﻿namespace = zerywani_horde
 
 # DEBUG/CONSOLE ONLY: fire on the currently played tag with the `event zerywani_horde.999`
-# console command to force-trigger the horde formation immediately, bypassing eligibility,
-# the decade-pulse roll and the 50-100 year window. Useful for testing.
+# console command to force-trigger the horde formation immediately, bypassing the natural leader eligibility,
+# the decade-pulse roll and the date window. A reachable target is still required.
 zerywani_horde.999 = {
 	type = country_event
 	hidden = yes
@@ -83,11 +83,18 @@ zerywani_horde.30 = {
 
 	option = {
 		name = "zerywani_horde_3.a"
-		add_manpower = {
-			value = max_manpower
-			multiply = -0.1
-		}
+		# Contributions were deducted at recruitment, before the army was raised.
 	}
+}
+
+zerywani_horde.7 = {
+    type = country_event
+    title = zerywani_horde_world_title
+    desc = zerywani_horde_world_desc
+    picture = city_siege
+    left_portrait = scope:zerywani_horde_leader_scope.current_ruler
+    right_portrait = scope:zerywani_horde_target.current_ruler
+    option = { name = zerywani_horde_world.a }
 }
 
 # Periodic monitor: checks whether the invasion war is still ongoing, reschedules
@@ -106,7 +113,10 @@ zerywani_horde.4 = {
 				exists = scope:zerywani_horde_target
 				war_with = scope:zerywani_horde_target
 			}
-			zerywani_horde_reinforcement_effect = yes
+			if = {
+				limit = { var:zerywani_horde_reserve > 0 }
+				zerywani_horde_reinforcement_effect = yes
+			}
 			trigger_event = {
 				id = zerywani_horde.4
 				days = { 300 400 }
@@ -147,6 +157,17 @@ zerywani_horde.5 = {
 	}
 
 	immediate = {
+		if = {
+			limit = {
+				exists = scope:zerywani_horde_target_capital
+				scope:zerywani_horde_target_capital = { owner = root }
+			}
+			set_global_variable = { name = zerywani_first_capital_taken }
+		}
+		else = {
+			set_global_variable = { name = zerywani_first_capital_not_taken }
+		}
+		zerywani_first_legacy_effect = yes
 		zerywani_horde_cleanup_effect = yes
 		remove_variable = is_zerywani_horde_leader
 		remove_variable = zerywani_horde_invasion_origin
@@ -172,4 +193,32 @@ zerywani_horde.5 = {
 		}
 		add_stability = -10
 	}
+}
+
+# Veterans pass their account to the children who will inherit the next campaign.
+zerywani_horde.6 = {
+    type = country_event
+    title = zerywani_horde_6_title
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { has_global_variable = zerywani_first_capital_taken }
+                desc = zerywani_horde_6_victory_desc
+            }
+            triggered_desc = {
+                trigger = {
+                    has_global_variable = zerywani_first_capital_not_taken
+                    has_global_variable = zerywani_first_plundered_settlements
+                }
+                desc = zerywani_horde_6_plunder_desc
+            }
+            triggered_desc = {
+                trigger = { always = yes }
+                desc = zerywani_horde_6_defeat_desc
+            }
+        }
+    }
+    picture = war_council
+    trigger = { OR = { has_variable = zerywani_first_veterans is_ai = no } }
+    option = { name = zerywani_horde_6.a }
 }

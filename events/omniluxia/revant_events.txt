@@ -117,6 +117,7 @@ revant.1 = {
 					set_variable = immortal_flag
 					set_can_marry = no
 					save_scope_as = revant_scope
+				    omni_check_magic_prestige = yes
 				}
 				set_as_ruler = scope:revant_scope
 				add_country_modifier = {
@@ -571,7 +572,7 @@ revant.6 = { # Siege Destruction
 	}
 }
 
-revant.7 = { # Durobaeste is Taken, Revant Invasion Begins
+revant.7 = { # Durobaeraste is Taken, Revant Invasion Begins
     type = country_event
     title = revant.7.t
     desc = revant.7.desc
@@ -784,7 +785,7 @@ revant.9 = { # Rise of Blood Angel Girl WORLD
     
 }
 
-revant.10 = { # Blood Angel Revant Duel at Durobaeste; Helluvian Conversion
+revant.10 = { # Blood Angel Revant Duel at Durobaeraste; Helluvian Conversion
     type = country_event
     title = revant.10.t
     desc = revant.10.desc
@@ -802,6 +803,8 @@ revant.10 = { # Blood Angel Revant Duel at Durobaeste; Helluvian Conversion
 	    		has_trait = blood_angel_curse_trait
 	    	}
 	    	any_subject = {
+            exists = this
+            exists = current_ruler
 	    		current_ruler = {
 		    		has_trait = blood_angel_curse_trait
 		    	}
@@ -813,7 +816,7 @@ revant.10 = { # Blood Angel Revant Duel at Durobaeste; Helluvian Conversion
     immediate = {
     	current_ruler = { save_scope_as = blood_angel_girl }
     	every_country = {
-    		limit = { current_ruler = { has_character_modifier = revant_modifier } }
+            limit = { exists = this exists = current_ruler current_ruler = { has_character_modifier = revant_modifier } }
     		current_ruler = { save_scope_as = revant_scope }
     	}
     }
@@ -931,14 +934,26 @@ revant.11 = { # Revant is Killed WORLD
     }
 }
 
-revant.12 = { # Blood Angel Girl Auto Ai
+revant.12 = { # Blood Angel Girl Auto AI
     type = country_event
     hidden = yes
 
     immediate = {
-    	p:2478 = {
-	    	set_owned_by = scope:restorer_army
-	    }
-	}
+        # This event can arrive years after the Bloodsworn were annexed.
+        # Giving land to that extinct country resurrects it without a ruler.
+        if = {
+            limit = {
+                exists = scope:restorer_army
+                scope:restorer_army = { has_land = yes exists = current_ruler }
+                exists = scope:blood_angel_girl
+                scope:blood_angel_girl = { is_alive = yes }
+                exists = scope:revant_tag
+                p:2478 = { owner = scope:revant_tag }
+            }
+            p:2478 = { set_owned_by = scope:restorer_army }
+        }
+        else = {
+            debug_log = "REVANT: skipped delayed Bloodsworn intervention; realm, ruler, heroine or target no longer valid."
+        }
+    }
 }
-

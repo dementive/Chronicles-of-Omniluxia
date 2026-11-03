@@ -34,7 +34,7 @@ me_zorgo_magic_focus.40 = { # Character magic hub
             scope:target = {
                 omni_character_is_eligible_caster = yes
                 OR = {
-                    omni_can_afford_spell = { BASE = 15 }
+                    omni_can_afford_spell = { BASE = 5 }
                     AND = {
                         has_trait = vampire_trait
                         NOT = { has_variable = omni_vampiric_feeding_cooldown }
@@ -77,7 +77,8 @@ me_zorgo_magic_focus.40 = { # Character magic hub
             root = { omni_player_has_character_magic_ready = yes }
         }
         name = "me_zorgo_magic_focus.40.c"
-        trigger_event = { id = me_zorgo_magic_focus.29 }
+        save_scope_as = battle_spell_context
+        trigger_event = { id = me_zorgo_magic_focus.130 }
     }
 
     option = {
@@ -85,11 +86,11 @@ me_zorgo_magic_focus.40 = { # Character magic hub
             scope:target = {
                 is_general = yes
                 omni_character_is_eligible_caster = yes
-                omni_can_afford_spell = { BASE = 25 }
+                omni_can_afford_spell = { BASE = 10 }
                 any_character_unit = {
                     is_army = yes
                     unit_owner = { this = root }
-                    unit_location = { has_siege = yes }
+                    unit_location = { has_siege = yes NOT = { omni_province_is_warded = yes } }
                 }
             }
         }
@@ -137,6 +138,7 @@ me_zorgo_magic_focus.2 = { # Choose Magic Type
                     has_variable = cleric_t2_unlocked_var
                     has_variable = illusionist_t2_unlocked_var
                     has_variable = charm_unlocked_var
+                    has_variable = soul_unlocked_var
                 }
             }
         }
@@ -214,8 +216,12 @@ me_zorgo_magic_focus.3 = { # Omnic School
     picture = ascetic
     left_portrait = scope:target
 
+    immediate = { scope:target = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Light Shields D1
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = light_shields } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = {
                 has_variable = diviner_t2_unlocked_var
@@ -224,6 +230,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
         scope:target = {
             force_add_trait = omnic_diviner_spell_t1_trait
             omni_spell_mana_cost_effect = { BASE = 25 }
+            set_variable = { name = omni_spell_active_omnic_diviner_spell_t1_trait days = 90 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -236,16 +243,24 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Light Walls D2
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = light_walls } }
+            scope:target = {
+                OR = {
+                    any_character_unit = { is_army = yes unit_location = { owner = root } }
+                    AND = {
+                        NOT = { any_character_unit = { is_army = yes } }
+                        location = { owner = root }
+                    }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = {
                 has_variable = diviner_t3_unlocked_var
             }
         }
-        capital_scope = {
-            add_province_modifier = {
-                name = omnic_diviner_spell_t2_mod
-                duration = 180
-            }
+        scope:target = {
+            omni_apply_local_ward_effect = { MOD = omnic_diviner_spell_t2_mod DAYS = 180 }
             omni_spell_mana_cost_effect = { BASE = 25 }
         }
         custom_tooltip = tier_two_spell_tt
@@ -254,6 +269,9 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Spirit Bomb D3
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = spirit_bomb } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } } } }
             scope:target = { omni_can_afford_spell = { BASE = 125 } }
             scope:target = {
                 has_variable = diviner_t4_unlocked_var
@@ -261,6 +279,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
         }
         scope:target = {
             random_character_unit = {
+                limit = { is_army = yes unit_location = { owner = { war_with = root } } }
                 unit_location = {
                     add_city_smoke_effect = yes
                     add_city_fire_effect = yes
@@ -275,6 +294,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
                         }
                         kill_pop = yes
                     }
+                    if = { limit = { has_province_modifier = omnic_diviner_spell_t3_mod } remove_province_modifier = omnic_diviner_spell_t3_mod }
                     add_province_modifier = {
                         name = omnic_diviner_spell_t3_mod
                         duration = 64
@@ -289,6 +309,8 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Revelation II H3
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = revelation_ii } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 150 } }
             scope:target = {
                 has_variable = hierophant_t4_unlocked_var
@@ -308,6 +330,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Summon Animal Auxiliaries
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = summon_animal_auxiliaries } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
@@ -340,6 +363,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Helluvius' Peace
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { has_variable = helluvius_peace_known_var }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
@@ -356,6 +380,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Hellas' Providence
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { has_variable = hellas_providence_known_var }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
@@ -372,6 +397,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Battle Avatar Taanka
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = battle_avatar_taanka } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
@@ -381,6 +407,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
         scope:target = {
             force_add_trait = taanka_avatar_trait
             omni_spell_mana_cost_effect = { BASE = 75 }
+            set_variable = { name = omni_spell_active_taanka_avatar_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -393,6 +420,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Dragonscale Shield Dragonscale
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = dragonscale_shield_dragonscale } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
@@ -402,6 +430,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
         scope:target = {
             force_add_trait = dragonscale_personal_trait
             omni_spell_mana_cost_effect = { BASE = 75 }
+            set_variable = { name = omni_spell_active_dragonscale_personal_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -414,6 +443,16 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Dragonscale Dome Dragonscale
         trigger = {
+            scope:target = {
+                OR = {
+                    any_character_unit = { is_army = yes unit_location = { owner = root } }
+                    AND = {
+                        NOT = { any_character_unit = { is_army = yes } }
+                        location = { owner = root }
+                    }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = dragonscale_dome_dragonscale } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
@@ -421,13 +460,8 @@ me_zorgo_magic_focus.3 = { # Omnic School
             }
         }
         scope:target = {
+            omni_apply_local_ward_effect = { MOD = dragonscale_dome_mod DAYS = 180 }
             omni_spell_mana_cost_effect = { BASE = 75 }
-        }
-        capital_scope = {
-            add_province_modifier = {
-                name = dragonscale_dome_mod
-                duration = 180
-            }
         }
         custom_tooltip = zare_jad_spell_tt
         custom_tooltip = 75_mana_tt
@@ -452,8 +486,11 @@ me_zorgo_magic_focus.4 = { # Aldic School
     picture = ascetic
     left_portrait = scope:target
 
+    immediate = { scope:target = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Restoration C1
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = restoration } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
@@ -465,6 +502,7 @@ me_zorgo_magic_focus.4 = { # Aldic School
         scope:target = {
             force_add_trait = aldic_cleric_spell_t1_trait
             omni_spell_mana_cost_effect = { BASE = 50 }
+            set_variable = { name = omni_spell_active_aldic_cleric_spell_t1_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -478,6 +516,7 @@ me_zorgo_magic_focus.4 = { # Aldic School
 
     option = { # Altered Inspiration Illusionist I1
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = altered_inspiration } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
@@ -490,6 +529,7 @@ me_zorgo_magic_focus.4 = { # Aldic School
         scope:target = {
             force_add_trait = aldic_illusionist_spell_t1_trait
             omni_spell_mana_cost_effect = { BASE = 50 }
+            set_variable = { name = omni_spell_active_aldic_illusionist_spell_t1_trait days = 90 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -503,6 +543,8 @@ me_zorgo_magic_focus.4 = { # Aldic School
 
     option = { # Inspired Thoughts Illusionist I1
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            is_monarchy = yes
             scope:target = { omni_knows_spell = { SPELL = inspired_thoughts } }
             scope:target = { omni_can_afford_spell = { BASE = 15 } }
             scope:target = {
@@ -522,6 +564,7 @@ me_zorgo_magic_focus.4 = { # Aldic School
 
     option = { # Silver Tongue Charm School
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = silver_tongue_charm } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
@@ -533,6 +576,7 @@ me_zorgo_magic_focus.4 = { # Aldic School
         scope:target = {
             force_add_trait = charm_magic_self_trait
             omni_spell_mana_cost_effect = { BASE = 50 }
+            set_variable = { name = omni_spell_active_charm_magic_self_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -546,6 +590,7 @@ me_zorgo_magic_focus.4 = { # Aldic School
 
     option = { # Mended Anima Soul School
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = mended_anima_soul } }
             scope:target = { omni_can_afford_spell = { BASE = 100 } }
             scope:target = {
@@ -565,6 +610,7 @@ me_zorgo_magic_focus.4 = { # Aldic School
 
     option = { # Astral Search Soul School
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = astral_search_soul } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
@@ -607,6 +653,7 @@ me_zorgo_magic_focus.5 = { # Amten School
     left_portrait = scope:target
 
     immediate = {
+        scope:target = { omni_migrate_spell_audit_knowledge = yes }
         hidden_effect = {
             random_owned_province = {
                 limit = { has_food_trade_good_trigger = yes }
@@ -616,21 +663,13 @@ me_zorgo_magic_focus.5 = { # Amten School
                 limit = { has_minable_trade_good_trigger = yes }
                 save_scope_as = mineral_target
             }
-            scope:target = {
-                set_variable = {
-                    name = omni_plant_growth_cost
-                    value = omni_plant_growth_spell_cost
-                }
-                set_variable = {
-                    name = omni_summon_dryads_cost
-                    value = omni_summon_dryads_spell_cost
-                }
-            }
         }
     }
 
     option = { # Detect Minerals E1
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = detect_minerals } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = {
                 has_variable = elementalist_t2_unlocked_var
@@ -649,7 +688,8 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Detect Minerals II E2
         trigger = {
-            scope:target = { omni_knows_spell = { SPELL = detect_minerals } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { omni_knows_spell = { SPELL = detect_minerals_ii } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
                 has_variable = elementalist_t3_unlocked_var
@@ -660,6 +700,7 @@ me_zorgo_magic_focus.5 = { # Amten School
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
         scope:mineral_target = {
+            if = { limit = { has_province_modifier = amten_elementalist_spell_t2_mod } remove_province_modifier = amten_elementalist_spell_t2_mod }
             add_province_modifier = {
                 name = amten_elementalist_spell_t2_mod
                 duration = 180
@@ -671,6 +712,9 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Rock Slide E2
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = rock_slide } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } } } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
                 has_variable = elementalist_t3_unlocked_var
@@ -678,6 +722,7 @@ me_zorgo_magic_focus.5 = { # Amten School
         }
         scope:target = {
             random_character_unit = {
+                limit = { is_army = yes unit_location = { owner = { war_with = root } } }
                 unit_location = {
                     add_city_smoke_effect = yes
                     add_city_fire_effect = yes
@@ -692,6 +737,7 @@ me_zorgo_magic_focus.5 = { # Amten School
                         }
                         kill_pop = yes
                     }
+                    if = { limit = { has_province_modifier = amten_elementalist_spell_t2_2_mod } remove_province_modifier = amten_elementalist_spell_t2_2_mod }
                     add_province_modifier = {
                         name = amten_elementalist_spell_t2_2_mod
                         duration = 64
@@ -706,6 +752,8 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Summon Earthworks E3
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = summon_earthworks } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 125 } }
             scope:target = {
                 has_variable = elementalist_t4_unlocked_var
@@ -721,12 +769,14 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Plant Growth D1
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = plant_growth } }
+            scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = {
                 has_variable = druid_t2_unlocked_var
             }
         }
         scope:target = {
-            set_variable = omni_pending_plant_growth_spell
+            set_variable = { name = omni_pending_plant_growth_spell days = 30 }
         }
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = plant_growth_unit_location_tt
@@ -735,12 +785,14 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Summon Dryads D1
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = summon_dryads } }
+            scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
                 has_variable = druid_t2_unlocked_var
             }
         }
         scope:target = {
-            set_variable = omni_pending_summon_dryads_spell
+            set_variable = { name = omni_pending_summon_dryads_spell days = 30 }
         }
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = summon_dryads_unit_location_tt
@@ -750,7 +802,8 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Plant Growth II D2
         trigger = {
-            scope:target = { omni_knows_spell = { SPELL = plant_growth } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { omni_knows_spell = { SPELL = plant_growth_ii } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
                 has_variable = druid_t3_unlocked_var
@@ -761,6 +814,7 @@ me_zorgo_magic_focus.5 = { # Amten School
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
         scope:food_target = {
+            if = { limit = { has_province_modifier = amten_druid_spell_t2_mod } remove_province_modifier = amten_druid_spell_t2_mod }
             add_province_modifier = {
                 name = amten_druid_spell_t2_mod
                 duration = 180
@@ -772,6 +826,8 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Nature's Bounty D2
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = nature_bounty } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
                 has_variable = druid_t3_unlocked_var
@@ -791,7 +847,8 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Nature's Bounty II D3
         trigger = {
-            scope:target = { omni_knows_spell = { SPELL = nature_bounty } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { omni_knows_spell = { SPELL = nature_bounty_ii } }
             scope:target = { omni_can_afford_spell = { BASE = 150 } }
             scope:target = {
                 has_variable = druid_t4_unlocked_var
@@ -801,6 +858,7 @@ me_zorgo_magic_focus.5 = { # Amten School
             omni_spell_mana_cost_effect = { BASE = 150 }
         }
         add_stability = 5
+        if = { limit = { has_country_modifier = amten_druid_spell_t3_mod } remove_country_modifier = amten_druid_spell_t3_mod }
         add_country_modifier = {
             name = amten_druid_spell_t3_mod
             duration = 365
@@ -811,6 +869,7 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Sculpt Buildings Stone Magic
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = sculpt_buildings_stone_magic } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
@@ -822,6 +881,7 @@ me_zorgo_magic_focus.5 = { # Amten School
         scope:target = {
             force_add_trait = stone_magic_trait
             omni_spell_mana_cost_effect = { BASE = 50 }
+            set_variable = { name = omni_spell_active_stone_magic_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -852,10 +912,12 @@ me_zorgo_magic_focus.6 = { # Melodian School
     left_portrait = scope:target
 
     immediate = {
+        scope:target = { omni_migrate_spell_audit_knowledge = yes }
         random_character = {
             limit = {
                 char_valid_for_country_events_trigger = yes
                 char_can_be_friend_trigger = yes
+                NOT = { this = scope:target }
             }
             weight = {
                 base = 1
@@ -879,6 +941,8 @@ me_zorgo_magic_focus.6 = { # Melodian School
 
     option = { # Summon Warborn N1
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = summon_warborn } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
                 has_variable = necromancer_t2_unlocked_var
@@ -921,6 +985,8 @@ me_zorgo_magic_focus.6 = { # Melodian School
     }
     option = { # Raise Workers N3
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = raise_workers } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
                 has_variable = necromancer_t4_unlocked_var
@@ -929,7 +995,7 @@ me_zorgo_magic_focus.6 = { # Melodian School
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        scope:target.employer = {
+        scope:target.country = {
             capital_scope = {
                 define_pop = {
                     type = slaves
@@ -949,6 +1015,7 @@ me_zorgo_magic_focus.6 = { # Melodian School
     }
     option = { # Rage W1
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = rage } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
@@ -958,6 +1025,7 @@ me_zorgo_magic_focus.6 = { # Melodian School
         scope:target = {
             force_add_trait = melodian_warlock_spell_t1_trait
             omni_spell_mana_cost_effect = { BASE = 50 }
+            set_variable = { name = omni_spell_active_melodian_warlock_spell_t1_trait days = 90 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -970,6 +1038,10 @@ me_zorgo_magic_focus.6 = { # Melodian School
     }
     option = { # Dark Offering W1
         trigger = {
+            scope:target = { omni_knows_spell = { SPELL = dark_offering } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            exists = scope:poor_victim
+            scope:poor_victim = { is_alive = yes NOT = { this = scope:target } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
                 has_variable = warlock_t2_unlocked_var
@@ -990,7 +1062,10 @@ me_zorgo_magic_focus.6 = { # Melodian School
     }
     option = { # Dark Offering II W3
         trigger = {
-            scope:target = { omni_knows_spell = { SPELL = dark_offering } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            exists = scope:poor_victim
+            scope:poor_victim = { is_alive = yes NOT = { this = scope:target } }
+            scope:target = { omni_knows_spell = { SPELL = dark_offering_ii } }
             scope:target = { omni_can_afford_spell = { BASE = 125 } }
             scope:target = {
                 has_variable = warlock_t4_unlocked_var
@@ -1033,27 +1108,42 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     picture = ascetic
     left_portrait = scope:target
 
+    immediate = { scope:target = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Dreaming Polaric
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = dreaming }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { has_variable = dreaming_known_var }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
                 OR = {
-                    has_culture = siamiu
-                    has_culture = galidai
-                    has_culture = yoviugi
-                    has_culture = brusian
-                    has_culture = old_polari
+                    omni_knows_spell = { SPELL = dreaming }
+                    OR = {
+                        has_culture = siamiu
+                        has_culture = galidai
+                        has_culture = yoviugi
+                        has_culture = brusian
+                        has_culture = old_polari
+                    }
                 }
             }
         }
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        random_list = {
+        random = {
+            chance = 10
+            random_list = {
             50 = { add_military_experience = 10 }
             40 = { scope:target = { add_martial = 1 } }
             10 = { add_innovation = 1 }
+        }
         }
         custom_tooltip = folk_spell_tt
         custom_tooltip = 50_mana_tt
@@ -1061,19 +1151,30 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Scramble Copper Halfling
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = scramble }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 15 } }
             scope:target = {
                 OR = {
-                    has_culture = dvenic
-                    has_culture = qelthean
-                    has_culture = narfut
-                    has_culture = fachmite
+                    omni_knows_spell = { SPELL = scramble }
+                    OR = {
+                        has_culture = dvenic
+                        has_culture = qelthean
+                        has_culture = narfut
+                        has_culture = fachmite
+                    }
                 }
             }
         }
         scope:target = {
             force_add_trait = copper_halfling_folk_trait
             omni_spell_mana_cost_effect = { BASE = 15 }
+            set_variable = { name = omni_spell_active_copper_halfling_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1086,15 +1187,26 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Water Walker Austropetolian
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = water_walker }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { has_variable = water_walker_known_var }
             scope:target = { omni_can_afford_spell = { BASE = 15 } }
             scope:target = {
-                has_trait = half_snake_trait
+                OR = {
+                    omni_knows_spell = { SPELL = water_walker }
+                    has_trait = half_snake_trait
+                }
             }
         }
         scope:target = {
             force_add_trait = austropetolian_folk_trait
             omni_spell_mana_cost_effect = { BASE = 15 }
+            set_variable = { name = omni_spell_active_austropetolian_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1107,14 +1219,25 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Unified Blades Miloni
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = unified_blades }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = {
-                has_culture = miloni
+                OR = {
+                    omni_knows_spell = { SPELL = unified_blades }
+                    has_culture = miloni
+                }
             }
         }
         scope:target = {
             force_add_trait = milon_folk_trait
             omni_spell_mana_cost_effect = { BASE = 25 }
+            set_variable = { name = omni_spell_active_milon_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1127,28 +1250,48 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Golden Hands Azari
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = golden_hands }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
-                has_culture = azari
+                OR = {
+                    omni_knows_spell = { SPELL = golden_hands }
+                    has_culture = azari
+                }
             }
         }
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        add_1_free_province_investments = yes
+        random = { chance = 10 add_1_free_province_investments = yes }
         custom_tooltip = folk_spell_tt
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.7.e"
     }
     option = { # Craftsman's Knowledge Copper Dwarf
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = craftsmans_knowledge }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
-                has_trait = copper_dwarf_trait
+                OR = {
+                    omni_knows_spell = { SPELL = craftsmans_knowledge }
+                    has_trait = copper_dwarf_trait
+                }
             }
         }
         scope:target = {
-            add_finesse = 1
+            random = { chance = 10 add_finesse = 1 }
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
         custom_tooltip = folk_spell_tt
@@ -1157,9 +1300,20 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Cafea's Breath Deepwood Elf
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = cafeas_breath }
+                }
+            }
+            scope:target = { OR = { has_trait = hunchback has_trait = limp has_trait = castrated has_trait = blind has_trait = maimed has_trait = one_eyed has_trait = brain_damaged } }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
-                has_culture = waldonian
+                OR = {
+                    omni_knows_spell = { SPELL = cafeas_breath }
+                    has_culture = waldonian
+                }
             }
         }
         scope:target = {
@@ -1213,15 +1367,26 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Bloodlust Drow
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = bloodlust }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { has_variable = bloodlust_known_var }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
-                has_trait = drow_trait
+                OR = {
+                    omni_knows_spell = { SPELL = bloodlust }
+                    has_trait = drow_trait
+                }
             }
         }
         scope:target = {
             force_add_trait = drow_folk_trait
             omni_spell_mana_cost_effect = { BASE = 50 }
+            set_variable = { name = omni_spell_active_drow_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1234,57 +1399,88 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Na'athran's Blessing Sea Elf 
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = naathrans_blessing }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
-                has_trait = sea_elf_trait
+                OR = {
+                    omni_knows_spell = { SPELL = naathrans_blessing }
+                    has_trait = sea_elf_trait
+                }
             }
         }
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        add_1_free_province_investments = yes
+        random = { chance = 10 add_1_free_province_investments = yes }
         custom_tooltip = folk_spell_tt
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.7.i"
     }
     option = { # Serpentine Scrying Ishtari
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = serpentine_scrying }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 15 } }
             scope:target = {
-                has_culture = ishtari
+                OR = {
+                    omni_knows_spell = { SPELL = serpentine_scrying }
+                    has_culture = ishtari
+                }
             }
         }
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 15 }
         }
-        add_military_experience = 8
+        random = { chance = 10 add_military_experience = 8 }
         custom_tooltip = folk_spell_tt
         custom_tooltip = 15_mana_tt
         name = "me_zorgo_magic_focus.7.k"
     }
     option = { # Raging Dragon Western-Eastern Dunydurceg
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = raging_dragon }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
                 OR = {
-                    has_culture = yeshizi
-                    has_culture = duanduar
-                    has_culture = chagasizi
-                    has_culture = tuntuyar
-                    has_culture = trayeshu
-                    has_culture = sind
-                    has_culture = derbican
-                    has_culture = margian
-                    has_culture = kayarah
-                    has_culture = darmerush
-                    has_culture = yuxiresh
-                    has_culture = kharesmian
+                    omni_knows_spell = { SPELL = raging_dragon }
+                    OR = {
+                        has_culture = yeshizi
+                        has_culture = duanduar
+                        has_culture = chagasizi
+                        has_culture = tuntuyar
+                        has_culture = trayeshu
+                        has_culture = sind
+                        has_culture = derbican
+                        has_culture = margian
+                        has_culture = kayarah
+                        has_culture = darmerush
+                        has_culture = yuxiresh
+                        has_culture = kharesmian
+                    }
                 }
             }
         }
         scope:target = {
             force_add_trait = dragkhan_folk_trait
             omni_spell_mana_cost_effect = { BASE = 50 }
+            set_variable = { name = omni_spell_active_dragkhan_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1297,6 +1493,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Beastly Transformation Vampire
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = {
                 has_trait = vampire_trait
@@ -1305,6 +1502,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
         scope:target = {
             force_add_trait = vampire_folk_trait
             omni_spell_mana_cost_effect = { BASE = 25 }
+            set_variable = { name = omni_spell_active_vampire_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1313,26 +1511,38 @@ me_zorgo_magic_focus.7 = { # Folk Magic
         }
         custom_tooltip = folk_spell_tt
         custom_tooltip = 25_mana_tt
-        omni_spell_mana_cost_effect = { BASE = 25 }
         name = "me_zorgo_magic_focus.7.m"
     }
     option = { # Gozon's Blessing Orc
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = gozons_blessing }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
                 OR = {
-                    has_religion = orcish_ancestral_faith
-                    has_religion = orcish_new_faith
-                    has_religion = orcish_colony_faith
+                    omni_knows_spell = { SPELL = gozons_blessing }
+                    OR = {
+                        has_religion = orcish_ancestral_faith
+                        has_religion = orcish_new_faith
+                        has_religion = orcish_colony_faith
+                    }
                 }
             }
         }
         scope:target = {
+            random = {
+            chance = 10
             random_list = {
                 1 = { add_zeal = 1 }
                 1 = { add_zeal = 2 }
                 1 = { add_zeal = 3 }
             }
+        }
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
         custom_tooltip = folk_spell_tt
@@ -1341,14 +1551,25 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Victory's Blessing Viktriec
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = victorys_blessing }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = {
-                has_religion = victory_pantheon
+                OR = {
+                    omni_knows_spell = { SPELL = victorys_blessing }
+                    has_religion = victory_pantheon
+                }
             }
         }
         scope:target = {
             force_add_trait = viktriec_folk_trait
             omni_spell_mana_cost_effect = { BASE = 25 }
+            set_variable = { name = omni_spell_active_viktriec_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1361,18 +1582,31 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Revelations of the Way Seekers
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = revelations_of_the_way }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
-                has_religion = seekers_beliefs
+                OR = {
+                    omni_knows_spell = { SPELL = revelations_of_the_way }
+                    has_religion = seekers_beliefs
+                }
             }
         }
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        random_list = {
+        random = {
+            chance = 10
+            random_list = {
             1 = { scope:target = { add_zeal = 1 } }
             1 = { scope:target = { add_martial = 1 } }
             1 = { add_innovation = 1 }
+        }
         }
         custom_tooltip = folk_spell_tt
         custom_tooltip = 50_mana_tt
@@ -1381,18 +1615,31 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Kon's Wisdom Kino
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = kons_wisdom }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
-                has_religion = kinone_pantheon
+                OR = {
+                    omni_knows_spell = { SPELL = kons_wisdom }
+                    has_religion = kinone_pantheon
+                }
             }
         }
         scope:target = {
+            random = {
+            chance = 10
             random_list = {
                 1 = { add_martial = 1 }
                 1 = { add_charisma = 1 }
                 1 = { add_finesse = 1 }
                 1 = { add_zeal = 1 }
             }
+        }
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
         custom_tooltip = folk_spell_tt
@@ -1401,15 +1648,26 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Berserker Rage Northlander Pantheon
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = berserker_rage }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { has_variable = berserker_rage_known_var }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = {
-                has_religion = northlander_pantheon
+                OR = {
+                    omni_knows_spell = { SPELL = berserker_rage }
+                    has_religion = northlander_pantheon
+                }
             }
         }
         scope:target = {
             force_add_trait = northlander_folk_trait
             omni_spell_mana_cost_effect = { BASE = 25 }
+            set_variable = { name = omni_spell_active_northlander_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1422,17 +1680,30 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Channeled Stars Stellaric Folk
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = channeled_stars }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
-                has_religion = fallen_star_pantheon
+                OR = {
+                    omni_knows_spell = { SPELL = channeled_stars }
+                    has_religion = fallen_star_pantheon
+                }
             }
         }
         scope:target = {
-            random_list = {
-                1 = { add_martial = 1 }
-                1 = { add_charisma = 1 }
-                1 = { add_finesse = 1 }
-                1 = { add_zeal = 1 }
+            random = {
+                chance = 10
+                random_list = {
+                    1 = { add_martial = 1 }
+                    1 = { add_charisma = 1 }
+                    1 = { add_finesse = 1 }
+                    1 = { add_zeal = 1 }
+                }
             }
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
@@ -1442,18 +1713,31 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Ancestral Rumination Ascendic
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = ancestral_rumination }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = {
-                has_religion = transcendence_enlighten
+                OR = {
+                    omni_knows_spell = { SPELL = ancestral_rumination }
+                    has_religion = transcendence_enlighten
+                }
             }
         }
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        random_list = {
+        random = {
+            chance = 10
+            random_list = {
             1 = { add_military_experience = 8 }
             1 = { add_innovation = 1 }
             1 = { scope:target = { add_zeal = 1 } }
+        }
         }
         custom_tooltip = folk_spell_tt
         custom_tooltip = 50_mana_tt
@@ -1461,13 +1745,25 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Explosion Shoishoni
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = explosion }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } } } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
-                has_culture = shoishoni
+                OR = {
+                    omni_knows_spell = { SPELL = explosion }
+                    has_culture = shoishoni
+                }
             }
         }
         scope:target = {
             random_character_unit = {
+                limit = { is_army = yes unit_location = { owner = { war_with = root } } }
                 unit_location = {
                     add_city_smoke_effect = yes
                     add_city_fire_effect = yes
@@ -1482,6 +1778,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
                         }
                         kill_pop = yes
                     }
+                    if = { limit = { has_province_modifier = shoishoni_folk_mod } remove_province_modifier = shoishoni_folk_mod }
                     add_province_modifier = {
                         name = shoishoni_folk_mod
                         duration = 64
@@ -1496,6 +1793,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     }
     option = { # Blood Boil Blood Angel Girl
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 15 } }
             scope:target = {
                 has_trait = blood_angel_curse_trait
@@ -1505,6 +1803,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
             force_add_trait = blood_angel_folk_trait
             add_health = -0.025
             omni_spell_mana_cost_effect = { BASE = 15 }
+            set_variable = { name = omni_spell_active_blood_angel_folk_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -1515,10 +1814,29 @@ me_zorgo_magic_focus.7 = { # Folk Magic
         custom_tooltip = 15_mana_tt
         name = "me_zorgo_magic_focus.7.u"
     }
+    option = { # Kinweaving - local population transformation
+        name = "me_zorgo_magic_focus.7.kinweaving"
+        trigger = { scope:target = { omni_can_cast_kinweaving = yes } }
+        omni_cast_kinweaving = yes
+        custom_tooltip = omni_kinweaving_effect_tt
+        custom_tooltip = omni_kinweaving_mana_tt
+    }
     option = { # Coils of the Serpent - snakefolk enslavement blessing
         trigger = {
+            scope:target = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = coils_of_the_serpent }
+                }
+            }
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
-            scope:target = { has_trait = half_snake_trait }
+            scope:target = {
+                OR = {
+                    omni_knows_spell = { SPELL = coils_of_the_serpent }
+                    has_trait = half_snake_trait
+                }
+            }
         }
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 50 }
@@ -1558,51 +1876,72 @@ me_zorgo_magic_focus.8 = { # Main Menu (Who is Casting?)
     desc = me_zorgo_magic_focus.15_desc
     picture = ascetic
     left_portrait = current_ruler
-    right_portrait = scope:selected_mage
+    right_portrait = scope:target
 
+    # Offensive caster picker. Same pool and mana floor as the buttons that open
+    # this menu (omni_player_has_affordable_mage BASE 5), ordered by spendable
+    # mana, so the player always chooses a caster who can actually cast.
     immediate = {
-        random_character = {
+        ordered_character = {
             limit = {
                 OR = {
+                    has_variable = omni_folk_practitioner
+                    is_ruler = yes
+                    is_general = yes
+                    is_admiral = yes
                     has_office = office_physician
                     has_office = office_republic_physician
                     has_office = office_apothecary
-                    is_general = yes
-                    is_admiral = yes
                 }
                 omni_character_is_eligible_caster = yes
+                omni_can_afford_spell = { BASE = 5 }
             }
-            save_scope_as = selected_mage
+            order_by = omni_spell_affordable_budget
+            check_range_bounds = no
+            max = 6
+            if = { limit = { NOT = { exists = scope:caster_1 } } save_scope_as = caster_1 }
+            else_if = { limit = { NOT = { exists = scope:caster_2 } } save_scope_as = caster_2 }
+            else_if = { limit = { NOT = { exists = scope:caster_3 } } save_scope_as = caster_3 }
+            else_if = { limit = { NOT = { exists = scope:caster_4 } } save_scope_as = caster_4 }
+            else_if = { limit = { NOT = { exists = scope:caster_5 } } save_scope_as = caster_5 }
+            else_if = { limit = { NOT = { exists = scope:caster_6 } } save_scope_as = caster_6 }
         }
     }
 
-    option = { # Ruler
-        trigger = {
-            current_ruler = {
-                omni_character_is_eligible_caster = yes
-            }
-        }
-        name = "me_zorgo_magic_focus.15.a"
-        custom_tooltip = me_zorgo_magic_focus.15_tooltip.a
-        current_ruler = { save_scope_as = selected_mage }
-        trigger_event = { id = me_zorgo_magic_focus.9 }        
+    option = {
+        name = me_zorgo_magic_focus.15.cast1
+        trigger = { exists = scope:caster_1 }
+        scope:caster_1 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.9 }
     }
-    option = { # Mage
-        trigger = {
-            scope:selected_mage = {
-                NOT = { this = root.current_ruler }
-                OR = {
-                    has_office = office_physician
-                    has_office = office_republic_physician
-                    has_office = office_apothecary
-                    is_general = yes
-                    is_admiral = yes
-                }
-                omni_character_is_eligible_caster = yes
-            }
-        }
-        name = "me_zorgo_magic_focus.15.b"
-        custom_tooltip = me_zorgo_magic_focus.15_tooltip.b
+    option = {
+        name = me_zorgo_magic_focus.15.cast2
+        trigger = { exists = scope:caster_2 }
+        scope:caster_2 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast3
+        trigger = { exists = scope:caster_3 }
+        scope:caster_3 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast4
+        trigger = { exists = scope:caster_4 }
+        scope:caster_4 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast5
+        trigger = { exists = scope:caster_5 }
+        scope:caster_5 = { save_scope_as = selected_mage }
+        trigger_event = { id = me_zorgo_magic_focus.9 }
+    }
+    option = {
+        name = me_zorgo_magic_focus.15.cast6
+        trigger = { exists = scope:caster_6 }
+        scope:caster_6 = { save_scope_as = selected_mage }
         trigger_event = { id = me_zorgo_magic_focus.9 }
     }
     option = { # Cancel
@@ -1714,8 +2053,12 @@ me_zorgo_magic_focus.10 = { # Omnic School
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Light Rays D1
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = light_rays } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
                 has_variable = diviner_t2_unlocked_var
@@ -1733,7 +2076,9 @@ me_zorgo_magic_focus.10 = { # Omnic School
     }
     option = { # Light Rays II D2
         trigger = {
-            scope:selected_mage = { omni_knows_spell = { SPELL = light_rays } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
+            scope:selected_mage = { omni_knows_spell = { SPELL = light_rays_ii } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 has_variable = diviner_t3_unlocked_var
@@ -1753,6 +2098,9 @@ me_zorgo_magic_focus.10 = { # Omnic School
     }
     option = { # Exorcism II H2
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = exorcism_ii } }
+            scope:target = { OR = { has_trait = vampire_trait has_trait = drow_trait has_trait = deep_gnome_trait has_trait = goblin_trait has_trait = wraith_trait has_trait = necromancer_trait has_trait = warlock_trait has_trait = lich_trait } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = {
                 has_variable = hierophant_t3_unlocked_var
@@ -1787,6 +2135,8 @@ me_zorgo_magic_focus.10 = { # Omnic School
     }
     option = { # Summon Eagle of Zanis Magonis
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { has_variable = summon_eagle_of_zanis_known_var }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
@@ -1813,6 +2163,8 @@ me_zorgo_magic_focus.10 = { # Omnic School
 
     option = { # Blinding Flash
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = blinding_flash } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 15 }
@@ -1842,6 +2194,8 @@ me_zorgo_magic_focus.10 = { # Omnic School
     }
     option = { # Chain Lightning
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = chain_lightning } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 40 }
@@ -1871,6 +2225,8 @@ me_zorgo_magic_focus.10 = { # Omnic School
     }
     option = { # Gravity Well
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = gravity_well } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 100 }
@@ -1900,6 +2256,8 @@ me_zorgo_magic_focus.10 = { # Omnic School
     }
     option = { # Chronostasis Field
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = chronostasis_field } }
             scope:selected_mage = { 
                 has_variable = diviner_mastered_var
@@ -1943,8 +2301,11 @@ me_zorgo_magic_focus.11 = { # Aldic School
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Pestilence C3
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = pestilence } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 150 } }
             scope:selected_mage = {
@@ -1956,7 +2317,8 @@ me_zorgo_magic_focus.11 = { # Aldic School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 150 }
         }
-        scope:target.employer = {
+        scope:target.country = {
+            if = { limit = { has_country_modifier = aldic_cleric_spell_t3_mod } remove_country_modifier = aldic_cleric_spell_t3_mod }
             add_country_modifier = {
                 name = aldic_cleric_spell_t3_mod
                 duration = 365
@@ -1968,6 +2330,7 @@ me_zorgo_magic_focus.11 = { # Aldic School
     }
     option = { # Mind Break Illusionist I2
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = mind_break } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = {
@@ -1996,6 +2359,9 @@ me_zorgo_magic_focus.11 = { # Aldic School
     }
     option = { # Warped Flesh I2
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = warped_flesh } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 OR = {
@@ -2017,7 +2383,8 @@ me_zorgo_magic_focus.11 = { # Aldic School
     }
     option = { # Warped Flesh II I2
         trigger = {
-            scope:selected_mage = { omni_knows_spell = { SPELL = warped_flesh } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:selected_mage = { omni_knows_spell = { SPELL = warped_flesh_ii } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 150 } }
             scope:selected_mage = {
                 OR = {
@@ -2045,6 +2412,8 @@ me_zorgo_magic_focus.11 = { # Aldic School
 
     option = { # Arcane Volley
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = arcane_volley } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 5 }
@@ -2074,6 +2443,8 @@ me_zorgo_magic_focus.11 = { # Aldic School
     }
     option = { # Corrosive Rain
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = corrosive_rain } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 25 }
@@ -2103,6 +2474,8 @@ me_zorgo_magic_focus.11 = { # Aldic School
     }
     option = { # Meteor Strike
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = meteor_strike } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 95 }
@@ -2130,6 +2503,8 @@ me_zorgo_magic_focus.11 = { # Aldic School
     }
     option = { # Word of Annihilation
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = word_of_annihilation } }
             scope:selected_mage = { 
                 has_variable = illusionist_mastered_var
@@ -2173,8 +2548,13 @@ me_zorgo_magic_focus.12 = { # Amten School
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Winds of Pedentrutzu E1
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = winds_of_pedentrutzu } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
                 has_variable = elementalist_t2_unlocked_var
@@ -2194,6 +2574,8 @@ me_zorgo_magic_focus.12 = { # Amten School
     }
     option = { # Fireball E1
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = fireball } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 15 } }
             scope:selected_mage = {
@@ -2214,6 +2596,8 @@ me_zorgo_magic_focus.12 = { # Amten School
     }
     option = { # Blighted Ground - choke the enemy advance
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = blighted_ground } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
@@ -2245,6 +2629,8 @@ me_zorgo_magic_focus.12 = { # Amten School
     }
     option = { # Mudbind - mire the enemy army in place
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = mudbind } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
@@ -2283,6 +2669,8 @@ me_zorgo_magic_focus.12 = { # Amten School
 
     option = { # Frostbite Wind
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = frostbite_wind } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 15 }
@@ -2312,6 +2700,8 @@ me_zorgo_magic_focus.12 = { # Amten School
     }
     option = { # Seismic Tremor
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes } }
             scope:selected_mage = { omni_knows_spell = { SPELL = seismic_tremor } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 35 }
@@ -2341,6 +2731,8 @@ me_zorgo_magic_focus.12 = { # Amten School
     }
     option = { # Glacial Tomb
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = glacial_tomb } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 85 }
@@ -2370,6 +2762,7 @@ me_zorgo_magic_focus.12 = { # Amten School
     }
     option = { # Summon Elemental Colossus
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = summon_elemental_colossus } }
             scope:selected_mage = { 
                 has_variable = elementalist_mastered_var
@@ -2387,7 +2780,7 @@ me_zorgo_magic_focus.12 = { # Amten School
 
         }
         scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 150 } }
-        root = {
+        scope:selected_mage = {
             every_character_unit = {
                 limit = { 
                     is_army = yes
@@ -2418,9 +2811,12 @@ me_zorgo_magic_focus.13 = { # Melodian School
     right_portrait = scope:target
 
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Curse N1
         trigger = {
-            scope:selected_mage = { omni_knows_spell = { SPELL = curse_ii } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:selected_mage = { omni_knows_spell = { SPELL = curse } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = {
                 has_variable = necromancer_t2_unlocked_var
@@ -2446,6 +2842,7 @@ me_zorgo_magic_focus.13 = { # Melodian School
     }
     option = { # Hex N2
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = hex } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = {
@@ -2467,6 +2864,7 @@ me_zorgo_magic_focus.13 = { # Melodian School
     }
     option = { # Curse II N2
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = curse_ii } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 100 } }
             scope:selected_mage = {
@@ -2485,6 +2883,9 @@ me_zorgo_magic_focus.13 = { # Melodian School
     }
     option = { # Death Ray W2
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = death_ray } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 has_variable = warlock_t3_unlocked_var
@@ -2504,27 +2905,31 @@ me_zorgo_magic_focus.13 = { # Melodian School
     }
     option = { # Dark Visions W2
         trigger = {
-            scope:target = { omni_can_afford_spell = { BASE = 50 } }
+            scope:selected_mage = { omni_knows_spell = { SPELL = dark_visions } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 has_variable = warlock_t3_unlocked_var
             }
         }
         scope:target = {
             force_add_trait = melodian_warlock_spell_t2_trait
-            omni_spell_mana_cost_effect = { BASE = 50 }
+            set_variable = { name = omni_spell_active_melodian_warlock_spell_t2_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
             id = me_zorgo_magic_focus.22
             days = 180
         }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
         custom_tooltip = tier_two_spell_tt
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.13.e"
     }
     option = { # Blood Curse
         trigger = {
-            scope:target = { omni_can_afford_spell = { BASE = 50 } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 has_variable = palpan_known_var
                 has_variable = palpan_unlocked_var
@@ -2535,14 +2940,16 @@ me_zorgo_magic_focus.13 = { # Melodian School
         }
         scope:target = {
             force_add_trait = blood_curse_trait
-            omni_spell_mana_cost_effect = { BASE = 50 }
         }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
         custom_tooltip = ponikar_spell_tt
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.13.f"
     }
     option = { # Cursed Rigging - slow their ships and shake their crews
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_navy = yes } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = cursed_rigging } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
@@ -2574,6 +2981,8 @@ me_zorgo_magic_focus.13 = { # Melodian School
     }
     option = { # Fear Hex - break the enemy's nerve
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = fear_hex } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = {
@@ -2608,6 +3017,8 @@ me_zorgo_magic_focus.13 = { # Melodian School
     }
     option = { # Storm Wrack - buffet the whole line
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = storm_wrack } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
@@ -2642,6 +3053,8 @@ me_zorgo_magic_focus.13 = { # Melodian School
     }
     option = { # Hymn of Frailty - sap the enemy skirmishers
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = { omni_caster_melodian_t1 = yes }
         }
@@ -2680,11 +3093,24 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     right_portrait = scope:target
 
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Great Flare of the Setting Sun Sunset Elf
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = great_flare }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 200 } }
             scope:selected_mage = {
-                has_culture = sunset_elf
+                OR = {
+                    omni_knows_spell = { SPELL = great_flare }
+                    has_culture = sunset_elf
+                }
             }
         }
         scope:selected_mage = {
@@ -2701,9 +3127,19 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Blade Storm Alu-Sarian
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = blade_storm }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
-                has_culture = alusarian
+                OR = {
+                    omni_knows_spell = { SPELL = blade_storm }
+                    has_culture = alusarian
+                }
             }
         }
         scope:selected_mage = {
@@ -2718,14 +3154,25 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Steal Gnome
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = steal }
+                }
+            }
+            scope:target = { wealth >= 25 }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 15 } }
             scope:selected_mage = {
                 OR = {
-                    has_culture = saamskoo
-                    has_culture = mudskvas
-                    has_culture = vdaami
-                    has_culture = saav
-                    has_culture = mattaaskuava
+                    omni_knows_spell = { SPELL = steal }
+                    OR = {
+                        has_culture = saamskoo
+                        has_culture = mudskvas
+                        has_culture = vdaami
+                        has_culture = saav
+                        has_culture = mattaaskuava
+                    }
                 }
             }
         }
@@ -2742,16 +3189,27 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Stinging Nettles Thalmori Elf
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = stinging_nettles }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
                 OR = {
-                    has_culture = admadi
-                    has_culture = bogdian
-                    has_culture = hiari
-                    has_culture = senekeloi
-                    has_culture = sidhioi
-                    has_culture = semeladin
-                    has_culture = iyusavr
+                    omni_knows_spell = { SPELL = stinging_nettles }
+                    OR = {
+                        has_culture = admadi
+                        has_culture = bogdian
+                        has_culture = hiari
+                        has_culture = senekeloi
+                        has_culture = sidhioi
+                        has_culture = semeladin
+                        has_culture = iyusavr
+                    }
                 }
             }
         }
@@ -2769,9 +3227,20 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Serpentine Swords Ishtari
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = serpentine_swords }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
-                has_culture = ishtari
+                OR = {
+                    omni_knows_spell = { SPELL = serpentine_swords }
+                    has_culture = ishtari
+                }
             }
         }
         scope:selected_mage = {
@@ -2788,9 +3257,20 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Imperial Dragon's Claw Sovenerian
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = imperial_dragons_claw }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
-                has_culture = sovenerian
+                OR = {
+                    omni_knows_spell = { SPELL = imperial_dragons_claw }
+                    has_culture = sovenerian
+                }
             }
         }
         scope:selected_mage = {
@@ -2807,9 +3287,19 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Sword of Jaoz Zainudian
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = sword_of_jaoz }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
-                has_religion = zainuddian
+                OR = {
+                    omni_knows_spell = { SPELL = sword_of_jaoz }
+                    has_religion = zainuddian
+                }
             }
         }
         scope:selected_mage = {
@@ -2832,9 +3322,19 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Hellas' Light Helluvian
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = hellas_light }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
-                has_religion = helluvian
+                OR = {
+                    omni_knows_spell = { SPELL = hellas_light }
+                    has_religion = helluvian
+                }
             }
         }
         scope:selected_mage = {
@@ -2857,6 +3357,8 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Spectral Sabres Revant
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
                 has_character_modifier = revant_modifier
@@ -2876,8 +3378,10 @@ me_zorgo_magic_focus.14 = { # Folk Magic
     }
     option = { # Blood Rush Blood Angel Girl
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
-            scope:target = {
+            scope:selected_mage = {
                 has_trait = blood_angel_curse_trait
             }
         }
@@ -2929,7 +3433,7 @@ me_zorgo_magic_focus.15 = { # Who is Casting?
                 }
                 omni_character_is_eligible_caster = yes
                 OR = {
-                    omni_can_afford_spell = { BASE = 15 }
+                    omni_can_afford_spell = { BASE = 5 }
                     AND = {
                         has_trait = vampire_trait
                         NOT = { has_variable = omni_vampiric_feeding_cooldown }
@@ -3203,8 +3707,13 @@ me_zorgo_magic_focus.17 = { # Omnic School
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Exorcism H1
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = exorcism } }
+            scope:target = { OR = { has_trait = wishtheon_curse_trait has_trait = blood_angel_curse_trait has_trait = skull_curse_trait has_trait = blood_curse_trait has_trait = vampire_trait has_trait = drow_trait has_trait = deep_gnome_trait has_trait = goblin_trait has_trait = wraith_trait has_trait = necromancer_trait has_trait = warlock_trait has_trait = lich_trait } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 has_variable = hierophant_t2_unlocked_var
@@ -3243,6 +3752,8 @@ me_zorgo_magic_focus.17 = { # Omnic School
     }
     option = { # Revelation H1
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = revelation } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = {
                 has_variable = hierophant_t2_unlocked_var
@@ -3253,6 +3764,7 @@ me_zorgo_magic_focus.17 = { # Omnic School
         }
         scope:target = {
             force_add_trait = omnic_hierophant_spell_t1_trait
+            set_variable = { name = omni_spell_active_omnic_hierophant_spell_t1_trait days = 180 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -3266,6 +3778,8 @@ me_zorgo_magic_focus.17 = { # Omnic School
     }
     option = { # Blessing H2
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = blessing } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 has_variable = hierophant_t3_unlocked_var
@@ -3276,6 +3790,7 @@ me_zorgo_magic_focus.17 = { # Omnic School
         }
         scope:target = {
             force_add_trait = omnic_hierophant_spell_t2_trait
+            set_variable = { name = omni_spell_active_omnic_hierophant_spell_t2_trait days = 365 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -3289,6 +3804,7 @@ me_zorgo_magic_focus.17 = { # Omnic School
     }
     option = { # Harbor Ward - strengthen the home port
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:selected_mage = { omni_knows_spell = { SPELL = harbor_ward } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
@@ -3298,7 +3814,7 @@ me_zorgo_magic_focus.17 = { # Omnic School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        scope:target.employer = {
+        scope:target.country = {
             capital_scope = {
                 if = {
                     limit = { has_province_modifier = omni_harbor_ward_mod }
@@ -3335,8 +3851,13 @@ me_zorgo_magic_focus.18 = { # Aldic School
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Healing Light C1
         trigger = {
+            scope:selected_mage = { omni_knows_spell = { SPELL = healing_light } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { omni_has_minor_curable_ailment = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = {
                 OR = {
@@ -3347,56 +3868,7 @@ me_zorgo_magic_focus.18 = { # Aldic School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
-        scope:target = {
-            if = {
-                limit = { has_trait = schizophrenic }
-                remove_trait = schizophrenic
-            }
-            else_if = {
-                limit = { has_trait = epileptic }
-                remove_trait = epileptic
-            }
-            else_if = {
-                limit = { has_trait = hemorrhagic_fever }
-                remove_trait = hemorrhagic_fever
-            }
-            else_if = {
-                limit = { has_trait = vampiric_fever }
-                remove_trait = vampiric_fever
-            }
-            else_if = {
-                limit = { has_trait = plague }
-                remove_trait = plague
-            }
-            else_if = {
-                limit = { has_trait = mentagra }
-                remove_trait = mentagra
-            }
-            else_if = {
-                limit = { has_trait = pox }
-                remove_trait = pox
-            }
-            else_if = {
-                limit = { has_trait = dysentery }
-                remove_trait = dysentery
-            }
-            else_if = {
-                limit = { has_trait = infection }
-                remove_trait = infection
-            }
-            else_if = {
-                limit = { has_trait = inflammation }
-                remove_trait = inflammation
-            }
-            else_if = {
-                limit = { has_trait = pneumonia }
-                remove_trait = pneumonia
-            }
-            else_if = {
-                limit = { has_trait = gangrene }
-                remove_trait = gangrene
-            }
-        }
+        scope:target = { omni_remove_one_minor_curable_ailment = yes }
         custom_tooltip = omni_healing_light_spell_effect_tt
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = 75_mana_tt
@@ -3404,7 +3876,9 @@ me_zorgo_magic_focus.18 = { # Aldic School
     }
     option = { # Healing Light II C2
         trigger = {
-            scope:selected_mage = { omni_knows_spell = { SPELL = healing_light } }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { omni_has_curable_ailment = yes }
+            scope:selected_mage = { omni_knows_spell = { SPELL = healing_light_ii } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 100 } }
             scope:selected_mage = {
                 OR = {
@@ -3415,60 +3889,7 @@ me_zorgo_magic_focus.18 = { # Aldic School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 100 }
         }
-        scope:target = {
-            if = {
-                limit = { has_trait = invalid }
-                remove_trait = invalid
-            }
-            else_if = {
-                limit = { has_trait = gangrene }
-                remove_trait = gangrene
-            }
-            else_if = {
-                limit = { has_trait = arthritis }
-                remove_trait = arthritis
-            }
-            else_if = {
-                limit = { has_trait = leper }
-                remove_trait = leper
-            }
-            else_if = {
-                limit = { has_trait = blind }
-                remove_trait = blind
-            }
-            else_if = {
-                limit = { has_trait = paralysis }
-                remove_trait = paralysis
-            }
-            else_if = {
-                limit = { has_trait = brain_damaged }
-                remove_trait = brain_damaged
-            }
-            else_if = {
-                limit = { has_trait = dementia }
-                remove_trait = dementia
-            }
-            else_if = {
-                limit = { has_trait = cancer }
-                remove_trait = cancer
-            }
-            else_if = {
-                limit = { has_trait = diphtheria }
-                remove_trait = diphtheria
-            }
-            else_if = {
-                limit = { has_trait = cancer }
-                remove_trait = cancer
-            }
-            else_if = {
-                limit = { has_trait = gout }
-                remove_trait = gout
-            }
-            else_if = {
-                limit = { has_trait = drow_mushroom_spots_trait }
-                remove_trait = drow_mushroom_spots_trait
-            }
-        }
+        scope:target = { omni_remove_one_curable_ailment = yes }
         custom_tooltip = omni_healing_light_ii_spell_effect_tt
         custom_tooltip = tier_two_spell_tt
         custom_tooltip = 100_mana_tt
@@ -3476,6 +3897,7 @@ me_zorgo_magic_focus.18 = { # Aldic School
     }
     option = { # Vitality C2
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = vitality } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 100 } }
             scope:selected_mage = {
@@ -3497,6 +3919,7 @@ me_zorgo_magic_focus.18 = { # Aldic School
     }
     option = { # Charm Charm
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 OR = {
@@ -3527,6 +3950,7 @@ me_zorgo_magic_focus.18 = { # Aldic School
     }
     option = { # Unrest Cleansing - soothe the realm
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:selected_mage = { omni_knows_spell = { SPELL = unrest_cleansing } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
@@ -3536,7 +3960,7 @@ me_zorgo_magic_focus.18 = { # Aldic School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        scope:target.employer = {
+        scope:target.country = {
             if = {
                 limit = { has_country_modifier = omni_unrest_cleansing_mod }
                 remove_country_modifier = omni_unrest_cleansing_mod
@@ -3571,8 +3995,11 @@ me_zorgo_magic_focus.19 = { # Amten School
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Nature's Vigor (Druid) - heal a character in your realm
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = { has_variable = druid_t2_unlocked_var }
         }
@@ -3589,6 +4016,7 @@ me_zorgo_magic_focus.19 = { # Amten School
     }
     option = { # Aegis of Stone (Elementalist) - temporary defensive/economic buff
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = { has_variable = elementalist_t2_unlocked_var }
         }
@@ -3597,6 +4025,7 @@ me_zorgo_magic_focus.19 = { # Amten School
         }
         scope:target = {
             force_add_trait = stone_magic_trait
+            set_variable = { name = omni_spell_active_stone_magic_trait days = 365 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -3610,6 +4039,7 @@ me_zorgo_magic_focus.19 = { # Amten School
     }
     option = { # Migration Beacon - draw settlers to the capital
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:selected_mage = { omni_knows_spell = { SPELL = migration_beacon } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = { has_variable = druid_t2_unlocked_var }
@@ -3617,7 +4047,7 @@ me_zorgo_magic_focus.19 = { # Amten School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        scope:target.employer = {
+        scope:target.country = {
             capital_scope = {
                 if = {
                     limit = { has_province_modifier = omni_migration_beacon_mod }
@@ -3636,6 +4066,7 @@ me_zorgo_magic_focus.19 = { # Amten School
     }
     option = { # Weathercall Growth - bless the harvest
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:selected_mage = { omni_knows_spell = { SPELL = weathercall_growth } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = { has_variable = elementalist_t2_unlocked_var }
@@ -3643,7 +4074,7 @@ me_zorgo_magic_focus.19 = { # Amten School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
-        scope:target.employer = {
+        scope:target.country = {
             capital_scope = {
                 if = {
                     limit = { has_province_modifier = omni_weathercall_growth_mod }
@@ -3681,8 +4112,11 @@ me_zorgo_magic_focus.20 = { # Melodian School
     left_portrait = scope:selected_mage
     right_portrait = scope:target
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Bestow Rage (Warlock) - temporary martial buff on a general
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = { has_variable = warlock_t2_unlocked_var }
         }
@@ -3691,6 +4125,7 @@ me_zorgo_magic_focus.20 = { # Melodian School
         }
         scope:target = {
             force_add_trait = melodian_warlock_spell_t1_trait
+            set_variable = { name = omni_spell_active_melodian_warlock_spell_t1_trait days = 365 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -3704,6 +4139,7 @@ me_zorgo_magic_focus.20 = { # Melodian School
     }
     option = { # Withering Touch (Necromancer) - hostile health drain
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = { has_variable = necromancer_t2_unlocked_var }
         }
@@ -3740,12 +4176,24 @@ me_zorgo_magic_focus.21 = { # Folk Magic
     right_portrait = scope:target
 
 
+    immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
+
     option = { # Hypnosis Ishtari
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = hypnosis }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 OR = {
-                    has_culture = ishtari
+                    omni_knows_spell = { SPELL = hypnosis }
+                    OR = {
+                        has_culture = ishtari
+                    }
                 }
             }
         }
@@ -3772,9 +4220,19 @@ me_zorgo_magic_focus.21 = { # Folk Magic
     }
     option = { # Cafea's Grace
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = cafeas_grace }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 15 } }
             scope:selected_mage = {
-                has_religion = mother_earth_pantheon
+                OR = {
+                    omni_knows_spell = { SPELL = cafeas_grace }
+                    has_religion = mother_earth_pantheon
+                }
             }
         }
         scope:selected_mage = {
@@ -3782,6 +4240,7 @@ me_zorgo_magic_focus.21 = { # Folk Magic
         }
         scope:target = {
             force_add_trait = aneic_folk_trait
+            set_variable = { name = omni_spell_active_aneic_folk_trait days = 365 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -3795,21 +4254,31 @@ me_zorgo_magic_focus.21 = { # Folk Magic
     }
     option = { # Atheus' Blessing
         trigger = {
+            scope:selected_mage = {
+                trigger_if = {
+                    limit = { has_variable = omni_folk_practitioner }
+                    omni_knows_spell = { SPELL = atheus_blessing }
+                }
+            }
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 15 } }
             scope:selected_mage = {
                 OR = {
-                    has_culture = malvanie
-                    has_culture = usrevani
-                    has_culture = alu
-                    has_culture = sreirrie
-                    has_culture = atheusian
-                    has_culture = enasthean
-                    has_culture = cymevan
-                    has_culture = vulawezin
-                    has_culture = shallashim
-                    has_culture = cyreli
-                    has_culture = latherite
-                    has_culture = ustesoi
+                    omni_knows_spell = { SPELL = atheus_blessing }
+                    OR = {
+                        has_culture = malvanie
+                        has_culture = usrevani
+                        has_culture = alu
+                        has_culture = sreirrie
+                        has_culture = atheusian
+                        has_culture = enasthean
+                        has_culture = cymevan
+                        has_culture = vulawezin
+                        has_culture = shallashim
+                        has_culture = cyreli
+                        has_culture = latherite
+                        has_culture = ustesoi
+                    }
                 }
             }
         }
@@ -3818,6 +4287,7 @@ me_zorgo_magic_focus.21 = { # Folk Magic
         }
         scope:target = {
             force_add_trait = high_elf_folk_trait
+            set_variable = { name = omni_spell_active_high_elf_folk_trait days = 365 }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -3838,7 +4308,7 @@ me_zorgo_magic_focus.21 = { # Folk Magic
             scope:target = {
                 is_adult = yes
                 is_ruler = yes
-                employer = root
+                country = root
             }
         }
         scope:selected_mage = {
@@ -3868,34 +4338,40 @@ me_zorgo_magic_focus.21 = { # Folk Magic
 
 # OTHER -------------------------------------------------
 
-me_zorgo_magic_focus.22 = { # REMOVE TRAITS HIDDEN EVENT
+me_zorgo_magic_focus.22 = { # Remove only expired temporary spell traits.
     type = country_event
     hidden = yes
-
-
     immediate = {
-        scope:remove_magic_target = {
-            remove_trait = omnic_diviner_spell_t1_trait
-            remove_trait = taanka_avatar_trait
-            remove_trait = dragonscale_personal_trait
-            remove_trait = aldic_cleric_spell_t1_trait
-            remove_trait = aldic_illusionist_spell_t1_trait
-            remove_trait = charm_magic_self_trait
-            remove_trait = stone_magic_trait
-            remove_trait = melodian_warlock_spell_t1_trait
-            remove_trait = copper_halfling_folk_trait
-            remove_trait = austropetolian_folk_trait
-            remove_trait = milon_folk_trait
-            remove_trait = drow_folk_trait
-            remove_trait = dragkhan_folk_trait
-            remove_trait = vampire_folk_trait
-            remove_trait = viktriec_folk_trait
-            remove_trait = northlander_folk_trait
-            remove_trait = omnic_hierophant_spell_t1_trait
-            remove_trait = omnic_hierophant_spell_t2_trait
-            remove_trait = high_elf_folk_trait
-            remove_trait = aneic_folk_trait
-            remove_trait = melodian_warlock_spell_t2_trait
+        # Delayed events retain character scopes after death; never touch alive data then.
+        if = {
+            limit = { exists = scope:remove_magic_target }
+            scope:remove_magic_target = {
+                if = {
+                    limit = { is_alive = yes }
+                        if = { limit = { has_trait = omnic_diviner_spell_t1_trait NOT = { has_variable = omni_spell_active_omnic_diviner_spell_t1_trait } } remove_trait = omnic_diviner_spell_t1_trait }
+                        if = { limit = { has_trait = taanka_avatar_trait NOT = { has_variable = omni_spell_active_taanka_avatar_trait } } remove_trait = taanka_avatar_trait }
+                        if = { limit = { has_trait = dragonscale_personal_trait NOT = { has_variable = omni_spell_active_dragonscale_personal_trait } } remove_trait = dragonscale_personal_trait }
+                        if = { limit = { has_trait = aldic_cleric_spell_t1_trait NOT = { has_variable = omni_spell_active_aldic_cleric_spell_t1_trait } } remove_trait = aldic_cleric_spell_t1_trait }
+                        if = { limit = { has_trait = aldic_illusionist_spell_t1_trait NOT = { has_variable = omni_spell_active_aldic_illusionist_spell_t1_trait } } remove_trait = aldic_illusionist_spell_t1_trait }
+                        if = { limit = { has_trait = charm_magic_self_trait NOT = { has_variable = omni_spell_active_charm_magic_self_trait } } remove_trait = charm_magic_self_trait }
+                        if = { limit = { has_trait = stone_magic_trait NOT = { has_variable = omni_spell_active_stone_magic_trait } } remove_trait = stone_magic_trait }
+                        if = { limit = { has_trait = melodian_warlock_spell_t1_trait NOT = { has_variable = omni_spell_active_melodian_warlock_spell_t1_trait } } remove_trait = melodian_warlock_spell_t1_trait }
+                        if = { limit = { has_trait = copper_halfling_folk_trait NOT = { has_variable = omni_spell_active_copper_halfling_folk_trait } } remove_trait = copper_halfling_folk_trait }
+                        if = { limit = { has_trait = austropetolian_folk_trait NOT = { has_variable = omni_spell_active_austropetolian_folk_trait } } remove_trait = austropetolian_folk_trait }
+                        if = { limit = { has_trait = milon_folk_trait NOT = { has_variable = omni_spell_active_milon_folk_trait } } remove_trait = milon_folk_trait }
+                        if = { limit = { has_trait = drow_folk_trait NOT = { has_variable = omni_spell_active_drow_folk_trait } } remove_trait = drow_folk_trait }
+                        if = { limit = { has_trait = dragkhan_folk_trait NOT = { has_variable = omni_spell_active_dragkhan_folk_trait } } remove_trait = dragkhan_folk_trait }
+                        if = { limit = { has_trait = vampire_folk_trait NOT = { has_variable = omni_spell_active_vampire_folk_trait } } remove_trait = vampire_folk_trait }
+                        if = { limit = { has_trait = viktriec_folk_trait NOT = { has_variable = omni_spell_active_viktriec_folk_trait } } remove_trait = viktriec_folk_trait }
+                        if = { limit = { has_trait = northlander_folk_trait NOT = { has_variable = omni_spell_active_northlander_folk_trait } } remove_trait = northlander_folk_trait }
+                        if = { limit = { has_trait = omnic_hierophant_spell_t1_trait NOT = { has_variable = omni_spell_active_omnic_hierophant_spell_t1_trait } } remove_trait = omnic_hierophant_spell_t1_trait }
+                        if = { limit = { has_trait = omnic_hierophant_spell_t2_trait NOT = { has_variable = omni_spell_active_omnic_hierophant_spell_t2_trait } } remove_trait = omnic_hierophant_spell_t2_trait }
+                        if = { limit = { has_trait = high_elf_folk_trait NOT = { has_variable = omni_spell_active_high_elf_folk_trait } } remove_trait = high_elf_folk_trait }
+                        if = { limit = { has_trait = aneic_folk_trait NOT = { has_variable = omni_spell_active_aneic_folk_trait } } remove_trait = aneic_folk_trait }
+                        if = { limit = { has_trait = melodian_warlock_spell_t2_trait NOT = { has_variable = omni_spell_active_melodian_warlock_spell_t2_trait } } remove_trait = melodian_warlock_spell_t2_trait }
+                        if = { limit = { has_trait = blood_angel_folk_trait NOT = { has_variable = omni_spell_active_blood_angel_folk_trait } } remove_trait = blood_angel_folk_trait }
+                }
+            }
         }
     }
 }
@@ -4083,8 +4559,15 @@ me_zorgo_magic_focus.27 = { # Remove Mana Sickness
 
 
     immediate = {
-        scope:foolish_mage = {
-            remove_trait = magical_sickness_trait
+        # Delayed events retain character scopes after death; never touch alive data then.
+        if = {
+            limit = { exists = scope:foolish_mage }
+            scope:foolish_mage = {
+                if = {
+                    limit = { is_alive = yes }
+                        remove_trait = magical_sickness_trait
+                }
+            }
         }
     }
 }
@@ -4147,9 +4630,8 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     immediate = {
         if = {
             limit = {
-                exists = scope:battle_spell_context
                 exists = scope:target
-                scope:target = { omni_character_is_eligible_caster = yes }
+                scope:target = { omni_character_is_eligible_caster = yes omni_can_afford_spell = { BASE = 5 } }
             }
             scope:target = { save_scope_as = selected_mage }
         }
@@ -4165,97 +4647,16 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         has_office = office_apothecary
                     }
                     omni_character_is_eligible_caster = yes
-                    omni_can_afford_spell = { BASE = 15 }
+                    omni_can_afford_spell = { BASE = 5 }
                 }
                 save_scope_as = selected_mage
             }
         }
     }
 
-    option = { # Fast Travel - fold space and return the army to the capital
-        trigger = {
-            scope:selected_mage = { omni_can_afford_spell = { BASE = 15 } }
-            # Diviner: fold space and find the shortest route home.
-            scope:selected_mage = { omni_caster_omnic_t1 = yes }
-            scope:target = {
-                any_character_unit = {
-                    is_army = yes
-                    in_combat = no
-                }
-            }
-        }
-        hidden_effect = {
-            scope:target = {
-                random_character_unit = {
-                    limit = {
-                        is_army = yes
-                        in_combat = no
-                    }
-                    unit_location = { save_scope_as = teleport_origin }
-                }
-            }
-        }
-        scope:selected_mage = {
-            if = {
-                limit = { scope:target.employer.capital_scope = { is_in_area = scope:teleport_origin } }
-                omni_spell_mana_cost_effect = { BASE = 15 }
-            }
-            else_if = {
-                limit = { scope:teleport_origin = { is_on_neighboring_or_same_continent = { PROVINCE = scope:target.employer.capital_scope } } }
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            else_if = {
-                limit = { scope:teleport_origin = { is_on_neighboring_continent = { PROVINCE = scope:target.employer.capital_scope } } }
-                omni_spell_mana_cost_effect = { BASE = 100 }
-            }
-            else = {
-                omni_spell_mana_cost_effect = { BASE = 200 }
-            }
-        }
-        scope:target = {
-            every_character_unit = {
-                limit = { is_army = yes }
-                if = {
-                    limit = { scope:target.employer.capital_scope = { is_in_area = scope:teleport_origin } }
-                    add_unit_modifier = {
-                        name = omni_teleport_spell_mod
-                        duration = 7
-                    }
-                    add_morale = -1
-                }
-                else_if = {
-                    limit = { scope:teleport_origin = { is_on_neighboring_or_same_continent = { PROVINCE = scope:target.employer.capital_scope } } }
-                    add_unit_modifier = {
-                        name = omni_teleport_spell_mod
-                        duration = 7
-                    }
-                    add_morale = -4
-                }
-                else_if = {
-                    limit = { scope:teleport_origin = { is_on_neighboring_continent = { PROVINCE = scope:target.employer.capital_scope } } }
-                    add_unit_modifier = {
-                        name = omni_teleport_spell_mod
-                        duration = 7
-                    }
-                    add_morale = -8
-                }
-                else = {
-                    add_unit_modifier = {
-                        name = omni_teleport_spell_mod
-                        duration = 7
-                    }
-                    add_morale = 0.5
-                }
-            }
-        }
-        custom_tooltip = me_zorgo_magic_focus.36_tooltip
-        custom_tooltip = omniluxia_magic_teleport_desc
-        trigger_event = { id = omniluxia_teleport.1 }
-        name = "omniluxia_magic_teleport"
-    }
-
     option = { # Dread Omen - -25% morale to the opposing force in live combat
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             # Hierophant: an omen that breaks the enemy's morale.
             scope:selected_mage = { omni_caster_omnic_t2 = yes }
@@ -4267,9 +4668,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4315,6 +4713,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Crushing Terror - -50% morale to the opposing force in live combat
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 100 } }
             # Necromancer: terror and death are Melodian workings.
             scope:selected_mage = { omni_caster_melodian_t3 = yes }
@@ -4326,9 +4725,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 100 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4374,6 +4770,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Death Hex - 75% chance to kill the enemy commander in live combat
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 175 } }
             scope:selected_mage = {
                 has_trait = archmage_trait
@@ -4387,9 +4784,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 175 }
-        }
-        root = {
-
         }
         scope:battle_enemy_target = {
             random_list = {
@@ -4410,6 +4804,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Igniting Spark - Melodian battle damage over the opposing force
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = igniting_spark } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 10 }
@@ -4423,9 +4818,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 10 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4469,6 +4861,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Fireball - Melodian battle damage over the opposing force
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = fireball } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 30 }
@@ -4482,9 +4875,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 30 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4539,6 +4929,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Plague Miasma - Melodian battle damage over the opposing force
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = plague_miasma } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 75 }
@@ -4552,9 +4943,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 75 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4598,6 +4986,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Cataclysmic Eruption - Melodian battle damage over the opposing force
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { omni_knows_spell = { SPELL = cataclysmic_eruption } }
             scope:selected_mage = {
                 has_trait = archmage_trait
@@ -4612,9 +5001,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 165 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4669,6 +5055,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Panic Rout - break the opposing force's nerve
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 60 }
                 omni_caster_aldic_t2 = yes
@@ -4681,9 +5068,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 60 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4730,6 +5114,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Duel of Wills - personal battle-magic contest between commanders
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 50 }
                 # Hierophant: a contest of spiritual will.
@@ -4744,9 +5129,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
-        }
-        root = {
-
         }
         random_list = {
             55 = {
@@ -4795,6 +5177,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Command Confusion - scramble enemy orders
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 50 }
                 # Illusionist: confusion and false orders.
@@ -4808,9 +5191,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4857,6 +5237,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Blood Price - costly Melodian battle curse
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 90 }
                 omni_caster_melodian_t3 = yes
@@ -4870,9 +5251,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 90 }
             add_health = -1.5
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -4928,6 +5306,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
     }
     option = { # Turn Feet to Mud - absurd battlefield sabotage
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 25 }
                 OR = {
@@ -4944,9 +5323,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 25 }
-        }
-        root = {
-
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
@@ -5008,9 +5384,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     immediate = {
         if = {
             limit = {
-                exists = scope:battle_spell_context
                 exists = scope:target
-                scope:target = { omni_character_is_eligible_caster = yes }
+                scope:target = { omni_character_is_eligible_caster = yes omni_can_afford_spell = { BASE = 5 } }
             }
             scope:target = { save_scope_as = selected_mage }
         }
@@ -5018,7 +5393,7 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
             random_character = {
                 limit = {
                     omni_character_is_eligible_caster = yes
-                    omni_can_afford_spell = { BASE = 15 }
+                    omni_can_afford_spell = { BASE = 5 }
                 }
                 save_scope_as = selected_mage
             }
@@ -5027,6 +5402,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
 
     option = { # Battle Surge
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = battle_surge }
                 omni_can_afford_spell = { BASE = 15 }
@@ -5059,6 +5436,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     }
     option = { # Battle Hymn
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = battle_hymn }
                 omni_can_afford_spell = { BASE = 25 }
@@ -5092,6 +5471,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     }
     option = { # Iron Resolve
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = {
                 omni_can_afford_spell = { BASE = 50 }
                 # Cleric: disciplined resolve and protection.
@@ -5123,6 +5504,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     }
     option = { # Heroic Resonance
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = heroic_resonance }
                 omni_can_afford_spell = { BASE = 50 }
@@ -5156,6 +5539,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     }
     option = { # Blessing of War
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = blessing_of_war }
                 omni_can_afford_spell = { BASE = 75 }
@@ -5197,6 +5582,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     # ----------------------------------------------------------------------
     option = { # Arcane Aegis - a shield of layered wards
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = arcane_aegis }
                 omni_can_afford_spell = { BASE = 25 }
@@ -5229,6 +5616,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     }
     option = { # Battle Clarity - sharpen the line's discipline and recovery
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = battle_clarity }
                 omni_can_afford_spell = { BASE = 25 }
@@ -5261,6 +5650,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     }
     option = { # Spectral Boarders - phantom crews storm the enemy decks
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_navy = yes } }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = spectral_boarders }
                 omni_can_afford_spell = { BASE = 50 }
@@ -5294,6 +5685,7 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     }
     option = { # Conjured Supply - call food and fodder out of empty air
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = conjured_supply }
                 omni_can_afford_spell = { BASE = 25 }
@@ -5309,14 +5701,9 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
             }
         }
         scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 25 } }
-        scope:target = {
-            every_character_unit = {
-                limit = {
-                    OR = { is_army = yes is_navy = yes }
-                }
-                if = { limit = { has_unit_modifier = omni_conjured_supply_spell_mod } remove_unit_modifier = omni_conjured_supply_spell_mod }
-                add_unit_modifier = { name = omni_conjured_supply_spell_mod duration = 30 }
-            }
+        root = {
+            if = { limit = { has_country_modifier = omni_conjured_supply_spell_mod } remove_country_modifier = omni_conjured_supply_spell_mod }
+            add_country_modifier = { name = omni_conjured_supply_spell_mod duration = 30 }
         }
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = omni_conjured_supply_tt
@@ -5326,6 +5713,35 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     option = {
         name = "me_zorgo_magic_focus.2.z.2"
         custom_tooltip = me_zorgo_magic_focus.2_tooltip
+    }
+    option = { # Fast March - accelerate an army without teleporting it.
+        trigger = {
+            scope:selected_mage = {
+                is_alive = yes
+                omni_character_is_eligible_caster = yes
+                omni_can_afford_spell = { BASE = 15 }
+                omni_caster_omnic_t1 = yes
+            }
+            scope:target = {
+                any_character_unit = {
+                    is_army = yes
+                    unit_owner = { this = root }
+                    in_combat = no
+                }
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 15 } }
+        scope:target = {
+            every_character_unit = {
+                limit = { is_army = yes unit_owner = { this = root } in_combat = no }
+                if = { limit = { has_unit_modifier = omni_teleport_spell_mod } remove_unit_modifier = omni_teleport_spell_mod }
+                add_unit_modifier = { name = omni_teleport_spell_mod duration = 7 }
+                add_morale = -1
+            }
+        }
+        custom_tooltip = omniluxia_magic_teleport_desc
+        custom_tooltip = 15_mana_tt
+        name = "omniluxia_magic_teleport"
     }
 }
 
@@ -5352,6 +5768,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
     option = { # Wasting Rot - starve and weaken the garrison
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = wasting_rot } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             # Necromancer: wasting rot weakens the garrison and its stores.
@@ -5398,6 +5817,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
     option = { # Breaching Tremor - shatter the walls (fortification defence)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = breaching_tremor } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             # Elementalist: shattering stone and fortifications.
@@ -5445,6 +5867,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
     option = { # Storm of the Siege - bless the besieging army for the assault
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = storm_of_the_siege } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             # Warlock: a martial blessing for the assault.
@@ -5493,6 +5918,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Burning Pitch - make the defenders choke on smoke and fire
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = burning_pitch } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             # Elementalist: fire and smoke against the walls.
@@ -5527,6 +5955,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Counterward - disrupt the defenders' protections
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = counterward } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             # Illusionist: counterwards and false protections.
@@ -5561,6 +5992,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Illusion Walls - make the settlement seem harder to breach
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes owner = root } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = illusion_walls } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             # Illusionist: make the walls appear stronger than they are.
@@ -5573,7 +6007,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
             random_character_unit = {
                 limit = {
                     is_army = yes
-                    unit_location = { has_siege = yes }
+                    unit_location = { has_siege = yes owner = root }
                 }
                 unit_location = {
                     save_scope_as = siege_magic_target
@@ -5597,6 +6031,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
     option = { # Igniting Spark (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = igniting_spark } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 10 } }
             scope:selected_mage = { omni_caster_melodian_t1 = yes }
@@ -5618,6 +6055,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Corrosive Rain (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = corrosive_rain } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
             scope:selected_mage = { omni_caster_aldic_t2 = yes }
@@ -5629,7 +6069,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 limit = { is_army = yes unit_location = { has_siege = yes } }
                 unit_location = {
                     if = { limit = { has_province_modifier = omni_corrosive_rain_siege_mod } remove_province_modifier = omni_corrosive_rain_siege_mod }
-                    add_province_modifier = { name = omni_corrosive_rain_siege_mod duration = 365 }
+                    add_province_modifier = { name = omni_corrosive_rain_siege_mod duration = 90 }
                 }
             }
         }
@@ -5639,6 +6079,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Fireball (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = fireball } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 30 } }
             scope:selected_mage = { omni_caster_melodian_t2 = yes }
@@ -5650,7 +6093,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 limit = { is_army = yes unit_location = { has_siege = yes } }
                 unit_location = {
                     if = { limit = { has_province_modifier = omni_fireball_siege_mod } remove_province_modifier = omni_fireball_siege_mod }
-                    add_province_modifier = { name = omni_fireball_siege_mod duration = 365 }
+                    add_province_modifier = { name = omni_fireball_siege_mod duration = 90 }
                 }
             }
         }
@@ -5660,6 +6103,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Seismic Tremor (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = seismic_tremor } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 35 } }
             scope:selected_mage = { omni_caster_amten_t2 = yes }
@@ -5671,7 +6117,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 limit = { is_army = yes unit_location = { has_siege = yes } }
                 unit_location = {
                     if = { limit = { has_province_modifier = omni_seismic_tremor_siege_mod } remove_province_modifier = omni_seismic_tremor_siege_mod }
-                    add_province_modifier = { name = omni_seismic_tremor_siege_mod duration = 365 }
+                    add_province_modifier = { name = omni_seismic_tremor_siege_mod duration = 90 }
                     siege = { add_breach = 1 }
                 }
             }
@@ -5682,6 +6128,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Plague Miasma (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = plague_miasma } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = { omni_caster_melodian_t3 = yes }
@@ -5693,7 +6142,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 limit = { is_army = yes unit_location = { has_siege = yes } }
                 unit_location = {
                     if = { limit = { has_province_modifier = omni_plague_miasma_siege_mod } remove_province_modifier = omni_plague_miasma_siege_mod }
-                    add_province_modifier = { name = omni_plague_miasma_siege_mod duration = 365 }
+                    add_province_modifier = { name = omni_plague_miasma_siege_mod duration = 90 }
                 }
             }
         }
@@ -5703,6 +6152,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Glacial Tomb (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = glacial_tomb } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 85 } }
             scope:selected_mage = { omni_caster_amten_t3 = yes }
@@ -5714,7 +6166,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 limit = { is_army = yes unit_location = { has_siege = yes } }
                 unit_location = {
                     if = { limit = { has_province_modifier = omni_glacial_tomb_siege_mod } remove_province_modifier = omni_glacial_tomb_siege_mod }
-                    add_province_modifier = { name = omni_glacial_tomb_siege_mod duration = 365 }
+                    add_province_modifier = { name = omni_glacial_tomb_siege_mod duration = 90 }
                 }
             }
         }
@@ -5724,6 +6176,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Meteor Strike (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = meteor_strike } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 95 } }
             scope:selected_mage = { omni_caster_aldic_t3 = yes }
@@ -5735,7 +6190,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 limit = { is_army = yes unit_location = { has_siege = yes } }
                 unit_location = {
                     if = { limit = { has_province_modifier = omni_meteor_strike_mod } remove_province_modifier = omni_meteor_strike_mod }
-                    add_province_modifier = { name = omni_meteor_strike_mod duration = 365 }
+                    add_province_modifier = { name = omni_meteor_strike_mod duration = 90 }
                     siege = { add_breach = 1 }
                 }
             }
@@ -5746,6 +6201,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Word of Annihilation (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = word_of_annihilation } }
             scope:selected_mage = { 
                 has_variable = illusionist_mastered_var
@@ -5769,6 +6227,8 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Summon Elemental Colossus (Siege)
         trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = summon_elemental_colossus } }
             scope:selected_mage = { 
                 has_variable = elementalist_mastered_var
@@ -5778,7 +6238,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
         }
         scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 150 } }
-        root = {
+        scope:selected_mage = {
             every_character_unit = {
                 limit = { 
                     is_army = yes
@@ -5786,7 +6246,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                     unit_location = { has_siege = yes }
                 }
                 if = { limit = { has_unit_modifier = omni_elemental_colossus_mod } remove_unit_modifier = omni_elemental_colossus_mod }
-                add_unit_modifier = { name = omni_elemental_colossus_mod duration = 365 }
+                add_unit_modifier = { name = omni_elemental_colossus_mod duration = 30 }
             }
         }
         custom_tooltip = tier_four_spell_tt
@@ -5795,6 +6255,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Cataclysmic Eruption (Siege)
         trigger = {
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = cataclysmic_eruption } }
             scope:selected_mage = { 
                 has_variable = warlock_mastered_var
@@ -5811,7 +6274,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                     add_civilization_value = -10
                     siege = { add_breach = 1 }
                     if = { limit = { has_province_modifier = omni_cataclysmic_eruption_siege_mod } remove_province_modifier = omni_cataclysmic_eruption_siege_mod }
-                    add_province_modifier = { name = omni_cataclysmic_eruption_siege_mod duration = 3650 }
+                    add_province_modifier = { name = omni_cataclysmic_eruption_siege_mod duration = 90 }
                 }
             }
         }
@@ -5886,7 +6349,7 @@ me_zorgo_magic_focus.31 = { # AI: a besieging mage-general auto-casts a siege sp
         is_ai = yes
         war = yes
         any_army = {
-            unit_location = { has_siege = yes }
+            unit_location = { has_siege = yes NOT = { omni_province_is_warded = yes } }
             omni_unit_commander_can_cast_trigger = { BASE = 25 }
         }
     }
@@ -5895,7 +6358,7 @@ me_zorgo_magic_focus.31 = { # AI: a besieging mage-general auto-casts a siege sp
         save_scope_as = caster_country
         every_army = {
             limit = {
-                unit_location = { has_siege = yes }
+                unit_location = { has_siege = yes NOT = { omni_province_is_warded = yes } }
                 omni_unit_commander_can_cast_trigger = { BASE = 25 }
             }
             unit_location = { save_scope_as = omni_siege_province }
@@ -5960,7 +6423,7 @@ me_zorgo_magic_focus.35 = { # AI: mage-generals auto-cast friendly battle buffs 
         is_ai = yes
         war = yes
         any_army = {
-            omni_unit_commander_can_cast_trigger = { BASE = 25 }
+            omni_unit_commander_can_cast_trigger = { BASE = 15 }
         }
     }
 
@@ -5968,7 +6431,7 @@ me_zorgo_magic_focus.35 = { # AI: mage-generals auto-cast friendly battle buffs 
         save_scope_as = caster_country
         every_army = {
             limit = {
-                omni_unit_commander_can_cast_trigger = { BASE = 25 }
+                omni_unit_commander_can_cast_trigger = { BASE = 15 }
             }
             commander = {
                 omni_ai_battlecast_effect = yes
@@ -5999,7 +6462,7 @@ me_zorgo_magic_focus.37 = { # AI: battle mages auto-cast from live combat
             }
             in_combat = yes
         }
-        omni_can_afford_spell = { BASE = 25 }
+        omni_can_afford_spell = { BASE = 15 }
     }
 
     immediate = {
@@ -6021,6 +6484,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
     # Each blessing is a year-long country modifier; recasting refreshes it.
     option = { # Sword of Zanis - bless the infantry's blades
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = sword_of_zanis } }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = { omni_caster_omnic_t1 = yes }
@@ -6046,6 +6510,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Light of True Faith - speed conversion of the faithless
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = light_of_true_faith } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = { omni_caster_omnic_t2 = yes }
@@ -6071,6 +6536,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Divine Ceremonies - contentment across the realm
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = divine_ceremonies } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = { omni_caster_omnic_t3 = yes }
@@ -6096,6 +6562,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Hand of Adaralu - nurture the people
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = hand_of_adaralu } }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = { omni_caster_aldic_t1 = yes }
@@ -6121,6 +6588,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Golden Fingers of the Pharon - enrich the treasury
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = golden_fingers_of_the_pharon } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = { omni_caster_aldic_t2 = yes }
@@ -6146,6 +6614,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Arrows of Lavas - guide arrows in the deep woods
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = arrows_of_lavas } }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = { omni_caster_amten_t1 = yes }
@@ -6171,6 +6640,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Feast of Ugone - bountiful harvests
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = feast_of_ugone } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = { omni_caster_amten_t2 = yes }
@@ -6196,6 +6666,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Magical Construction - stone that shapes itself
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = magical_construction } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = { omni_caster_amten_t3 = yes }
@@ -6221,6 +6692,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Winds of Pedentrutzu - fill the fleet's sails
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = winds_of_pedentrutzu } }
             scope:target = { omni_can_afford_spell = { BASE = 25 } }
             scope:target = { omni_caster_amten_t1 = yes }
@@ -6246,6 +6718,7 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     option = { # Hammer of Melodias - fury for the assault
         trigger = {
+            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
 			scope:target = { omni_knows_spell = { SPELL = hammer_of_melodias } }
             scope:target = { omni_can_afford_spell = { BASE = 50 } }
             scope:target = { omni_caster_melodian_t2 = yes }

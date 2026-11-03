@@ -15,11 +15,17 @@ omni_annual_character_equipment_check = {
 	if = {
 		limit = {
 			wealth >= 40
+			omni_item_registry_ready = yes
 			exists = employer
-			NOT = { is_ruler = yes employer = { is_ai = no } }
+			# Skip only the HUMAN player's ruler (they shop via the Items menu).
+			# NOT with several children is a NOR in Jomini, so the old
+			# NOT = { is_ruler = yes employer = { is_ai = no } } excluded EVERY ruler,
+			# AI included, plus every character employed by the player.
+			NOT = { AND = { is_ruler = yes employer = { is_ai = no } } }
 			NOT = { has_variable = omni_equipment_checked_recently }
 		}
-		set_variable = { name = omni_equipment_checked_recently days = 30 }
+		# Both the country ruler check and character pulse can reach this effect.
+		set_variable = { name = omni_equipment_checked_recently days = 300 }
 		# Initialize the country's average market quality variable if not already set
 		employer = {
 			if = {
@@ -52,7 +58,11 @@ omni_disloyal_character_equipment_check = {
 			NOT = { has_variable = omni_disloyal_equipment_checked }
 			wealth >= 40
 			exists = employer
-			NOT = { is_ruler = yes employer = { is_ai = no } }
+			# Skip only the HUMAN player's ruler (they shop via the Items menu).
+			# NOT with several children is a NOR in Jomini, so the old
+			# NOT = { is_ruler = yes employer = { is_ai = no } } excluded EVERY ruler,
+			# AI included, plus every character employed by the player.
+			NOT = { AND = { is_ruler = yes employer = { is_ai = no } } }
 			omni_character_has_local_market = yes
 		}
 		set_variable = omni_disloyal_equipment_checked
@@ -83,6 +93,9 @@ omni_build_country_market_average = {
 
 omni_build_country_market_average_impl = {
 	# Runs in COUNTRY scope (called from the employer block above).
+	# Basic common stock is available even in an undeveloped capital. Without
+	# this floor, quality 0-10 countries cannot buy anything, regardless of wealth.
+	# Clamp after evaluating development so higher market tiers stay unchanged.
 	set_variable = { name = omni_country_avg_market_quality value = 0 }
 
 	# Evaluate buildings in the capital province (smooth O(1) check!)
@@ -113,6 +126,10 @@ omni_build_country_market_average_impl = {
 			else_if = { limit = { civilization_value >= 75 } prev = { change_variable = { name = omni_country_avg_market_quality add = 10 } } }
 			else_if = { limit = { civilization_value >= 50 } prev = { change_variable = { name = omni_country_avg_market_quality add = 5 } } }
 		}
+	if = {
+		limit = { var:omni_country_avg_market_quality < 15 }
+		set_variable = { name = omni_country_avg_market_quality value = 15 }
+	}
 }
 
 # Check if should buy better weapon
@@ -509,40 +526,57 @@ omni_check_and_buy_emblem = {
 # chain plus the two-stage modifier dispatch), once per character per year, and
 # only when the wealth gate passes. No iteration over the catalogue, no pulse.
 omni_check_and_buy_generated = {
-	if = {
-		limit = {
-			employer = { var:omni_country_avg_market_quality >= 65 }
-			wealth >= 200
-		}
-		add_gold = -200
-		random_in_global_list = {
-			variable = item_rare_rarity
-			save_scope_as = omni_gen_item_pick
-		}
-		omni_give_and_equip_scoped_gen_item = yes
-	}
-	else_if = {
-		limit = {
-			employer = { var:omni_country_avg_market_quality >= 40 }
-			wealth >= 120
-		}
-		add_gold = -120
-		random_in_global_list = {
-			variable = item_uncommon_rarity
-			save_scope_as = omni_gen_item_pick
-		}
-		omni_give_and_equip_scoped_gen_item = yes
-	}
-	else_if = {
-		limit = {
-			employer = { var:omni_country_avg_market_quality >= 15 }
-			wealth >= 60
-		}
-		add_gold = -60
-		random_in_global_list = {
-			variable = item_common_rarity
-			save_scope_as = omni_gen_item_pick
-		}
-		omni_give_and_equip_scoped_gen_item = yes
-	}
+    remove_variable = omni_shop_slot_ai_purchase
+    remove_variable = omni_ai_purchase_price
+    if = {
+        limit = { employer = { var:omni_country_avg_market_quality >= 65 } wealth >= 200 }
+        set_variable = { name = omni_ai_purchase_price value = 200 }
+        random_in_global_list = {
+            variable = item_rare_rarity
+            prev = { set_variable = { name = omni_shop_slot_ai_purchase value = prev } }
+        }
+    }
+    else_if = {
+        limit = { employer = { var:omni_country_avg_market_quality >= 40 } wealth >= 120 }
+        set_variable = { name = omni_ai_purchase_price value = 120 }
+        random_in_global_list = {
+            variable = item_uncommon_rarity
+            prev = { set_variable = { name = omni_shop_slot_ai_purchase value = prev } }
+        }
+    }
+    else_if = {
+        limit = { employer = { var:omni_country_avg_market_quality >= 15 } wealth >= 60 }
+        set_variable = { name = omni_ai_purchase_price value = 60 }
+        random_in_global_list = {
+            variable = item_common_rarity
+            prev = { set_variable = { name = omni_shop_slot_ai_purchase value = prev } }
+        }
+    }
+    if = {
+        limit = {
+            has_variable = omni_shop_slot_ai_purchase
+            NOT = { is_target_in_variable_list = { name = item_list target = var:omni_shop_slot_ai_purchase } }
+            # Rarity lists include fixed items too. Only generated entries belong
+            # in the generated modifier dispatcher; their price lists identify them.
+            OR = {
+                is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_shop_slot_ai_purchase }
+                is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_shop_slot_ai_purchase }
+                is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_shop_slot_ai_purchase }
+                is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_shop_slot_ai_purchase }
+                is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_shop_slot_ai_purchase }
+                is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_shop_slot_ai_purchase }
+            }
+        }
+        add_to_variable_list = { name = item_list target = var:omni_shop_slot_ai_purchase }
+        omni_equip_var_gen_item = { SLOT = ai_purchase }
+        if = {
+            limit = { is_target_in_variable_list = { name = equiped_item_list target = var:omni_shop_slot_ai_purchase } }
+            # Pay only after a real item fills a free slot. Empty lists, duplicates,
+            # and occupied categories must not consume a character's budget.
+            add_gold = { value = var:omni_ai_purchase_price multiply = -1 }
+        }
+        else = { remove_list_variable = { name = item_list target = var:omni_shop_slot_ai_purchase } }
+    }
+    remove_variable = omni_shop_slot_ai_purchase
+    remove_variable = omni_ai_purchase_price
 }

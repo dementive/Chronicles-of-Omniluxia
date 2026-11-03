@@ -1,0 +1,29 @@
+﻿omni_hc_negotiation_available_trigger = {
+        omni_hc_view_trigger = yes is_subject = no
+        exists = var:omni_hc_see var:omni_hc_see = { omni_hc_shannah_trigger = yes }
+        trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 2 } trigger_else = { always = no }
+        trigger_if = { limit = { has_variable = omni_hc_decided_holder } var:omni_hc_decided_holder = var:omni_hc_see.current_ruler } trigger_else = { always = no }
+        NOT = { trigger_if = { limit = { has_variable = omni_hc_negotiation_holder } var:omni_hc_negotiation_holder = var:omni_hc_see.current_ruler } trigger_else = { always = no } }
+    }
+    omni_hc_negotiation_valid_trigger = {
+        exists = scope:omni_hc_negotiator exists = scope:omni_hc_negotiation_see
+        exists = scope:omni_hc_negotiator_ruler exists = scope:omni_hc_negotiation_shannah
+        exists = scope:omni_hc_negotiation_serial
+        scope:omni_hc_negotiation_see = {
+            omni_hc_shannah_trigger = yes current_ruler = scope:omni_hc_negotiation_shannah
+        }
+        scope:omni_hc_negotiator = {
+            omni_hc_view_trigger = yes is_subject = no
+            current_ruler = scope:omni_hc_negotiator_ruler
+            trigger_if = { limit = { has_variable = omni_hc_negotiation_serial } var:omni_hc_negotiation_serial = scope:omni_hc_negotiation_serial } trigger_else = { always = no }
+            trigger_if = { limit = { has_variable = omni_hc_decided_holder } var:omni_hc_decided_holder = scope:omni_hc_negotiation_shannah } trigger_else = { always = no }
+            trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 2 } trigger_else = { always = no }
+            trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage >= 1 } trigger_else = { always = no } trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage <= 3 } trigger_else = { always = no }
+        }
+    }
+    omni_hc_concession_payable_trigger = {
+        omni_hc_negotiation_valid_trigger = yes
+        trigger_if = { limit = { scope:omni_hc_negotiator = { trigger_if = { limit = { has_variable = omni_hc_concession } var:omni_hc_concession = 1 } trigger_else = { always = no } } }
+            scope:omni_hc_negotiation_see = { treasury >= 50 }
+        }
+    }
