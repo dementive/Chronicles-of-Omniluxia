@@ -369,7 +369,7 @@ ob_order.9 = { type = country_event
 }
 
 ob_order.10 = { type = country_event
-    title = ob_order.10.t desc = ob_order.10.desc picture = event_forest_rangers left_portrait = root.current_ruler
+    title = ob_order.10.t desc = ob_order.10.desc picture = event_humans_court left_portrait = root.current_ruler
 
     option = {
 
@@ -386,7 +386,7 @@ ob_order.10 = { type = country_event
         ai_chance = { factor = 50 }
 
         if = { limit = { NOT = { has_variable = ob_scene_10 } }
-            hidden_effect = { set_variable = { name = ob_scene_10 } } hidden_effect = { set_variable = { name = ob_intelligence } } add_military_experience = 2
+            hidden_effect = { set_variable = { name = ob_scene_10 } } hidden_effect = { set_variable = { name = ob_intelligence } } add_military_experience = 5
         }
 
     }
@@ -610,7 +610,12 @@ ob_order.921 = {
     title = ob_order.921.t
     desc = ob_order.921.desc
     picture = event_barrow_white
+    left_portrait = root.current_ruler
     left_portrait = scope:ob_rimebound_army.commander
+
+    right_portrait = var:ob_returned
+
+    immediate = { ob_prepare_lanuthua = yes }
 
     option = {
         name = ob_order.921.a
@@ -619,7 +624,7 @@ ob_order.921 = {
             hidden_effect = { set_variable = { name = ob_rimebound_ambush_resolved } }
             if = {
                 limit = { exists = scope:ob_rimebound_army scope:ob_rimebound_army = { unit_owner = root } }
-                scope:ob_rimebound_army = { every_sub_unit = { add_subunit_strength = -0.2 } }
+                scope:ob_rimebound_army = { every_sub_unit = { add_subunit_strength = -0.35 } }
             }
             add_military_experience = 10
             if = {
@@ -646,9 +651,9 @@ ob_order.921 = {
             hidden_effect = { set_variable = { name = ob_rimebound_ambush_resolved } }
             if = {
                 limit = { exists = scope:ob_rimebound_army scope:ob_rimebound_army = { unit_owner = root } }
-                scope:ob_rimebound_army = { every_sub_unit = { add_subunit_strength = -0.05 } }
+                scope:ob_rimebound_army = { every_sub_unit = { add_subunit_strength = -0.15 } }
             }
-            add_stability = 3
+            add_military_experience = 5
             if = {
                 limit = {
                     NOT = { has_variable = ob_early_launched }
@@ -660,7 +665,11 @@ ob_order.921 = {
                         limit = { NOT = { has_variable = ob_threat_adjustment } }
                         set_variable = { name = ob_threat_adjustment value = 0 }
                     }
-                    change_variable = { name = ob_threat_adjustment add = 10 }
+                    # Start from the visible threat so a negative balance cannot absorb the increase.
+                    set_variable = {
+                        name = ob_threat_adjustment
+                        value = { value = ob_report_threat subtract = ob_threat_calendar add = 20 }
+                    }
                     if = { limit = { ob_report_threat >= 100 } ob_launch_early_host = yes }
                 }
             }
@@ -677,11 +686,14 @@ ob_order.20 = { type = country_event
         name = ob_order.20.a
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_20 } } hidden_effect = { set_variable = { name = ob_scene_20 } } hidden_effect = { set_variable = { name = ob_rimebound_found } } create_character = { first_name = "Lanuthua" culture = astvaenic religion = helluvian age = 38 add_trait = vampire_trait add_trait = intelligent add_finesse = 3 hidden_effect = { set_variable = { name = ob_returned_brother } } hidden_effect = { save_scope_as = ob_returned } } hidden_effect = { set_variable = { name = ob_returned value = scope:ob_returned } } imprison = { target = scope:ob_returned } }
+        if = { limit = { NOT = { has_variable = ob_scene_20 } } hidden_effect = { set_variable = { name = ob_scene_20 } } hidden_effect = { set_variable = { name = ob_rimebound_found } } hidden_effect = { var:ob_returned = { set_variable = { name = ob_returned_brother } } } imprison = { target = var:ob_returned } }
 
     }
 
+    right_portrait = var:ob_returned
+
     immediate = {
+        ob_prepare_lanuthua = yes
         if = { limit = { NOT = { has_variable = ob_event_reward_20 } }
             set_variable = { name = ob_event_reward_20 }
             hidden_effect = { ob_milestone_reward_20 = yes }
@@ -689,24 +701,40 @@ ob_order.20 = { type = country_event
     }
 }
 
-ob_order.21 = { type = country_event
-    title = ob_order.21.t desc = ob_order.21.desc picture = event_barrow_white left_portrait = root.current_ruler
-    option = { name = ob_order.21.a ai_chance = { factor = 50 }
-        custom_tooltip = ob_effect_21_a_tt
+ob_order.21 = {
+    type = country_event
+    title = ob_order.21.t
+    desc = ob_order.21.desc
+    picture = event_nazgul
+    left_portrait = root.current_ruler
+    left_portrait = root.current_co_ruler
+    right_portrait = var:ob_returned
+    trigger = { exists = var:ob_returned var:ob_returned = { is_alive = yes employer = root prisoner = yes } }
 
-        if = { limit = { NOT = { has_variable = ob_scene_21 } } hidden_effect = { set_variable = { name = ob_scene_21 } } mission_claim_region_effect = { REGION = west_wild_northland } ob_dismiss_vampire = yes create_country_treasure = { key = ob_last_hearth_lantern icon = treasure_it_sword_of_attila modifier = { local_defensive = 0.05 } } }
+    option = {
+        name = ob_order.21.a
+        if = {
+            limit = { NOT = { has_variable = ob_scene_21 } }
+            hidden_effect = { set_variable = { name = ob_scene_21 } }
+            var:ob_returned = { death = { death_reason = death_natural_causes } }
+            hidden_effect = { trigger_event = { id = ob_order.922 days = 3 } }
+        }
     }
-    option = { name = ob_order.21.b trigger = { treasury >= 50 } ai_chance = { factor = 50 }
-        custom_tooltip = ob_effect_21_b_tt
+}
 
-        if = { limit = { NOT = { has_variable = ob_scene_21 } } hidden_effect = { set_variable = { name = ob_scene_21 } } mission_claim_region_effect = { REGION = west_wild_northland } ob_dismiss_vampire = yes add_treasury = -50 capital_scope = { create_pop = freemen create_pop = freemen } add_stability = 2 }
-    }
-    option = { name = ob_order.21.c ai_chance = { factor = 20 }
-        trigger = { exists = var:ob_returned var:ob_returned = { is_alive = yes employer = root } }
-        custom_tooltip = ob_effect_21_c_tt
+ob_order.922 = {
+    type = country_event
+    hidden = yes
+    immediate = { ob_launch_rimebound = yes }
+}
 
-        if = { limit = { NOT = { has_variable = ob_scene_21 } } hidden_effect = { set_variable = { name = ob_scene_21 } } mission_claim_region_effect = { REGION = west_wild_northland } if = { limit = { var:ob_returned = { prisoner = no } } imprison = { target = var:ob_returned } } hidden_effect = { set_variable = { name = ob_vampire_compact } } add_country_modifier = { name = ob_vampire_intel duration = 3650 } add_country_modifier = { name = ob_compact_cost duration = -1 } hidden_effect = { set_variable = { name = ob_compact_review days = 730 } } }
-    }
+ob_order.923 = {
+    type = country_event
+    title = ob_order.923.t
+    desc = ob_order.923.desc
+    picture = event_orcs_battle
+    left_portrait = root.current_ruler
+    option = { name = ob_order.923.a custom_tooltip = ob_rimebound_invasion_launched_tt }
 }
 
 ob_order.22 = { type = country_event
@@ -973,26 +1001,6 @@ ob_order.302 = { type = country_event
     }
 }
 
-ob_order.400 = { type = country_event
-    title = ob_order.400.t desc = ob_order.400.desc picture = event_barrow_white left_portrait = root.current_ruler
-    trigger = { has_variable = ob_vampire_compact NOT = { has_variable = ob_compact_reviewed } }
-    option = { name = ob_order.400.a custom_tooltip = ob_effect_400_a_tt ai_chance = { factor = 60 }
-        show_as_tooltip = { remove_country_modifier = ob_compact_cost remove_country_modifier = ob_vampire_intel }
-        hidden_effect = { if = { limit = { NOT = { has_variable = ob_compact_reviewed } }
-                remove_country_modifier = ob_compact_cost remove_country_modifier = ob_vampire_intel remove_variable = ob_vampire_compact ob_dismiss_vampire = yes set_variable = { name = ob_compact_reviewed } } }
-    }
-    option = { name = ob_order.400.b custom_tooltip = ob_effect_400_b_tt trigger = { treasury >= 75 } ai_chance = { factor = 60 }
-        show_as_tooltip = { add_treasury = -75 add_country_modifier = { name = ob_rimebound_purified duration = 1825 } ob_shannah_friendship = yes remove_country_modifier = ob_compact_cost remove_country_modifier = ob_vampire_intel }
-        hidden_effect = { if = { limit = { NOT = { has_variable = ob_compact_reviewed } }
-                remove_country_modifier = ob_compact_cost remove_country_modifier = ob_vampire_intel remove_variable = ob_vampire_compact ob_dismiss_vampire = yes add_treasury = -75 add_country_modifier = { name = ob_rimebound_purified duration = 1825 } ob_shannah_friendship = yes set_variable = { name = ob_compact_reviewed } } }
-    }
-    option = { name = ob_order.400.c custom_tooltip = ob_effect_400_c_tt ai_chance = { factor = 10 }
-        show_as_tooltip = { add_tyranny = 3 add_stability = -5 add_country_modifier = { name = ob_rimebound_dread duration = 730 } ob_shannah_grievance = yes }
-        hidden_effect = { if = { limit = { NOT = { has_variable = ob_compact_reviewed } }
-                add_tyranny = 3 add_stability = -5 add_country_modifier = { name = ob_rimebound_dread duration = 730 } ob_shannah_grievance = yes set_variable = { name = ob_compact_reviewed } } }
-    }
-}
-
 ob_order.401 = { type = country_event
     title = ob_order.401.t desc = ob_order.401.desc picture = event_human_council left_portrait = root.current_ruler
 
@@ -1138,14 +1146,15 @@ ob_order.900 = { type = country_event
 
 ob_order.901 = { type = country_event
     title = ob_order.901.t desc = ob_order.901.desc picture = event_dwarven_hall left_portrait = root.current_ruler
-    option = { name = ob_order.901.a custom_tooltip = ob_cave_enter_tt custom_tooltip = ob_cave_cautious_tt hidden_effect = { if = { limit = { NOT = { has_variable = ob_cave_entered } has_variable = ob_cave_active } set_variable = { name = ob_cave_entered } set_variable = { name = ob_cave_survival value = 0.9 } trigger_event = { id = ob_order.902 days = 10 } } } }option = { name = ob_order.901.b custom_tooltip = ob_cave_enter_tt custom_tooltip = ob_cave_hasty_tt hidden_effect = { if = { limit = { NOT = { has_variable = ob_cave_entered } has_variable = ob_cave_active } set_variable = { name = ob_cave_entered } set_variable = { name = ob_cave_survival value = 0.8 } trigger_event = { id = ob_order.902 days = 5 } } } }
+    option = { name = ob_order.901.a custom_tooltip = ob_cave_enter_tt custom_tooltip = ob_cave_cautious_tt hidden_effect = { if = { limit = { NOT = { has_variable = ob_cave_entered } has_variable = ob_cave_active } set_variable = { name = ob_cave_entered } set_variable = { name = ob_cave_survival value = 0.9 } trigger_event = { id = ob_order.902 days = 1 } } } }option = { name = ob_order.901.b custom_tooltip = ob_cave_enter_tt custom_tooltip = ob_cave_hasty_tt hidden_effect = { if = { limit = { NOT = { has_variable = ob_cave_entered } has_variable = ob_cave_active } set_variable = { name = ob_cave_entered } set_variable = { name = ob_cave_survival value = 0.8 } trigger_event = { id = ob_order.902 days = 1 } } } }
 }
 
 ob_order.902 = {
     type = country_event
     title = ob_order.902.t
     desc = ob_order.902.desc
-    picture = event_dark_priestess
+    trigger = { has_variable = ob_cave_active }
+    picture = event_badass_figure
     left_portrait = root.current_ruler
 
     option = {
@@ -1168,7 +1177,7 @@ ob_order.902 = {
                         add_military_experience = 5
                     }
                 }
-                trigger_event = { id = ob_order.903 days = 5 }
+                trigger_event = { id = ob_order.903 days = 1 }
             }
         }
     }
@@ -1191,7 +1200,7 @@ ob_order.902 = {
                         add_military_experience = 5
                     }
                 }
-                trigger_event = { id = ob_order.903 days = 5 }
+                trigger_event = { id = ob_order.903 days = 1 }
             }
         }
     }
@@ -1199,6 +1208,7 @@ ob_order.902 = {
 
 ob_order.903 = { type = country_event
     title = ob_order.903.t desc = ob_order.903.desc picture = winter_camp left_portrait = root.current_ruler
+    trigger = { has_variable = ob_cave_active }
     option = { name = ob_order.903.a custom_tooltip = ob_cave_home_tt hidden_effect = { if = { limit = { NOT = { has_variable = ob_cave_home } has_variable = ob_cave_active } set_variable = { name = ob_cave_home } ob_cave_return = yes } } }
 }
 
@@ -1233,3 +1243,51 @@ ob_order.171 = { type = country_event
 ob_order.172 = { type = country_event title = ob_order.172.t desc = ob_order.172.desc picture = event_empty_thrones left_portrait = root.current_ruler option = { name = ob_order.172.a } }
 
 ob_order.173 = { type = country_event title = ob_order.173.t desc = ob_order.173.desc picture = event_empty_thrones left_portrait = root.current_ruler option = { name = ob_order.173.a } }
+
+ob_order.924 = {
+    type = country_event
+    title = ob_order.924.t
+    desc = ob_order.924.desc
+    picture = Event_wall_watchers
+    left_portrait = root.current_ruler
+
+    immediate = {
+        if = {
+            limit = { NOT = { has_variable = ob_threat_adjustment } }
+            set_variable = { name = ob_threat_adjustment value = 0 }
+        }
+    }
+    option = {
+        name = ob_order.924.a
+        custom_tooltip = ob_rimebound_gate_burn_tt
+        hidden_effect = { change_variable = { name = ob_threat_adjustment subtract = 10 } }
+    }
+    option = {
+        name = ob_order.924.b
+        custom_tooltip = ob_rimebound_gate_hold_tt
+        hidden_effect = {
+            change_variable = { name = ob_threat_adjustment add = 10 }
+            if = {
+                limit = {
+                    ob_report_threat >= 100
+                    NOT = { has_variable = ob_early_launched }
+                    NOT = { has_variable = ob_early_resolved }
+                }
+                ob_launch_early_host = yes
+            }
+        }
+    }
+}
+
+ob_order.925 = {
+    type = country_event
+    title = ob_order.925.t
+    desc = ob_order.925.desc
+    picture = event_barrow_white
+    left_portrait = root.current_ruler
+
+    option = {
+        name = ob_order.925.a
+        create_country_treasure = { key = ob_rimebound_blade icon = "treasure_it_sword_of_attila" modifier = { local_defensive = 0.10 } }
+    }
+}

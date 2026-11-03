@@ -20,7 +20,7 @@
 
     set_variable = { name = ob_cave_survival value = 0.6 }
 
-    trigger_event = { id = ob_order.901 }
+    trigger_event = { id = ob_order.901 days = 1 }
 
     trigger_event = { id = ob_order.904 days = 60 }
 
@@ -45,7 +45,7 @@ ob_cave_return = {
         scope:ob_cave_returning = { add_food = 100 }
 
         remove_variable = ob_cave_active
-        trigger_event = { id = ob_order.10 days = 1 }
+        trigger_event = { id = ob_order.10 days = 2 }
 
     }
 
@@ -58,8 +58,167 @@ ob_cave_apply_threat = {
             if = { limit = { NOT = { has_variable = ob_threat_adjustment } } set_variable = { name = ob_threat_adjustment value = 0 } }
             if = { limit = { has_variable = ob_cave_stores_burned } change_variable = { name = ob_threat_adjustment subtract = 20 } }
             else_if = { limit = { has_variable = ob_cave_drow_alerted } change_variable = { name = ob_threat_adjustment add = 10 } }
-            if = { limit = { NOT = { has_variable = ob_warning } } set_variable = { name = ob_warning } trigger_event = { id = ob_order.200 days = 1 } }
+            if = { limit = { NOT = { has_variable = ob_warning } } set_variable = { name = ob_warning } trigger_event = { id = ob_order.200 days = 9 } }
             if = { limit = { ob_report_threat >= 100 } ob_launch_early_host = yes }
+        }
+    }
+}
+
+ob_prepare_lanuthua = {
+    if = {
+        limit = { NOT = { exists = var:ob_returned } }
+        create_character = {
+            first_name = "Lanuthua"
+            culture = ice_vampire
+            religion = helluvian
+            age = 38
+            remove_trait = vampire_trait
+            add_trait = ob_rimebound_trait
+            add_trait = intelligent
+            add_finesse = 3
+            save_scope_as = ob_returned
+        }
+        set_variable = { name = ob_returned value = scope:ob_returned }
+    }
+    var:ob_returned = { set_variable = { name = ob_lanuthua } }
+}
+
+ob_launch_rimebound = {
+    if = {
+        limit = { has_land = yes NOT = { has_variable = ob_rimebound_launched } }
+        save_scope_as = ob_rimebound_target
+        p:1153 = {
+            if = {
+                limit = {
+                    has_owner = yes
+                    OR = { owner = root owner = { is_subject_of = root } }
+                    NOT = { this = owner.capital_scope }
+                }
+                save_scope_as = ob_rimebound_foothold
+            }
+            else = {
+                random_neighbor_province = {
+                    limit = {
+                        has_owner = yes
+                        OR = { owner = root owner = { is_subject_of = root } }
+                        NOT = { this = owner.capital_scope }
+                    }
+                    save_scope_as = ob_rimebound_foothold
+                }
+            }
+        }
+        if = {
+            limit = { exists = scope:ob_rimebound_foothold }
+            set_variable = { name = ob_rimebound_launched }
+            scope:ob_rimebound_foothold = {
+                create_country = {
+                    name = { name = ob_rimebound_country_name adjective = ob_rimebound_country_adj }
+                    change_government = despotic_monarchy
+                    set_primary_culture = ice_vampire
+                    save_scope_as = ob_rimebound_invader
+                    create_character = {
+                        first_name = "Skeld"
+                        culture = ice_vampire
+                        religion = helluvian
+                        age = 65
+                        remove_trait = vampire_trait
+                        add_trait = ob_rimebound_trait
+                        add_martial = 8
+                        save_scope_as = ob_rimebound_commander
+                    }
+                    set_as_ruler = scope:ob_rimebound_commander
+                    create_unit = {
+                        name = ob_rimebound_country_name
+                        location = scope:ob_rimebound_foothold
+                        set_as_commander = scope:ob_rimebound_commander
+                        while = { count = 6 add_subunit = heavy_infantry }
+                        while = { count = 2 add_subunit = archers }
+                        add_food = 200
+                        add_morale = 2
+                    }
+                    add_treasury = 100
+                    set_variable = { name = ob_rimebound_war_target value = scope:ob_rimebound_target }
+                    set_variable = { name = ob_rimebound_declaring }
+                    declare_war_with_wargoal = {
+                        war_goal = ob_rimebound_invasion_wargoal
+                        target = scope:ob_rimebound_target
+                    }
+                    remove_variable = ob_rimebound_declaring
+                    p:1077 = {
+                        if = {
+                            limit = { has_owner = yes owner = { OR = { this = scope:ob_rimebound_invader war_with = scope:ob_rimebound_invader } } }
+                            save_scope_as = ob_rimebound_second_muster
+                        }
+                        else = {
+                            random_neighbor_province = {
+                                limit = { has_owner = yes owner = { OR = { this = scope:ob_rimebound_invader war_with = scope:ob_rimebound_invader } } }
+                                save_scope_as = ob_rimebound_second_muster
+                            }
+                        }
+                    }
+                    if = {
+                        limit = { NOT = { exists = scope:ob_rimebound_second_muster } }
+                        scope:ob_rimebound_foothold = { save_scope_as = ob_rimebound_second_muster }
+                    }
+                    create_character = {
+                        first_name = "Hrold"
+                        culture = ice_vampire
+                        religion = helluvian
+                        age = 58
+                        remove_trait = vampire_trait
+                        add_trait = ob_rimebound_trait
+                        add_martial = 7
+                        save_scope_as = ob_rimebound_second_commander
+                    }
+                    create_unit = {
+                        name = ob_rimebound_second_army_name
+                        location = scope:ob_rimebound_second_muster
+                        set_as_commander = scope:ob_rimebound_second_commander
+                        while = { count = 6 add_subunit = heavy_infantry }
+                        while = { count = 2 add_subunit = archers }
+                        add_food = 200
+                        add_morale = 2
+                    }
+                    p:1018 = {
+                        if = {
+                            limit = { has_owner = yes owner = { OR = { this = scope:ob_rimebound_invader war_with = scope:ob_rimebound_invader } } }
+                            save_scope_as = ob_rimebound_third_muster
+                        }
+                        else = {
+                            random_neighbor_province = {
+                                limit = { has_owner = yes owner = { OR = { this = scope:ob_rimebound_invader war_with = scope:ob_rimebound_invader } } }
+                                save_scope_as = ob_rimebound_third_muster
+                            }
+                        }
+                    }
+                    if = {
+                        limit = { NOT = { exists = scope:ob_rimebound_third_muster } }
+                        scope:ob_rimebound_foothold = { save_scope_as = ob_rimebound_third_muster }
+                    }
+                    create_character = {
+                        first_name = "Vargan"
+                        culture = ice_vampire
+                        religion = helluvian
+                        age = 58
+                        remove_trait = vampire_trait
+                        add_trait = ob_rimebound_trait
+                        add_martial = 7
+                        save_scope_as = ob_rimebound_third_commander
+                    }
+                    create_unit = {
+                        name = ob_rimebound_third_army_name
+                        location = scope:ob_rimebound_third_muster
+                        set_as_commander = scope:ob_rimebound_third_commander
+                        while = { count = 6 add_subunit = heavy_infantry }
+                        while = { count = 2 add_subunit = archers }
+                        add_food = 200
+                        add_morale = 2
+                    }
+                }
+            }
+            trigger_event = { id = ob_order.923 }
+            set_variable = { name = ob_rimebound_invader value = scope:ob_rimebound_invader }
+            set_variable = { name = ob_rimebound_blade_pending }
         }
     }
 }
