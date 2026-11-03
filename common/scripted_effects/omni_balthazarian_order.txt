@@ -36,14 +36,51 @@ ob_initialise = {
     set_as_coruler = scope:ob_new_master
     set_variable = { name = ob_rival value = scope:ob_new_master }
     create_character = {
-        first_name = "Tethurane" culture = astvaenic religion = helluvian age = 42
-        add_trait = human_trait add_trait = brave add_martial = 3
-        set_variable = { name = ob_frontier_brother }
+        first_name = "Tethurane"
+        age = 42
+        female = no
+        culture = astvaenic
+        religion = helluvian
+        save_scope_as = ob_tethurane
+    }
+    if = {
+        limit = { exists = scope:ob_tethurane }
+        scope:ob_tethurane = {
+            add_trait = human_trait
+            add_trait = brave
+            add_martial = 3
+            set_variable = { name = ob_frontier_brother }
+        }
     }
     create_character = {
-        first_name = "Norskulane" culture = herulian religion = helluvian age = 35
-        add_trait = human_trait add_trait = ambitious add_charisma = 2
-        set_variable = { name = ob_frontier_brother }
+        first_name = "Norskulane"
+        age = 35
+        female = no
+        culture = herulian
+        religion = helluvian
+        save_scope_as = ob_norskulane
+    }
+    if = {
+        limit = { exists = scope:ob_norskulane }
+        scope:ob_norskulane = {
+            add_trait = human_trait
+            add_trait = ambitious
+            add_charisma = 2
+            set_variable = { name = ob_frontier_brother }
+        }
+    }
+}
+ob_save_frontier_brothers = {
+    every_character = {
+        limit = { employer = root is_alive = yes has_variable = ob_frontier_brother }
+        if = {
+            limit = { has_culture = astvaenic }
+            save_scope_as = ob_tethurane
+        }
+        else_if = {
+            limit = { has_culture = herulian }
+            save_scope_as = ob_norskulane
+        }
     }
 }
 ob_save_rival = {
@@ -59,10 +96,6 @@ ob_invite_claimants = {
         set_variable = { name = ob_petitioner value = scope:ob_order }
         trigger_event = { id = ob_order.100 days = 3 }
     }
-}
-ob_accept_invitation = {
-    set_variable = { name = ob_conference_guest value = var:ob_petitioner }
-    remove_variable = ob_refused
 }
 ob_roads_effect = {
     save_scope_as = ob_order
@@ -214,6 +247,31 @@ ob_rival_brothers_loyalty = {
     every_character = {
         limit = { employer = root has_variable = ob_frontier_brother }
         add_loyalty = ob_frontier_heard
+    }
+}
+ob_grant_veteran_holdings = {
+    every_character = {
+        limit = {
+            employer = root
+            is_alive = yes
+            has_variable = ob_frontier_brother
+            NOT = { this = root.current_co_ruler }
+        }
+        root = {
+            random_owned_province = {
+                limit = {
+                    is_capital = no
+                    is_in_area = root.capital_scope
+                    NOT = { exists = holding_owner }
+                }
+                save_scope_as = ob_veteran_holding
+            }
+        }
+        if = {
+            limit = { exists = scope:ob_veteran_holding }
+            add_holding = scope:ob_veteran_holding
+        }
+        clear_saved_scope = ob_veteran_holding
     }
 }
 ob_renew_agreements = {
