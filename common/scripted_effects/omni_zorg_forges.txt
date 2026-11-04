@@ -1,0 +1,303 @@
+﻿omni_zorg_activate_doctrine_effect = {
+    if = {
+        limit = { NOT = { has_country_modifier = omni_zorg_last_doctrine } }
+        add_country_modifier = { name = omni_zorg_last_doctrine duration = -1 }
+    }
+}
+
+# Country scope. Called after the landing territory has been transferred.
+omni_zorg_forge_setup_effect = {
+    omni_zorg_activate_doctrine_effect = yes
+    set_global_variable = { name = omni_zorg_forge_host value = this }
+    set_variable = { name = omni_zorg_forges_remaining value = 0 }
+    capital_scope = { omni_zorg_forge_register_effect = yes }
+    while = {
+        count = 2
+        if = {
+            limit = {
+                any_owned_province = {
+                    NOT = { has_province_modifier = omni_zorg_void_forge }
+                    num_of_fortress_building > 0
+                }
+            }
+            random_owned_province = {
+                limit = {
+                    NOT = { has_province_modifier = omni_zorg_void_forge }
+                    num_of_fortress_building > 0
+                }
+                omni_zorg_forge_register_effect = yes
+            }
+        }
+        else = {
+            random_owned_province = {
+                limit = { NOT = { has_province_modifier = omni_zorg_void_forge } }
+                omni_zorg_forge_register_effect = yes
+            }
+        }
+    }
+}
+
+omni_zorg_forge_register_effect = {
+    add_province_modifier = { name = omni_zorg_void_forge duration = -1 }
+    add_to_global_variable_list = { name = omni_zorg_forge_sites target = this }
+    if = {
+        limit = { global_var:omni_zorg_forge_host = { var:omni_zorg_forges_remaining = 1 } }
+        set_variable = { name = omni_zorg_forge_cooldown days = 180 }
+    }
+    else_if = {
+        limit = { global_var:omni_zorg_forge_host = { var:omni_zorg_forges_remaining = 2 } }
+        set_variable = { name = omni_zorg_forge_cooldown days = 360 }
+    }
+    global_var:omni_zorg_forge_host = {
+        change_variable = { name = omni_zorg_forges_remaining add = 1 }
+    }
+}
+
+# Province scope. Recheck ownership and control before touching the muster timer.
+omni_zorg_forge_tick_effect = {
+    if = {
+        limit = {
+            exists = owner
+            NOT = { owner = global_var:omni_zorg_forge_host }
+        }
+        omni_zorg_forge_destroy_effect = yes
+    }
+    else_if = {
+        limit = {
+            exists = controller
+            controller = { war_with = global_var:omni_zorg_forge_host }
+        }
+        omni_zorg_forge_destroy_effect = yes
+    }
+    else_if = {
+        limit = {
+            OR = {
+                NOT = { controller = global_var:omni_zorg_forge_host }
+                global_var:omni_zorg_forge_host = { war = no }
+            }
+        }
+        if = {
+            limit = { has_variable = omni_zorg_forge_mustering }
+            remove_variable = omni_zorg_forge_mustering
+            remove_variable = omni_zorg_forge_warning
+            remove_variable = omni_zorg_forge_cooldown
+        }
+    }
+    else_if = {
+        limit = { global_var:omni_zorg_forge_host = { has_variable = omni_zorg_invasion_war_started } }
+        save_scope_as = omni_zorg_forge_site
+        if = {
+            limit = {
+                has_variable = omni_zorg_forge_mustering
+                NOT = { has_variable = omni_zorg_forge_warning }
+            }
+            remove_variable = omni_zorg_forge_mustering
+            global_var:omni_zorg_forge_host = { omni_zorg_spawn_void_legion_effect = yes }
+        }
+        else_if = {
+            limit = {
+                NOT = { has_variable = omni_zorg_forge_mustering }
+                NOT = { has_variable = omni_zorg_forge_cooldown }
+            }
+            set_variable = omni_zorg_forge_mustering
+            set_variable = { name = omni_zorg_forge_warning days = 90 }
+            set_variable = { name = omni_zorg_forge_cooldown days = 730 }
+            global_var:omni_zorg_forge_host = {
+                every_countries_at_war_with = {
+                    limit = { is_ai = no }
+                    trigger_event = omni_zorg_forge.1
+                }
+            }
+        }
+    }
+}
+
+omni_zorg_spawn_void_legion_effect = {
+    create_character = {
+        culture = zorg_1
+        religion = zorg_religion
+        age = 30
+        no_stats = yes
+        no_traits = yes
+        add_martial = 13
+        add_trait = zorg_trait
+        add_trait = archmage_trait
+        set_variable = warlock_t2_unlocked_var
+        set_variable = illusionist_t2_unlocked_var
+        omni_learn_spell = { SPELL = fear_hex }
+        omni_learn_spell = { SPELL = arcane_aegis }
+        add_character_modifier = { name = omni_zorg_void_marshal duration = -1 }
+        refill_character_magic_to_max = yes
+        save_scope_as = omni_zorg_void_marshal
+    }
+    create_unit = {
+        navy = no
+        set_as_commander = scope:omni_zorg_void_marshal
+        name = "Void Legion"
+        location = scope:omni_zorg_forge_site
+        hidden_effect = {
+            while = { count = 10 add_subunit = heavy_infantry }
+            add_subunit = heavy_cavalry
+            add_subunit = heavy_cavalry
+            add_subunit = supply_train
+            add_subunit = supply_train
+            add_food = 100
+            add_morale = 2
+        }
+    }
+}
+
+omni_zorg_forge_clear_effect = {
+    remove_province_modifier = omni_zorg_void_forge
+    remove_variable = omni_zorg_forge_mustering
+    remove_variable = omni_zorg_forge_warning
+    remove_variable = omni_zorg_forge_cooldown
+}
+
+# Province scope. Capture can transfer ownership immediately in an imperial conquest.
+omni_zorg_forge_save_captor_effect = {
+    save_scope_as = omni_zorg_forge_site
+    if = {
+        limit = {
+            exists = controller
+            NOT = { controller = global_var:omni_zorg_forge_host }
+        }
+        controller = { save_scope_as = omni_zorg_forge_captor }
+    }
+    else_if = {
+        limit = {
+            exists = owner
+            NOT = { owner = global_var:omni_zorg_forge_host }
+        }
+        owner = { save_scope_as = omni_zorg_forge_captor }
+    }
+    else = {
+        global_var:omni_zorg_forge_host = { save_scope_as = omni_zorg_forge_captor }
+    }
+}
+
+# Country scope. Queue the report after the occupation has finished resolving.
+omni_zorg_forge_destroyed_report_effect = {
+    if = {
+        limit = { global_var:omni_zorg_forge_host = { var:omni_zorg_forges_remaining = 0 } }
+        trigger_event = { id = omni_zorg_forge.3 days = 1 }
+    }
+    else = { trigger_event = { id = omni_zorg_forge.2 days = 1 } }
+}
+
+omni_zorg_forge_destroy_effect = {
+    omni_zorg_forge_save_captor_effect = yes
+    omni_zorg_forge_clear_effect = yes
+    set_variable = omni_zorg_forge_ruined
+    global_var:omni_zorg_forge_host = {
+        change_variable = { name = omni_zorg_forges_remaining add = -1 }
+    }
+    if = {
+        limit = { scope:omni_zorg_forge_captor = { NOT = { this = global_var:omni_zorg_forge_host } } }
+        scope:omni_zorg_forge_captor = { omni_zorg_forge_destroyed_report_effect = yes }
+    }
+    global_var:omni_zorg_forge_host = {
+        every_countries_at_war_with = {
+            limit = {
+                is_ai = no
+                NOT = { this = scope:omni_zorg_forge_captor }
+            }
+            omni_zorg_forge_destroyed_report_effect = yes
+        }
+    }
+}
+
+omni_zorg_forge_cleanup_effect = {
+    every_in_global_list = {
+        variable = omni_zorg_forge_sites
+        limit = { has_province_modifier = omni_zorg_void_forge }
+        omni_zorg_forge_clear_effect = yes
+    }
+    clear_global_variable_list = omni_zorg_forge_sites
+    if = {
+        limit = { exists = global_var:omni_zorg_forge_project }
+        global_var:omni_zorg_forge_project = { omni_zorg_forge_clear_project_effect = yes }
+    }
+    remove_global_variable = omni_zorg_forge_host
+}
+
+# Country scope. Five years between construction starts, even if a project is destroyed.
+omni_zorg_forge_construction_tick_effect = {
+    if = {
+        limit = { exists = global_var:omni_zorg_forge_project }
+        global_var:omni_zorg_forge_project = {
+            if = {
+                limit = {
+                    OR = {
+                        NOT = { owner = global_var:omni_zorg_forge_host }
+                        NOT = { controller = global_var:omni_zorg_forge_host }
+                    }
+                }
+                omni_zorg_forge_cancel_project_effect = yes
+            }
+            else_if = {
+                limit = { NOT = { has_variable = omni_zorg_forge_build_time } }
+                omni_zorg_forge_clear_project_effect = yes
+                omni_zorg_forge_register_effect = yes
+                # New works get their own muster warning on the next pulse.
+                remove_variable = omni_zorg_forge_cooldown
+            }
+        }
+    }
+    else_if = {
+        limit = { NOT = { has_variable = omni_zorg_forge_construction_started } }
+        set_variable = omni_zorg_forge_construction_started
+        set_variable = { name = omni_zorg_forge_construction_cooldown days = 1825 }
+    }
+    else_if = {
+        limit = {
+            war = yes
+            NOT = { has_variable = omni_zorg_forge_construction_cooldown }
+        }
+        random_owned_province = {
+            limit = {
+                controller = global_var:omni_zorg_forge_host
+                NOT = { has_province_modifier = omni_zorg_void_forge }
+                NOT = { has_variable = omni_zorg_forge_ruined }
+            }
+            save_scope_as = omni_zorg_forge_site
+            set_global_variable = { name = omni_zorg_forge_project value = this }
+            add_province_modifier = { name = omni_zorg_forge_under_construction duration = -1 }
+            set_variable = { name = omni_zorg_forge_build_time days = 180 }
+            global_var:omni_zorg_forge_host = {
+                set_variable = { name = omni_zorg_forge_construction_cooldown days = 1825 }
+                every_countries_at_war_with = {
+                    limit = { is_ai = no }
+                    trigger_event = omni_zorg_forge.4
+                }
+            }
+        }
+    }
+}
+
+omni_zorg_forge_clear_project_effect = {
+    remove_province_modifier = omni_zorg_forge_under_construction
+    remove_variable = omni_zorg_forge_build_time
+    remove_global_variable = omni_zorg_forge_project
+}
+
+omni_zorg_forge_cancel_project_effect = {
+    omni_zorg_forge_save_captor_effect = yes
+    omni_zorg_forge_clear_project_effect = yes
+    set_variable = omni_zorg_forge_ruined
+    if = {
+        limit = { scope:omni_zorg_forge_captor = { NOT = { this = global_var:omni_zorg_forge_host } } }
+        scope:omni_zorg_forge_captor = {
+            trigger_event = { id = omni_zorg_forge.5 days = 1 }
+        }
+    }
+    global_var:omni_zorg_forge_host = {
+        every_countries_at_war_with = {
+            limit = {
+                is_ai = no
+                NOT = { this = scope:omni_zorg_forge_captor }
+            }
+            trigger_event = { id = omni_zorg_forge.5 days = 1 }
+        }
+    }
+}

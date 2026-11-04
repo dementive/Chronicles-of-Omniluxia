@@ -1,0 +1,90 @@
+﻿namespace = omni_rift
+
+omni_rift.1 = {
+    type = country_event
+    title = omni_rift.1.t
+    desc = omni_rift.1.desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = scope:rift_scout
+    goto_location = capital_scope
+
+    trigger = {
+        omni_rift_country = yes
+        current_date >= 1005.1.1
+        NOT = { has_global_variable = omni_rift_sun_broken }
+        OR = {
+            is_ai = no
+            NOT = { any_country = { omni_rift_country = yes is_ai = no } }
+        }
+    }
+
+    immediate = {
+        set_global_variable = omni_rift_sun_broken
+        hidden_effect = {
+            every_country = {
+                limit = { omni_rift_country = yes }
+                every_owned_province = {
+                    limit = { has_province_modifier = omni_rift_sun_curse }
+                    remove_province_modifier = omni_rift_sun_curse
+                }
+            }
+        }
+        current_ruler = { save_scope_as = rift_leader }
+        create_character = { save_scope_as = rift_scout }
+        random_neighbour_country = {
+            limit = { NOR = { omni_rift_country = yes war_with = root } is_subject = no }
+            save_scope_as = rift_target
+        }
+    }
+
+    option = {
+        name = omni_rift.1.a
+        trigger = { exists = scope:rift_target is_subject = no }
+        custom_tooltip = omni_rift.1.a_tt
+        add_manpower = 1
+        create_unit = {
+            name = "The First Surface Host"
+            location = root.capital_scope
+            add_subunit = light_infantry
+            add_subunit = light_infantry
+            add_subunit = light_infantry
+            add_subunit = archers
+        }
+        hidden_effect = {
+            scope:rift_target = { trigger_event = { id = omni_rift.2 days = 1 } }
+            declare_war_with_wargoal = { war_goal = omni_rift_invasion target = scope:rift_target }
+        }
+    }
+
+    option = {
+        name = omni_rift.1.b
+        custom_tooltip = omni_rift.1.b_tt
+        add_stability = 5
+        capital_scope = { add_province_modifier = { name = omni_rift_watch duration = 1825 } }
+    }
+}
+
+omni_rift.2 = {
+    type = country_event
+    title = omni_rift.2.t
+    desc = omni_rift.2.desc
+    picture = city_country
+    left_portrait = current_ruler
+    right_portrait = scope:rift_leader
+    goto_location = capital_scope
+
+    option = {
+        name = omni_rift.2.a
+        trigger = { treasury >= 50 }
+        custom_tooltip = omni_rift.2.a_tt
+        add_treasury = -50
+        capital_scope = { add_province_modifier = { name = omni_rift_watch duration = 1825 } }
+    }
+
+    option = {
+        name = omni_rift.2.b
+        custom_tooltip = omni_rift.2.b_tt
+        add_manpower = 0.5
+    }
+}

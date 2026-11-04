@@ -1,0 +1,319 @@
+﻿namespace = omni_oath
+
+omni_oath.1 = {
+    type = country_event
+    title = omni_oath.1.t
+    desc = omni_oath.1.desc
+    picture = event_rohan_riders
+    left_portrait = current_ruler
+    left_portrait = scope:oath_chief_left
+    right_portrait = scope:sunaksatre
+    right_portrait = scope:oath_chief_right
+    goto_location = capital_scope
+
+    immediate = {
+        hidden_effect = {
+            random_character = {
+                limit = {
+                    is_alive = yes
+                    is_adult = yes
+                    is_ruler = no
+                    prisoner = no
+                    OR = { is_clan_chief = yes is_head_of_family = yes }
+                }
+                save_scope_as = oath_chief_left
+            }
+            if = {
+                limit = { exists = scope:oath_chief_left }
+                random_character = {
+                    limit = {
+                        is_alive = yes
+                        is_adult = yes
+                        is_ruler = no
+                        prisoner = no
+                        OR = { is_clan_chief = yes is_head_of_family = yes }
+                        NOT = { this = scope:oath_chief_left }
+                    }
+                    save_scope_as = oath_chief_right
+                }
+            }
+            create_character = {
+                first_name = "Sunaksatre"
+                culture = sind
+                religion = dragkhan_pantheon
+                female = no
+                age = 28
+                no_stats = yes
+                add_martial = 10
+                add_finesse = 6
+                add_charisma = 10
+                add_zeal = 11
+                add_trait = founder
+                add_trait = tactician
+                save_scope_as = sunaksatre
+            }
+        }
+    }
+
+    option = {
+        name = omni_oath.1.a
+        trigger = { political_influence >= 30 }
+        custom_tooltip = omni_oath.1.a_tt
+        add_political_influence = -30
+        set_as_ruler = scope:sunaksatre
+        scope:sunaksatre = { add_popularity = 10 }
+        hidden_effect = { omni_oath_found = yes }
+    }
+
+    option = {
+        name = omni_oath.1.b
+        custom_tooltip = omni_oath.1.b_tt
+        add_manpower = 1
+        hidden_effect = { omni_oath_found = yes }
+    }
+}
+
+omni_oath.2 = {
+    type = country_event
+    title = omni_oath.2.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_global_variable = omni_girm_captured } desc = omni_oath.2.desc_girm }
+            triggered_desc = { trigger = { has_global_variable = omni_girm_frontier } desc = omni_oath.2.desc_frontier }
+            triggered_desc = { trigger = { always = yes } desc = omni_oath.2.desc_sov }
+        }
+    }
+    picture = event_royal_court
+    left_portrait = current_ruler
+    right_portrait = scope:oath_envoy
+    goto_location = p:4864
+
+    immediate = {
+        create_character = { culture = kaixa religion = helluvian save_scope_as = oath_envoy }
+        set_variable = omni_oath_morrigon_open
+    }
+
+    option = {
+        name = omni_oath.2.a
+        trigger = { political_influence >= 25 }
+        custom_tooltip = omni_oath.2.a_tt
+        add_political_influence = -25
+        set_variable = omni_oath_guarantees
+        hidden_effect = { omni_oath_morrigon_claims = yes }
+    }
+
+    option = {
+        name = omni_oath.2.b
+        custom_tooltip = omni_oath.2.b_tt
+        add_manpower = 1.5
+        hidden_effect = { omni_oath_morrigon_claims = yes }
+    }
+}
+
+omni_oath.3 = {
+    type = country_event
+    title = omni_oath.3.t
+    desc = omni_oath.3.desc
+    picture = event_corsair_ships
+    left_portrait = current_ruler
+    right_portrait = scope:oath_luxterran_envoy
+    goto_location = scope:oath_port
+
+    trigger = {
+        has_variable = omni_oath_morrigon_open
+        NOT = { has_variable = omni_oath_luxterra_open }
+        p:4864 = { owner = root }
+        any_owned_province = { is_port = yes is_in_region = dragon_lands_west }
+    }
+
+    immediate = {
+        random_owned_province = {
+            limit = { is_port = yes is_in_region = dragon_lands_west }
+            save_scope_as = oath_port
+        }
+        random_province = {
+            limit = {
+                is_port = yes
+                omni_oath_luxterra_province = yes
+                has_owner = yes
+                is_capital = no
+                owner = { is_subject = no NOR = { this = root war_with = root } }
+            }
+            save_scope_as = oath_landing_port
+        }
+        if = {
+            limit = { exists = scope:oath_landing_port }
+            scope:oath_landing_port.owner.current_ruler = { save_scope_as = oath_luxterran_envoy }
+        }
+        else = {
+            create_character = { religion = beatepian_pantheon save_scope_as = oath_luxterran_envoy }
+        }
+        set_variable = omni_oath_luxterra_open
+        if = {
+            limit = { has_variable = omni_oath_guarantees }
+            every_owned_province = {
+                limit = { is_in_region = dragon_lands_west }
+                add_province_modifier = { name = omni_oath_guaranteed_towns duration = 3650 }
+            }
+        }
+    }
+
+    option = {
+        name = omni_oath.3.a
+        trigger = {
+            has_variable = omni_oath_guarantees
+            exists = scope:oath_landing_port
+            treasury >= 100
+            political_influence >= 20
+        }
+        custom_tooltip = omni_oath.3.a_tt
+        add_treasury = -100
+        add_political_influence = -20
+        add_manpower = 1
+        hidden_effect = {
+            omni_oath_luxterra_claims = yes
+            root = { save_scope_as = oath_patron }
+            scope:oath_landing_port.owner = {
+                trigger_event = { id = omni_oath.6 days = 14 }
+            }
+        }
+    }
+
+    option = {
+        name = omni_oath.3.b
+        trigger = { treasury >= 150 }
+        custom_tooltip = omni_oath.3.b_tt
+        add_treasury = -150
+        create_unit = {
+            name = "Fleet of the Oath"
+            navy = yes
+            location = scope:oath_port
+            add_subunit = liburnian
+            add_subunit = liburnian
+            add_subunit = liburnian
+            add_subunit = liburnian
+            add_subunit = liburnian
+            add_subunit = liburnian
+        }
+        hidden_effect = { omni_oath_luxterra_claims = yes }
+    }
+
+    option = {
+        name = omni_oath.3.c
+        custom_tooltip = omni_oath.3.c_tt
+        hidden_effect = { omni_oath_luxterra_claims = yes }
+    }
+}
+
+omni_oath.4 = {
+    type = country_event
+    title = omni_oath.4.t
+    desc = omni_oath.4.desc
+    picture = event_human_council
+    left_portrait = current_ruler
+    right_portrait = scope:oath_speaker
+    goto_location = capital_scope
+
+    trigger = {
+        has_variable = omni_oath_luxterra_open
+        NOT = { has_variable = omni_oath_empire }
+        p:4864 = { owner = root }
+        any_owned_province = { is_port = yes is_in_region = dragon_lands_west }
+        any_owned_province = { count >= 6 is_in_region = dragon_lands_west }
+        any_owned_province = { count >= 4 omni_oath_luxterra_province = yes }
+        any_owned_province = { is_port = yes omni_oath_luxterra_province = yes }
+        war = no
+    }
+
+    immediate = {
+        create_character = { save_scope_as = oath_speaker }
+    }
+
+    option = {
+        name = omni_oath.4.a
+        trigger = { political_influence >= 40 }
+        custom_tooltip = omni_oath.4.a_tt
+        add_political_influence = -40
+        add_stability = 5
+        set_variable = omni_oath_assembly
+        hidden_effect = { omni_oath_proclaim = yes }
+    }
+
+    option = {
+        name = omni_oath.4.b
+        custom_tooltip = omni_oath.4.b_tt
+        current_ruler = { add_popularity = 10 }
+        hidden_effect = { omni_oath_proclaim = yes }
+    }
+}
+
+omni_oath.5 = {
+    type = country_event
+    title = omni_oath.5.t
+    desc = omni_oath.5.desc
+    picture = event_human_council
+    left_portrait = current_ruler
+    right_portrait = scope:oath_successor_envoy
+    goto_location = capital_scope
+
+    immediate = {
+        create_character = { save_scope_as = oath_successor_envoy }
+    }
+
+    option = {
+        name = omni_oath.5.a
+        trigger = { has_variable = omni_oath_assembly political_influence >= 25 }
+        custom_tooltip = omni_oath.5.a_tt
+        add_political_influence = -25
+        add_legitimacy = 15
+    }
+
+    option = {
+        name = omni_oath.5.b
+        trigger = { treasury >= 100 }
+        custom_tooltip = omni_oath.5.b_tt
+        add_treasury = -100
+        add_legitimacy = 10
+    }
+
+    option = {
+        name = omni_oath.5.c
+        custom_tooltip = omni_oath.5.c_tt
+        add_stability = -8
+        add_legitimacy = -10
+    }
+}
+
+omni_oath.6 = {
+    type = country_event
+    title = omni_oath.6.t
+    desc = omni_oath.6.desc
+    picture = event_corsair_ships
+    left_portrait = current_ruler
+    right_portrait = scope:oath_patron.current_ruler
+    goto_location = scope:oath_landing_port
+
+    trigger = {
+        exists = scope:oath_patron
+        scope:oath_patron = { has_land = yes NOT = { war_with = root } }
+        scope:oath_landing_port = { owner = root is_capital = no }
+    }
+
+    option = {
+        name = omni_oath.6.a
+        custom_tooltip = omni_oath.6.a_tt
+        ai_chance = { factor = 1 }
+        add_treasury = 50
+        scope:oath_landing_port = {
+            set_owned_by = scope:oath_patron
+            add_province_modifier = { name = omni_oath_guaranteed_towns duration = 3650 }
+        }
+    }
+
+    option = {
+        name = omni_oath.6.b
+        custom_tooltip = omni_oath.6.b_tt
+        ai_chance = { factor = 3 }
+        current_ruler = { add_popularity = 3 }
+    }
+}

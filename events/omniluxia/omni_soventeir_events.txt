@@ -1,0 +1,151 @@
+﻿namespace = omni_soventeir
+
+omni_soventeir.1 = {
+    type = country_event
+    title = omni_soventeir.1.t
+    desc = omni_soventeir.1.desc
+    picture = war_chest
+    left_portrait = current_ruler
+    right_portrait = char:111
+    goto_location = capital_scope
+
+    trigger = {
+        tag = SOV
+        current_date >= 1003.1.1
+        current_date < 1020.1.1
+        current_ruler = char:165
+        char:111 = { is_alive = yes employer = root }
+        war = no
+        num_of_cities >= 6
+        NOT = { has_global_variable = omni_sov_audited }
+    }
+
+    immediate = {
+        set_global_variable = omni_sov_audited
+        hidden_effect = { trigger_event = { id = omni_soventeir.2 days = { 120 180 } } }
+    }
+
+    option = {
+        name = omni_soventeir.1.a
+        custom_tooltip = omni_soventeir.1.a_tt
+        add_treasury = 60
+        current_ruler = { add_popularity = 5 }
+        hidden_effect = { set_variable = omni_sov_officials }
+    }
+
+    option = {
+        name = omni_soventeir.1.b
+        trigger = { political_influence >= 30 }
+        custom_tooltip = omni_soventeir.1.b_tt
+        add_political_influence = -30
+        hidden_effect = { set_variable = omni_sov_clans_courted }
+    }
+
+    option = {
+        name = omni_soventeir.1.c
+        trigger = { treasury >= 100 }
+        custom_tooltip = omni_soventeir.1.c_tt
+        add_treasury = -100
+        every_owned_province = {
+            limit = { is_in_region = dragon_lands_west num_of_fortress_building >= 1 }
+            add_province_modifier = { name = omni_sov_garrison duration = 3650 }
+        }
+    }
+}
+
+omni_soventeir.2 = {
+    type = country_event
+    title = omni_soventeir.2.t
+    desc = omni_soventeir.2.desc
+    picture = war_chest
+    left_portrait = char:165
+    right_portrait = char:111
+    goto_location = capital_scope
+
+    trigger = {
+        tag = SOV
+        current_ruler = char:165
+        char:111 = { is_alive = yes employer = root }
+        num_of_cities >= 6
+        NOT = { has_global_variable = omni_sov_war_started }
+    }
+
+    option = {
+        name = omni_soventeir.2.a
+        custom_tooltip = omni_soventeir.2.a_tt
+        hidden_effect = { omni_sov_start_war = yes }
+    }
+
+    option = {
+        name = omni_soventeir.2.b
+        trigger = { is_ai = no }
+        custom_tooltip = omni_soventeir.2.b_tt
+        hidden_effect = {
+            omni_sov_start_war = yes
+            if = { limit = { exists = scope:sov_rebels } set_player_country = scope:sov_rebels }
+        }
+    }
+}
+
+omni_soventeir.3 = {
+    type = country_event
+    title = omni_soventeir.3.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_global_variable = omni_sov_zmetya_won } desc = omni_soventeir.3.desc_zmetya }
+            triggered_desc = { trigger = { always = yes } desc = omni_soventeir.3.desc }
+        }
+    }
+    picture = event_human_council
+    left_portrait = current_ruler
+    right_portrait = scope:clan_petitioner
+    goto_location = capital_scope
+
+    immediate = {
+        create_character = { culture = sind religion = dragkhan_pantheon save_scope_as = clan_petitioner }
+    }
+
+    option = {
+        name = omni_soventeir.3.a
+        trigger = { treasury >= 100 }
+        custom_tooltip = omni_soventeir.3.a_tt
+        add_treasury = -100
+        add_stability = 5
+        hidden_effect = { set_global_variable = omni_sov_clan_settlement }
+    }
+
+    option = {
+        name = omni_soventeir.3.b
+        trigger = { treasury >= 75 }
+        custom_tooltip = omni_soventeir.3.b_tt
+        add_treasury = -75
+        add_manpower = 1
+        if = {
+            limit = { p:4864 = { owner = root } }
+            p:4864 = { add_province_modifier = { name = omni_sov_garrison duration = 3650 } }
+        }
+    }
+
+    option = {
+        name = omni_soventeir.3.c
+        custom_tooltip = omni_soventeir.3.c_tt
+    }
+}
+
+# Existing campaigns can muster the host for an active Soventeir revolt.
+omni_soventeir.4 = {
+    type = country_event
+    hidden = yes
+
+    immediate = {
+        if = {
+            limit = {
+                has_variable = omni_sov_rebel_side
+                has_global_variable = omni_sov_war_started
+                NOT = { has_global_variable = omni_sov_war_resolved }
+                civil_war_with = c:SOV
+            }
+            omni_sov_muster_rebel_host = yes
+        }
+    }
+}

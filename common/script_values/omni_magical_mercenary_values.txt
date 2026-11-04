@@ -1,0 +1,61 @@
+﻿# Magical mercenary pricing. Character scope unless noted.
+# Hire price = normal recruitment price x multiplier (applied by the custom
+# Recruit button and by the AI recruit script).
+omni_magic_merc_hire_mult_svalue = {
+	value = 2
+	if = {
+		limit = { var:omni_merc_magic_tier = 2 }
+		value = 3
+	}
+	else_if = {
+		limit = { var:omni_merc_magic_tier = 3 }
+		value = 4.5
+	}
+	else_if = {
+		limit = { var:omni_merc_magic_tier >= 4 }
+		value = 7
+	}
+}
+
+# Extra gold per month on top of the band's normal maintenance.
+omni_magic_merc_upkeep_svalue = {
+	value = 0.75
+	if = {
+		limit = { var:omni_merc_magic_tier = 2 }
+		value = 1.5
+	}
+	else_if = {
+		limit = { var:omni_merc_magic_tier = 3 }
+		value = 2.5
+	}
+	else_if = {
+		limit = { var:omni_merc_magic_tier >= 4 }
+		value = 4
+	}
+}
+
+# COUNTRY scope. Requires the captain saved as scope:omni_magic_merc_price_target.
+omni_magic_merc_hire_price_svalue = {
+	value = recruit_mercenary_cost_svalue
+	multiply = scope:omni_magic_merc_price_target.var:omni_merc_magic_hire_mult
+}
+
+# COUNTRY scope. Same, minus the normal price the AI already paid via pay_price.
+omni_magic_merc_ai_premium_svalue = {
+	value = scope:omni_magic_merc_price_target.var:omni_merc_magic_hire_mult
+	subtract = 1
+	multiply = recruit_mercenary_cost_svalue
+}
+
+# COUNTRY scope. Total arcane upkeep owed this month.
+omni_magic_merc_country_upkeep_svalue = {
+	value = 0
+	every_character = {
+		limit = {
+			is_mercenary = yes
+			has_trait = omni_magical_mercenary_trait
+			has_variable = omni_merc_magic_upkeep
+		}
+		add = var:omni_merc_magic_upkeep
+	}
+}

@@ -18,6 +18,20 @@
 		remove_variable = ai_economic_policy_income_tax_high
 		remove_variable = ai_economic_policy_expense_fort_default
 
+		# PERF: country_outgoing/incoming_trade_routes are generated script values with
+		# hundreds of branches each. The checks below used to evaluate them up to four
+		# times; compute each once into a temporary variable instead.
+		set_variable = { name = omni_tmp_outgoing_trade_routes value = country_outgoing_trade_routes }
+		set_variable = { name = omni_tmp_incoming_trade_routes value = country_incoming_trade_routes }
+		set_variable = {
+			name = omni_tmp_commerce_route_balance
+			value = {
+				value = var:omni_tmp_outgoing_trade_routes
+				multiply = -3
+				add = var:omni_tmp_incoming_trade_routes
+			}
+		}
+
         if = {
 			limit = {
 				# Default policy is allowed only if the capital has trade routes from other sources anyways.
@@ -34,12 +48,12 @@
 					limit = {
 						has_low_economic_policy = income_commerce
 					}
-					country_outgoing_trade_routes < 4
-					country_incoming_trade_routes < 12
+					var:omni_tmp_outgoing_trade_routes < 4
+					var:omni_tmp_incoming_trade_routes < 12
 				}
 				trigger_else = {
-					country_outgoing_trade_routes < 5
-					country_incoming_trade_routes < 15
+					var:omni_tmp_outgoing_trade_routes < 5
+					var:omni_tmp_incoming_trade_routes < 15
 				}
 			}
 			set_variable = {
@@ -50,13 +64,16 @@
 		else_if = {
 			limit = {
 				# Export is 100% income, import is 35% - needs 3x more imports for them to bring more money
-				country_incoming_trade_routes > country_outgoing_trade_routes_mult_3
+				var:omni_tmp_commerce_route_balance > 0
 			}
 			set_variable = {
 				name = ai_economic_policy_income_commerce_high
 				days = 366
 			}
 		}
+		remove_variable = omni_tmp_outgoing_trade_routes
+		remove_variable = omni_tmp_incoming_trade_routes
+		remove_variable = omni_tmp_commerce_route_balance
 
 		# This once is pretty expensive, as it checks research_efficiency_svalue, which is any_owned_province
         if = {

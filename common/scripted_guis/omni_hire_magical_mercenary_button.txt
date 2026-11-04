@@ -1,0 +1,38 @@
+﻿# Replaces the vanilla Recruit button for magical captains only. The GUI also
+# requires MercenaryItem.CanHire, so every vanilla hiring rule (slots, range,
+# combat, etc.) still applies; this only adds the higher price and upkeep.
+omni_hire_magical_mercenary_button = {
+	scope = character
+	saved_scopes = { player }
+
+	is_shown = {
+		is_mercenary = yes
+		has_trait = omni_magical_mercenary_trait
+		has_variable = omni_merc_magic_hire_mult
+		exists = c:MER
+		employer = c:MER
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	is_valid = {
+		save_temporary_scope_as = omni_magic_merc_price_target
+		scope:player = {
+			treasury >= omni_magic_merc_hire_price_svalue
+		}
+	}
+
+	effect = {
+		save_scope_as = omni_magic_merc_price_target
+		scope:player = {
+			add_treasury = {
+				value = omni_magic_merc_hire_price_svalue
+				multiply = -1
+			}
+		}
+		change_mercenary_employer = scope:player
+		scope:player = { omni_start_magic_merc_upkeep = yes }
+	}
+}

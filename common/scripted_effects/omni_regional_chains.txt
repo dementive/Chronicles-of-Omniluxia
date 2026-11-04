@@ -1,0 +1,188 @@
+﻿omni_sov_start_war = {
+    set_global_variable = omni_sov_war_started
+    start_civil_war = char:111
+    char:111.employer = {
+        if = {
+            limit = { NOT = { this = root } }
+            save_scope_as = sov_rebels
+            set_variable = omni_sov_rebel_side
+            change_country_name = "Zmetya's Sovenerians"
+            set_country_religion = dragkhan_pantheon
+            omni_sov_muster_rebel_host = yes
+            if = {
+                limit = { root = { has_variable = omni_sov_officials } }
+                add_treasury = 60
+            }
+            if = {
+                limit = { root = { NOT = { has_variable = omni_sov_clans_courted } } }
+                create_unit = {
+                    name = "The Western Riders"
+                    location = scope:sov_rebels.capital_scope
+                    add_subunit = light_cavalry
+                    add_subunit = light_cavalry
+                    add_subunit = light_cavalry
+                    add_subunit = light_cavalry
+                }
+            }
+        }
+    }
+    if = {
+        limit = { exists = scope:sov_rebels }
+        set_variable = omni_sov_loyal_side
+    }
+    else = {
+        remove_global_variable = omni_sov_war_started
+    }
+}
+
+omni_sov_muster_rebel_host = {
+    if = {
+        limit = { NOT = { has_variable = omni_sov_rebel_host_mustered } }
+        set_variable = omni_sov_rebel_host_mustered
+        add_treasury = 100
+        add_manpower = 3
+        create_unit = {
+            name = "Zmetya's Host"
+            location = capital_scope
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_infantry
+            add_subunit = light_infantry
+            add_subunit = archers
+            add_subunit = archers
+        }
+    }
+}
+
+omni_sov_conclude_war = {
+    if = {
+        limit = {
+            NOT = { has_global_variable = omni_sov_war_resolved }
+            OR = {
+                AND = {
+                    has_variable = omni_sov_loyal_side
+                    scope:losing_side = { has_variable = omni_sov_rebel_side }
+                }
+                AND = {
+                    has_variable = omni_sov_rebel_side
+                    scope:losing_side = { has_variable = omni_sov_loyal_side }
+                }
+            }
+        }
+        set_global_variable = omni_sov_war_resolved
+        set_global_variable = { name = omni_sov_muster_delay days = 365 }
+        if = {
+            limit = { has_variable = omni_sov_rebel_side }
+            set_global_variable = omni_sov_zmetya_won
+            change_country_name = "Soventeir Ulus"
+        }
+        trigger_event = { id = omni_soventeir.3 days = 1 }
+    }
+}
+
+omni_girm_queue_invasion = {
+    set_variable = omni_girm_invasion_pending
+    set_variable = { name = omni_girm_invasion_timer days = $DAYS$ }
+    p:4864.owner = {
+        if = {
+            limit = { NOT = { this = root } }
+            trigger_event = { id = omni_girm.2 days = 1 }
+        }
+    }
+}
+
+omni_girm_launch_invasion = {
+    remove_variable = omni_girm_invasion_pending
+    p:4864.owner = { save_scope_as = girm_war_target }
+    set_variable = { name = omni_girm_target value = scope:girm_war_target }
+    scope:girm_war_target = {
+        every_owned_province = {
+            limit = { is_in_region = dragon_lands_west }
+            set_variable = omni_girm_war_territory
+        }
+    }
+    declare_war_with_wargoal = {
+        war_goal = omni_girm_invasion
+        province = 4864
+        target = scope:girm_war_target
+    }
+}
+
+omni_girm_finish_invasion = {
+    set_global_variable = omni_girm_war_resolved
+    if = {
+        limit = { p:4864 = { owner = root } }
+        set_global_variable = omni_girm_captured
+        if = {
+            limit = { has_variable = omni_girm_urhuk_share }
+            add_treasury = -40
+        }
+        trigger_event = { id = omni_girm.3 days = 1 }
+    }
+    else_if = {
+        limit = { any_owned_province = { has_variable = omni_girm_war_territory } }
+        set_global_variable = omni_girm_frontier
+        trigger_event = { id = omni_girm.3 days = 1 }
+    }
+    else_if = {
+        limit = { p:4864 = { has_owner = yes } }
+        p:4864.owner = { trigger_event = { id = omni_girm.3 days = 1 } }
+    }
+    remove_variable = omni_girm_target
+}
+
+omni_oath_found = {
+    set_country_religion = dragkhan_pantheon
+    if = {
+        limit = { NOT = { has_global_variable = omni_sov_clan_settlement } }
+        create_unit = {
+            name = "The Riders of the Oath"
+            location = root.capital_scope
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_infantry
+            add_subunit = light_infantry
+            add_subunit = archers
+            add_subunit = archers
+        }
+    }
+    trigger_event = { id = omni_oath.2 days = { 90 180 } }
+}
+
+omni_oath_morrigon_claims = {
+    every_province = {
+        limit = {
+            is_in_region = dragon_lands_west
+            has_owner = yes
+            NOT = { owner = root }
+        }
+        add_claim = root
+    }
+}
+
+omni_oath_luxterra_claims = {
+    every_province = {
+        limit = {
+            omni_oath_luxterra_province = yes
+            has_owner = yes
+            NOT = { owner = root }
+        }
+        add_claim = root
+    }
+}
+
+omni_oath_proclaim = {
+    set_variable = omni_oath_empire
+    set_variable = { name = omni_oath_first_ruler value = current_ruler }
+    change_country_name = "Reformed Dragkhanic Empire"
+    change_country_adjective = "Dragkhanic"
+    change_government = imperium
+}

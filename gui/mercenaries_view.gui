@@ -23,12 +23,35 @@ types MercViewTypes
 		}
 		icon = {
 			name = "omni_mercenary_magic_indicator"
-			position = { 50 76 }
-			size = { 20 20 }
+			position = { 44 74 }
+			size = { 28 28 }
 			texture = "gfx/interface/icons/modifiers/magic_modifier.dds"
 			datacontext = "[GetScriptedGui('omni_mercenary_magic_indicator')]"
 			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 			tooltip = "omni_mercenary_magic_tt"
+		}
+		# Magical captain badge (big, in the empty space above the Recruit button)
+		flowcontainer = {
+			name = "omni_mercenary_magic_badge"
+			position = { 444 30 }
+			direction = horizontal
+			spacing = 4
+			datacontext = "[GetScriptedGui('omni_mercenary_magic_indicator')]"
+			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			tooltip = "omni_mercenary_magic_tt"
+			icon = {
+				size = { 30 30 }
+				texture = "gfx/interface/icons/modifiers/magic_modifier.dds"
+				parentanchor = vcenter
+			}
+			textbox = {
+				autoresize = yes
+				parentanchor = vcenter
+				text = "omni_merc_magic_badge"
+				font = HeaderFont
+				fontsize = 18
+				align = left|nobaseline
+			}
 		}
 		
 		flowcontainer = {
@@ -79,17 +102,46 @@ types MercViewTypes
 			}							
 		}
 		
+		# Vanilla Recruit: hidden for magical captains (they use the button below)
 		text_button_square = {
 			position = { 437 70 }
 			size = { 160 28 }
+			datacontext = "[GetScriptedGui('omni_hire_magical_mercenary_button')]"
 			tooltip = "[MercenaryItem.GetButtonTooltip]"
-			visible = "[Not(MercenaryItem.GetMercenary.IsEmployed)]"
+			visible = "[And( Not(MercenaryItem.GetMercenary.IsEmployed), Not( ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End ) ) )]"
 			blockoverride "On_click"
-			{ 
-				onclick = "[MercenaryItem.OnClick]" 
+			{
+				onclick = "[MercenaryItem.OnClick]"
 				enabled = "[MercenaryItem.CanHire]"
 			}
 			blockoverride "Center_text" { text = "RECRUIT_MERCENARY_BUTTON" }
+		}
+		# Magical captain, vanilla hiring rules not met: show the vanilla reason
+		text_button_square = {
+			position = { 437 70 }
+			size = { 160 28 }
+			datacontext = "[GetScriptedGui('omni_hire_magical_mercenary_button')]"
+			tooltip = "[MercenaryItem.GetButtonTooltip]"
+			visible = "[And( ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End ), Not( MercenaryItem.CanHire ) )]"
+			blockoverride "On_click"
+			{
+				enabled = no
+			}
+			blockoverride "Center_text" { text = "omni_recruit_magical_mercenary_button" }
+		}
+		# Magical captain, hireable: premium price + arcane upkeep
+		text_button_square = {
+			position = { 437 70 }
+			size = { 160 28 }
+			datacontext = "[GetScriptedGui('omni_hire_magical_mercenary_button')]"
+			tooltip = "omni_hire_magical_mercenary_tt"
+			visible = "[And( ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End ), MercenaryItem.CanHire )]"
+			blockoverride "On_click"
+			{
+				enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+				onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			}
+			blockoverride "Center_text" { text = "omni_recruit_magical_mercenary_button" }
 		}
 		
 		text_button_square = {
@@ -171,14 +223,28 @@ types MercViewTypes
 			using = Black_FontColor
 			alpha = 0.9
 		}
-		icon = {
-			name = "omni_mercenary_magic_indicator"
-			position = { 88 5 }
-			size = { 20 20 }
-			texture = "gfx/interface/icons/modifiers/magic_modifier.dds"
+		# Magical captain badge (big, in the empty space above the Recruit button)
+		flowcontainer = {
+			name = "omni_mercenary_magic_badge"
+			position = { 440 8 }
+			direction = horizontal
+			spacing = 4
 			datacontext = "[GetScriptedGui('omni_mercenary_magic_indicator')]"
 			visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 			tooltip = "omni_mercenary_magic_tt"
+			icon = {
+				size = { 26 26 }
+				texture = "gfx/interface/icons/modifiers/magic_modifier.dds"
+				parentanchor = vcenter
+			}
+			textbox = {
+				autoresize = yes
+				parentanchor = vcenter
+				text = "omni_merc_magic_badge"
+				font = HeaderFont
+				fontsize = 16
+				align = left|nobaseline
+			}
 		}
 		flowcontainer = {
 			position = { 5 39 }
@@ -227,17 +293,46 @@ types MercViewTypes
 			}							
 		}
 		
+		# Vanilla Recruit: hidden for magical captains (they use the button below)
 		text_button_square = {
 			position = { 487 44 }
 			size = { 107 28 }
+			datacontext = "[GetScriptedGui('omni_hire_magical_mercenary_button')]"
 			tooltip = "[MercenaryItem.GetButtonTooltip]"
-			visible = "[Not(MercenaryItem.GetMercenary.IsEmployed)]"
+			visible = "[And( Not(MercenaryItem.GetMercenary.IsEmployed), Not( ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End ) ) )]"
 			blockoverride "On_click"
-			{ 
-				onclick = "[MercenaryItem.OnClick]" 
+			{
+				onclick = "[MercenaryItem.OnClick]"
 				enabled = "[MercenaryItem.CanHire]"
 			}
 			blockoverride "Center_text" { text = "RECRUIT_MERCENARY_BUTTON" }
+		}
+		# Magical captain, vanilla hiring rules not met: show the vanilla reason
+		text_button_square = {
+			position = { 487 44 }
+			size = { 107 28 }
+			datacontext = "[GetScriptedGui('omni_hire_magical_mercenary_button')]"
+			tooltip = "[MercenaryItem.GetButtonTooltip]"
+			visible = "[And( ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End ), Not( MercenaryItem.CanHire ) )]"
+			blockoverride "On_click"
+			{
+				enabled = no
+			}
+			blockoverride "Center_text" { text = "omni_recruit_magical_mercenary_button" }
+		}
+		# Magical captain, hireable: premium price + arcane upkeep
+		text_button_square = {
+			position = { 487 44 }
+			size = { 107 28 }
+			datacontext = "[GetScriptedGui('omni_hire_magical_mercenary_button')]"
+			tooltip = "omni_hire_magical_mercenary_tt"
+			visible = "[And( ScriptedGui.IsShown( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End ), MercenaryItem.CanHire )]"
+			blockoverride "On_click"
+			{
+				enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+				onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( MercenaryItem.GetMercenary.GetCommander.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+			}
+			blockoverride "Center_text" { text = "omni_recruit_magical_mercenary_button" }
 		}
 		
 		text_button_square = {

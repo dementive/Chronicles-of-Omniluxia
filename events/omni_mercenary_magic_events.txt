@@ -1,27 +1,54 @@
 ﻿namespace = omni_mercenary_magic
 
-# These are scheduled once from on_game_initialized. They have no pulse and
-# only inspect MER's mercenary captains when their single delayed date arrives.
+# Yearly roll for magical mercenary captains. MER only, self-rescheduling.
+# The cooldown variable kills any duplicate chain (e.g. events scheduled by
+# older saves of the previous design).
 omni_mercenary_magic.1 = {
 	type = country_event
 	hidden = yes
-	fire_only_once = yes
-	trigger = { tag = MER }
-	immediate = { omni_seed_tier_two_magical_mercenaries = yes }
+	trigger = {
+		tag = MER
+		NOT = { has_global_variable = omni_merc_magic_roll_cd }
+	}
+	immediate = {
+		set_global_variable = { name = omni_merc_magic_roll_cd days = 300 }
+		omni_mercenary_magic_yearly_effect = yes
+		trigger_event = { id = omni_mercenary_magic.1 days = 365 }
+	}
 }
 
+# Monthly arcane upkeep, only for a country employing a magical captain.
 omni_mercenary_magic.2 = {
 	type = country_event
 	hidden = yes
-	fire_only_once = yes
-	trigger = { tag = MER }
-	immediate = { omni_seed_tier_three_magical_mercenaries = yes }
+	trigger = {
+		has_variable = omni_magic_merc_upkeep_active
+		NOT = { has_variable = omni_magic_merc_upkeep_cd }
+	}
+	immediate = {
+		set_variable = { name = omni_magic_merc_upkeep_cd days = 25 }
+		set_local_variable = {
+			name = omni_magic_merc_upkeep_total
+			value = omni_magic_merc_country_upkeep_svalue
+		}
+		if = {
+			limit = { local_var:omni_magic_merc_upkeep_total > 0 }
+			add_treasury = {
+				value = local_var:omni_magic_merc_upkeep_total
+				multiply = -1
+			}
+			trigger_event = { id = omni_mercenary_magic.2 days = 30 }
+		}
+		else = {
+			remove_variable = omni_magic_merc_upkeep_active
+		}
+	}
 }
 
+# Retired (old design scheduled this from game start). Kept so old saves
+# that still have it queued do not log a missing-event error.
 omni_mercenary_magic.3 = {
 	type = country_event
 	hidden = yes
-	fire_only_once = yes
-	trigger = { tag = MER }
-	immediate = { omni_seed_tier_four_magical_mercenaries = yes }
+	trigger = { always = no }
 }

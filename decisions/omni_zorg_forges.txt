@@ -1,0 +1,49 @@
+﻿country_decisions = {
+    omni_zorg_forge_report = {
+        potential = {
+            # Keep the decision eligible for countries the player switches to mid-session.
+            exists = global_var:omni_zorg_forge_host
+            NOT = { this = global_var:omni_zorg_forge_host }
+            OR = {
+                in_diplomatic_range = global_var:omni_zorg_forge_host
+                war_with = global_var:omni_zorg_forge_host
+            }
+        }
+        allow = { always = yes }
+        highlight = {
+            scope:province = {
+                OR = {
+                    has_province_modifier = omni_zorg_void_forge
+                    has_province_modifier = omni_zorg_forge_under_construction
+                }
+            }
+        }
+        effect = {
+            custom_tooltip = omni_zorg_forge_report_tt
+            show_as_tooltip = {
+                every_in_global_list = {
+                    variable = omni_zorg_forge_sites
+                    limit = { has_province_modifier = omni_zorg_void_forge }
+                    save_scope_as = omni_zorg_forge_site
+                    if = {
+                        limit = { has_variable = omni_zorg_forge_mustering }
+                        custom_tooltip = omni_zorg_forge_mustering_location_tt
+                    }
+                    else = { custom_tooltip = omni_zorg_forge_active_location_tt }
+                }
+                if = {
+                    limit = { exists = global_var:omni_zorg_forge_project }
+                    global_var:omni_zorg_forge_project = {
+                        save_scope_as = omni_zorg_forge_site
+                        custom_tooltip = omni_zorg_forge_project_location_tt
+                    }
+                }
+                else_if = {
+                    limit = { global_var:omni_zorg_forge_host = { var:omni_zorg_forges_remaining = 0 } }
+                    custom_tooltip = omni_zorg_forge_no_locations_tt
+                }
+            }
+        }
+        ai_will_do = { base = 0 }
+    }
+}

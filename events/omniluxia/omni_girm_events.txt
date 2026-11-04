@@ -1,0 +1,163 @@
+﻿namespace = omni_girm
+
+omni_girm.1 = {
+    type = country_event
+    title = omni_girm.1.t
+    desc = omni_girm.1.desc
+    picture = event_orc_camp
+    left_portrait = current_ruler
+    right_portrait = scope:muster_envoy
+    goto_location = capital_scope
+
+    trigger = {
+        tag = HOB
+        is_subject = no
+        war = no
+        OR = {
+            has_global_variable = omni_sov_war_resolved
+            AND = {
+                current_date >= 1020.1.1
+                NOT = { has_global_variable = omni_sov_war_started }
+            }
+        }
+        NOT = { has_global_variable = omni_sov_muster_delay }
+        NOT = { has_global_variable = omni_girm_mustered }
+        p:4864 = { has_owner = yes NOT = { owner = root } }
+    }
+
+    immediate = {
+        set_global_variable = omni_girm_mustered
+        create_character = { save_scope_as = muster_envoy }
+        current_ruler = { save_scope_as = girm_ruler }
+    }
+
+    option = {
+        name = omni_girm.1.a
+        trigger = { treasury >= 75 }
+        custom_tooltip = omni_girm.1.a_tt
+        add_treasury = -75
+        create_unit = {
+            name = "The Urhuk Muster"
+            location = root.capital_scope
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_cavalry
+            add_subunit = light_infantry
+            add_subunit = light_infantry
+            add_subunit = light_infantry
+            add_subunit = light_infantry
+        }
+        hidden_effect = {
+            set_variable = omni_girm_urhuk_share
+            omni_girm_queue_invasion = { DAYS = 30 }
+        }
+    }
+
+    option = {
+        name = omni_girm.1.b
+        trigger = { treasury >= 40 political_influence >= 20 }
+        custom_tooltip = omni_girm.1.b_tt
+        add_treasury = -40
+        add_political_influence = -20
+        create_unit = {
+            name = "The Mountain Muster"
+            location = root.capital_scope
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = heavy_infantry
+            add_subunit = archers
+            add_subunit = archers
+            add_subunit = archers
+            add_subunit = archers
+            add_subunit = archers
+            add_subunit = archers
+        }
+        hidden_effect = { omni_girm_queue_invasion = { DAYS = 90 } }
+    }
+
+    option = {
+        name = omni_girm.1.c
+        custom_tooltip = omni_girm.1.c_tt
+        hidden_effect = { omni_girm_queue_invasion = { DAYS = 90 } }
+    }
+}
+
+omni_girm.2 = {
+    type = country_event
+    title = omni_girm.2.t
+    desc = omni_girm.2.desc
+    picture = war_chest
+    left_portrait = current_ruler
+    right_portrait = scope:girm_ruler
+    goto_location = p:4864
+
+    option = {
+        name = omni_girm.2.a
+        trigger = { treasury >= 80 p:4864 = { owner = root } }
+        custom_tooltip = omni_girm.2.a_tt
+        add_treasury = -80
+        p:4864 = { add_province_modifier = { name = omni_girm_watch duration = 1095 } }
+    }
+
+    option = {
+        name = omni_girm.2.b
+        custom_tooltip = omni_girm.2.b_tt
+        add_manpower = 0.75
+        add_stability = -3
+    }
+}
+
+omni_girm.3 = {
+    type = country_event
+    title = omni_girm.3.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_global_variable = omni_girm_captured } desc = omni_girm.3.desc_taken }
+            triggered_desc = { trigger = { has_global_variable = omni_girm_frontier } desc = omni_girm.3.desc_frontier }
+            triggered_desc = { trigger = { always = yes } desc = omni_girm.3.desc_held }
+        }
+    }
+    picture = event_human_council
+    left_portrait = current_ruler
+    right_portrait = scope:girm_peace_envoy
+    goto_location = p:4864
+
+    immediate = {
+        create_character = { save_scope_as = girm_peace_envoy }
+    }
+
+    option = {
+        name = omni_girm.3.a
+        trigger = { has_global_variable = omni_girm_captured treasury >= 80 p:4864 = { owner = root } }
+        custom_tooltip = omni_girm.3.a_tt
+        add_treasury = -80
+        p:4864 = { add_province_modifier = { name = omni_girm_settlement duration = 1825 } }
+    }
+
+    option = {
+        name = omni_girm.3.b
+        trigger = { NOR = { has_global_variable = omni_girm_captured has_global_variable = omni_girm_frontier } treasury >= 50 }
+        custom_tooltip = omni_girm.3.b_tt
+        add_treasury = -50
+        current_ruler = { add_popularity = 5 }
+        add_military_experience = 10
+    }
+
+    option = {
+        name = omni_girm.3.c
+        custom_tooltip = omni_girm.3.c_tt
+        add_stability = 3
+    }
+}

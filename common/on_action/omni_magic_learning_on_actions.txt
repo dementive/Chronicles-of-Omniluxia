@@ -11,13 +11,21 @@ omni_magic_learning_yearly_maintenance = {
 			remove_variable = omni_magic_education_pending
 			set_variable = first_time_mage_var
 		}
-		omni_migrate_legacy_magic = yes
+		# PERF: this pulse fires for every living character in the world (~40k).
+		# omni_check_magic_prestige used to run twice here (once inside
+		# omni_migrate_legacy_magic, once at the end) for everyone, mage or not.
+		# It now runs once, and only for characters with mastery progress - for
+		# anyone else it was a no-op that just wrote a zero counter variable.
+		omni_migrate_legacy_magic_spells = yes
 		omni_folk_sync_practitioner_trait = yes
 		if = {
 			limit = { NOT = { has_character_modifier = cramming_fatigue_timer_modifier } has_trait = cramming_fatigue_trait }
 			remove_trait = cramming_fatigue_trait
 			recalculate_character_magic_vars = yes
 		}
-		omni_check_magic_prestige = yes
+		if = {
+			limit = { omni_has_magic_mastery_progress = yes }
+			omni_check_magic_prestige = yes
+		}
 	}
 }

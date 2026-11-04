@@ -1,0 +1,59 @@
+﻿# Province scope. Resolve the owner on arrival, with a same-area fallback.
+kinone_explorer_dispatch_effect = {
+    clear_saved_scope = kinone_explorer_landing
+    if = {
+        limit = { owner = { exists = current_ruler } }
+        save_scope_as = kinone_explorer_landing
+    }
+    else = {
+        random_area_province = {
+            limit = { owner = { exists = current_ruler } }
+            save_scope_as = kinone_explorer_landing
+        }
+    }
+    if = {
+        limit = {
+            this = p:1566
+            NOT = { exists = scope:kinone_explorer_landing }
+        }
+        random_country = {
+            limit = {
+                country_culture_group = kinones
+                exists = current_ruler
+                exists = capital_scope
+            }
+            capital_scope = { save_scope_as = kinone_explorer_landing }
+        }
+    }
+    if = {
+        limit = { exists = scope:kinone_explorer_landing }
+        scope:kinone_explorer_landing = {
+            owner = { trigger_event = { id = $EVENT$ } }
+        }
+    }
+}
+
+kinone_explorer_create_atlas_effect = {
+    create_country_treasure = {
+        key = "kinone_explorer_atlas"
+        icon = "treasure_architecture"
+        modifier = { local_research_points_modifier = 0.05 }
+    }
+}
+
+kinone_explorer_send_copy_effect = {
+    if = {
+        limit = {
+            exists = $SPONSOR$
+            $SPONSOR$ = {
+                exists = current_ruler
+                NOT = { this = root }
+                NOT = { has_variable = kinone_explorer_received_copy }
+            }
+        }
+        $SPONSOR$ = {
+            set_variable = kinone_explorer_received_copy
+            trigger_event = { id = kinone_explorer.37 }
+        }
+    }
+}

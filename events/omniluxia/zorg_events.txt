@@ -4,318 +4,320 @@ zorg.1 = {
 	type = country_event
 	hidden = yes
 	immediate = {
-		random_list = {
-			1 = {
-				random_province = {
-					limit = {
-						is_in_region = arteon_north_region
-						has_owner = yes
-					}
-					save_scope_as = zorg_landing_site
-				}
+		if = {
+			limit = {
+				NOT = { exists = global_var:omni_zorg_last_landing }
+				exists = global_var:omni_zorg_forge_host
 			}
-			1 = {
-				random_province = {
-					limit = {
-						is_in_region = eptelon_shout_region
-						has_owner = yes
-					}
-					save_scope_as = zorg_landing_site
-				}
-			}
-			1 = {
-				random_province = {
-					limit = {
-						is_in_region = russhovia_region
-						has_owner = yes
-					}
-					save_scope_as = zorg_landing_site
-				}
-			}
-			1 = {
-				random_province = {
-					limit = {
-						is_in_region = zainddian_eastern_eteradica
-						has_owner = yes
-					}
-					save_scope_as = zorg_landing_site
-				}
-			}
-			1 = {
-				random_province = {
-					limit = {
-						is_in_region = errnorfalie_shout
-						has_owner = yes
-					}
-					save_scope_as = zorg_landing_site
-				}
+			global_var:omni_zorg_forge_host.capital_scope = {
+				set_global_variable = { name = omni_zorg_last_landing value = this }
 			}
 		}
-		scope:zorg_landing_site = {
-			area = {
-				every_area_province = {
-					every_pops_in_province = {
-						set_pop_culture = zorg_1
-						set_pop_religion = zorg_religion
-					}
+		random_province = {
+			limit = {
+				has_owner = yes
+				owner = { NOT = { tag = ZRG } }
+				OR = {
+					is_in_region = arteon_north_region
+					is_in_region = eptelon_shout_region
+					is_in_region = russhovia_region
+					is_in_region = zainddian_eastern_eteradica
+					is_in_region = errnorfalie_shout
+				}
+				trigger_if = {
+					limit = { exists = global_var:omni_zorg_last_landing }
+					NOT = { this.region = global_var:omni_zorg_last_landing.region }
 				}
 			}
-			while = {
+			save_scope_as = zorg_landing_site
+		}
+		if = {
+			limit = { NOT = { exists = scope:zorg_landing_site } }
+			random_province = {
 				limit = {
-					total_population < population_cap
-				}
-				random_list = {
-					20 = {
-						define_pop = {
-							type = freemen
-							culture = zorg_1
-							religion = zorg_religion
-						}
-					}
-					30 = {
-						define_pop = {
-							type = serfs
-							culture = zorg_1
-							religion = zorg_religion
-						}
-					}
-					5 = {
-						define_pop = {
-							type = slaves
-							culture = zorg_1
-							religion = zorg_religion
-						}
-					}
-					10 = {
-						define_pop = {
-							type = citizen
-							culture = zorg_1
-							religion = zorg_religion
-						}
-					}
-					1 = {
-						define_pop = {
-							type = nobles
-							culture = zorg_1
-							religion = zorg_religion
-						}
+					has_owner = yes
+					owner = { NOT = { tag = ZRG } }
+					OR = {
+						is_in_region = arteon_north_region
+						is_in_region = eptelon_shout_region
+						is_in_region = russhovia_region
+						is_in_region = zainddian_eastern_eteradica
+						is_in_region = errnorfalie_shout
 					}
 				}
+				save_scope_as = zorg_landing_site
 			}
-			if = {
-				limit = {
-					has_city_status = no
+		}
+		if = {
+			limit = { exists = scope:zorg_landing_site }
+			set_global_variable = { name = omni_zorg_last_landing value = scope:zorg_landing_site }
+			scope:zorg_landing_site = {
+				area = {
+					every_area_province = {
+						every_pops_in_province = {
+							set_pop_culture = zorg_1
+							set_pop_religion = zorg_religion
+						}
+					}
 				}
-				set_city_status = city
-			}
-			create_country = {
-				save_scope_as = zorg_tag
-				add_innovation = 50 # Alien tech
-				add_military_experience = 500
-				add_political_influence = 200
-				add_treasury = 5000
-				add_stability = 75
-				create_character = {
-					female = no
-					culture = zorg_1
-					religion = zorg_religion
-					no_stats = yes
-					add_martial = 12
-					add_zeal = 6
-					add_finesse = 6
-					add_charisma = 7
-					no_traits = yes
-					add_trait = zorg_trait
-					add_trait = conqueror
-					add_trait = vengeful
-					add_trait = ambitious
-					add_trait = aggressive
-					save_scope_as = zorg_ruler_scope
-				}
-				change_country_name = ZRG
-				change_country_tag = ZRG
-				change_country_adjective = ZRGADJ
-				set_country_religion = zorg_religion
-				change_country_flag = ZRG
-				set_as_ruler = scope:zorg_ruler_scope
-				change_country_color = seubi_red
-				set_country_heritage = zorg_heritage
-				change_government = imperium
-				add_country_modifier = {
-					name = zorg_country_modifier
-					duration = -1
+				while = {
+					limit = {
+						total_population < population_cap
+					}
+					random_list = {
+						20 = {
+							define_pop = {
+								type = freemen
+								culture = zorg_1
+								religion = zorg_religion
+							}
+						}
+						30 = {
+							define_pop = {
+								type = serfs
+								culture = zorg_1
+								religion = zorg_religion
+							}
+						}
+						5 = {
+							define_pop = {
+								type = slaves
+								culture = zorg_1
+								religion = zorg_religion
+							}
+						}
+						10 = {
+							define_pop = {
+								type = citizen
+								culture = zorg_1
+								religion = zorg_religion
+							}
+						}
+						1 = {
+							define_pop = {
+								type = nobles
+								culture = zorg_1
+								religion = zorg_religion
+							}
+						}
+					}
 				}
 				if = {
 					limit = {
-						NOT = {
-							primary_culture = zorg_1
-						}
+						has_city_status = no
 					}
-					set_primary_culture_cleanup_effect = {
-						NEW_PRIMARY_CULTURE = zorg_1
-						MAKE_OLD_CULTURE_INTEGRATED = yes
-					}
+					set_city_status = city
 				}
-				every_character = {
-					# Kill all humans
-					limit = {
-						NOT = { this.culture = culture:zorg_1 }
+				create_country = {
+					save_scope_as = zorg_tag
+					add_innovation = 50 # Alien tech
+					add_military_experience = 500
+					add_political_influence = 200
+					add_treasury = 5000
+					add_stability = 75
+					create_character = {
+						female = no
+						culture = zorg_1
+						religion = zorg_religion
+						no_stats = yes
+						add_martial = 12
+						add_zeal = 6
+						add_finesse = 6
+						add_charisma = 7
+						no_traits = yes
+						add_trait = zorg_trait
+						add_trait = conqueror
+						add_trait = vengeful
+						add_trait = ambitious
+						add_trait = aggressive
+						save_scope_as = zorg_ruler_scope
 					}
-					family = { save_scope_as = dead_guy_family }
-					death = {
-						death_reason = death_crucified
+					change_country_name = ZRG
+					change_country_tag = ZRG
+					change_country_adjective = ZRGADJ
+					set_country_religion = zorg_religion
+					change_country_flag = ZRG
+					set_as_ruler = scope:zorg_ruler_scope
+					change_country_color = seubi_red
+					set_country_heritage = zorg_heritage
+					change_government = imperium
+					add_country_modifier = {
+						name = zorg_country_modifier
+						duration = -1
 					}
-					prev = {
-						random_list = {
-							1 = {
-								create_character = {
-									female = yes
-									culture = zorg_1
-									religion = zorg_religion
-									family = scope:dead_guy_family
-								}
-							}
-							2 = {
-								create_character = {
-									female = no
-									culture = zorg_1
-									religion = zorg_religion
-									family = scope:dead_guy_family
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		scope:zorg_landing_site.area = {
-			every_area_province = {
-				limit = {
-					trigger_if = {
+					if = {
 						limit = {
-							has_owner = yes
+							NOT = {
+								primary_culture = zorg_1
+							}
 						}
-						NOT = { owner = scope:zorg_tag }
+						set_primary_culture_cleanup_effect = {
+							NEW_PRIMARY_CULTURE = zorg_1
+							MAKE_OLD_CULTURE_INTEGRATED = yes
+						}
 					}
-					trigger_else = {
-						always = no
+					every_character = {
+						# Kill all humans
+						limit = {
+							NOT = { this.culture = culture:zorg_1 }
+						}
+						family = { save_scope_as = dead_guy_family }
+						death = {
+							death_reason = death_crucified
+						}
+						prev = {
+							random_list = {
+								1 = {
+									create_character = {
+										female = yes
+										culture = zorg_1
+										religion = zorg_religion
+										family = scope:dead_guy_family
+									}
+								}
+								2 = {
+									create_character = {
+										female = no
+										culture = zorg_1
+										religion = zorg_religion
+										family = scope:dead_guy_family
+									}
+								}
+							}
+						}
 					}
 				}
-				set_owned_by = scope:zorg_tag
 			}
-		}
-		scope:zorg_tag = {
-			random_owned_province = {
+			scope:zorg_landing_site.area = {
+				every_area_province = {
+					limit = {
+						trigger_if = {
+							limit = {
+								has_owner = yes
+							}
+							NOT = { owner = scope:zorg_tag }
+						}
+						trigger_else = {
+							always = no
+						}
+					}
+					set_owned_by = scope:zorg_tag
+				}
+			}
+			scope:zorg_tag = {
+				random_owned_province = {
+					limit = {
+						is_port = yes
+					}
+					owner = {
+						create_unit = {
+							navy = yes
+							location = prev.prev
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = liburnian
+							add_subunit = trireme
+							add_subunit = trireme
+							add_subunit = trireme
+							add_subunit = trireme
+							add_subunit = trireme
+						}
+					}
+				}
+				create_unit = {
+					location = capital_scope
+					while = {
+						count = 15
+						add_subunit = light_infantry
+					}
+					while = {
+						count = 5
+						add_subunit = heavy_infantry
+					}
+					while = {
+						count = 5
+						add_subunit = heavy_cavalry
+					}
+				}
+				create_unit = {
+					location = capital_scope
+					while = {
+						count = 15
+						add_subunit = light_infantry
+					}
+					while = {
+						count = 5
+						add_subunit = heavy_infantry
+					}
+					while = {
+						count = 5
+						add_subunit = heavy_cavalry
+					}
+				}
+				capital_scope.region = {
+					every_neighbor_region = {
+						every_region_province = {
+							limit = { has_owner = yes }
+							add_claim = scope:zorg_tag
+						}
+					}
+				}
+				omni_zorg_forge_setup_effect = yes
+				create_family = scope:zorg_ruler_scope
+				while = {
+					count = 8
+					random_list = {
+						1 = {
+							create_character = {
+								female = yes
+								culture = zorg_1
+								religion = zorg_religion
+								family = scope:zorg_ruler_scope.family
+							}
+						}
+						2 = {
+							create_character = {
+								female = no
+								culture = zorg_1
+								religion = zorg_religion
+								family = scope:zorg_ruler_scope.family
+							}
+						}
+					}
+				}
+				trigger_event = {
+					id = zorg.3
+					days = { 5 30 }
+				}
+			}
+			every_country = {
 				limit = {
-					is_port = yes
+					is_ai = no
 				}
-				owner = {
-					create_unit = {
-						navy = yes
-						location = prev.prev
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = liburnian
-						add_subunit = trireme
-						add_subunit = trireme
-						add_subunit = trireme
-						add_subunit = trireme
-						add_subunit = trireme
-					}
-				}
+				trigger_event = zorg.2
 			}
-			create_unit = {
-				location = capital_scope
-				while = {
-					count = 15
-					add_subunit = light_infantry
-				}
-				while = {
-					count = 5
-					add_subunit = heavy_infantry
-				}
-				while = {
-					count = 5
-					add_subunit = heavy_cavalry
-				}
-			}
-			create_unit = {
-				location = capital_scope
-				while = {
-					count = 15
-					add_subunit = light_infantry
-				}
-				while = {
-					count = 5
-					add_subunit = heavy_infantry
-				}
-				while = {
-					count = 5
-					add_subunit = heavy_cavalry
-				}
-			}
-			capital_scope.region = {
-				every_neighbor_region = {
-					every_region_province = {
-						limit = { has_owner = yes }
-						add_claim = scope:zorg_tag
-					}
-				}
-			}
-			create_family = scope:zorg_ruler_scope
-			while = {
-				count = 8
-				random_list = {
-					1 = {
-						create_character = {
-							female = yes
-							culture = zorg_1
-							religion = zorg_religion
-							family = scope:zorg_ruler_scope.family
-						}
-					}
-					2 = {
-						create_character = {
-							female = no
-							culture = zorg_1
-							religion = zorg_religion
-							family = scope:zorg_ruler_scope.family
-						}
-					}
-				}
-			}
-			trigger_event = {
-				id = zorg.3
-				days = { 5 30 }
-			}
-		}
-		every_country = {
-			limit = {
-				is_ai = no
-			}
-			trigger_event = zorg.2
 		}
 	}
 }
@@ -341,10 +343,12 @@ zorg.3 = {
 	hidden = yes
 	immediate = {
 		random_neighbour_country = {
+			save_scope_as = omni_zorg_invasion_target
 			root = {
+				set_variable = { name = omni_zorg_invasion_target value = scope:omni_zorg_invasion_target }
 				declare_war_with_wargoal = {
 					war_goal = imperial_conquest_wargoal
-					target = prev
+					target = scope:omni_zorg_invasion_target
 				}
 			}
 		}

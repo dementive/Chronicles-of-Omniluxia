@@ -1,0 +1,113 @@
+﻿yearly_country_pulse = {
+    on_actions = { omni_regional_chains_yearly }
+}
+
+monthly_country_pulse = {
+    on_actions = { omni_girm_war_monthly }
+}
+
+on_civil_war_won = {
+    effect = { omni_sov_conclude_war = yes }
+}
+
+on_civil_war_lost = {
+    effect = { omni_sov_conclude_war = yes }
+}
+
+on_military_annex = {
+    effect = {
+        if = {
+            limit = {
+                tag = HOB
+                has_global_variable = omni_girm_mustered
+                NOT = { has_global_variable = omni_girm_war_resolved }
+            }
+            set_global_variable = omni_girm_war_resolved
+            if = {
+                limit = { p:4864 = { has_owner = yes } }
+                p:4864.owner = { trigger_event = { id = omni_girm.3 days = 1 } }
+            }
+        }
+    }
+}
+
+omni_regional_chains_yearly = {
+    events = {
+        omni_rift.1
+        omni_soventeir.1
+        omni_girm.1
+        omni_oath.3
+        omni_oath.4
+    }
+    effect = {
+        if = {
+            limit = {
+                omni_rift_country = yes
+                NOT = { has_global_variable = omni_rift_sun_broken }
+            }
+            every_owned_province = {
+                limit = {
+                    NOT = { terrain = cavern }
+                    NOT = { has_province_modifier = omni_rift_sun_curse }
+                }
+                add_province_modifier = { name = omni_rift_sun_curse duration = 730 }
+            }
+        }
+        if = {
+            limit = {
+                has_global_variable = omni_girm_war_resolved
+                NOT = { has_global_variable = omni_oath_started }
+                omni_oath_candidate = yes
+                OR = {
+                    is_ai = no
+                    NOT = { any_country = { is_ai = no omni_oath_candidate = yes } }
+                }
+            }
+            set_global_variable = omni_oath_started
+            trigger_event = { id = omni_oath.1 days = 1 }
+        }
+        if = {
+            limit = {
+                has_variable = omni_oath_empire
+                NOT = { has_variable = omni_oath_succession_seen }
+                exists = current_ruler
+                NOT = { current_ruler = var:omni_oath_first_ruler }
+            }
+            set_variable = omni_oath_succession_seen
+            trigger_event = { id = omni_oath.5 days = 1 }
+        }
+    }
+}
+
+omni_girm_war_monthly = {
+    trigger = { tag = HOB }
+    effect = {
+        if = {
+            limit = {
+                has_variable = omni_girm_invasion_pending
+                p:4864 = { owner = root }
+            }
+            remove_variable = omni_girm_invasion_pending
+            omni_girm_finish_invasion = yes
+        }
+        else_if = {
+            limit = {
+                has_variable = omni_girm_invasion_pending
+                NOT = { has_variable = omni_girm_invasion_timer }
+                is_subject = no
+                p:4864 = {
+                    has_owner = yes
+                    owner = { NOR = { this = root war_with = root } }
+                }
+            }
+            omni_girm_launch_invasion = yes
+        }
+        else_if = {
+            limit = {
+                has_variable = omni_girm_target
+                NOT = { war_with = var:omni_girm_target }
+            }
+            omni_girm_finish_invasion = yes
+        }
+    }
+}

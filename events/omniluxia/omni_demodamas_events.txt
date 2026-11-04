@@ -1,0 +1,107 @@
+﻿namespace = omni_demodamas
+
+omni_demodamas.1 = {
+    type = country_event
+    title = omni_demodamas.1.t
+    desc = omni_demodamas.1.desc
+    picture = ship_in_storm
+    left_portrait = current_ruler
+    right_portrait = scope:demodamas
+    goto_location = scope:demodamas_port
+
+    trigger = {
+        is_ai = no
+        exists = current_ruler
+        current_date >= 1051.1.1
+        NOT = { has_global_variable = omni_demodamas_arrived }
+        any_owned_province = { omni_demodamas_port_trigger = yes }
+    }
+
+    immediate = {
+        set_global_variable = omni_demodamas_arrived
+        hidden_effect = {
+            random_owned_province = {
+                limit = { omni_demodamas_port_trigger = yes }
+                save_scope_as = demodamas_port
+            }
+            c:REB = {
+                create_character = {
+                    first_name = "Demodamas"
+                    age = 32
+                    female = no
+                    # Omniluxian equivalents for Invictus's Macedonian culture and pantheon.
+                    culture = ghedemi
+                    religion = eptelon_pantheon
+                    save_scope_as = demodamas
+                }
+            }
+            scope:demodamas = {
+                add_martial = 3
+                add_finesse = 5
+                add_charisma = 3
+                add_zeal = 2
+                add_trait = founder
+            }
+        }
+    }
+
+    option = {
+        name = omni_demodamas.1.a
+        trigger = {
+            scope:demodamas_port = {
+                owner = root
+                total_population > 5
+            }
+        }
+        scope:demodamas_port = {
+            custom_tooltip = omni_demodamas.1.trade_tt
+            hidden_effect = {
+                while = {
+                    count = 3
+                    random_pops_in_province = {
+                        weight = {
+                            modifier = {
+                                factor = 100
+                                pop_type = slaves
+                            }
+                        }
+                        kill_pop = yes
+                    }
+                }
+            }
+        }
+        create_country_treasure = {
+            key = "figurine_of_the_great_matriarch"
+            icon = "treasure_architecture"
+            modifier = { local_population_growth = 0.1 }
+        }
+        scope:demodamas = {
+            if = {
+                limit = { NOT = { has_trait = orator } }
+                add_trait = orator
+            }
+        }
+        custom_tooltip = omni_demodamas.1.depart_tt
+    }
+
+    option = {
+        name = omni_demodamas.1.b
+        add_stability = 4
+        scope:demodamas = {
+            if = {
+                limit = { NOT = { has_trait = cruel } }
+                add_trait = cruel
+            }
+        }
+        custom_tooltip = omni_demodamas.1.depart_tt
+    }
+
+    option = {
+        name = omni_demodamas.1.c
+        scope:demodamas = {
+            move_country = root
+            set_as_minor_character = THIS
+        }
+        custom_tooltip = omni_demodamas.1.stay_tt
+    }
+}

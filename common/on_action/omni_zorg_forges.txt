@@ -1,0 +1,84 @@
+﻿monthly_country_pulse = {
+    on_actions = { omni_zorg_forge_monthly }
+}
+
+omni_zorg_forge_monthly = {
+    effect = {
+        if = {
+            limit = {
+                exists = global_var:omni_zorg_forge_host
+                this = global_var:omni_zorg_forge_host
+            }
+            if = {
+                limit = {
+                    exists = var:omni_zorg_invasion_target
+                    war_with = var:omni_zorg_invasion_target
+                }
+                set_variable = omni_zorg_invasion_war_started
+                remove_variable = omni_zorg_invasion_target
+            }
+            every_in_global_list = {
+                variable = omni_zorg_forge_sites
+                limit = { has_province_modifier = omni_zorg_void_forge }
+                omni_zorg_forge_tick_effect = yes
+            }
+            if = {
+                limit = { has_variable = omni_zorg_invasion_war_started }
+                omni_zorg_forge_construction_tick_effect = yes
+            }
+        }
+        else_if = {
+            limit = {
+                is_ai = no
+                has_non_empty_global_variable_list = { name = omni_zorg_forge_sites }
+                NOT = { exists = global_var:omni_zorg_forge_host }
+            }
+            omni_zorg_forge_cleanup_effect = yes
+        }
+    }
+}
+
+on_province_occupied = {
+    effect = {
+        if = {
+            limit = {
+                OR = {
+                    has_province_modifier = omni_zorg_void_forge
+                    has_province_modifier = omni_zorg_forge_under_construction
+                }
+                exists = global_var:omni_zorg_forge_host
+                OR = {
+                    AND = {
+                        exists = controller
+                        controller = { war_with = global_var:omni_zorg_forge_host }
+                    }
+                    AND = {
+                        exists = owner
+                        owner = { war_with = global_var:omni_zorg_forge_host }
+                    }
+                }
+            }
+            if = {
+                limit = { has_province_modifier = omni_zorg_forge_under_construction }
+                omni_zorg_forge_cancel_project_effect = yes
+            }
+            else = { omni_zorg_forge_destroy_effect = yes }
+        }
+    }
+}
+
+on_military_annex = { on_actions = { omni_zorg_forge_annexed } }
+on_diplomatic_annex = { on_actions = { omni_zorg_forge_annexed } }
+on_civil_war_annex = { on_actions = { omni_zorg_forge_annexed } }
+
+omni_zorg_forge_annexed = {
+    effect = {
+        if = {
+            limit = {
+                exists = global_var:omni_zorg_forge_host
+                this = global_var:omni_zorg_forge_host
+            }
+            omni_zorg_forge_cleanup_effect = yes
+        }
+    }
+}
