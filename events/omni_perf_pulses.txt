@@ -152,6 +152,36 @@ omni_perf.8 = {
 	immediate = {
 		ai_fix_character_loyalty = yes
 		ai_choose_and_enact_law = yes
+		# Rulers are excluded from the regular character scheme picker.
+		current_ruler = {
+			if = {
+				limit = {
+					scheme_preconditions_ruler = yes
+					is_alive = yes
+					recoverable_ailments_trigger = yes
+					wealth >= 50
+					NOR = {
+						has_ambition = scheme_seek_treatment
+						has_variable = seeking_treatment
+						has_variable = untreatable_flag
+						has_character_modifier = indisposed_charmod
+					}
+					employer = {
+						any_character = {
+							is_alive = yes
+							NOT = { is_ruler = yes }
+							OR = {
+								has_office = office_physician
+								has_office = office_republic_physician
+								has_office = office_apothecary
+							}
+						}
+					}
+				}
+				clear_ambition_effect_ci = yes
+				set_ambition = scheme_seek_treatment
+			}
+		}
 	}
 
 	option = {}

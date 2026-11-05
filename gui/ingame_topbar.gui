@@ -1,4 +1,4 @@
-@SideBarButtonSize = 36
+﻿@SideBarButtonSize = 36
 
 @PauseVignetteAnimationSpeed = 0.15
 @PauseVignetteAlpha = 0.5
@@ -1794,23 +1794,37 @@ vbox = {
 			flowcontainer = {
 				position = { -8 4 } 
 				parentanchor = right
+				ignoreinvisible = yes # only one of the two Wizard Hut buttons is visible at a time
+				# Two stacked buttons instead of one toggle, so opening and closing each do
+				# exactly one thing: open = refresh list + highlight every hut; close = clear.
 				white_button_round = {
 					name = "omni_wizard_hut_directory_button"
 					size = { 26 26 }
-					visible = "[IsMapMode('cool_map_effect')]"
+					visible = "[And(IsMapMode('cool_map_effect'), Not(GetVariableSystem.Exists('omni_wizard_hut_directory')))]"
 					blockoverride "Icon" { texture = "gfx/interface/map/omni_folk_hut_glyph.dds" }
 					blockoverride "On_click" {
-						forcedown = "[GetVariableSystem.Exists('omni_wizard_hut_directory')]"
 						onclick = "[ClearHighlightColors]"
 						onclick = "[GetScriptedGui('omni_folk_atlas_refresh_directory').Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
-						onclick = "[GetVariableSystem.Toggle('omni_wizard_hut_directory')]"
+						onclick = "[GetVariableSystem.Set('omni_wizard_hut_directory', 'yes')]"
 						onclick = "[PdxGuiTriggerAllAnimations('omni_wizard_hut_draw_highlights')]"
 					}
-					# Let the directory bind its items before asking them to highlight.
+					# Short delay so the refreshed list has built its items before they highlight.
 					state = {
 						name = omni_wizard_hut_draw_highlights
-						duration = 0.1
-						on_finish = "[PdxGuiTriggerAllAnimations(Select_CString(And(IsMapMode('cool_map_effect'), GetVariableSystem.Exists('omni_wizard_hut_directory')), 'omni_folk_atlas_highlight_hut', ''))]"
+						duration = 0.15
+						on_finish = "[PdxGuiTriggerAllAnimations('omni_folk_atlas_highlight_hut')]"
+					}
+					tooltip = "omni_wizard_hut_directory_title"
+				}
+				white_button_round = {
+					name = "omni_wizard_hut_directory_button_close"
+					size = { 26 26 }
+					visible = "[And(IsMapMode('cool_map_effect'), GetVariableSystem.Exists('omni_wizard_hut_directory'))]"
+					blockoverride "Icon" { texture = "gfx/interface/map/omni_folk_hut_glyph.dds" }
+					blockoverride "On_click" {
+						forcedown = yes
+						onclick = "[GetVariableSystem.Clear('omni_wizard_hut_directory')]"
+						onclick = "[ClearHighlightColors]"
 					}
 					tooltip = "omni_wizard_hut_directory_title"
 				}
@@ -1876,7 +1890,7 @@ vbox = {
 		}
 		
 		### DATE
-		# Keep the Objectives button clear of the date panel's left overhang.
+		# Keep the Tutorial button clear of the date panel's left overhang.
 		text_button_square = {
 			name = "omni_tutorial_objectives"
 			size = { 84 28 }
@@ -1891,7 +1905,7 @@ vbox = {
 				minimumsize = { 84 28 }
 			}
 			blockoverride "Center_text" {
-				text = "TUTORIAL_HEADER_OBJECTIVES"
+				text = "TUTORIAL"
 			}
 			blockoverride "On_click" {
 				onclick = "[InGameTopbar.OpenView('tutorial_objectives')]"

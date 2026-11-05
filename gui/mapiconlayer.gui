@@ -1,4 +1,4 @@
-template country_capital_banner
+﻿template country_capital_banner
 {
 	texture = "gfx/interface/tiles/tile_capital_banner.dds"
 	spriteType = Corneredtiled
@@ -559,16 +559,19 @@ widget = {
 	size = { 60 60 }
 	# Fixed Folk teachers are independent of the normal atlas population/capital
 	# filters. Keep the marker offset from capital stars and town/temple symbols.
-	# PERF: map-mode gate on a parent widget, so the per-province scripted GUI checks below
-	# are skipped entirely outside the atlas map mode (instead of being evaluated every frame
-	# for every province alongside the IsMapMode test).
+	# Decorative icons are only built in Atlas mode (icon_mask), so no map-mode gate is needed.
 	widget = {
 		name = "omni_atlas_markers"
-		visible = "[IsMapMode('cool_map_effect')]"
+		# No IsMapMode() here. Map-icon visibility bindings are not re-evaluated on a map
+		# mode switch for players (only an observe/tag-switch rebuild did it), so a mode
+		# check evaluated at load stayed false. Decorative icons exist only in Atlas mode
+		# (icon_mask in gfx/map/map_modes/map_modes.txt), exactly like the vanilla town art.
 		position = { 0 0 }
 		size = { 60 60 }
 		widget = {
 			name = "omni_folk_atlas_hut"
+			# Static catalog (common/scripted_triggers/omni_folk_hut_catalog.txt): constant, so it
+			# is already true when the icon is built, before the init effect has run.
 			datacontext = "[GetScriptedGui('omni_folk_atlas_hut')]"
 			visible = "[ScriptedGui.IsShown(GuiScope.SetRoot(DecorativeMapIcon.GetProvince.MakeScope).End)]"
 			position = { 12 -10 }

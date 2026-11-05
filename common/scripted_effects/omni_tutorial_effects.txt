@@ -115,6 +115,11 @@ omni_tutorial_spawn_raiders_effect = {
 # hooks at those moments instead of waiting for the panel to catch the state.
 # The tutorial file calls the same COUNTRY-scope effects, so rewards can't double.
 
+omni_tut_complete_hearthward_effect = {
+	set_variable = omni_tut_s4
+	trigger_event = { id = omni_tutorial.3 }
+}
+
 omni_tut_complete_ward_effect = {
 	set_variable = omni_tut_s5
 	current_ruler = { add_martial = 1 }
@@ -130,6 +135,23 @@ omni_tut_complete_home_effect = {
 	set_variable = omni_tut_s8
 	current_ruler = { add_gold = 200 }
 	trigger_event = { id = omni_tutorial.19 days = 7 }
+}
+
+# CHARACTER scope (the student), right after a Folk lesson in Hearthward is paid for.
+omni_tut_hook_hearthward_learned = {
+	if = {
+		limit = {
+			is_ruler = yes
+			exists = employer
+			employer = {
+				is_ai = no
+				is_tutorial_active = yes
+				has_variable = omni_tut_on
+				NOT = { has_variable = omni_tut_s4 }
+			}
+		}
+		employer = { omni_tut_complete_hearthward_effect = yes }
+	}
 }
 
 # CHARACTER scope (the caster), after a ward spell is applied.

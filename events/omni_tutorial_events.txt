@@ -23,6 +23,12 @@ omni_tutorial.1 = { # Tutorial start (on_game_initialized, Tutorial game mode on
 			add_treasury = 300
 			# Folk lessons and personal items (books, crowns, relics) come from the ruler's own purse.
 			current_ruler = { add_gold = 100 }
+			# Mpo-Bu holds the tutorial's Wizard Hut (Pfa-Pfa Mbv'au): make a Military
+			# Access request one they will accept.
+			if = {
+				limit = { exists = c:KO3 }
+				c:KO3 = { add_opinion = { modifier = omni_tutorial_mpo_bu_welcome target = root } }
+			}
 			add_country_modifier = {
 				name = omni_tutorial_boost
 				duration = -1
@@ -57,18 +63,29 @@ omni_tutorial.3 = { # Hearthward learned
 	desc = omni_tutorial.3.desc
 	picture = ascetic
 	left_portrait = current_ruler
-	right_portrait = scope:omni_folk_tutor # the Bad-Ki hedge-witch, generated below
+	right_portrait = scope:omni_folk_tutor # the Pfa-Pfa Mbv'au hedge-witch, generated below
 
 	immediate = {
 		hidden_effect = {
 			# Generate the hedge-witch through the standard Folk teacher builder so she is a
-			# real Bad-Ki local (culture, faith, nickname, mage traits, Bad-Ki's lessons).
+			# real local of Pfa-Pfa Mbv'au, Mpo-Bu's capital (culture, faith, nickname, mage
+			# traits, that hut's lessons). Like every teacher she belongs to the hut's owner.
 			# The text calls her "she", so only female variants are rolled.
-			p:1394 = { save_scope_as = omni_folk_teacher }
-			random_list = {
-				1 = { omni_folk_create_teacher_character = { AGE = 49 FEMALE = yes } }
-				1 = { omni_folk_create_teacher_character = { AGE = 63 FEMALE = yes } }
-				1 = { omni_folk_create_teacher_character = { AGE = 71 FEMALE = yes } }
+			# When fired from the lesson itself, the teacher the player just paid is
+			# already in scope; only roll one when completed from the panel later.
+			p:1641 = { save_scope_as = omni_folk_teacher }
+			if = {
+				limit = {
+					NOT = { exists = scope:omni_folk_tutor }
+					p:1641 = { has_owner = yes }
+				}
+				p:1641.owner = {
+					random_list = {
+						1 = { omni_folk_create_teacher_character = { AGE = 49 FEMALE = yes } }
+						1 = { omni_folk_create_teacher_character = { AGE = 63 FEMALE = yes } }
+						1 = { omni_folk_create_teacher_character = { AGE = 71 FEMALE = yes } }
+					}
+				}
 			}
 		}
 	}
@@ -76,6 +93,33 @@ omni_tutorial.3 = { # Hearthward learned
 	option = {
 		name = omni_tutorial.3.a
 		custom_tooltip = omni_tutorial.3.a.tt
+	}
+}
+
+omni_tutorial.4 = { # Safety net: Mpo-Bu grants access if the player hasn't secured it
+	type = country_event
+	title = omni_tutorial.4.t
+	desc = omni_tutorial.4.desc
+	picture = council_country
+	left_portrait = current_ruler
+
+	trigger = {
+		has_variable = omni_tut_on
+		NOT = { has_variable = omni_tut_s4 }
+		exists = c:KO3
+		c:KO3 = { NOT = { war_with = root } }
+		NOT = { has_military_access = c:KO3 }
+		current_ruler = { NOT = { omni_knows_spell = { SPELL = hearth_ward } } }
+	}
+
+	immediate = {
+		c:KO3 = { add_military_access = root }
+		add_military_access = c:KO3
+	}
+
+	option = {
+		name = omni_tutorial.4.a
+		custom_tooltip = omni_tutorial.4.a.tt
 	}
 }
 

@@ -19,21 +19,6 @@ omni_ai_magic.1 = { # AI: a court cleric heals the ruler / heir / commanders
 
 	trigger = {
 		is_ai = yes
-		# A caster who can actually cast a cure...
-		any_character = {
-			country = root
-			is_alive = yes
-
-			omni_character_is_eligible_caster = yes
-			OR = {
-				omni_knows_spell = { SPELL = healing_light }
-				omni_knows_spell = { SPELL = healing_light_ii }
-				omni_knows_spell = { SPELL = vitality }
-			}
-			omni_caster_aldic_t1 = yes
-			omni_can_afford_spell = { BASE = 75 }
-		}
-		# ...and someone worth curing.
 		any_character = {
 			country = root
 			is_alive = yes
@@ -55,7 +40,7 @@ omni_ai_magic.1 = { # AI: a court cleric heals the ruler / heir / commanders
 				current_ruler = {
 					OR = {
 						omni_has_curable_ailment = yes
-				omni_has_minor_curable_ailment = yes
+						omni_has_minor_curable_ailment = yes
 						omni_needs_vitality_healing = yes
 					}
 				}
@@ -77,52 +62,28 @@ omni_ai_magic.1 = { # AI: a court cleric heals the ruler / heir / commanders
 				save_scope_as = omni_heal_target
 			}
 		}
-		# Prefer the strongest available healer so the T2 cure list is used when
-		# the court has someone who can manage it.
-		if = {
+		random_character = {
 			limit = {
-				any_character = {
-					country = root
-					is_alive = yes
-
-					omni_character_is_eligible_caster = yes
-					omni_knows_spell = { SPELL = healing_light_ii }
-					has_variable = cleric_t3_unlocked_var
-					omni_can_afford_spell = { BASE = 100 }
+				country = root
+				is_alive = yes
+				omni_character_is_eligible_caster = yes
+				OR = {
+					omni_ai_can_cast_major_cure = yes
+					omni_ai_can_cast_minor_cure = yes
+					omni_ai_can_cast_vitality = yes
 				}
 			}
-			random_character = {
-				limit = {
-					country = root
-					is_alive = yes
-
-					omni_character_is_eligible_caster = yes
-					OR = {
-						omni_knows_spell = { SPELL = healing_light_ii }
-						omni_knows_spell = { SPELL = vitality }
-					}
-					has_variable = cleric_t3_unlocked_var
-					omni_can_afford_spell = { BASE = 100 }
+			weight = {
+				modifier = {
+					factor = 20
+					omni_ai_can_cast_major_cure = yes
 				}
-				omni_ai_cast_healing_effect = yes
-			}
-		}
-		else = {
-			random_character = {
-				limit = {
-					country = root
-					is_alive = yes
-
-					omni_character_is_eligible_caster = yes
-					OR = {
-						omni_knows_spell = { SPELL = healing_light }
-						omni_knows_spell = { SPELL = vitality }
-					}
-					omni_caster_aldic_t1 = yes
-					omni_can_afford_spell = { BASE = 75 }
+				modifier = {
+					factor = 10
+					omni_ai_can_cast_minor_cure = yes
 				}
-				omni_ai_cast_healing_effect = yes
 			}
+			omni_ai_cast_healing_effect = yes
 		}
 	}
 

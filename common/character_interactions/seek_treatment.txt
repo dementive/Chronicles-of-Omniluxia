@@ -1,0 +1,133 @@
+﻿#When adding new illnesses, add them to: character interaction, traits, 00_medical effects, and 00_medical custom loc
+seek_treatment = {
+
+	on_other_nation = no
+	on_own_nation = yes
+
+	message = no
+
+	sound = "event:/SFX/UI/Character/Generic/sfx_ui_character_scholar"
+
+	potential_trigger = {
+		hidden:scope:target = {
+			is_alive = yes
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			recoverable_ailments_trigger = yes
+		}
+	}
+
+	allowed_trigger = {
+		scope:target = {
+			recoverable_ailments_trigger = yes
+			NOR = {
+				trigger_if = {
+					limit = {
+						employer = { is_republic = yes }
+					}
+					has_office = office_republic_physician
+				}
+				trigger_else_if = {
+					limit = {
+						employer = { is_monarchy = yes }
+					}
+					has_office = office_physician
+				}
+				trigger_else_if = {
+					limit = {
+						employer = { is_tribal = yes }
+					}
+					has_office = office_apothecary
+				}
+				has_ambition = scheme_seek_treatment
+				has_variable = seeking_treatment
+				custom_tooltip = {
+					text = untreatable_tt
+					has_variable = untreatable_flag
+				}
+			}
+		}
+		scope:actor = {
+			trigger_if = {
+				limit = {
+					is_republic = yes
+				}
+				NOT = {
+					office_is_empty = office_republic_physician
+				}
+			}
+			trigger_else_if = {
+				limit = {
+					is_monarchy = yes
+				}
+				NOT = {
+					office_is_empty = office_physician
+				}
+			}
+			trigger_else_if = {
+				limit = {
+					is_tribal = yes
+				}
+				NOT = {
+					office_is_empty = office_apothecary
+				}
+			}
+			scope:target = {
+				trigger_if = {
+					limit = { is_ruler = yes }
+					custom_tooltip = {
+						text = SEEK_TREATMENT_RULERWEALTH_TT
+						wealth >= 50 # if changing, update tt
+					}
+				}
+				trigger_else = {
+					employer = { treasury >= 50 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				scope:target = {
+					is_ruler = yes
+				}
+			}
+			scope:target = {
+				add_gold = -50
+			}
+		}
+		else = {
+			scope:actor = {
+				add_treasury = -50
+			}
+		}
+		scope:target = {
+			clear_ambition_effect_ci = yes
+			set_variable = {
+				name = manually_sought_treatment
+			}
+			hidden_effect = { set_ambition = scheme_seek_treatment }
+			if = {
+				limit = {
+					recoverable_ailments_trigger = yes
+				}
+				custom_tooltip = "get_treatable_disease_tooltip"
+			}
+			else = {
+				show_as_tooltip = { set_ambition = scheme_seek_treatment }
+			}
+		}
+	}
+
+	ai_will_do = {
+		modifier = {
+			add = 100
+			trigger = {
+				is_ruler = yes
+			}
+		}
+	}
+
+}

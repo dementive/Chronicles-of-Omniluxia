@@ -81,6 +81,7 @@ omni_tut_equip = {
 	effect = {
 		set_variable = omni_tut_s3
 		current_ruler = { add_gold = 100 }
+		trigger_event = { id = omni_tutorial.4 days = 60 } # Mpo-Bu grants access if still needed
 	}
 }
 
@@ -92,7 +93,9 @@ omni_tut_hearthward = {
 	}
 	allow = {
 		has_variable = omni_tut_on
-		has_variable = omni_tut_s3
+		# No hidden gate on step 3: the objective text never mentions buying gear first,
+		# and players reach the hut before the market. Requiring omni_tut_s3 here
+		# left the lesson bought and the objective dead.
 		NOT = { has_variable = omni_tut_s4 }
 		current_ruler = { omni_knows_spell = { SPELL = hearth_ward } }
 	}
@@ -101,15 +104,11 @@ omni_tut_hearthward = {
 	}
 	highlight = {
 		scope:province = {
-			OR = {
-				omni_folk_hut_catalog = yes
-				num_of_mage_tower_building >= 1
-			}
+			province_id = 1641 # Pfa-Pfa Mbv'au, Mpo-Bu: the tutorial's Wizard Hut
 		}
 	}
 	effect = {
-		set_variable = omni_tut_s4
-		trigger_event = { id = omni_tutorial.3 }
+		omni_tut_complete_hearthward_effect = yes # also auto-run when the lesson is bought
 	}
 }
 

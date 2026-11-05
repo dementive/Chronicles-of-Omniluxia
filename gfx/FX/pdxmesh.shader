@@ -328,6 +328,20 @@ PixelShader =
 	}
 	# END MOD
 
+	MainCode PS_collision
+	{
+		Input = "VS_OUTPUT"
+		Output = "PDX_COLOR"
+		Code
+		[[
+			PDX_MAIN
+			{
+				clip( -1.0 );
+				return float4( 0.0, 0.0, 0.0, 0.0 );
+			}
+		]]
+	}
+
 	MainCode PS_standard
 	{
 		Input = "VS_OUTPUT"
@@ -502,6 +516,18 @@ RasterizerState ShadowRasterizerState
 	SlopeScaleDepthBias = 2
 }
 
+
+# Keep imported collision proxies available to the engine without drawing them.
+Effect Collision
+{
+	VertexShader = "VS_standard"
+	PixelShader = "PS_collision"
+}
+Effect CollisionShadow
+{
+	VertexShader = "VS_standard"
+	PixelShader = "PS_collision"
+}
 
 Effect standard
 {
