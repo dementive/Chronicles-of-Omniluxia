@@ -1,1 +1,360 @@
-﻿
+﻿# Omniluxia tutorial: "A Royal Progress". Started by the main menu Tutorial button,
+# which the engine hard-codes to tag ROM (Darinfur, setup/main/02_countries.txt).
+# Shown in the vanilla tutorial panel (gui/tutorial_view.gui). Each objective is
+# completed by its Complete button once `allow` is met. Completion variables
+# keep their original IDs for existing saves. Milestones come from omni_tutorial_mark
+# (common/scripted_effects/omni_tutorial_effects.txt). Start: omni_tutorial.1.
+
+omni_tut_market = {
+	step = 1
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		NOT = { has_variable = omni_tut_s1 }
+		has_variable = omni_tut_market_visited
+	}
+	completed = {
+		has_variable = omni_tut_s1
+	}
+	highlight = {
+		scope:province = {
+			province_id = 1409
+		}
+	}
+	effect = {
+		set_variable = omni_tut_s1
+		add_treasury = 100
+	}
+}
+
+omni_tut_guild = {
+	step = 2
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s1
+		NOT = { has_variable = omni_tut_s2 }
+		any_owned_province = { num_of_adventurer_guild_building >= 1 } # num_of_: has_building errors on settlements
+	}
+	completed = {
+		has_variable = omni_tut_s2
+	}
+	highlight = {
+		scope:province = {
+			owner = root is_capital = yes
+		}
+	}
+	effect = {
+		set_variable = omni_tut_s2
+		add_political_influence = 10
+	}
+}
+
+omni_tut_equip = {
+	step = 3
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s1
+		NOT = { has_variable = omni_tut_s3 }
+		# Only an actual market purchase by the ruler counts. Starting equipment and
+		# the starting national loadout must NOT complete this step. The mark is set
+		# by omni_army_buy_fixed / omni_army_buy_slot_item_national (army gear and
+		# designs) and omni_buy_character_item (personal pieces).
+		has_variable = omni_tut_gear_bought
+	}
+	completed = {
+		has_variable = omni_tut_s3
+	}
+	highlight = {
+
+	}
+	effect = {
+		set_variable = omni_tut_s3
+		current_ruler = { add_gold = 100 }
+	}
+}
+
+omni_tut_hearthward = {
+	step = 4
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s3
+		NOT = { has_variable = omni_tut_s4 }
+		current_ruler = { omni_knows_spell = { SPELL = hearth_ward } }
+	}
+	completed = {
+		has_variable = omni_tut_s4
+	}
+	highlight = {
+		scope:province = {
+			OR = {
+				omni_folk_hut_catalog = yes
+				num_of_mage_tower_building >= 1
+			}
+		}
+	}
+	effect = {
+		set_variable = omni_tut_s4
+		trigger_event = { id = omni_tutorial.3 }
+	}
+}
+
+omni_tut_ward = {
+	step = 5
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s4
+		NOT = { has_variable = omni_tut_s5 }
+		OR = {
+			capital_scope = { omni_tutorial_province_warded = yes }
+			has_variable = omni_tut_capital_warded # latched when the ward lands, so expiry can't strand the step
+		}
+	}
+	completed = {
+		has_variable = omni_tut_s5
+	}
+	highlight = {
+		scope:province = {
+			province_id = 1409
+		}
+	}
+	effect = {
+		omni_tut_complete_ward_effect = yes # also auto-run when Hearthward lands on the capital
+	}
+}
+
+omni_tut_academy = {
+	step = 6
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s1
+		NOT = { has_variable = omni_tut_s6 }
+		current_ruler = { omni_tutorial_has_enrolled = yes }
+	}
+	completed = {
+		has_variable = omni_tut_s6
+	}
+	highlight = {
+		scope:province = {
+			num_of_magic_academy_building >= 1
+		}
+	}
+	effect = {
+		set_variable = omni_tut_s6
+		add_treasury = 100
+		add_innovation = 1
+	}
+}
+
+omni_tut_set_out = {
+	step = 7
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s2
+		has_variable = omni_tut_s5
+		NOT = { has_variable = omni_tut_s7 }
+		# Away now, or already back (cooldown only exists after a finished trip). The ward
+		# itself is proven by step 5; requiring it live here stranded the step on return.
+		current_ruler = {
+			OR = {
+				has_variable = on_omni_adventure
+				has_variable = omni_adventure_cooldown
+			}
+		}
+	}
+	completed = {
+		has_variable = omni_tut_s7
+	}
+	highlight = {
+		scope:province = {
+			owner = root num_of_adventurer_guild_building >= 1
+		}
+	}
+	effect = {
+		omni_tut_complete_set_out_effect = yes # also auto-run on departure (adventure.3)
+	}
+}
+
+omni_tut_home = {
+	step = 8
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s7
+		NOT = { has_variable = omni_tut_s8 }
+		current_ruler = {
+			NOT = { has_variable = on_omni_adventure }
+			has_variable = omni_adventure_cooldown
+		}
+	}
+	completed = {
+		has_variable = omni_tut_s8
+	}
+	highlight = {
+
+	}
+	effect = {
+		omni_tut_complete_home_effect = yes # also auto-run on return (adventure.7)
+	}
+}
+
+omni_tut_ram = {
+	step = 9
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s8
+		NOT = { has_variable = omni_tut_s10 }
+		OR = {
+			current_ruler = { omni_kit_has = { KIT = ram } }
+			any_character = { omni_kit_has = { KIT = ram } } # bought by another visitor
+			has_variable = omni_tut_used_ram
+		}
+	}
+	completed = {
+		has_variable = omni_tut_s10
+	}
+	highlight = {
+		scope:province = {
+			province_id = 1409
+		}
+	}
+	effect = {
+		set_variable = omni_tut_s10
+		add_military_experience = 10
+	}
+}
+
+omni_tut_battle_spell = {
+	step = 10
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s8
+		has_variable = omni_tut_war_phase
+		NOT = { has_variable = omni_tut_s11 }
+		OR = {
+			has_variable = omni_tut_battle_cast
+			omni_tutorial_raid_war_over = yes
+		}
+	}
+	completed = {
+		has_variable = omni_tut_s11
+	}
+	highlight = {
+
+	}
+	effect = {
+		set_variable = omni_tut_s11
+		current_ruler = { add_martial = 1 }
+	}
+}
+
+omni_tut_breach = {
+	step = 11
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s10
+		has_variable = omni_tut_s11
+		NOT = { has_variable = omni_tut_s12 }
+		OR = {
+			has_variable = omni_tut_used_ram
+			omni_tutorial_raid_war_over = yes
+		}
+	}
+	completed = {
+		has_variable = omni_tut_s12
+	}
+	highlight = {
+		scope:province = {
+			exists = root.var:omni_tut_raid_province this = root.var:omni_tut_raid_province
+		}
+	}
+	effect = {
+		set_variable = omni_tut_s12
+		add_military_experience = 10
+	}
+}
+
+omni_tut_retake = {
+	step = 12
+	potential = {
+		tag = ROM
+		is_tutorial_active = yes
+	}
+	allow = {
+		has_variable = omni_tut_on
+		has_variable = omni_tut_s12
+		NOT = { has_variable = omni_tut_s13 }
+		exists = var:omni_tut_raid_province
+		OR = {
+			var:omni_tut_raid_province = { owner = root }
+			# Raid war is over and the raiders no longer hold it (annexed or taken by a
+			# third party): nothing left to retake, so let the tutorial finish.
+			AND = {
+				omni_tutorial_raid_war_over = yes
+				exists = var:omni_tut_raiders
+				var:omni_tut_raid_province = { NOT = { owner = root.var:omni_tut_raiders } }
+			}
+		}
+	}
+	completed = {
+		has_variable = omni_tut_s13
+	}
+	highlight = {
+		scope:province = {
+			exists = root.var:omni_tut_raid_province this = root.var:omni_tut_raid_province
+		}
+	}
+	effect = {
+		set_variable = omni_tut_s13
+		add_treasury = 250
+		add_political_influence = 25
+		hidden_effect = {
+			omni_tutorial_cleanup_effect = yes
+			remove_country_modifier = omni_tutorial_boost
+			set_variable = omni_tut_done
+			omni_unlock_achievement = { ACH = omni_ach_royal_progress EVENT = omni_ach.17 }
+		}
+		trigger_event = { id = omni_tutorial.90 }
+	}
+}

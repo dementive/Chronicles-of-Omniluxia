@@ -1,0 +1,69 @@
+﻿# Omniluxia tutorial "A Royal Progress" (tutorial/00_tutorial.txt).
+
+# CHARACTER scope. Bad-Darinfur reserves one ram for the tutorial ruler.
+omni_tutorial_ram_allowance_available = {
+	is_ruler = yes
+	country = {
+		tag = ROM
+		is_ai = no
+		is_tutorial_active = yes
+		has_variable = omni_tut_on
+		NOR = {
+			has_variable = omni_tut_s10
+			has_variable = omni_tut_used_ram
+			has_variable = omni_tut_ram_allowance_used
+		}
+	}
+	NOT = { omni_kit_has = { KIT = ram } }
+	OR = {
+		location = { province_id = 1409 }
+		any_character_unit = { is_army = yes unit_location = { province_id = 1409 } }
+	}
+}
+
+# CHARACTER scope. Has begun any Magic Academy course, or already graduated.
+omni_tutorial_has_enrolled = {
+	OR = {
+		has_trait = mage_trait
+		has_variable = omni_studying_magic_cooldown
+		has_variable = omni_studying_diviner_var
+		has_variable = omni_studying_hierophant_var
+		has_variable = omni_studying_illusionist_var
+		has_variable = omni_studying_cleric_var
+		has_variable = omni_studying_druid_var
+		has_variable = omni_studying_elementalist_var
+		has_variable = omni_studying_warlock_var
+		has_variable = omni_studying_necromancer_var
+		has_variable = omni_studying_charm_magic_var
+		has_variable = omni_studying_soul_magic_var
+		has_variable = omni_studying_dragonscale_var
+		has_variable = omni_studying_helluvian_holy_var
+		has_variable = omni_studying_magonis_var
+		has_variable = omni_studying_palpan_curse_var
+		has_variable = omni_studying_silver_dwarf_magic_var
+		has_variable = omni_studying_taanka_var
+	}
+}
+
+# PROVINCE scope. Carries any spell ward.
+omni_tutorial_province_warded = {
+	OR = {
+		has_province_modifier = omni_folk_hearth_ward_mod
+		has_province_modifier = omnic_diviner_spell_t2_mod
+		has_province_modifier = dragonscale_dome_mod
+	}
+}
+
+# COUNTRY scope (the player). The tutorial raid has happened and its war is over
+# (raiders destroyed, or peace made). Lets the battle/siege lessons bypass
+# instead of softlocking.
+omni_tutorial_raid_war_over = {
+	has_variable = omni_tut_war_phase
+	trigger_if = {
+		limit = { exists = var:omni_tut_raiders }
+		var:omni_tut_raiders = { NOT = { war_with = root } }
+	}
+	trigger_else = {
+		always = yes
+	}
+}

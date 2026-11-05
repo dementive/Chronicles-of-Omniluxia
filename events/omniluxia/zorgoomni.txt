@@ -4381,52 +4381,50 @@ me_zorgoomni.85 = { # KAXUD
     }
 }
 
-me_zorgoomni.86 = { # HOLD BUILDING
+me_zorgoomni.86 = { # Build Hold
     type = country_event
 
     title = me_zorgoomni.86_title
     desc = me_zorgoomni.86_desc
     picture = event_human_council
     left_portrait = current_ruler
+    goto_location = scope:hold_target
 
     immediate = {
-        random_owned_province = {
-            limit = {
-                OR = {
-                    terrain = cavern
-                    terrain = hills
-                    terrain = mountain
-                }
-                has_province_rank = city_metropolis
-                NOT = { has_province_modifier = dwarven_hold_mod }
-            }
+        ordered_owned_province = {
+            limit = { omni_hold_founding_site = yes }
+            order_by = total_population
             save_scope_as = hold_target
         }
     }
 
     option = {
         name = "me_zorgoomni.86.a"
-        add_5_free_province_investments = yes
-        add_innovation = 1
-        current_ruler = {
-            add_popularity = 100
-        }
-        add_treasury = -10000
-        add_political_influence = -200
+        trigger = { omni_hold_founding_offer_valid = yes }
+
         if = {
-            limit = { exists = scope:hold_target }
+            limit = { omni_hold_founding_offer_valid = yes }
+            add_treasury = -750
+            add_political_influence = -60
+            add_manpower = -4
             scope:hold_target = {
-                add_province_modifier = {
+                add_permanent_province_modifier = {
                     name = dwarven_hold_mod
                     duration = -1
                 }
             }
+            hidden_effect = {
+                set_variable = { name = build_hold_cooldown days = 3650 }
+            }
         }
-        custom_tooltip = me_zorgoomni.86_tooltip.a
     }
+
     option = {
         name = "me_zorgoomni.86.b"
-        custom_tooltip = me_zorgoomni.86_tooltip.b
+    }
+
+    after = {
+        remove_variable = omni_build_hold_pending
     }
 }
 
@@ -4530,67 +4528,71 @@ me_zorgoomni.89 = { # Develop Hold
     desc = me_zorgoomni.89_desc
     picture = diadochi_new_city_founded
     left_portrait = current_ruler
+    goto_location = scope:hold_development_target
 
     immediate = {
-        random_owned_province = {
-            limit = {
-                has_province_modifier = dwarven_hold_mod
-            }
+        ordered_owned_province = {
+            limit = { omni_hold_development_site = yes }
+            order_by = total_population
             save_scope_as = hold_development_target
         }
     }
 
-    option = { # Population
+    option = {
         name = "me_zorgoomni.89.a"
-        add_treasury = {
-            value = 0
-            subtract = two_years_income_svalue
-        }
-        add_political_influence = -25
-        add_manpower = -5
+        trigger = { omni_hold_development_offer_valid = yes }
 
-        custom_tooltip = me_zorgoomni.89_tooltip.a
         if = {
-            limit = { exists = scope:hold_development_target }
+            limit = { omni_hold_development_offer_valid = yes }
+            omni_pay_for_hold_development = yes
             scope:hold_development_target = {
-                while = {
-                    count = 3
-                    create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+                create_state_pop = freemen
+            }
+        }
+    }
+
+    option = {
+        name = "me_zorgoomni.89.b"
+        trigger = { omni_hold_development_offer_valid = yes }
+
+        if = {
+            limit = { omni_hold_development_offer_valid = yes }
+            omni_pay_for_hold_development = yes
+            add_1_free_province_investments = yes
+            scope:hold_development_target = {
+                add_province_modifier = {
+                    name = omni_hold_infrastructure
+                    duration = 3650
                 }
             }
         }
     }
-    option = { # Province Investment
-        name = "me_zorgoomni.89.b"
-        
-        add_treasury = {
-            value = 0
-            subtract = three_years_income_svalue
-        }
-        add_political_influence = -50
-        add_manpower = -5
 
-        custom_tooltip = me_zorgoomni.89_tooltip.b
-        add_1_free_province_investments = yes
-    }
-    option = { # Stability
+    option = {
         name = "me_zorgoomni.89.c"
-        add_treasury = {
-            value = 0
-            subtract = six_months_income_root
-        }
-        add_political_influence = -75
-        
-        custom_tooltip = me_zorgoomni.89_tooltip.c
-        add_stability = 8   
-        add_legitimacy = 12
-           current_ruler = {
-            add_popularity = 10
+        trigger = { omni_hold_development_offer_valid = yes }
+
+        if = {
+            limit = { omni_hold_development_offer_valid = yes }
+            omni_pay_for_hold_development = yes
+            add_stability = 5
+            scope:hold_development_target = {
+                add_province_modifier = {
+                    name = omni_hold_festival
+                    duration = 1825
+                }
+            }
         }
     }
-    option = { # Cancel
+
+    option = {
         name = "me_zorgoomni.89.d"
-        custom_tooltip = me_zorgoomni.89_tooltip.d
+    }
+
+    after = {
+        remove_variable = omni_develop_hold_pending
     }
 }
 

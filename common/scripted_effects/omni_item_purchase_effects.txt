@@ -1,0 +1,66 @@
+﻿# A character visiting a market on the ruler's behalf buys a generated design
+# with their OWN purse and receives it personally (same rule as fixed gear in
+# omni_army_buy_fixed). Prices match omni_army_buy_slot_item's tiers.
+# Scope: the shop host (event root), which holds the stock.
+omni_army_buy_slot_item_visitor = {
+	save_scope_as = omni_design_host
+	scope:omni_city_visitor = {
+		set_variable = { name = omni_design_buy value = scope:omni_design_host.var:omni_shop_slot_$SLOT$ }
+		if = {
+			limit = { is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_design_buy } wealth >= 130 }
+			add_gold = -130
+			set_variable = omni_design_bought
+		}
+		else_if = {
+			limit = { is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_design_buy } wealth >= 220 }
+			add_gold = -220
+			set_variable = omni_design_bought
+		}
+		else_if = {
+			limit = { is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_design_buy } wealth >= 360 }
+			add_gold = -360
+			set_variable = omni_design_bought
+		}
+		else_if = {
+			limit = { is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_design_buy } wealth >= 560 }
+			add_gold = -560
+			set_variable = omni_design_bought
+		}
+		else_if = {
+			limit = { is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_design_buy } wealth >= 850 }
+			add_gold = -850
+			set_variable = omni_design_bought
+		}
+		else_if = {
+			limit = { is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_design_buy } wealth >= 1250 }
+			add_gold = -1250
+			set_variable = omni_design_bought
+		}
+		else_if = {
+			limit = {
+				NOR = {
+					is_target_in_global_variable_list = { name = omni_price_tier_2 target = var:omni_design_buy }
+					is_target_in_global_variable_list = { name = omni_price_tier_3 target = var:omni_design_buy }
+					is_target_in_global_variable_list = { name = omni_price_tier_4 target = var:omni_design_buy }
+					is_target_in_global_variable_list = { name = omni_price_tier_5 target = var:omni_design_buy }
+					is_target_in_global_variable_list = { name = omni_price_tier_6 target = var:omni_design_buy }
+					is_target_in_global_variable_list = { name = omni_price_tier_7 target = var:omni_design_buy }
+				}
+				wealth >= 1750
+			}
+			add_gold = -1750
+			set_variable = omni_design_bought
+		}
+		if = {
+			limit = { has_variable = omni_design_bought }
+			give_character_an_item_from_variable = { ITEM_VAR = omni_design_buy }
+			scope:omni_design_host = {
+				remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
+				remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
+				remove_variable = omni_shop_slot_$SLOT$
+			}
+		}
+		remove_variable = omni_design_bought
+		remove_variable = omni_design_buy
+	}
+}

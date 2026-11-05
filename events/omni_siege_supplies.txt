@@ -21,17 +21,35 @@ omni_siege_supply.1 = {
 
 	option = {
 		name = omni_siege_supply.1.ram
-		trigger = {
-			scope:omni_city_visitor = {
-				omni_character_has_siege_supply_market = yes
-				omni_kit_below_cap = { KIT = ram }
-			}
-			omni_city_actor_has_wealth = { PRICE = 200 }
-		}
+		trigger = { scope:omni_city_visitor = { omni_character_can_buy_ram = yes } }
 		custom_tooltip = omni_kit_ram_use_tt
 		custom_tooltip = omni_siege_supply_carried_tt
-		omni_city_actor_change_gold = { VALUE = 200 MULTIPLY = -1 }
-		scope:omni_city_visitor = { omni_kit_gain = { KIT = ram } }
+		if = {
+			limit = {
+				scope:omni_city_visitor = {
+					omni_tutorial_ram_allowance_available = yes
+					wealth < 200
+				}
+			}
+			custom_tooltip = omni_tutorial_ram_allowance_tt
+		}
+		hidden_effect = {
+			scope:omni_city_visitor = {
+				if = {
+					limit = { omni_character_can_buy_ram = yes }
+					if = {
+						limit = { omni_tutorial_ram_allowance_available = yes }
+						country = { set_variable = omni_tut_ram_allowance_used }
+						if = {
+							limit = { wealth < 200 }
+							add_gold = { value = 200 subtract = wealth }
+						}
+					}
+					add_gold = -200
+					omni_kit_gain = { KIT = ram }
+				}
+			}
+		}
 		trigger_event = { id = omni_siege_supply.1 }
 	}
 	option = {

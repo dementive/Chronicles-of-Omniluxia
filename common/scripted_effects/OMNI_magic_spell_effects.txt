@@ -23,6 +23,13 @@ omni_apply_local_ward_effect = {
 			add_province_modifier = { name = $MOD$ duration = $DAYS$ }
 		}
 	}
+	omni_tut_hook_capital_warded = yes # tutorial step 5; no-op outside the Tutorial
+}
+
+# Character scope. Both spell menus use the same settlement ward and mana cost.
+omni_cast_hearthward_effect = {
+	omni_apply_local_ward_effect = { MOD = omni_folk_hearth_ward_mod DAYS = 180 }
+	omni_spell_mana_cost_effect = { BASE = 15 }
 }
 
 omni_spell_mana_cost_effect = {
@@ -43,4 +50,9 @@ omni_spell_mana_cost_effect = {
 		set_variable = { name = magic value = 0 }
 	}
 	remove_variable = omni_spell_base
+	# Tutorial: record a cast made from the in-battle spell menu.
+	if = {
+		limit = { exists = scope:battle_spell_context }
+		omni_tutorial_mark = { FLAG = battle_cast }
+	}
 }

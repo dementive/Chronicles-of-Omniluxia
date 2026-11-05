@@ -1,14 +1,22 @@
 ﻿# National army loadout: 4 country slots (weapon / ranged / armour / shield).
-# Buying an item outfits the realm: personal layer -> ruler, army layer -> country.
-# One item per slot; a new purchase replaces the old one. Costs are paid from the
+# Equipped gear applies a personal layer to the ruler and an army layer to the country.
+# Each slot can hold one equipped item and one carried item. Costs are paid from the
 # NATIONAL TREASURY. Generated items are priced per-item by power (8 tiers):
 # omni_price_tier_2..7 = 130 / 220 / 360 / 560 / 850 / 1250.
 # Emblem/trinket generated items are personal-only (no slot, no army layer).
 
 # Called from the shop (ROOT = buying ruler). Pays the item's tier price from the
-# treasury, then routes the item into the country and (re)equips the matching slot.
+# treasury, then stores the item for manual equip.
 omni_army_buy_slot_item = {
+	# A character visiting on the ruler's behalf buys with their own purse.
 	if = {
+		limit = {
+			exists = scope:omni_city_visitor
+			NOT = { this = scope:omni_city_visitor }
+		}
+		omni_army_buy_slot_item_visitor = { SLOT = $SLOT$ }
+	}
+	else_if = {
 		limit = { NOT = { is_ruler = yes } }
 		if = {
 			limit = {
@@ -35,7 +43,8 @@ omni_army_buy_slot_item = {
 			remove_variable = omni_shop_slot_$SLOT$
 		}
 	}
-	else = {
+	else_if = {
+		limit = { omni_generated_item_buyer_has_space = { SLOT = $SLOT$ } }
 		omni_army_buy_slot_item_national = { SLOT = $SLOT$ }
 	}
 }
@@ -63,14 +72,15 @@ omni_army_buy_slot_item_national = {
 		remove_list_variable = { name = omni_item_shop_stock target = var:omni_shop_slot_$SLOT$ }
 		remove_list_variable = { name = omni_item_shop_stock_gen target = var:omni_shop_slot_$SLOT$ }
 		remove_variable = omni_shop_slot_$SLOT$
+		omni_tutorial_mark = { FLAG = gear_bought }
 	}
 	remove_variable = omni_army_purchase_succeeded
 	remove_variable = omni_last_purchase_price
 }
 
 # Fixed / hand-made GEAR purchase (literal item_ID, explicit price).
-# Rulers and AI use the national loadout; player-controlled non-rulers buy
-# personally and receive only their own character item.
+# Rulers commission gear from the treasury. Player rulers carry it until
+# equipped through Items. Other characters buy with personal gold.
 omni_army_buy_fixed = {
 	save_scope_as = omni_fixed_purchase_host
 	remove_variable = omni_fixed_purchase_succeeded
@@ -86,18 +96,28 @@ omni_army_buy_fixed = {
 		}
 	}
 	else_if = {
-		limit = { is_ruler = yes OR = { employer = { is_ai = yes } country = { is_ai = yes } } }
+		limit = { is_ruler = yes }
 		if = {
-			limit = { country = { omni_country_can_pay_for_luxury = { PRICE = $PRICE$ } } }
+			limit = {
+				omni_fixed_item_buyer_has_space = { ITEM = $item_ID$ CATEGORY = $CATEGORY$ }
+				country = { omni_country_can_pay_for_luxury = { PRICE = $PRICE$ } }
+			}
 			country = { add_treasury = -$PRICE$ }
-			# National gear must not call give_character_an_item here: that effect
-			# wakes AI personal auto-equip, which would add the combat item's country
-			# layer once before the national layer dispatcher adds it again.
-			add_to_variable_list = { name = item_list target = flag:$item_ID$ }
-			country = {
-				set_variable = { name = omni_gen_fx_item value = flag:$item_ID$ }
-				omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
-				remove_variable = omni_gen_fx_item
+			if = {
+				limit = { country = { is_ai = yes } }
+				# Record ownership without firing the separate personal auto-equip event.
+				add_to_variable_list = { name = item_list target = flag:$item_ID$ }
+				country = {
+					set_variable = { name = omni_gen_fx_item value = flag:$item_ID$ }
+					omni_army_replace_slot = { SLOTVAR = omni_army_slot_$CATEGORY$ }
+					remove_variable = omni_gen_fx_item
+				}
+			}
+			else = {
+				country = {
+					set_variable = { name = omni_carried_slot_$CATEGORY$ value = flag:$item_ID$ }
+					set_variable = { name = omni_carried_price_$CATEGORY$ value = $PRICE$ }
+				}
 			}
 			set_variable = omni_fixed_purchase_succeeded
 		}
@@ -113,6 +133,7 @@ omni_army_buy_fixed = {
 	if = {
 		limit = { has_variable = omni_fixed_purchase_succeeded }
 		remove_list_variable = { name = omni_item_shop_stock target = flag:$item_ID$ }
+		omni_tutorial_mark = { FLAG = gear_bought }
 	}
 	remove_variable = omni_fixed_purchase_succeeded
 }
@@ -277,11 +298,21 @@ omni_character_unequip_army_slot = {
 
 omni_character_equip_carried_slot = {
 	country = {
+		# Swap gear when both slots are occupied. Keep the old item and its price.
+		if = { limit = { has_variable = $SLOTVAR$ } set_local_variable = { name = omni_previous_gear value = var:$SLOTVAR$ } }
+		if = { limit = { has_variable = $SLOTPRICE$ } set_local_variable = { name = omni_previous_gear_price value = var:$SLOTPRICE$ } }
 		set_variable = { name = omni_gen_fx_item value = var:$CARRYVAR$ }
 		omni_army_replace_slot = { SLOTVAR = $SLOTVAR$ }
-		if = { limit = { has_variable = $CARRYPRICE$ } set_variable = { name = $SLOTPRICE$ value = var:$CARRYPRICE$ } remove_variable = $CARRYPRICE$ }
 		remove_variable = omni_gen_fx_item
+		remove_variable = $SLOTPRICE$
+		if = { limit = { has_variable = $CARRYPRICE$ } set_variable = { name = $SLOTPRICE$ value = var:$CARRYPRICE$ } }
 		remove_variable = $CARRYVAR$
+		remove_variable = $CARRYPRICE$
+		if = {
+			limit = { has_local_variable = omni_previous_gear }
+			set_variable = { name = $CARRYVAR$ value = local_var:omni_previous_gear }
+			if = { limit = { has_local_variable = omni_previous_gear_price } set_variable = { name = $CARRYPRICE$ value = local_var:omni_previous_gear_price } }
+		}
 	}
 }
 

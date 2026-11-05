@@ -1,0 +1,83 @@
+types OmniWizardHutDirectory {
+	type omni_wizard_hut_directory = message_window {
+		name = "omni_wizard_hut_directory"
+		size = { 356 438 }
+		movable = yes
+		visible = "[And(IsMapMode('cool_map_effect'), GetVariableSystem.Exists('omni_wizard_hut_directory'))]"
+
+		blockoverride "Title_text" { text = "omni_wizard_hut_directory_title" }
+		blockoverride "White_buttons" {
+			visible = yes
+			button_close = {
+				position = { -3 2 }
+				parentanchor = top|right
+				onclick = "[ClearHighlightColors]"
+				onclick = "[GetVariableSystem.Clear('omni_wizard_hut_directory')]"
+				tooltip = "CLOSE"
+			}
+		}
+
+		state = {
+			name = _hide
+			on_start = "[ClearHighlightColors]"
+		}
+
+		# Keep one non-scrolling item per hut so the highlight covers the entire list.
+		flowcontainer = {
+			datamodel = "[Player.MakeScope.GetList('omni_folk_atlas_local_huts')]"
+			item = {
+				widget = {
+					size = { 1 1 }
+					alwaystransparent = yes
+					state = {
+						name = omni_folk_atlas_highlight_hut
+						duration = 0
+						on_start = "[SetHighlightProvince(Scope.GetProvince.GetId)]"
+					}
+				}
+			}
+		}
+
+		textbox = {
+			position = { 16 42 }
+			size = { 324 42 }
+			using = BaseFontM
+			text = "omni_wizard_hut_directory_help"
+		}
+		textbox = {
+			position = { 16 91 }
+			size = { 324 32 }
+			using = BaseFontM
+			visible = "[IsDataModelEmpty(Player.MakeScope.GetList('omni_folk_atlas_local_huts'))]"
+			text = "omni_wizard_hut_directory_empty"
+		}
+
+		scrollarea = {
+			position = { 16 91 }
+			size = { 324 327 }
+			scrollbarpolicy_horizontal = always_off
+			using = VerticalScrollAreaCutOff
+			scrollbar_vertical = { using = VerticalScrollBar }
+
+			scrollwidget = {
+				fixedgridbox = {
+					addcolumn = 302
+					addrow = 32
+					maxhorizontalslots = 1
+					datamodel = "[Player.MakeScope.GetList('omni_folk_atlas_local_huts')]"
+					item = {
+						text_button_square = {
+							size = { 296 28 }
+							blockoverride "Center_text" { text = "[Scope.GetProvince.GetNameWithNoTooltip]" }
+							blockoverride "On_click" {
+								onclick = "[PanToProvince(Scope.GetProvince)]"
+								onclick = "[SetHighlightProvince(Scope.GetProvince.GetId)]"
+							}
+							tooltip = "[Scope.GetProvince.Custom('omni_folk_atlas_hut_tooltip')]"
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -3,7 +3,7 @@
     start_civil_war = char:111
     char:111.employer = {
         if = {
-            limit = { NOT = { this = root } }
+            limit = { NOT = { this = root } civil_war_with = root }
             save_scope_as = sov_rebels
             set_variable = omni_sov_rebel_side
             change_country_name = "Zmetya's Sovenerians"
@@ -29,6 +29,20 @@
     if = {
         limit = { exists = scope:sov_rebels }
         set_variable = omni_sov_loyal_side
+        # Extend the engine's split along the rebel border.
+        while = {
+            count = 2
+            random_owned_province = {
+                limit = {
+                    root = { num_of_cities >= 3 }
+                    is_capital = no
+                    controller = root
+                    any_neighbor_province = { owner = scope:sov_rebels }
+                }
+                set_owned_by = scope:sov_rebels
+                set_controller = scope:sov_rebels
+            }
+        }
     }
     else = {
         remove_global_variable = omni_sov_war_started
@@ -39,23 +53,16 @@ omni_sov_muster_rebel_host = {
     if = {
         limit = { NOT = { has_variable = omni_sov_rebel_host_mustered } }
         set_variable = omni_sov_rebel_host_mustered
-        add_treasury = 100
-        add_manpower = 3
+        add_treasury = 150
+        add_manpower = 5
         create_unit = {
             name = "Zmetya's Host"
             location = capital_scope
-            add_subunit = heavy_infantry
-            add_subunit = heavy_infantry
-            add_subunit = heavy_infantry
-            add_subunit = heavy_infantry
-            add_subunit = light_cavalry
-            add_subunit = light_cavalry
-            add_subunit = light_cavalry
-            add_subunit = light_cavalry
-            add_subunit = light_infantry
-            add_subunit = light_infantry
-            add_subunit = archers
-            add_subunit = archers
+            while = { count = 8 add_subunit = heavy_infantry }
+            while = { count = 4 add_subunit = heavy_cavalry }
+            while = { count = 4 add_subunit = light_cavalry }
+            while = { count = 2 add_subunit = light_infantry }
+            while = { count = 2 add_subunit = archers }
         }
     }
 }
@@ -154,6 +161,7 @@ omni_oath_found = {
             add_subunit = archers
         }
     }
+    trigger_event = { id = omni_oath.7 days = { 35 55 } }
     trigger_event = { id = omni_oath.2 days = { 90 180 } }
 }
 

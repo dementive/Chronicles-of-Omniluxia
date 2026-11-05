@@ -1,0 +1,77 @@
+﻿# Market affordability for ARMY gear (fixed weapons/ranged/armor/shields and
+# generated regional designs). Mirrors exactly who pays in omni_army_buy_fixed
+# and omni_army_buy_slot_item, so the stalls never show something the payer
+# cannot afford, or hide something they can:
+#   - another character visiting on the ruler's behalf pays from their own purse
+#   - the ruler (human or AI) commissions it for the realm from the treasury
+#     (AI: omni_country_can_pay_for_luxury keeps its spending budget)
+#   - any other character pays from their own purse
+# Scope: the shop host (event root).
+omni_item_buyer_can_pay = {
+	trigger_if = {
+		limit = {
+			exists = scope:omni_city_visitor
+			NOT = { this = scope:omni_city_visitor }
+		}
+		scope:omni_city_visitor = { wealth >= $PRICE$ }
+	}
+	trigger_else_if = {
+		limit = { is_ruler = yes }
+		country = { omni_country_can_pay_for_luxury = { PRICE = $PRICE$ } }
+	}
+	trigger_else = {
+		wealth >= $PRICE$
+	}
+}
+
+# Only player rulers commission gear that waits in the national inventory.
+omni_item_buyer_uses_carried_gear = {
+	is_ruler = yes
+	country = { is_ai = no }
+	OR = {
+		NOT = { exists = scope:omni_city_visitor }
+		this = scope:omni_city_visitor
+	}
+}
+
+omni_fixed_item_buyer_has_space = {
+	trigger_if = {
+		limit = { omni_item_buyer_uses_carried_gear = yes }
+		country = {
+			NOR = {
+				has_variable = omni_carried_slot_$CATEGORY$
+				omni_country_slots_hold_item = { ITEM = $ITEM$ }
+			}
+		}
+	}
+}
+
+omni_generated_item_buyer_has_space = {
+	has_variable = omni_shop_slot_$SLOT$
+	trigger_if = {
+		limit = { omni_item_buyer_uses_carried_gear = yes }
+		trigger_if = {
+			limit = { is_target_in_global_variable_list = { name = item_weapon target = var:omni_shop_slot_$SLOT$ } }
+			country = { NOT = { has_variable = omni_carried_slot_weapon } }
+		}
+		trigger_else_if = {
+			limit = { is_target_in_global_variable_list = { name = item_weapon_ranged target = var:omni_shop_slot_$SLOT$ } }
+			country = { NOT = { has_variable = omni_carried_slot_ranged } }
+		}
+		trigger_else_if = {
+			limit = { is_target_in_global_variable_list = { name = item_armour target = var:omni_shop_slot_$SLOT$ } }
+			country = { NOT = { has_variable = omni_carried_slot_armour } }
+		}
+		trigger_else_if = {
+			limit = { is_target_in_global_variable_list = { name = item_shield target = var:omni_shop_slot_$SLOT$ } }
+			country = { NOT = { has_variable = omni_carried_slot_shield } }
+		}
+		trigger_else_if = {
+			limit = { is_target_in_global_variable_list = { name = item_emblem target = var:omni_shop_slot_$SLOT$ } }
+			country = { NOT = { has_variable = omni_carried_slot_emblem } }
+		}
+		trigger_else = {
+			country = { NOT = { has_variable = omni_carried_slot_trinket } }
+		}
+	}
+}

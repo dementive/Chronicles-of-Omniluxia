@@ -77,7 +77,12 @@ me_zorgo_magic_focus.40 = { # Character magic hub
             root = { omni_player_has_character_magic_ready = yes }
         }
         name = "me_zorgo_magic_focus.40.c"
-        save_scope_as = battle_spell_context
+        if = {
+            limit = {
+                scope:target = { any_character_unit = { in_combat = yes unit_owner = { this = root } } }
+            }
+            save_scope_as = battle_spell_context
+        }
         trigger_event = { id = me_zorgo_magic_focus.130 }
     }
 
@@ -1855,6 +1860,25 @@ me_zorgo_magic_focus.7 = { # Folk Magic
         custom_tooltip = snakefolk_spell_3_tt
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.7.v"
+    }
+    option = { # Hearthward - every Folk teacher's household ward
+        trigger = {
+            scope:target = {
+                omni_can_cast_hearthward = yes
+                OR = {
+                    any_character_unit = { is_army = yes unit_location = { owner = root } }
+                    AND = {
+                        NOT = { any_character_unit = { is_army = yes } }
+                        location = { owner = root }
+                    }
+                }
+            }
+        }
+        scope:target = { omni_cast_hearthward_effect = yes }
+        custom_tooltip = omni_hearth_ward_spell_tt
+        custom_tooltip = folk_spell_tt
+        custom_tooltip = 15_mana_tt
+        name = "me_zorgo_magic_focus.7.hearth_ward"
     }
 
     option = {
@@ -5399,6 +5423,26 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
                 save_scope_as = selected_mage
             }
         }
+    }
+
+    option = { # Hearthward - ward the settlement where this commander is stationed
+        trigger = {
+            NOT = { exists = scope:battle_spell_context }
+            scope:target = {
+                omni_can_cast_hearthward = yes
+                any_character_unit = {
+                    is_army = yes
+                    in_combat = no
+                    unit_owner = { this = root }
+                    unit_location = { owner = root }
+                }
+            }
+        }
+        scope:target = { omni_cast_hearthward_effect = yes }
+        custom_tooltip = omni_hearth_ward_spell_tt
+        custom_tooltip = folk_spell_tt
+        custom_tooltip = 15_mana_tt
+        name = "me_zorgo_magic_focus.7.hearth_ward"
     }
 
     option = { # Battle Surge

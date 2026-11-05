@@ -294,6 +294,14 @@ me_magic_studying.7 = {
                     char_is_ill_trigger = yes
                 }
                 title_importance_modifier = yes
+                # Rulers and heirs can still be victims, but are picked less often.
+                modifier = {
+                    factor = 0.5
+                    OR = {
+                        is_ruler = yes
+                        is_primary_heir = yes
+                    }
+                }
             }
             save_scope_as = unfortunate_soul
         }
@@ -664,6 +672,13 @@ me_magic_studying.17 = {
                     char_is_ill_trigger = yes
                 }
                 title_importance_modifier = yes
+                modifier = {
+                    factor = 0.5
+                    OR = {
+                        is_ruler = yes
+                        is_primary_heir = yes
+                    }
+                }
             }
             save_scope_as = unfortunate_madman
         }
@@ -938,17 +953,20 @@ me_magic_studying.22 = {
         # Guarded: the target can die between the event firing and the option
         # being taken, which logged "scope was dead" for the effects below.
         if = {
-        	limit = { scope:target = { is_alive = yes } }
-        	scope:target = {
-        	    if = {
-        	        limit = { NOT = { has_trait = blind } }
-        	        add_trait = blind
-        	    }
-        	    else = {
-        	        death = { death_reason = death_magic }
-        	    }
-        	    add_loyalty = magic_victim_loyalty
-        	}
+            limit = { scope:target = { is_alive = yes } }
+            scope:target = {
+                if = {
+                    limit = { NOT = { has_trait = blind } }
+                    add_trait = blind
+                }
+                else = {
+                    random = {
+                        chance = 50
+                        death = { death_reason = death_magic }
+                    }
+                }
+                add_loyalty = magic_victim_loyalty
+            }
         }
         add_stability = -3
         custom_tooltip = me_magic_studying_bad_tooltip
@@ -987,6 +1005,13 @@ me_magic_studying.23 = {
                     char_is_ill_trigger = yes
                 }
                 title_importance_modifier = yes
+                modifier = {
+                    factor = 0.5
+                    OR = {
+                        is_ruler = yes
+                        is_primary_heir = yes
+                    }
+                }
             }
             save_scope_as = massive_l
         }

@@ -1,6 +1,30 @@
-﻿# One province-local cached membership check per map icon. The cache is rebuilt
-# from the fixed catalog on game initialization, including when loading saves.
+﻿# Map marker check against the static hut catalog (common/scripted_triggers/omni_folk_hut_catalog.txt).
+# Not the runtime omni_folk_hut_site variable: map icons could be evaluated before init set it.
 omni_folk_atlas_hut = {
  scope = province
- is_shown = { has_variable = omni_folk_hut_site }
+ is_shown = { omni_folk_hut_catalog = yes }
+}
+
+omni_folk_atlas_refresh_directory = {
+ scope = country
+ ai_is_valid = { always = no }
+
+ effect = {
+  clear_variable_list = omni_folk_atlas_local_huts
+  every_in_global_list = {
+   variable = omni_folk_atlas_huts
+   limit = {
+    exists = owner
+    owner = {
+     OR = {
+      this = root
+      root = { in_diplomatic_range = prev }
+     }
+    }
+   }
+   root = {
+    add_to_variable_list = { name = omni_folk_atlas_local_huts target = prev }
+   }
+  }
+ }
 }

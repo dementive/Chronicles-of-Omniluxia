@@ -1,0 +1,194 @@
+﻿# Omniluxia tutorial "A Royal Progress" (tutorial/00_tutorial.txt).
+
+# CHARACTER scope. Records a tutorial milestone on the player's country.
+# Called from the city menu, market, siege-kit spending and battle casting.
+# O(1); does nothing outside the Tutorial game mode.
+omni_tutorial_mark = {
+	if = {
+		limit = {
+			exists = employer
+			employer = {
+				is_ai = no
+				is_tutorial_active = yes
+			}
+		}
+		employer = { set_variable = omni_tut_$FLAG$ }
+	}
+}
+
+# COUNTRY scope. Clears every tutorial variable (abort / completion).
+omni_tutorial_cleanup_effect = {
+	remove_variable = omni_tut_city_visited
+	remove_variable = omni_tut_market_visited
+	remove_variable = omni_tut_capital_warded
+	remove_variable = omni_tut_gear_bought
+	remove_variable = omni_tut_battle_cast
+	remove_variable = omni_tut_used_ram
+	remove_variable = omni_tut_ram_allowance_used
+	remove_variable = omni_tut_used_sapper
+	remove_variable = omni_tut_used_fire
+	remove_variable = omni_tut_used_plague
+	remove_variable = omni_tut_war_phase
+	remove_variable = omni_tut_prompt_live
+	remove_variable = omni_tut_probe_sent
+	remove_variable = omni_tut_raid_province
+	remove_variable = omni_tut_raiders
+	remove_variable = omni_tut_raider_chief
+}
+
+# COUNTRY scope (the player). Raiders seize a border settlement, fortify it and
+# declare war. The province is saved as var:omni_tut_raid_province.
+omni_tutorial_spawn_raiders_effect = {
+	if = {
+		limit = {
+			any_owned_province = {
+				is_capital = no
+				any_neighbor_province = { is_sea = no NOT = { owner = root } }
+			}
+		}
+		random_owned_province = {
+			limit = {
+				is_capital = no
+				any_neighbor_province = { is_sea = no NOT = { owner = root } }
+			}
+			save_scope_as = omni_tut_raid_province
+		}
+	}
+	else = {
+		random_owned_province = {
+			limit = { is_capital = no }
+			save_scope_as = omni_tut_raid_province
+		}
+	}
+	if = {
+		limit = { exists = scope:omni_tut_raid_province }
+		set_variable = { name = omni_tut_raid_province value = scope:omni_tut_raid_province }
+		scope:omni_tut_raid_province = {
+			create_country = {
+				change_government = tribal_chiefdom
+				save_scope_as = omni_tut_raiders
+				create_character = {
+					culture = scope:omni_tut_raiders.culture
+					religion = scope:omni_tut_raiders.religion
+					save_scope_as = omni_tut_raider_chief
+				}
+				set_as_ruler = scope:omni_tut_raider_chief
+			}
+		}
+		scope:omni_tut_raid_province = {
+			set_owned_by = scope:omni_tut_raiders
+			add_claim = root # retakeable by a fresh war if the raid war ends without it
+			# Walls for the ram to break. The player keeps them after the retaking.
+			if = {
+				limit = { num_of_fortress_building < 1 }
+				add_building_level = fortress_building
+			}
+		}
+		set_variable = { name = omni_tut_raiders value = scope:omni_tut_raiders }
+		set_variable = { name = omni_tut_raider_chief value = scope:omni_tut_raider_chief }
+		scope:omni_tut_raiders = {
+			add_treasury = 100
+			create_unit = {
+				name = "Raiders of the Hollow Road"
+				navy = no
+				location = scope:omni_tut_raid_province
+				set_as_commander = scope:omni_tut_raider_chief
+				hidden_effect = {
+					add_subunit = light_infantry
+					add_subunit = archers
+					add_subunit = light_cavalry
+				}
+			}
+			declare_war_with_wargoal = {
+				war_goal = raiding_wargoal
+				target = root
+			}
+		}
+		set_variable = omni_tut_war_phase
+		trigger_event = { id = omni_tutorial.30 days = 2 }
+	}
+}
+
+# ---------------------------------------------------------------------------
+# Auto-completing tutorial steps 5, 7 and 8. Their conditions are moments (ward
+# just landed, ruler just left, ruler just returned), so they are completed by
+# hooks at those moments instead of waiting for the panel to catch the state.
+# The tutorial file calls the same COUNTRY-scope effects, so rewards can't double.
+
+omni_tut_complete_ward_effect = {
+	set_variable = omni_tut_s5
+	current_ruler = { add_martial = 1 }
+}
+
+omni_tut_complete_set_out_effect = {
+	set_variable = omni_tut_s7
+	set_variable = omni_tut_probe_sent
+	trigger_event = { id = omni_tutorial.10 days = 14 }
+}
+
+omni_tut_complete_home_effect = {
+	set_variable = omni_tut_s8
+	current_ruler = { add_gold = 200 }
+	trigger_event = { id = omni_tutorial.19 days = 7 }
+}
+
+# CHARACTER scope (the caster), after a ward spell is applied.
+omni_tut_hook_capital_warded = {
+	if = {
+		limit = {
+			exists = employer
+			employer = {
+				is_ai = no
+				is_tutorial_active = yes
+				has_variable = omni_tut_on
+				capital_scope = { omni_tutorial_province_warded = yes }
+			}
+		}
+		employer = {
+			set_variable = omni_tut_capital_warded
+			if = {
+				limit = { has_variable = omni_tut_s4 NOT = { has_variable = omni_tut_s5 } }
+				omni_tut_complete_ward_effect = yes
+			}
+		}
+	}
+}
+
+# CHARACTER scope (the adventurer), when the party sets out (adventure.3).
+omni_tut_hook_departed = {
+	if = {
+		limit = {
+			is_ruler = yes
+			exists = employer
+			employer = { is_ai = no is_tutorial_active = yes has_variable = omni_tut_on }
+		}
+		employer = {
+			if = {
+				limit = { has_variable = omni_tut_s4 has_variable = omni_tut_capital_warded NOT = { has_variable = omni_tut_s5 } }
+				omni_tut_complete_ward_effect = yes
+			}
+			if = {
+				limit = { has_variable = omni_tut_s2 has_variable = omni_tut_s5 NOT = { has_variable = omni_tut_s7 } }
+				omni_tut_complete_set_out_effect = yes
+			}
+		}
+	}
+}
+
+# CHARACTER scope (the adventurer), when the expedition ends (adventure.7).
+omni_tut_hook_returned = {
+	if = {
+		limit = {
+			is_ruler = yes
+			exists = employer
+			employer = {
+				is_ai = no
+				is_tutorial_active = yes
+				has_variable = omni_tut_on
+				has_variable = omni_tut_s7
+				NOT = { has_variable = omni_tut_s8 }
+			}
+		}
+		employer = { omni_tut_complete_home_effect = yes }
+	}
+}

@@ -1676,6 +1676,12 @@ vbox = {
 		#	shortcut = macro_builder
 		#}
 
+		omni_wizard_hut_directory = {
+			position = { -380 -8 }
+			parentanchor = bottom|right
+			widgetanchor = bottom|right
+		}
+
 		base_window = {
 			position = { 1 1 }
 			name = "minimap_and_buttons"
@@ -1789,6 +1795,26 @@ vbox = {
 				position = { -8 4 } 
 				parentanchor = right
 				white_button_round = {
+					name = "omni_wizard_hut_directory_button"
+					size = { 26 26 }
+					visible = "[IsMapMode('cool_map_effect')]"
+					blockoverride "Icon" { texture = "gfx/interface/map/omni_folk_hut_glyph.dds" }
+					blockoverride "On_click" {
+						forcedown = "[GetVariableSystem.Exists('omni_wizard_hut_directory')]"
+						onclick = "[ClearHighlightColors]"
+						onclick = "[GetScriptedGui('omni_folk_atlas_refresh_directory').Execute(GuiScope.SetRoot(Player.MakeScope).End)]"
+						onclick = "[GetVariableSystem.Toggle('omni_wizard_hut_directory')]"
+						onclick = "[PdxGuiTriggerAllAnimations('omni_wizard_hut_draw_highlights')]"
+					}
+					# Let the directory bind its items before asking them to highlight.
+					state = {
+						name = omni_wizard_hut_draw_highlights
+						duration = 0.1
+						on_finish = "[PdxGuiTriggerAllAnimations(Select_CString(And(IsMapMode('cool_map_effect'), GetVariableSystem.Exists('omni_wizard_hut_directory')), 'omni_folk_atlas_highlight_hut', ''))]"
+					}
+					tooltip = "omni_wizard_hut_directory_title"
+				}
+				white_button_round = {
 					size = { 26 26 }
 					name = "find_province"
 					blockoverride "Icon" { texture = "gfx/interface/base_parts/find.dds" }
@@ -1850,46 +1876,27 @@ vbox = {
 		}
 		
 		### DATE
-		container = {
-			position = { -370 -2 }
+		# Keep the Objectives button clear of the date panel's left overhang.
+		text_button_square = {
+			name = "omni_tutorial_objectives"
+			size = { 84 28 }
 			parentanchor = top|right
+			widgetanchor = top|right
+			position = { -528 4 }
 			visible = "[InGameTopbar.IsTutorialActive]"
-			tooltip = "TUTORIAL_MENU"
-			button = {
-				size = { 220 46 }
-				position = { 0 0 }
-				#frame = "[InGameTopbar.GetTutorialFrame]"
+			datacontext = "[GetScriptedGui('omni_ach_royal_progress')]"
+			tooltip = "[SelectLocalization( ScriptedGui.IsShown( GuiScope.SetRoot( Player.MakeScope ).End ), 'omni_tutorial_complete_tt', 'TUTORIAL_MENU' )]"
+			using = tooltip_se
+			blockoverride "MinimumSize" {
+				minimumsize = { 84 28 }
+			}
+			blockoverride "Center_text" {
+				text = "TUTORIAL_HEADER_OBJECTIVES"
+			}
+			blockoverride "On_click" {
 				onclick = "[InGameTopbar.OpenView('tutorial_objectives')]"
-				clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_tab"
-				oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
 				forcedown = "[IsGameViewOpen('tutorial_objectives')]"
-				gfxtype = buttongfx
-				using = button_tiled_texture
-				framesize = { 200 200 }
-				frame = 2
-				spriteType = Corneredtiled
-				alwaystransparent = no
-				
-				modify_texture = {
-					name = "Alpha"
-					texture = "gfx/interface/base_parts/top_bar_alpha_invertedtbd.dds"
-					blend_mode = alphamultiply
-					spriteType = Corneredtiled
-					spriteborder = { 60 0 }
-				}
-				icon = {
-					using = flat_background_white
-					size = { 32 32 }
-					position = { 52 2 }
-					alwaystransparent = yes
-					parentanchor = left|vcenter
-					modify_texture = {
-						name = "shape_tutorial_icon"
-						texture =  "gfx/interface/icons/icon_alpha/tutorial.dds" 
-						blend_mode = alphamultiply
-					}
-				}
-			}	
+			}
 		}
 
 		window = {

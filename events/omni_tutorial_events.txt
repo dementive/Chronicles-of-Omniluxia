@@ -1,0 +1,247 @@
+﻿namespace = omni_tutorial
+
+# Omniluxia tutorial "A Royal Progress" (tutorial/00_tutorial.txt). Darinfur (ROM) only.
+
+omni_tutorial.1 = { # Tutorial start (on_game_initialized, Tutorial game mode only)
+	type = country_event
+	title = omni_tutorial.1.t
+	desc = omni_tutorial.1.desc
+	picture = event_dwarven_hall
+	left_portrait = current_ruler
+
+	trigger = {
+		tag = ROM
+		is_tutorial_active = yes
+		is_ai = no
+		NOT = { has_variable = omni_tut_on }
+		NOT = { has_variable = omni_tut_done }
+	}
+
+	immediate = {
+		set_variable = omni_tut_on
+		hidden_effect = {
+			add_treasury = 300
+			# Folk lessons and personal items (books, crowns, relics) come from the ruler's own purse.
+			current_ruler = { add_gold = 100 }
+			add_country_modifier = {
+				name = omni_tutorial_boost
+				duration = -1
+			}
+			# The ram lesson needs a Market and a Foundry in one settlement.
+			p:1409 = {
+				add_province_modifier = {
+					name = omni_tutorial_city_works
+					duration = -1
+				}
+				if = {
+					limit = { num_of_commerce_building < 1 }
+					add_building_level = commerce_building
+				}
+				if = {
+					limit = { num_of_foundry_building < 1 }
+					add_building_level = foundry_building
+				}
+			}
+		}
+	}
+
+	option = {
+		name = omni_tutorial.1.a
+		custom_tooltip = omni_tutorial.1.a.tt
+	}
+}
+
+omni_tutorial.3 = { # Hearthward learned
+	type = country_event
+	title = omni_tutorial.3.t
+	desc = omni_tutorial.3.desc
+	picture = ascetic
+	left_portrait = current_ruler
+	right_portrait = scope:omni_folk_tutor # the Bad-Ki hedge-witch, generated below
+
+	immediate = {
+		hidden_effect = {
+			# Generate the hedge-witch through the standard Folk teacher builder so she is a
+			# real Bad-Ki local (culture, faith, nickname, mage traits, Bad-Ki's lessons).
+			# The text calls her "she", so only female variants are rolled.
+			p:1394 = { save_scope_as = omni_folk_teacher }
+			random_list = {
+				1 = { omni_folk_create_teacher_character = { AGE = 49 FEMALE = yes } }
+				1 = { omni_folk_create_teacher_character = { AGE = 63 FEMALE = yes } }
+				1 = { omni_folk_create_teacher_character = { AGE = 71 FEMALE = yes } }
+			}
+		}
+	}
+
+	option = {
+		name = omni_tutorial.3.a
+		custom_tooltip = omni_tutorial.3.a.tt
+	}
+}
+
+omni_tutorial.10 = { # Raiders probe the capital while the ruler is away
+	type = country_event
+	title = omni_tutorial.10.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { capital_scope = { omni_tutorial_province_warded = yes } }
+				desc = omni_tutorial.10.desc_warded
+			}
+			desc = omni_tutorial.10.desc_open
+		}
+	}
+	picture = looting
+
+	trigger = {
+		has_variable = omni_tut_probe_sent
+	}
+
+	immediate = {
+		remove_variable = omni_tut_probe_sent
+	}
+
+	option = {
+		name = omni_tutorial.10.a
+		trigger = { capital_scope = { omni_tutorial_province_warded = yes } }
+		add_treasury = 50
+		add_stability = 2
+	}
+	option = {
+		name = omni_tutorial.10.b
+		trigger = { NOT = { capital_scope = { omni_tutorial_province_warded = yes } } }
+		add_treasury = -75
+		add_stability = -2
+	}
+}
+
+omni_tutorial.19 = { # Warning: the raiders return in force
+	type = country_event
+	title = omni_tutorial.19.t
+	desc = omni_tutorial.19.desc
+	picture = war_council
+	left_portrait = current_ruler
+
+	option = {
+		name = omni_tutorial.19.a
+		custom_tooltip = omni_tutorial.19.a.tt
+		hidden_effect = {
+			trigger_event = { id = omni_tutorial.20 days = 20 }
+		}
+	}
+}
+
+omni_tutorial.20 = { # The raid
+	type = country_event
+	title = omni_tutorial.20.t
+	desc = omni_tutorial.20.desc
+	picture = city_siege
+
+	immediate = {
+		omni_tutorial_spawn_raiders_effect = yes
+	}
+
+	option = {
+		name = omni_tutorial.20.a
+		custom_tooltip = omni_tutorial.20.a.tt
+	}
+}
+
+# Hidden watcher. Runs every 2 days only during the tutorial's war phase,
+# only for the human player, and stops once a battle spell has been cast.
+omni_tutorial.30 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		has_variable = omni_tut_war_phase
+		NOT = { has_variable = omni_tut_battle_cast }
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { has_variable = omni_tut_prompt_live }
+				current_ruler = { any_character_unit = { is_army = yes in_combat = yes } }
+			}
+			set_variable = omni_tut_prompt_live
+			trigger_event = { id = omni_tutorial.31 }
+		}
+		else_if = {
+			limit = {
+				has_variable = omni_tut_prompt_live
+				current_ruler = { NOT = { any_character_unit = { is_army = yes in_combat = yes } } }
+			}
+			remove_variable = omni_tut_prompt_live
+		}
+		if = {
+			limit = { omni_tutorial_raid_war_over = no }
+			trigger_event = { id = omni_tutorial.30 days = 2 }
+		}
+	}
+}
+
+omni_tutorial.31 = { # "Use the spell now"
+	type = country_event
+	title = omni_tutorial.31.t
+	desc = omni_tutorial.31.desc
+	picture = event_marching_army
+	left_portrait = current_ruler
+	right_portrait = scope:omni_tut_enemy
+
+	immediate = {
+		if = {
+			limit = { exists = var:omni_tut_raider_chief }
+			var:omni_tut_raider_chief = { save_scope_as = omni_tut_enemy }
+		}
+		# One-time tutorial tonic: the first battle cast must not fail for want of
+		# mana after a long adventure. Tops up to 40 (covers harsh-terrain cost).
+		current_ruler = {
+			if = {
+				limit = {
+					omni_character_is_eligible_caster = yes
+					OR = {
+						NOT = { has_variable = magic }
+						var:magic < 40
+					}
+				}
+				set_variable = { name = magic value = 40 }
+				clamp_character_magic_to_max = yes
+			}
+		}
+	}
+
+	option = { # Open the real battle spellbook
+		name = omni_tutorial.31.a
+		trigger = {
+			current_ruler = { omni_character_is_eligible_caster = yes }
+		}
+		custom_tooltip = omni_tutorial.31.a.tt
+		hidden_effect = {
+			current_ruler = { save_scope_as = target }
+			if = {
+				limit = { exists = scope:omni_tut_enemy }
+				scope:omni_tut_enemy = { save_scope_as = battle_enemy_target }
+			}
+			save_scope_as = battle_spell_context
+			trigger_event = { id = me_zorgo_magic_focus.29 }
+		}
+	}
+	option = {
+		name = omni_tutorial.31.b
+		custom_tooltip = omni_tutorial.31.b.tt
+	}
+}
+
+omni_tutorial.90 = { # Wrap-up
+	type = country_event
+	title = omni_tutorial.90.t
+	desc = omni_tutorial.90.desc
+	picture = throneroom
+	left_portrait = current_ruler
+
+	option = {
+		name = omni_tutorial.90.a
+		custom_tooltip = omni_tutorial.90.a.tt
+	}
+}

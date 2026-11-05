@@ -1,0 +1,50 @@
+﻿# Province scope, with the country considering the project as root.
+omni_hold_founding_site = {
+    owner = root
+    controller = root
+    OR = {
+        terrain = cavern
+        terrain = hills
+        terrain = mountain
+    }
+    OR = {
+        has_province_rank = city
+        has_province_rank = city_metropolis
+    }
+    civilization_value >= 35
+    NOT = { has_province_modifier = dwarven_hold_mod }
+}
+
+omni_hold_development_site = {
+    owner = root
+    controller = root
+    has_province_modifier = dwarven_hold_mod
+}
+
+omni_can_fund_hold_founding = {
+    invention = dwarven_hold_inv
+    treasury >= 750
+    political_influence >= 60
+    manpower >= 4
+    NOT = { has_variable = build_hold_cooldown }
+}
+
+omni_can_fund_hold_development = {
+    invention = dwarven_hold_inv
+    treasury >= 150
+    political_influence >= 30
+    NOT = { has_variable = develop_hold_cooldown }
+}
+
+# Recheck the site offered by the event before committing to a project.
+omni_hold_founding_offer_valid = {
+    omni_can_fund_hold_founding = yes
+    exists = scope:hold_target
+    scope:hold_target = { omni_hold_founding_site = yes }
+}
+
+omni_hold_development_offer_valid = {
+    omni_can_fund_hold_development = yes
+    exists = scope:hold_development_target
+    scope:hold_development_target = { omni_hold_development_site = yes }
+}

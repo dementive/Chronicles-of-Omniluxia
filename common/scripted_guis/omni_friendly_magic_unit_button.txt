@@ -34,8 +34,8 @@
 		always = no
 	}
 
-	# is_valid drives the ENABLED state. In combat this button is only for friendly
-	# heat-of-battle buffs, not travel or hostile spellcraft.
+	# is_valid drives the enabled state. Hearthward is a local ward available
+	# to a commander at home between battles.
 	is_valid = {
 		custom_tooltip = {
 			text = omni_friendly_magic_unit_button_tooltip
@@ -43,23 +43,31 @@
 
 		custom_tooltip = {
 			text = omni_battle_friendly_need_spell_tt
-			commander = {
-				OR = {
-					AND = {
-						omni_can_afford_spell = { BASE = 15 }
-						omni_caster_tier_1_any_school = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 25 }
-						omni_caster_any_school_t2 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 50 }
-						omni_caster_any_school_t2 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 75 }
-						omni_any_discipline_mastered = yes
+			OR = {
+				AND = {
+					is_army = yes
+					in_combat = no
+					unit_location = { owner = scope:player }
+					commander = { omni_can_cast_hearthward = yes }
+				}
+				commander = {
+					OR = {
+						AND = {
+							omni_can_afford_spell = { BASE = 15 }
+							omni_caster_any_school_t1 = yes
+						}
+						AND = {
+							omni_can_afford_spell = { BASE = 25 }
+							omni_caster_any_school_t2 = yes
+						}
+						AND = {
+							omni_can_afford_spell = { BASE = 50 }
+							omni_caster_any_school_t2 = yes
+						}
+						AND = {
+							omni_can_afford_spell = { BASE = 75 }
+							omni_any_discipline_mastered = yes
+						}
 					}
 				}
 			}
@@ -70,8 +78,11 @@
 		commander = {
 			save_scope_as = target
 		}
+		if = {
+			limit = { in_combat = yes }
+			scope:player = { save_scope_as = battle_spell_context }
+		}
 		scope:player = {
-			save_scope_as = battle_spell_context
 			trigger_event = { id = me_zorgo_magic_focus.130 }
 		}
 	}
