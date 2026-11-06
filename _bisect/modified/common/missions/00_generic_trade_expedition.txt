@@ -1,0 +1,1013 @@
+﻿# THE TRADE EXPEDITION
+#
+# SHAPE: a short trunk, then three parallel tracks (The Ship, The Purse, The
+# Court) that run at the same time and converge on the convoy, then the market,
+# then home, then the Charter.
+#
+# FLEET GATES: only three tasks care where the fleet is - assemble it, arrive
+# with it, come home with it. Those are the three moments the player actually
+# moves something. Everything else is court and market work, and does not
+# pretend the fleet's location matters.
+#
+# EVENTS: storms, pirates and market incidents are NOT tasks. They fire from
+# monthly_on_action pulses attached to the sailing and trading tasks, so they
+# happen while the player is genuinely at sea or genuinely in the market.
+
+generic_trade_expedition = {
+	header = "lotr_generic_mission_ships_headers"
+	icon = lotr_generic_ship_mission_icon
+
+	repeatable = yes
+
+	chance = {}
+
+	ai_chance = {
+		factor = 0
+	}
+
+	potential = {
+		# PERF: ai_chance is 0, so the AI never starts this mission; skip the AI before the world scan.
+		is_ai = no
+		choo_generic_mission_blocker = yes
+		has_civil_war = no
+		civic_tech >= 2
+		num_of_ports >= 1
+		NOT = { has_variable = generic_trade_expedition_cooldown }
+		any_owned_province = {
+			generic_trade_expedition_valid_home_port_trigger = yes
+		}
+		any_country = {
+			generic_trade_expedition_valid_partner_trigger = yes
+		}
+	}
+
+	abort = {
+		OR = {
+			NOT = { exists = scope:generic_trade_expedition_partner }
+			NOT = { exists = scope:generic_trade_expedition_home_port }
+			NOT = { exists = scope:generic_trade_expedition_partner_port }
+			scope:generic_trade_expedition_partner = {
+				OR = {
+					has_land = no
+					war_with = ROOT
+				}
+			}
+			scope:generic_trade_expedition_home_port = {
+				NOT = { owner = ROOT }
+			}
+			scope:generic_trade_expedition_partner_port = {
+				OR = {
+					NOT = { owner = scope:generic_trade_expedition_partner }
+					NOT = { is_port = yes }
+					NOT = { has_building = commerce_building }
+				}
+			}
+			AND = {
+				has_variable = generic_trade_expedition_envoy_selected
+				NOT = {
+					any_character = {
+						has_character_modifier = generic_trade_expedition_envoy_charmod
+					}
+				}
+			}
+			ai_mission_back_out_trigger = yes
+		}
+	}
+
+	on_abort = {
+		generic_trade_expedition_cleanup_effect = yes
+		set_variable = {
+			name = generic_trade_expedition_cooldown
+			days = 730
+		}
+	}
+
+	on_potential = {
+		random_owned_province = {
+			limit = {
+				generic_trade_expedition_valid_home_port_trigger = yes
+			}
+			save_scope_as = generic_trade_expedition_home_port
+		}
+		random_country = {
+			limit = {
+				generic_trade_expedition_valid_partner_trigger = yes
+			}
+			save_scope_as = generic_trade_expedition_partner
+			random_owned_province = {
+				limit = {
+					generic_trade_expedition_valid_partner_port_trigger = yes
+				}
+				save_scope_as = generic_trade_expedition_partner_port
+			}
+		}
+		# A competitor working the same marketplace. Used by market events.
+		random_country = {
+			limit = {
+				generic_trade_expedition_valid_rival_trigger = yes
+			}
+			save_scope_as = generic_trade_expedition_rival
+		}
+	}
+
+	on_start = {
+		start_mission_ai_effect = yes
+	}
+
+	on_completion = {
+		complete_mission_effect = yes
+		generic_trade_expedition_count_run_effect = yes
+		generic_trade_expedition_cleanup_effect = yes
+		set_variable = {
+			name = generic_trade_expedition_cooldown
+			days = 1825
+		}
+	}
+
+	########################################
+	# TRUNK
+	########################################
+
+	generic_trade_expedition_open_contacts = {
+		icon = "task_diplomatic"
+
+		duration = 30
+
+		allow = {
+			political_influence >= 10
+			custom_tooltip = {
+				text = generic_trade_expedition_eligible_envoy_tt
+				any_character = {
+					generic_trade_expedition_eligible_envoy_trigger = yes
+				}
+			}
+			hidden:scope:generic_trade_expedition_partner = {
+				opinion = {
+					target = ROOT
+					value >= 25
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_start = {
+			add_political_influence = -10
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			add_country_modifier = {
+				name = generic_trade_expedition_chartered_venture_cmod
+				duration = 730
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_envoys
+					target = ROOT
+				}
+				hidden_effect = {
+					trigger_event = { id = generic_trade_expedition.200 days = 1 }
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.4 }
+		}
+	}
+
+	########################################
+	# TRACK ONE - THE SHIP
+	# Hulls, stores, routes and the men who guard them.
+	########################################
+
+	generic_trade_expedition_provision_convoy = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_open_contacts }
+
+		allow = {
+			treasury >= generic_trade_expedition_provision_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_treasury = generic_trade_expedition_provision_pay_svalue
+			add_country_modifier = {
+				name = generic_trade_expedition_provisioned_convoy_cmod
+				duration = 730
+			}
+			scope:generic_trade_expedition_home_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_outfitting_quays_pmod
+					duration = 730
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.218 }
+		}
+	}
+
+	generic_trade_expedition_chart_course = {
+		icon = "task_expansion"
+
+		requires = { generic_trade_expedition_provision_convoy }
+
+		duration = 30
+
+		allow = {
+			political_influence >= 5
+		}
+
+		highlight = {
+			scope:province = {
+				OR = {
+					THIS = scope:generic_trade_expedition_home_port
+					THIS = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		on_start = {
+			add_political_influence = -5
+		}
+
+		on_completion = {
+			set_variable = generic_trade_expedition_charts_prepared
+			add_country_modifier = {
+				name = generic_trade_expedition_outbound_charts_cmod
+				duration = 730
+			}
+			trigger_event = { id = generic_trade_expedition.217 }
+		}
+	}
+
+	generic_trade_expedition_appoint_escort = {
+		icon = "task_battle"
+
+		requires = { generic_trade_expedition_chart_course }
+
+		duration = 30
+
+		allow = {
+			treasury >= generic_trade_expedition_escort_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_treasury = generic_trade_expedition_escort_pay_svalue
+			set_variable = generic_trade_expedition_escort_assigned
+			add_country_modifier = {
+				name = generic_trade_expedition_escort_cmod
+				duration = 1095
+			}
+			trigger_event = { id = generic_trade_expedition.230 }
+		}
+	}
+
+	########################################
+	# TRACK TWO - THE PURSE
+	# Who pays for this, and what we expect to sell.
+	########################################
+
+	generic_trade_expedition_survey_home_market = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_open_contacts }
+
+		duration = 30
+
+		allow = {
+			treasury >= generic_trade_expedition_small_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_start = {
+			add_treasury = generic_trade_expedition_small_pay_svalue
+		}
+
+		on_completion = {
+			scope:generic_trade_expedition_home_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_home_market_survey_pmod
+					duration = 1095
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.216 }
+		}
+	}
+
+	# Who funds the venture decides who owns it. The choice made here makes one
+	# of the three Charters cheaper at the end of the mission.
+	generic_trade_expedition_raise_capital = {
+		icon = "task_political"
+
+		requires = { generic_trade_expedition_survey_home_market }
+
+		duration = 30
+
+		allow = {
+			political_influence >= 5
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_start = {
+			add_political_influence = -5
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			trigger_event = { id = generic_trade_expedition.320 }
+		}
+	}
+
+	generic_trade_expedition_commission_merchants = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_raise_capital }
+
+		allow = {
+			treasury >= generic_trade_expedition_small_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_treasury = generic_trade_expedition_small_pay_svalue
+			add_country_modifier = {
+				name = generic_trade_expedition_commissioned_merchants_cmod
+				duration = 1095
+			}
+			trigger_event = { id = generic_trade_expedition.321 }
+		}
+	}
+
+	########################################
+	# TRACK THREE - THE COURT
+	# Being expected, being understood, and being allowed in.
+	########################################
+
+	generic_trade_expedition_exchange_gifts = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_open_contacts }
+
+		allow = {
+			treasury >= generic_trade_expedition_gift_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			trigger_event = { id = generic_trade_expedition.5 }
+			custom_tooltip = generic_trade_expedition_partner_haggle_tt
+			hidden_effect = {
+				random = {
+					chance = 40
+					trigger_event = { id = generic_trade_expedition.453 days = 5 }
+				}
+			}
+		}
+	}
+
+	generic_trade_expedition_hire_interpreters = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_exchange_gifts }
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_envoy_selected_tt
+				has_variable = generic_trade_expedition_envoy_selected
+			}
+			treasury >= generic_trade_expedition_small_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			add_treasury = generic_trade_expedition_small_pay_svalue
+			add_country_modifier = {
+				name = generic_trade_expedition_interpreters_cmod
+				duration = 730
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_interpreters
+					target = ROOT
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.215 }
+		}
+	}
+
+	generic_trade_expedition_harbor_rights = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_hire_interpreters }
+
+		duration = 30
+
+		allow = {
+			political_influence >= 15
+			hidden:scope:generic_trade_expedition_partner = {
+				opinion = {
+					target = ROOT
+					value >= 40
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_start = {
+			add_political_influence = -15
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			if = {
+				limit = {
+					NOT = { has_military_access = scope:generic_trade_expedition_partner }
+				}
+				add_military_access = scope:generic_trade_expedition_partner
+			}
+			add_country_modifier = {
+				name = generic_trade_expedition_harbor_rights_cmod
+				duration = 730
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_harbor_rights
+					target = ROOT
+				}
+				hidden_effect = {
+					trigger_event = { id = generic_trade_expedition.203 days = 1 }
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.1 }
+		}
+	}
+
+	########################################
+	# CONVERGENCE - the three tracks meet
+	########################################
+
+	# FLEET GATE 1 of 3. The player genuinely builds and moves a fleet here.
+	generic_trade_expedition_assemble_convoy = {
+		icon = "task_economical"
+
+		requires = {
+			generic_trade_expedition_appoint_escort
+			generic_trade_expedition_commission_merchants
+			generic_trade_expedition_harbor_rights
+		}
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_assemble_convoy_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_home_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+	}
+
+	# Optional send-off. Costs money, buys popularity and goodwill.
+	generic_trade_expedition_departure_feast = {
+		icon = "task_political"
+
+		requires = {
+			generic_trade_expedition_appoint_escort
+			generic_trade_expedition_commission_merchants
+			generic_trade_expedition_harbor_rights
+		}
+
+		allow = {
+			treasury >= generic_trade_expedition_feast_cost_svalue
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_treasury = generic_trade_expedition_feast_pay_svalue
+			current_ruler = {
+				add_popularity = popularity_small
+			}
+			if = {
+				limit = { exists = scope:generic_trade_expedition_envoy }
+				scope:generic_trade_expedition_envoy = {
+					add_popularity = popularity_small
+				}
+			}
+			capital_scope = {
+				add_province_modifier = {
+					name = generic_trade_expedition_departure_feast_cmod
+					duration = 365
+				}
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_departure_feast
+					target = ROOT
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.219 }
+		}
+	}
+
+	########################################
+	# THE VOYAGE OUT
+	#
+	# FLEET GATE 2 of 3. While this task is open the player is actually
+	# sailing, so the voyage pulse fires here and nowhere else.
+	########################################
+
+	generic_trade_expedition_reach_partner_port = {
+		icon = "task_expansion"
+
+		requires = { generic_trade_expedition_assemble_convoy }
+
+		monthly_on_action = generic_trade_expedition_voyage_pulse
+
+		allow = {
+			custom_tooltip = {
+				text = generic_trade_expedition_reach_partner_port_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_partner_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			scope:generic_trade_expedition_partner = {
+				hidden_effect = {
+					trigger_event = { id = generic_trade_expedition.204 days = 1 }
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.2 }
+		}
+	}
+
+	########################################
+	# THE MARKET
+	#
+	# Three parallel tasks. None of them re-check where the fleet is - it is
+	# already there, and asking again was the thing that felt silly.
+	########################################
+
+	generic_trade_expedition_register_harbor_master = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_reach_partner_port }
+
+		duration = 30
+
+		allow = {
+			political_influence >= 5
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_start = {
+			add_political_influence = -5
+		}
+
+		on_completion = {
+			trigger_event = { id = generic_trade_expedition.6 }
+		}
+	}
+
+	generic_trade_expedition_meet_market_guilds = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_reach_partner_port }
+
+		duration = 30
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			trigger_event = { id = generic_trade_expedition.7 }
+		}
+	}
+
+	generic_trade_expedition_settle_customs = {
+		icon = "task_diplomatic"
+
+		requires = { generic_trade_expedition_reach_partner_port }
+
+		duration = 30
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			trigger_event = { id = generic_trade_expedition.451 }
+		}
+	}
+
+	########################################
+	# TRADING
+	#
+	# The long stay in the foreign market. The market pulse fires here, which
+	# is where the old port events now live.
+	########################################
+
+	generic_trade_expedition_load_cargo = {
+		icon = "task_economical"
+
+		requires = {
+			generic_trade_expedition_register_harbor_master
+			generic_trade_expedition_meet_market_guilds
+			generic_trade_expedition_settle_customs
+		}
+
+		duration = 120
+
+		monthly_on_action = generic_trade_expedition_market_pulse
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_start = {
+			save_scope_as = generic_trade_expedition_sender
+			add_country_modifier = {
+				name = generic_trade_expedition_loading_cargo
+				duration = 120
+			}
+			scope:generic_trade_expedition_partner = {
+				hidden_effect = {
+					trigger_event = { id = generic_trade_expedition.209 days = 1 }
+				}
+			}
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			if = {
+				limit = { has_country_modifier = generic_trade_expedition_loading_cargo }
+				remove_country_modifier = generic_trade_expedition_loading_cargo
+			}
+			add_country_modifier = {
+				name = generic_trade_expedition_full_holds
+				duration = 365
+			}
+			add_country_modifier = {
+				name = generic_trade_expedition_manifest_sealed_cmod
+				duration = 365
+			}
+			scope:generic_trade_expedition_partner_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_foreign_quarter
+					duration = 1825
+				}
+			}
+			scope:generic_trade_expedition_partner = {
+				hidden_effect = {
+					trigger_event = { id = generic_trade_expedition.210 days = 1 }
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.221 }
+			custom_tooltip = generic_trade_expedition_exclusivity_offer_tt
+			hidden_effect = {
+				random = {
+					chance = 35
+					trigger_event = { id = generic_trade_expedition.454 days = 7 }
+				}
+			}
+		}
+	}
+
+	# Optional. Capped at three worldwide, and required for the Colony Charter.
+	generic_trade_expedition_plant_factor_house = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_load_cargo }
+
+		allow = {
+			political_influence >= 10
+			treasury >= generic_trade_expedition_factor_house_cost_svalue
+			custom_tooltip = {
+				text = generic_trade_expedition_factor_house_cap_tt
+				OR = {
+					NOT = { has_variable = generic_trade_expedition_factor_houses }
+					var:generic_trade_expedition_factor_houses < 3
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_partner_port
+			}
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			add_political_influence = -10
+			add_treasury = generic_trade_expedition_factor_house_pay_svalue
+			set_variable = generic_trade_expedition_factor_house_planted
+			generic_trade_expedition_add_factor_house_effect = yes
+			scope:generic_trade_expedition_partner_port = {
+				add_province_modifier = {
+					name = generic_trade_expedition_factor_house_pmod
+					duration = 3650
+				}
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_factor_house
+					target = ROOT
+				}
+				hidden_effect = {
+					trigger_event = { id = generic_trade_expedition.211 days = 1 }
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.222 }
+		}
+	}
+
+	########################################
+	# THE VOYAGE HOME
+	#
+	# FLEET GATE 3 of 3. The voyage pulse fires here too, and the events it
+	# draws on know the holds are full.
+	########################################
+
+	generic_trade_expedition_return_home = {
+		icon = "task_expansion"
+
+		requires = { generic_trade_expedition_load_cargo }
+
+		monthly_on_action = generic_trade_expedition_voyage_pulse
+
+		allow = {
+			has_country_modifier = generic_trade_expedition_full_holds
+			custom_tooltip = {
+				text = generic_trade_expedition_return_home_tt
+				any_unit = {
+					generic_trade_expedition_commanded_by_envoy_trigger = yes
+					unit_location = scope:generic_trade_expedition_home_port
+				}
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			remove_country_modifier = generic_trade_expedition_full_holds
+			add_country_modifier = {
+				name = generic_trade_expedition_returned_home_cmod
+				duration = 365
+			}
+			scope:generic_trade_expedition_partner = {
+				hidden_effect = {
+					trigger_event = { id = generic_trade_expedition.213 days = 1 }
+				}
+			}
+			trigger_event = { id = generic_trade_expedition.224 }
+		}
+	}
+
+	########################################
+	# HOMECOMING
+	########################################
+
+	generic_trade_expedition_honor_envoy = {
+		icon = "task_political"
+
+		requires = { generic_trade_expedition_return_home }
+
+		allow = {
+			political_influence >= 10
+			has_variable = generic_trade_expedition_envoy_character
+			var:generic_trade_expedition_envoy_character = {
+				exists = this
+				has_character_modifier = generic_trade_expedition_envoy_charmod
+			}
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_political_influence = -10
+			trigger_event = { id = generic_trade_expedition.310 }
+		}
+	}
+
+	generic_trade_expedition_publish_charts = {
+		icon = "task_expansion"
+
+		requires = { generic_trade_expedition_return_home }
+
+		potential = {
+			has_variable = generic_trade_expedition_charts_prepared
+		}
+
+		allow = {
+			political_influence >= 5
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			add_political_influence = -5
+			set_variable = generic_trade_expedition_charts_published
+			add_country_modifier = {
+				name = generic_trade_expedition_published_charts_cmod
+				duration = 1825
+			}
+			add_research = {
+				technology = civic_tech
+				value = 3
+			}
+			trigger_event = { id = generic_trade_expedition.226 }
+		}
+	}
+
+	generic_trade_expedition_count_profits = {
+		icon = "task_economical"
+
+		requires = { generic_trade_expedition_return_home }
+
+		final = yes
+
+		allow = {
+			has_country_modifier = generic_trade_expedition_returned_home_cmod
+		}
+
+		highlight = {
+			scope:province = {
+				THIS = scope:generic_trade_expedition_home_port
+			}
+		}
+
+		on_completion = {
+			save_scope_as = generic_trade_expedition_sender
+			if = {
+				limit = { has_country_modifier = generic_trade_expedition_returned_home_cmod }
+				remove_country_modifier = generic_trade_expedition_returned_home_cmod
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cargo_bulk }
+				add_treasury = generic_trade_expedition_event_profit_svalue
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cargo_luxury }
+				add_treasury = generic_trade_expedition_large_event_profit_svalue
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cargo_knowledge }
+				add_research = {
+					technology = civic_tech
+					value = 10
+				}
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_bonded_warehouses }
+				add_treasury = generic_trade_expedition_event_profit_svalue
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_guarded_warehouses }
+				add_political_influence = 5
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cramped_warehouses }
+				add_research = {
+					technology = civic_tech
+					value = 5
+				}
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_rival_beaten }
+				add_treasury = generic_trade_expedition_event_profit_svalue
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_cargo_lost }
+				add_treasury = generic_trade_expedition_cargo_loss_svalue
+			}
+			add_country_modifier = {
+				name = generic_trade_expedition_successful
+				duration = 3650
+			}
+			capital_scope = {
+				if = {
+					limit = { has_province_modifier = generic_trade_expedition_returned_merchants }
+					remove_province_modifier = generic_trade_expedition_returned_merchants
+				}
+				add_province_modifier = {
+					name = generic_trade_expedition_returned_merchants
+					duration = 3650
+				}
+			}
+			if = {
+				limit = { has_variable = generic_trade_expedition_factor_house_planted }
+				scope:generic_trade_expedition_partner = {
+					add_opinion = {
+						modifier = opinion_trade_expedition_factor_house
+						target = ROOT
+					}
+				}
+			}
+			scope:generic_trade_expedition_partner = {
+				add_opinion = {
+					modifier = opinion_trade_expedition_success
+					target = ROOT
+				}
+				hidden_effect = {
+					trigger_event = { id = generic_trade_expedition.214 days = 1 }
+				}
+			}
+			scope:generic_trade_expedition_home_port = {
+				save_scope_as = generic_trade_expedition_charter_seat
+			}
+			trigger_event = { id = generic_trade_expedition.3 }
+			trigger_event = { id = generic_trade_expedition.300 days = 3 }
+		}
+	}
+}

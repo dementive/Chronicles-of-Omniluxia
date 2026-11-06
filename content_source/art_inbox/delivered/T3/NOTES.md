@@ -1,0 +1,1 @@
+- `plume_feather_gray_256x512.png` — A grayscale plume with a pale central shaft and upward-swept barbs that darken at the edges.

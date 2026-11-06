@@ -1,0 +1,1 @@
+- `omx_props_atlas_1024.png` — Fourteen prop materials with wood grain, sinew-wrapped horn, worked metals, leather, linen, and feather fletching.

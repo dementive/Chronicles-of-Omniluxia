@@ -1,0 +1,1 @@
+- `crest_horsehair_gray_512.png` — Fine vertical horsehair in soft clumps, with dark roots at both ends and a bright crown.

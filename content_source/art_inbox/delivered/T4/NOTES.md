@@ -1,0 +1,1 @@
+- `crest_holder_bronze_512x64.png` — A warm bronze band with twelve round rivets, traces of patina, and worn edges.
