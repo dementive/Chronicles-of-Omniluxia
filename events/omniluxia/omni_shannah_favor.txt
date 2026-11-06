@@ -569,7 +569,7 @@ current_ruler = scope:omni_sf_request_shannah }
                     trigger_if = { limit = { has_variable = omni_sf_shannah } var:omni_sf_shannah = scope:omni_sf_request_shannah } trigger_else = { always = no } OR = {
         AND = { NOT = { has_variable = omni_hc_request_serial } NOT = { exists = scope:omni_hc_request_serial } }
         AND = { exists = scope:omni_hc_request_serial trigger_if = { limit = { has_variable = omni_hc_request_serial } var:omni_hc_request_serial = scope:omni_hc_request_serial } trigger_else = { always = no } }
-    } } } scope:omni_sf_petitioner = { omni_sf_finish_request_effect = yes trigger_event = { id = omni_shannah_favor.54 } } }
+    } } } scope:omni_sf_petitioner = { omni_sf_refuse_request_effect = yes } }
     }
 
 }
@@ -611,8 +611,7 @@ omni_shannah_favor.51 = {
                 trigger_event = { id = omni_shannah_favor.52 }
             }
             else = {
-                omni_sf_finish_request_effect = yes
-                trigger_event = { id = omni_shannah_favor.54 }
+                omni_sf_refuse_request_effect = yes
             }
 
         }
@@ -648,6 +647,13 @@ omni_shannah_favor.52 = {
 
             remove_variable = omni_sf_pending
 
+            # Convert a prepaid crown petition from an older save before rechecking it.
+            if = {
+                limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_paid_request var:omni_sf_paid_request = 3 }
+                omni_sf_gain_effect = { AMOUNT = 40 }
+                remove_variable = omni_sf_paid_request
+            }
+
             if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 1 } trigger_else = { always = no } omni_sf_request_1_trigger = yes }
 
                 omni_sf_execute_1_effect = yes
@@ -678,7 +684,9 @@ omni_shannah_favor.52 = {
 
             else_if = { limit = { trigger_if = { limit = { has_variable = omni_sf_request } var:omni_sf_request = 3 } trigger_else = { always = no } omni_sf_request_3_trigger = yes }
 
-                omni_sf_execute_3_effect = yes
+                current_ruler = { save_scope_as = target }
+                var:omni_sf_shannah.employer = { save_scope_as = actor }
+                omni_shannah_recognize_crown_effect = yes
 
                 trigger_event = { id = omni_shannah_favor.58 }
 
@@ -732,7 +740,13 @@ omni_shannah_favor.52 = {
 
             }
 
-            else = { trigger_event = { id = omni_shannah_favor.53 } }
+            else = {
+                if = {
+                    limit = { omni_sf_relationship_trigger = yes has_variable = omni_sf_paid_request var:omni_sf_paid_request = 4 }
+                    omni_sf_gain_effect = { AMOUNT = 50 }
+                }
+                trigger_event = { id = omni_shannah_favor.53 }
+            }
 
             omni_sf_finish_request_effect = yes
 
@@ -892,4 +906,14 @@ current_ruler = scope:omni_sf_request_shannah }
         trigger_event = { id = omni_shannah_favor.50 }
     }
     option = { name = omni_sf_petition_later }
+}
+
+omni_shannah_favor.61 = {
+    type = country_event
+    title = omni_sf_54_t
+    desc = omni_sf_61_d
+    picture = omni_shannah_petition
+    left_portrait = current_ruler
+    right_portrait = var:omni_sf_shannah
+    option = { name = omni_sf_refused }
 }

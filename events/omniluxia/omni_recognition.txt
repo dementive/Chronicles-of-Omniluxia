@@ -23,20 +23,38 @@ option = { name = omni_recognition_110_yes trigger = { omni_hc_concession_payabl
 option = { name = omni_recognition_110_no custom_tooltip = omni_recognition_refuse_tt hidden_effect = { omni_hc_refuse_concession_effect = yes } }
 
 }
-omni_recognition.111 = { type = country_event hidden = yes
-        immediate = {
-            if = { limit = { is_ai = no omni_hc_negotiation_valid_trigger = yes scope:omni_hc_negotiator = { trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage = 2 } trigger_else = { always = no } } }
-                trigger_event = { id = omni_recognition.110 }
+# Recheck saved petition scopes on each delivery attempt.
+omni_recognition.111 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = {
+                omni_hc_negotiation_valid_trigger = yes
+                scope:omni_hc_negotiator = { var:omni_hc_negotiation_stage = 2 }
             }
-            else_if = { limit = { is_ai = yes omni_hc_negotiation_valid_trigger = yes scope:omni_hc_negotiator = { trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage = 2 } trigger_else = { always = no } } }
+            if = {
+                limit = { is_ai = no }
+                if = {
+                    limit = { has_variable = omni_hc_petition_delivery_cooldown }
+                    # Keep the petition pending and try again after other envoys have been heard.
+                    trigger_event = { id = omni_recognition.111 days = { 15 30 } }
+                }
+                else = {
+                    set_variable = { name = omni_hc_petition_delivery_cooldown days = 45 }
+                    trigger_event = { id = omni_recognition.110 }
+                }
+            }
+            else = {
                 scope:omni_hc_negotiator = {
                     random = { chance = omni_hc_negotiation_acceptance omni_hc_accept_concession_effect = yes }
                     # Acceptance changes stage; only a failed roll may refuse.
-                    if = { limit = { trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage = 2 } trigger_else = { always = no } } omni_hc_refuse_concession_effect = yes }
+                    if = { limit = { var:omni_hc_negotiation_stage = 2 } omni_hc_refuse_concession_effect = yes }
                 }
             }
         }
     }
+}
     omni_recognition.120 = { type = country_event title = omni_recognition_120_t desc = omni_recognition_120_d picture = religious_rite left_portrait = scope:omni_hc_negotiator_ruler right_portrait = scope:omni_hc_negotiation_shannah
 
 option = { name = omni_recognition_120_yes trigger = { omni_hc_negotiation_valid_trigger = yes scope:omni_hc_negotiator = { trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage = 3 } trigger_else = { always = no } } } custom_tooltip = omni_recognition_fallback_yes_tt hidden_effect = { if = { limit = { omni_hc_negotiation_valid_trigger = yes scope:omni_hc_negotiator = { trigger_if = { limit = { has_variable = omni_hc_negotiation_stage } var:omni_hc_negotiation_stage = 3 } trigger_else = { always = no } } } omni_hc_finalize_recognition_effect = { STANCE = 1 } } } }

@@ -1,4 +1,22 @@
-﻿omni_hc_initialize_effect = {
+﻿# Existing saves can have an odd tally from the former one-point award.
+omni_hc_full_recognition_authority_effect = {
+    if = {
+        limit = { NOT = { has_variable = omni_hc_recognition_gains } }
+        set_variable = { name = omni_hc_recognition_gains value = 0 }
+    }
+    if = {
+        limit = { var:omni_hc_recognition_gains < 9 }
+        change_variable = { name = omni_hc_recognition_gains add = 2 }
+        omni_hc_change_authority_effect = { AMOUNT = 2 }
+    }
+    else_if = {
+        limit = { var:omni_hc_recognition_gains = 9 }
+        set_variable = { name = omni_hc_recognition_gains value = 10 }
+        omni_hc_change_authority_effect = { AMOUNT = 1 }
+    }
+}
+
+omni_hc_initialize_effect = {
         if = { limit = { NOT = { has_variable = omni_hc_authority_base } }
             set_variable = { name = omni_hc_authority_base value = 50 }
         }
@@ -47,16 +65,14 @@
             set_variable = { name = omni_hc_decided_holder value = var:omni_hc_see.current_ruler }
             set_variable = { name = omni_hc_recognition value = $STANCE$ }
             var:omni_hc_see = {
-                if = { limit = { NOT = { has_variable = omni_hc_recognition_gains } } set_variable = { name = omni_hc_recognition_gains value = 0 } }
                 if = { limit = { NOT = { has_variable = omni_hc_recognition_losses } } set_variable = { name = omni_hc_recognition_losses value = 0 } }
-                if = { limit = { scope:omni_hc_recognizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 1 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_gains } var:omni_hc_recognition_gains < 10 } trigger_else = { always = no } }
-                    # BALANCE: +1 per recognition, capped at 10 per accession (was +2, cap 20).
-                    change_variable = { name = omni_hc_recognition_gains add = 1 }
-                    omni_hc_change_authority_effect = { AMOUNT = $AMOUNT$ }
+                if = {
+                    limit = { scope:omni_hc_recognizing_realm = { var:omni_hc_recognition = 1 } }
+                    omni_hc_full_recognition_authority_effect = yes
                 }
                 if = { limit = { scope:omni_hc_recognizing_realm = { trigger_if = { limit = { has_variable = omni_hc_recognition } var:omni_hc_recognition = 3 } trigger_else = { always = no } } trigger_if = { limit = { has_variable = omni_hc_recognition_losses } var:omni_hc_recognition_losses < 20 } trigger_else = { always = no } }
                     change_variable = { name = omni_hc_recognition_losses add = 2 }
-                    omni_hc_change_authority_effect = { AMOUNT = $AMOUNT$ }
+                    omni_hc_change_authority_effect = { AMOUNT = -2 }
                 }
             }
             omni_hc_recognition_event_effect = yes
@@ -100,9 +116,9 @@ omni_hc_ai_recognition_effect = {
                     modifier = { factor = 1.25 omni_hc_authority >= 75 }
                     modifier = { factor = 0.75 omni_hc_authority < 50 }
                     modifier = { factor = 0.5 omni_hc_authority < 25 }
-                    omni_hc_recognition_effect = { STANCE = 1 AMOUNT = 1 }
+                    omni_hc_recognition_effect = { STANCE = 1 }
                 }
-                20 = { omni_hc_recognition_effect = { STANCE = 2 AMOUNT = 0 } }
+                20 = { omni_hc_recognition_effect = { STANCE = 2 } }
                 10 = {
                     # A nearby Shannah can act on the mutual casus belli more readily.
                     modifier = {
@@ -122,7 +138,7 @@ omni_hc_ai_recognition_effect = {
                     modifier = { factor = 0.5 omni_hc_authority >= 75 }
                     modifier = { factor = 1.5 omni_hc_authority < 50 }
                     modifier = { factor = 2 omni_hc_authority < 25 }
-                    omni_hc_recognition_effect = { STANCE = 3 AMOUNT = -2 }
+                    omni_hc_recognition_effect = { STANCE = 3 }
                 }
             }
         }

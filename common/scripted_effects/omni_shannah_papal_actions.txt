@@ -8,16 +8,29 @@ omni_shannah_announce_effect = {
         save_scope_as = omni_papal_target_ruler
         employer = { save_scope_as = omni_papal_target_country }
     }
-    every_country = {
-        limit = {
-            has_land = yes
-            OR = {
-                religion = helluvian
-                this = scope:omni_papal_actor_country
-                this = scope:omni_papal_target_country
+    # Public decrees alter relations or war rights across the faith.
+    if = {
+        limit = { always = $PUBLIC$ }
+        every_country = {
+            limit = {
+                has_land = yes
+                OR = {
+                    religion = helluvian
+                    this = scope:omni_papal_actor_country
+                    this = scope:omni_papal_target_country
+                }
+            }
+            trigger_event = { id = $EVENT$ }
+        }
+    }
+    else = {
+        trigger_event = { id = $EVENT$ }
+        scope:omni_papal_target_country = {
+            if = {
+                limit = { NOT = { this = scope:omni_papal_actor_country } }
+                trigger_event = { id = $EVENT$ }
             }
         }
-        trigger_event = { id = $EVENT$ }
     }
 }
 
@@ -57,7 +70,7 @@ omni_shannah_excommunicate_effect = {
             }
         }
         hidden_effect = {
-            scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.10 } }
+            scope:actor = { omni_shannah_announce_effect = { EVENT = omni_shannah_powers.10 PUBLIC = yes } }
         }
     
 }
@@ -71,7 +84,7 @@ omni_shannah_lift_excommunication_effect = {
             }
         }
         hidden_effect = {
-            omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.11 } }
+            omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.11 PUBLIC = yes } }
         }
     
 }
@@ -87,13 +100,39 @@ omni_shannah_bless_effect = {
 }
 
 
+# Issue an offer from the Shannah. The recipient pays only after accepting.
+omni_shannah_offer_crown_effect = {
+    if = {
+        limit = {
+            omni_shannah_recognize_crown_potential_trigger = { TARGET = scope:target }
+            omni_shannah_recognize_crown_allowed_trigger = yes
+            scope:actor = { NOT = { has_variable = omni_shannah_crown_offer_pending } }
+        }
+        scope:actor = {
+            save_scope_as = omni_crown_offer_see
+            current_ruler = { save_scope_as = omni_crown_offer_shannah }
+            if = {
+                limit = { NOT = { has_variable = omni_shannah_crown_offer_serial } }
+                set_variable = { name = omni_shannah_crown_offer_serial value = 0 }
+            }
+            change_variable = { name = omni_shannah_crown_offer_serial add = 1 }
+            var:omni_shannah_crown_offer_serial = { save_scope_as = omni_crown_offer_serial }
+            set_variable = { name = omni_shannah_crown_offer_pending days = 30 }
+        }
+        scope:target = { save_scope_as = omni_crown_offer_ruler }
+        scope:target.employer = { trigger_event = { id = omni_shannah_powers.16 } }
+    }
+}
+
+# Both the approved petition and the accepted offer use this transaction.
 omni_shannah_recognize_crown_effect = {
         scope:actor = {
-            add_political_influence = -50 # BALANCE: was 25
+            add_political_influence = -10
             set_variable = { name = omni_shannah_recognize_crown_cooldown days = 365 }
         }
         scope:target = { set_variable = omni_shannah_crown_recognized }
         scope:target.employer = {
+            add_political_influence = -25
             add_legitimacy = 10
             set_variable = omni_shannah_crown_recognized
             save_scope_as = omni_shannah_recognized_scope
@@ -115,7 +154,7 @@ omni_shannah_recognize_crown_effect = {
             }
         }
         hidden_effect = {
-            omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.13 } }
+            scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.13 PUBLIC = yes } }
         }
     
 }
@@ -152,7 +191,7 @@ omni_shannah_absolve_effect = {
             set_variable = { name = omni_shannah_absolution_received days = 3650 }
         }
         hidden_effect = {
-            omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.14 } }
+            omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.14 PUBLIC = no } }
         }
     
 }
@@ -166,7 +205,7 @@ omni_shannah_holy_mission_effect = {
         scope:actor = { add_treasury = -50 }
         scope:target.employer = { add_country_modifier = { name = omni_shannah_holy_mission duration = 1825 } }
         hidden_effect = {
-            omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.15 } }
+            omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.15 PUBLIC = no } }
         }
     
 }
@@ -179,6 +218,6 @@ omni_shannah_apply_blessing_effect = {
         add_country_modifier = { name = omni_shannah_blessing duration = 1825 }
     }
     hidden_effect = {
-        omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.12 } }
+        omni_shannah_grace_effect = yes scope:actor = { omni_hc_pastoral_authority_effect = yes omni_shannah_announce_effect = { EVENT = omni_shannah_powers.12 PUBLIC = no } }
     }
 }

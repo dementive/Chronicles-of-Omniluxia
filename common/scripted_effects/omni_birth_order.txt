@@ -1,0 +1,114 @@
+# Character scope: visit only the ruler's own children, oldest first.
+# At startup, include children of rulers of every government and family.
+# Later monarchy updates use the existing dynastic eligibility rule.
+omni_assign_ruler_birth_order_effect = {
+	save_scope_as = omni_birth_order_ruler
+	set_local_variable = { name = omni_birth_order_rank value = 0 }
+	ordered_child = {
+		limit = {
+			OR = {
+				always = $INCLUDE_OTHER_FAMILIES$
+				has_same_family = scope:omni_birth_order_ruler
+			}
+		}
+		order_by = age
+		max = 15
+		check_range_bounds = no
+		change_local_variable = { name = omni_birth_order_rank add = 1 }
+		# Count deceased siblings and keep any previously assigned ordinal.
+		if = {
+			limit = {
+				is_alive = yes
+				NOR = {
+					has_trait = first_born
+					has_trait = second_born
+					has_trait = third_born
+					has_trait = fourth_born
+					has_trait = fifth_born
+					has_trait = sixth_born
+					has_trait = seventh_born
+					has_trait = eighth_born
+					has_trait = ninth_born
+					has_trait = tenth_born
+					has_trait = eleventh_born
+					has_trait = twelfth_born
+					has_trait = thirteenth_born
+					has_trait = fourteenth_born
+					has_trait = fifteenth_born
+				}
+			}
+			if = {
+				limit = { local_var:omni_birth_order_rank = 1 }
+				omni_assign_birth_order_trait_effect = { TRAIT = first_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 2 }
+				omni_assign_birth_order_trait_effect = { TRAIT = second_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 3 }
+				omni_assign_birth_order_trait_effect = { TRAIT = third_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 4 }
+				omni_assign_birth_order_trait_effect = { TRAIT = fourth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 5 }
+				omni_assign_birth_order_trait_effect = { TRAIT = fifth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 6 }
+				omni_assign_birth_order_trait_effect = { TRAIT = sixth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 7 }
+				omni_assign_birth_order_trait_effect = { TRAIT = seventh_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 8 }
+				omni_assign_birth_order_trait_effect = { TRAIT = eighth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 9 }
+				omni_assign_birth_order_trait_effect = { TRAIT = ninth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 10 }
+				omni_assign_birth_order_trait_effect = { TRAIT = tenth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 11 }
+				omni_assign_birth_order_trait_effect = { TRAIT = eleventh_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 12 }
+				omni_assign_birth_order_trait_effect = { TRAIT = twelfth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 13 }
+				omni_assign_birth_order_trait_effect = { TRAIT = thirteenth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 14 }
+				omni_assign_birth_order_trait_effect = { TRAIT = fourteenth_born }
+			}
+			else_if = {
+				limit = { local_var:omni_birth_order_rank = 15 }
+				omni_assign_birth_order_trait_effect = { TRAIT = fifteenth_born }
+			}
+		}
+	}
+}
+
+# Older saves can already have a sibling occupying this rank.
+omni_assign_birth_order_trait_effect = {
+	if = {
+		limit = {
+			scope:omni_birth_order_ruler = {
+				NOT = { any_child = { has_trait = $TRAIT$ } }
+			}
+		}
+		add_trait = $TRAIT$
+	}
+}

@@ -141,14 +141,42 @@ omni_shannah_recognize_crown_potential_trigger = {
     
 }
 
-omni_shannah_recognize_crown_allowed_trigger = {
-        scope:actor = { omni_ruler_available_for_court_action_trigger = yes }
-        scope:actor = {
-            political_influence >= 50 # BALANCE: was 25
-            NOT = { has_variable = omni_shannah_recognize_crown_cooldown }
-        }
+omni_shannah_crown_issuer_ready_trigger = {
+    omni_hc_shannah_trigger = yes
+    omni_ruler_available_for_court_action_trigger = yes
+    political_influence >= 10
+    NOT = { has_variable = omni_shannah_recognize_crown_cooldown }
+}
 
-    
+omni_shannah_recognize_crown_allowed_trigger = {
+    scope:actor = { omni_shannah_crown_issuer_ready_trigger = yes }
+    scope:target.employer = { political_influence >= 25 }
+}
+
+omni_shannah_crown_offer_current_trigger = {
+    exists = scope:omni_crown_offer_see
+    exists = scope:omni_crown_offer_serial
+    scope:omni_crown_offer_see = {
+        has_variable = omni_shannah_crown_offer_pending
+        has_variable = omni_shannah_crown_offer_serial
+        var:omni_shannah_crown_offer_serial = scope:omni_crown_offer_serial
+    }
+}
+
+omni_shannah_crown_offer_accept_trigger = {
+    omni_shannah_crown_offer_current_trigger = yes
+    exists = scope:omni_crown_offer_shannah
+    exists = scope:omni_crown_offer_ruler
+    current_ruler = scope:omni_crown_offer_ruler
+    scope:omni_crown_offer_see = {
+        current_ruler = scope:omni_crown_offer_shannah
+        save_temporary_scope_as = actor
+        # An AI council may need to honor its reserve days after making the offer.
+        OR = { is_ai = no political_influence >= 60 }
+    }
+    scope:omni_crown_offer_ruler = { save_temporary_scope_as = target }
+    omni_shannah_recognize_crown_potential_trigger = { TARGET = scope:target }
+    omni_shannah_recognize_crown_allowed_trigger = yes
 }
 
 omni_shannah_absolve_potential_trigger = {
