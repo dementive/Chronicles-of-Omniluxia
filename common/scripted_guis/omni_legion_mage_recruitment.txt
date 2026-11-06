@@ -1,0 +1,33 @@
+# Mirror the native allow blocks in common/units/army_*_mages.txt.
+# These checks run against the state where the legion recruits.
+omni_legion_imperial_mages = {
+	scope = state
+	saved_scopes = { player }
+	is_valid = {
+		owner = scope:player
+		trade_good_surplus = { target = soulgems value > 0 }
+		owner = {
+			NOT = { has_law = magic_banned }
+			invention = organized_mage_guilds_inv
+			any_owned_province = { has_building = magic_academy_building }
+		}
+	}
+}
+
+omni_legion_folk_mages = {
+	scope = state
+	saved_scopes = { player }
+	is_valid = {
+		owner = scope:player
+		OR = {
+			trade_good_surplus = { target = soulgems value > 0 }
+			trade_good_surplus = { target = elixir value > 0 }
+		}
+		owner = {
+			NOT = { has_law = magic_banned }
+			any_owned_province = {
+				any_pops_in_province = { count >= 3 pop_type = mages }
+			}
+		}
+	}
+}

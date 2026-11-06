@@ -1,3 +1,28 @@
+template OmniLegionCohortButton {
+	size = { 100% 100% }
+	using = flat_background_white
+	using = border_slightly_torn_alpha
+	onrightclick = "[SubUnitConstruction.Decrement]"
+
+	glow = {
+		glow_radius = 2
+		color = { 0.365 0.027 0.027 0.5 }
+	}
+	icon = {
+		texture = "gfx/interface/base_parts/horizontal_gradient_stretch.dds"
+		spritetype = corneredstretched
+		color = { 0.55 0.86275 1.0 0.1 }
+		size = { 100% 100% }
+		using = border_slightly_torn_alpha
+	}
+	icon = {
+		texture = "[GetSubUnitIcon( SubUnitType.GetType )]"
+		size = { 42 42 }
+		position = { 0 0 }
+		parentanchor = center
+	}
+}
+
 template ConstructionCardTemplate {
 	widget = {
 		size = { 50 74 }
@@ -35,35 +60,21 @@ template ConstructionCardTemplate {
 			margin_widget = {
 				size = { 100% 100% }
 				margin = { 3 3 }
-				
+				datacontext = "[GetScriptedGui( Select_CString( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), 'omni_legion_imperial_mages', 'omni_legion_folk_mages' ) )]"
+
 				button = {
-					size = { 100% 100% }
-					using = flat_background_white
+					using = OmniLegionCohortButton
+					visible = "[Or( Not( Or( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), EqualTo_string( SubUnitType.GetName, Localize('folk_mages') ) ) ), ScriptedGui.IsValid( GuiScope.SetRoot( State.MakeScope ).AddScope('player', Player.MakeScope).End ) )]"
 					onclick = "[SubUnitConstruction.Increment]"
-					onrightclick = "[SubUnitConstruction.Decrement]"    
-					datacontext = "[SubUnitConstruction.GetDefinition]"
-					
-					using = border_slightly_torn_alpha
-					
-					glow = {
-						glow_radius = 2
-						color = { 0.365  0.027  0.027 0.5 }
-					}
-					
-					icon = {
-						texture = "gfx/interface/base_parts/horizontal_gradient_stretch.dds"
-						spritetype = corneredstretched
-						color = { 0.55  0.86275  1.0 0.1 }
-						size = { 100% 100% }
-						using = border_slightly_torn_alpha
-					}
-					
-					icon = {
-						texture = "[GetSubUnitIcon( SubUnitType.GetType )]"	
-						size = { 42 42 }						
-						position = { 0 0 }
-						parentanchor = center
-					} 
+					tooltip = "EDIT_COMPOSITION_SUBUNIT_DESC"
+				}
+
+				# Right-click stays available to remove a queued cohort after eligibility changes.
+				button = {
+					using = OmniLegionCohortButton
+					visible = "[And( Or( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), EqualTo_string( SubUnitType.GetName, Localize('folk_mages') ) ), Not( ScriptedGui.IsValid( GuiScope.SetRoot( State.MakeScope ).AddScope('player', Player.MakeScope).End ) ) )]"
+					alpha = 0.55
+					tooltip = "[SelectLocalization( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), 'omni_legion_imperial_mages_locked', 'omni_legion_folk_mages_locked' )]"
 				}
 			}	
 		}
@@ -258,6 +269,7 @@ base_sub_window = {
 
 		fixedgridbox = {
 			name = "unit_types_grid"
+			datacontext = "[EditLegionWindow.GetGovernorship.GetCapital.GetState]"
 			alwaystransparent = no
 			parentanchor = hcenter
 			position = { 0 30 }
@@ -271,7 +283,6 @@ base_sub_window = {
 				container = {
 					using = ConstructionCardTemplate
 					datacontext = "[SubUnitConstruction.GetDefinition]"
-					tooltip = "EDIT_COMPOSITION_SUBUNIT_DESC"
 				}
 			}
 		}
