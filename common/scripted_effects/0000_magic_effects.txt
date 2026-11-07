@@ -201,34 +201,69 @@ change_country_scope_magic_vars = {
 		# Births and game start already initialise these vars, so the result is identical,
 		# but most of the world's characters now cost two modifier reads instead of
 		# ~6 script-value evaluations and 4 variable writes every month.
+		# PERF (Nov 2026): the stored-variable tests come before the two script values.
+		# OR stops at the first true test and none of these tests has side effects, so
+		# the order changes only how many tests run (nearly every character is let
+		# through by var:magic or var:magic_max, and then neither script value runs).
 		limit = {
 			is_alive = yes
 			OR = {
 				NOT = { has_variable = magic }
-				has_trait = cramming_fatigue_trait
-				omni_character_monthly_mana_value > 0
-				omni_character_magic_max_value > 0
 				var:magic > 0
 				AND = { has_variable = magic_max var:magic_max > 0 }
 				AND = { has_variable = magic_monthly var:magic_monthly > 0 }
+				has_trait = cramming_fatigue_trait
+				omni_character_monthly_mana_value > 0
+				omni_character_magic_max_value > 0
 			}
 		}
+		# PERF (Nov 2026): this is recalculate_character_magic_vars + the regeneration +
+		# clamp_character_magic_to_max inlined, with each script value evaluated once.
+		# The old body evaluated omni_character_monthly_mana_value twice and
+		# omni_character_magic_max_value three times per character, and both clamps
+		# re-tested var:magic < 0. Same result:
+		#   * neither script value reads magic / magic_monthly / magic_max, so the stored
+		#     copies equal a fresh evaluation for the rest of this block;
+		#   * both values have min = 0, so after the first clamp magic is in [0, max]
+		#     and adding a monthly value >= 0 cannot take it below 0.
 		if = {
 			limit = {
-				NOT = { has_variable = magic }
+				has_trait = cramming_fatigue_trait
+				NOT = { has_character_modifier = cramming_fatigue_timer_modifier }
 			}
+			remove_trait = cramming_fatigue_trait
+		}
+		if = {
+			limit = { NOT = { has_variable = magic } }
 			set_variable = {
 				name = magic
 				value = 0
 			}
 		}
-		# Refresh display values and expire fatigue before applying regeneration.
-		recalculate_character_magic_vars = yes
+		set_variable = {
+			name = magic_monthly
+			value = omni_character_monthly_mana_value
+		}
+		set_variable = {
+			name = magic_max
+			value = omni_character_magic_max_value
+		}
+		if = {
+			limit = { var:magic < 0 }
+			set_variable = { name = magic value = 0 }
+		}
+		else_if = {
+			limit = { var:magic > omni_character_stored_magic_max_value }
+			set_variable = { name = magic value = var:magic_max }
+		}
 		change_variable = {
 			name = magic
-			add = omni_character_monthly_mana_value
+			add = var:magic_monthly
 		}
-		clamp_character_magic_to_max = yes
+		if = {
+			limit = { var:magic > omni_character_stored_magic_max_value }
+			set_variable = { name = magic value = var:magic_max }
+		}
 	}
 }
 
