@@ -1,0 +1,60 @@
+﻿# Balthazarian Order: ask a brother to swear to the Faith seal before the chapter divides.
+# Pattern: Invictus Argos gather_support. Unlocked by "An Accounting of Command".
+ob_call_to_chapter = {
+    on_other_nation = no
+    on_own_nation = yes
+    message = no
+    close_ui = yes
+
+    potential_trigger = {
+        exists = scope:actor exists = scope:target
+        scope:actor = {
+            is_ai = no
+            ob_country = yes
+            has_variable = ob_gathering_support
+            NOT = { has_variable = ob_internal_resolved }
+        }
+        hidden:scope:target = {
+            is_alive = yes
+            is_adult = yes
+            prisoner = no
+            employer = scope:actor
+            NOT = { this = scope:actor.current_ruler }
+            NOT = { this = scope:actor.current_co_ruler }
+            NOT = { has_character_modifier = ob_seal_sworn }
+            NOT = { has_variable = ob_call_attempted }
+        }
+    }
+
+    allowed_trigger = {
+        scope:actor = { treasury >= 25 has_civil_war = no }
+    }
+
+    effect = {
+        scope:target = { save_scope_as = ob_called }
+        scope:actor = {
+            add_treasury = -25
+            hidden_effect = {
+                scope:target = { set_variable = { name = ob_call_attempted days = 1095 } }
+                random_list = {
+                    60 = {
+                        modifier = { factor = 1.5 scope:target = { loyalty >= 60 } }
+                        modifier = { factor = 0.5 scope:target = { loyalty < 40 } }
+                        modifier = { factor = 1.3 scope:target = { has_variable = ob_frontier_brother } }
+                        scope:target = { add_character_modifier = { name = ob_seal_sworn duration = -1 } }
+                        trigger_event = { id = ob_order.620 }
+                    }
+                    40 = {
+                        modifier = { factor = 1.5 var:ob_support >= 2 }
+                        modifier = { factor = 0.7 has_variable = ob_shannah_rebuke }
+                        scope:target = { add_loyalty = ob_call_refused }
+                        change_variable = { name = ob_support add = 1 }
+                        trigger_event = { id = ob_order.621 }
+                    }
+                }
+            }
+        }
+    }
+
+    ai_will_do = { base = 0 }
+}

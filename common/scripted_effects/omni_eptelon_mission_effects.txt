@@ -107,3 +107,72 @@ omni_eptelon_slave_oath_payment_effect = {
         trigger_event = { id = me_eptelon_gen.65 days = 1825 }
     }
 }
+
+# Masters of the Silphium: a grain, vegetable, game or timber territory on the northern slopes is
+# terraced for silphium. Nothing happens if no such territory is owned.
+omni_eptelon_new_silphium_terrace_effect = {
+    if = {
+        limit = {
+            any_owned_province = {
+                is_in_region = eptelon_north_region
+                OR = {
+                    trade_goods = grain
+                    trade_goods = vegetables
+                    trade_goods = wild_game
+                    trade_goods = wood
+                }
+            }
+        }
+        random_owned_province = {
+            limit = {
+                is_in_region = eptelon_north_region
+                OR = {
+                    trade_goods = grain
+                    trade_goods = vegetables
+                    trade_goods = wild_game
+                    trade_goods = wood
+                }
+            }
+            custom_tooltip = omni_eptelon_new_silphium_terrace_tt
+            hidden_effect = {
+                set_trade_goods = silphium
+            }
+        }
+    }
+}
+
+# Recorded once in on_start. Aeptelonians sit in the arteonian group, so they are checked by culture.
+omni_eptelon_set_heritage_effect = {
+    hidden_effect = {
+        if = {
+            limit = { primary_culture = aeptelonians }
+            set_variable = eptelon_heritage_aeptelonian
+        }
+        else_if = {
+            limit = { country_culture_group = eptelon }
+            set_variable = eptelon_heritage_native
+        }
+        else_if = {
+            limit = { country_culture_group = horteonian }
+            set_variable = eptelon_heritage_heptelonian
+        }
+        else_if = {
+            limit = {
+                OR = {
+                    country_culture_group = high_elves
+                    country_culture_group = high_half_elves
+                }
+            }
+            set_variable = eptelon_heritage_colonial
+        }
+    }
+}
+
+omni_eptelon_clear_heritage_effect = {
+    hidden_effect = {
+        remove_variable = eptelon_heritage_aeptelonian
+        remove_variable = eptelon_heritage_native
+        remove_variable = eptelon_heritage_heptelonian
+        remove_variable = eptelon_heritage_colonial
+    }
+}

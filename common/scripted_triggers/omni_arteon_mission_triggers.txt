@@ -1,0 +1,184 @@
+﻿# Country scope unless noted. Triggers for 03_arteon_generic (The Battle For Arteon).
+
+# The three faiths with a dedicated branch. Every other faith takes the old-faith branch.
+omni_arteon_named_faith_trigger = {
+    OR = {
+        religion = artheous_pantheon
+        religion = yedidyhan
+        religion = transcendence_enlighten
+        religion = victory_pantheon
+    }
+}
+
+# Routes are recorded by each branch capstone. Saves that completed a branch before the
+# variables existed fall back to the faith that branch serves.
+omni_arteon_route_recorded_trigger = {
+    OR = {
+        has_variable = arteon_route_artheousan
+        has_variable = arteon_route_ascendic
+        has_variable = arteon_route_viktreic
+        has_variable = arteon_route_old_faith
+    }
+}
+
+omni_arteon_route_ascendic_trigger = {
+    OR = {
+        has_variable = arteon_route_ascendic
+        AND = {
+            omni_arteon_route_recorded_trigger = no
+            religion = transcendence_enlighten
+        }
+    }
+}
+
+omni_arteon_route_viktreic_trigger = {
+    OR = {
+        has_variable = arteon_route_viktreic
+        AND = {
+            omni_arteon_route_recorded_trigger = no
+            religion = victory_pantheon
+        }
+    }
+}
+
+omni_arteon_route_old_faith_trigger = {
+    OR = {
+        has_variable = arteon_route_old_faith
+        AND = {
+            omni_arteon_route_recorded_trigger = no
+            omni_arteon_named_faith_trigger = no
+        }
+    }
+}
+
+# Province scope, root = the mission country.
+omni_arteon_iron_seam_candidate_trigger = {
+    OR = {
+        trade_goods = stone
+        trade_goods = base_metals
+    }
+    OR = {
+        is_in_region = arteon_shout_region
+        is_in_region = arteon_eastern_region
+        is_in_region = arteon_north_region
+        is_in_region = arteon_western_region
+    }
+}
+
+# Heritage, recorded in on_start. The fallback covers trees started before heritage existed.
+omni_arteon_heritage_recorded_trigger = {
+    OR = {
+        has_variable = arteon_heritage_arunggilo
+        has_variable = arteon_heritage_arunggishay
+        has_variable = arteon_heritage_arungluyop
+        has_variable = arteon_heritage_arungdirong
+        has_variable = arteon_heritage_pact
+        has_variable = arteon_heritage_yedidyah
+        has_variable = arteon_heritage_nivan
+        has_variable = arteon_heritage_colonial
+        has_variable = arteon_heritage_alusarian
+    }
+}
+
+omni_arteon_heritage_arunggilo_trigger = {
+    OR = {
+        has_variable = arteon_heritage_arunggilo
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            country_culture_group = arteonian
+        }
+    }
+}
+
+omni_arteon_heritage_arunggishay_trigger = {
+    OR = {
+        has_variable = arteon_heritage_arunggishay
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            country_culture_group = middleonian
+        }
+    }
+}
+
+omni_arteon_heritage_arungluyop_trigger = {
+    OR = {
+        has_variable = arteon_heritage_arungluyop
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            country_culture_group = westeonian
+        }
+    }
+}
+
+omni_arteon_heritage_arungdirong_trigger = {
+    OR = {
+        has_variable = arteon_heritage_arungdirong
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            country_culture_group = northern_arteonian
+            NOR = { tag = AR7 tag = MH3 tag = MH4 }
+        }
+    }
+}
+
+omni_arteon_heritage_pact_trigger = {
+    OR = {
+        has_variable = arteon_heritage_pact
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            OR = { tag = AR7 tag = MH3 tag = MH4 }
+        }
+    }
+}
+
+omni_arteon_heritage_yedidyah_trigger = {
+    OR = {
+        has_variable = arteon_heritage_yedidyah
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            country_culture_group = yedidyah
+        }
+    }
+}
+
+omni_arteon_heritage_nivan_trigger = {
+    OR = {
+        has_variable = arteon_heritage_nivan
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            country_culture_group = horteonian
+        }
+    }
+}
+
+omni_arteon_heritage_colonial_trigger = {
+    OR = {
+        has_variable = arteon_heritage_colonial
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            country_culture_group = high_elves
+        }
+    }
+}
+
+omni_arteon_heritage_alusarian_trigger = {
+    OR = {
+        has_variable = arteon_heritage_alusarian
+        AND = {
+            omni_arteon_heritage_recorded_trigger = no
+            country_culture_group = high_half_elves
+        }
+    }
+}
+
+# Province scope, root = the mission country. A neighbor held by an independent country we are
+# at peace with: the target for Kin on Both Sides of the Boundary.
+omni_arteon_kin_province_trigger = {
+    has_owner = yes
+    is_capital = no
+    NOT = { owner = root }
+    owner = {
+        is_subject = no
+        NOT = { war_with = root }
+    }
+}

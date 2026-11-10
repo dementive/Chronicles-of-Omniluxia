@@ -10,6 +10,7 @@ me_arteon_gen.1 = {
 	option = {
 		name = me_arteon_gen.1.a
 		show_as_tooltip = {
+			omni_arteon_opening_claims_effect = yes
 			capital_scope = {
 				add_permanent_province_modifier = {
 					name = eternal_war_preparations_mod
@@ -67,6 +68,7 @@ me_arteon_gen.4 = {
 	option = {
 		name = me_arteon_gen.4.a
 		show_as_tooltip = {
+			omni_arteon_home_region_claims_effect = yes
 			add_1_free_province_investments = yes
 			add_military_experience = 10
 		}
@@ -83,6 +85,7 @@ me_arteon_gen.15 = {
 	option = {
 		name = me_arteon_gen.15.a
 		show_as_tooltip = {
+			mission_claim_region_effect = { REGION = arteon_shout_region }
 			add_political_influence = -20
 			add_country_modifier = {
 				name = artheousan_diplomatic_dominance_mod
@@ -102,6 +105,7 @@ me_arteon_gen.16 = {
 	option = {
 		name = me_arteon_gen.16.a
 		show_as_tooltip = {
+			mission_claim_region_effect = { REGION = arteon_eastern_region }
 			add_political_influence = -20
 			add_country_modifier = {
 				name = ascendic_conquest_mod
@@ -121,6 +125,7 @@ me_arteon_gen.17 = {
 	option = {
 		name = me_arteon_gen.17.a
 		show_as_tooltip = {
+			mission_claim_region_effect = { REGION = arteon_north_region }
 			add_country_modifier = {
 				name = viktreic_holy_crusade_mod
 				duration = 3650
@@ -245,6 +250,7 @@ me_arteon_gen.24 = {
 	option = {
 		name = me_arteon_gen.24.a
 		show_as_tooltip = {
+			mission_claim_region_effect = { REGION = arteon_north_region }
 			add_country_modifier = {
 				name = first_great_war_avenged_mod
 				duration = -1
@@ -263,6 +269,7 @@ me_arteon_gen.25 = {
 	option = {
 		name = me_arteon_gen.25.a
 		show_as_tooltip = {
+			mission_claim_region_effect = { REGION = arteon_north_region }
 			capital_scope = {
 				create_state_pop = citizen
 				create_state_pop = citizen
@@ -415,43 +422,33 @@ me_arteon_gen.13 = {
 me_arteon_gen.14 = {
 	type = country_event
 	title = me_arteon_gen.14.t
-	desc = me_arteon_gen.14.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { omni_arteon_route_ascendic_trigger = yes }
+				desc = me_arteon_gen.14.desc_ascendic
+			}
+			triggered_desc = {
+				trigger = { omni_arteon_route_viktreic_trigger = yes }
+				desc = me_arteon_gen.14.desc_viktreic
+			}
+			triggered_desc = {
+				trigger = { omni_arteon_route_old_faith_trigger = yes }
+				desc = me_arteon_gen.14.desc_old_faith
+			}
+			desc = me_arteon_gen.14.desc
+		}
+	}
 	picture = Event_royal_chamber
 	left_portrait = current_ruler
 
 	option = {
 		name = me_arteon_gen.14.a
+		# The mission applied these rewards before this event fired; this is the matching preview.
 		show_as_tooltip = {
-			add_5_free_province_investments = yes
-			current_ruler = {
-				add_bloodline_effect = { BLOODLINE = blood_of_the_artheousan_kings }
-				family = {
-					add_prestige = 200
-				}
-				if = {
-					limit = {
-						is_male = yes
-					}
-					add_nickname = NICKNAME_LORD_ARTEON
-				}
-				else = {
-					add_nickname = NICKNAME_LADY_ARTEON
-				}
-			}
-			create_country_treasure = {
-				key = "treasure_crown_of_arteon"
-				icon = "treasure_crown_of_upper_egypt"
-				modifier = {
-					local_population_happiness = 0.1
-					monthly_legitimacy = 0.1
-					monthly_centralization = 0.05
-				}
-			}
-			add_country_modifier = {
-				name = arteon_united_empire_mod
-				duration = -1
-			}
+			omni_arteon_finale_rewards_effect = yes
 		}
+		omni_arteon_clear_mission_variables_effect = yes
 	}
 }
 
@@ -512,5 +509,1039 @@ me_arteon_gen.27 = {
 				}
 			}
 		}
+	}
+}
+
+
+# ---------------------------------------------------------------
+# Home unification ladder
+# ---------------------------------------------------------------
+
+# Rung 1 choice: how the next ring is won. This event owns the task's reward.
+me_arteon_gen.30 = {
+	type = country_event
+	title = me_arteon_gen.30.t
+	desc = me_arteon_gen.30.desc
+	picture = war_council
+	left_portrait = current_ruler
+
+	option = {	# Press the old boundary stones
+		name = me_arteon_gen.30.a
+		add_political_influence = -25
+		omni_arteon_ring_claims_effect = yes
+		ai_chance = { factor = 50 }
+	}
+	option = {	# Send gifts to the border chiefs
+		name = me_arteon_gen.30.b
+		add_treasury = -75
+		omni_arteon_border_gifts_effect = yes
+		add_country_modifier = {
+			name = arteon_border_gifts_mod
+			duration = 1825
+		}
+		ai_chance = { factor = 30 }
+	}
+	option = {	# Raid the border villages
+		name = me_arteon_gen.30.c
+		add_treasury = 60
+		add_stability = -5
+		capital_scope = {
+			create_state_pop = slaves
+			create_state_pop = slaves
+		}
+		ai_chance = { factor = 20 }
+	}
+}
+
+me_arteon_gen.31 = {
+	type = country_event
+	title = me_arteon_gen.31.t
+	desc = me_arteon_gen.31.desc
+	picture = great_city
+	left_portrait = current_ruler
+
+	option = {
+		name = me_arteon_gen.31.a
+		show_as_tooltip = {
+			add_3_free_province_investments = yes
+			capital_scope = {
+				add_permanent_province_modifier = {
+					name = arteon_heartland_seat_pmod
+					duration = -1
+				}
+			}
+		}
+	}
+}
+
+# ---------------------------------------------------------------
+# Branch D: the old faiths
+# ---------------------------------------------------------------
+
+# Which shore the old gods are carried to. This event owns the task's reward.
+me_arteon_gen.32 = {
+	type = country_event
+	title = me_arteon_gen.32.t
+	desc = me_arteon_gen.32.desc
+	picture = religious_rite
+	left_portrait = current_ruler
+
+	option = {
+		name = me_arteon_gen.32.a
+		trigger = { capital_scope = { NOT = { is_in_region = arteon_shout_region } } }
+		mission_claim_region_effect = { REGION = arteon_shout_region }
+		set_variable = arteon_old_faith_target_shout
+		ai_chance = { factor = 25 }
+	}
+	option = {
+		name = me_arteon_gen.32.b
+		trigger = { capital_scope = { NOT = { is_in_region = arteon_eastern_region } } }
+		mission_claim_region_effect = { REGION = arteon_eastern_region }
+		set_variable = arteon_old_faith_target_eastern
+		ai_chance = { factor = 25 }
+	}
+	option = {
+		name = me_arteon_gen.32.c
+		trigger = { capital_scope = { NOT = { is_in_region = arteon_western_region } } }
+		mission_claim_region_effect = { REGION = arteon_western_region }
+		set_variable = arteon_old_faith_target_western
+		ai_chance = { factor = 25 }
+	}
+	option = {
+		name = me_arteon_gen.32.d
+		trigger = { capital_scope = { NOT = { is_in_region = arteon_north_region } } }
+		mission_claim_region_effect = { REGION = arteon_north_region }
+		set_variable = arteon_old_faith_target_north
+		ai_chance = { factor = 25 }
+	}
+}
+
+me_arteon_gen.33 = {
+	type = country_event
+	title = me_arteon_gen.33.t
+	desc = me_arteon_gen.33.desc
+	picture = celtic_religious_festival
+	left_portrait = current_ruler
+
+	option = {
+		name = me_arteon_gen.33.a
+		show_as_tooltip = {
+			mission_claim_region_effect = { REGION = arteon_north_region }
+			add_stability = 10
+			add_country_modifier = {
+				name = arteon_old_gods_mod
+				duration = 7300
+			}
+		}
+	}
+}
+
+# ---------------------------------------------------------------
+# The grave of Atheus. This event owns the task's reward.
+# ---------------------------------------------------------------
+me_arteon_gen.34 = {
+	type = country_event
+	title = me_arteon_gen.34.t
+	desc = me_arteon_gen.34.desc
+	picture = event_barrow_white
+	left_portrait = current_ruler
+
+	option = {	# Break it
+		name = me_arteon_gen.34.a
+		omni_arteon_destroy_sarcophagus_effect = yes
+		add_stability = 20
+		ai_chance = { factor = 50 }
+	}
+	option = {	# Keep it as a trophy
+		name = me_arteon_gen.34.b
+		add_stability = -5
+		current_ruler = { add_popularity = 15 }
+		add_country_modifier = {
+			name = arteon_conquerors_trophy_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 25 }
+	}
+	option = {	# Sell the grave goods
+		name = me_arteon_gen.34.c
+		omni_arteon_destroy_sarcophagus_effect = yes
+		add_treasury = 250
+		ai_chance = { factor = 25 }
+	}
+}
+
+# ---------------------------------------------------------------
+# The iron of Arteon
+# ---------------------------------------------------------------
+me_arteon_gen.35 = {
+	type = country_event
+	title = me_arteon_gen.35.t
+	desc = me_arteon_gen.35.desc
+	picture = slaves_working
+	left_portrait = current_ruler
+
+	option = {
+		name = me_arteon_gen.35.a
+		show_as_tooltip = {
+			add_treasury = -100
+			add_country_modifier = {
+				name = arteon_iron_hills_mod
+				duration = 3650
+			}
+		}
+	}
+}
+
+# Who holds the smiths' charter. This event owns the task's reward.
+me_arteon_gen.36 = {
+	type = country_event
+	title = me_arteon_gen.36.t
+	desc = me_arteon_gen.36.desc
+	picture = hellenic_marketplace
+	left_portrait = current_ruler
+
+	option = {	# The guild keeps the charter
+		name = me_arteon_gen.36.a
+		add_country_modifier = {
+			name = arteon_guild_charter_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 40 }
+	}
+	option = {	# The war captains keep the charter
+		name = me_arteon_gen.36.b
+		add_country_modifier = {
+			name = arteon_armory_charter_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 60 }
+	}
+}
+
+me_arteon_gen.37 = {
+	type = country_event
+	title = me_arteon_gen.37.t
+	desc = me_arteon_gen.37.desc
+	picture = city_built
+	left_portrait = current_ruler
+
+	option = {
+		name = me_arteon_gen.37.a
+		show_as_tooltip = {
+			add_treasury = -200
+			capital_scope = {
+				add_permanent_province_modifier = {
+					name = arteon_forge_city_pmod
+					duration = -1
+				}
+			}
+			add_country_modifier = {
+				name = arteon_eternal_forges_mod
+				duration = 7300
+			}
+		}
+		if = {
+			limit = { has_variable = arteon_new_iron_seam_opened }
+			custom_tooltip = me_arteon_gen.37_seam_tt
+			remove_variable = arteon_new_iron_seam_opened
+		}
+	}
+}
+
+# ---------------------------------------------------------------
+# Heritage tasks. Choice events own their rewards; tasks paid the cost.
+# ---------------------------------------------------------------
+
+# Arunggilo I: the floods of the Myahud
+me_arteon_gen.40 = {
+	type = country_event
+	title = me_arteon_gen.40.t
+	desc = me_arteon_gen.40.desc
+	picture = event_bread_basket
+	left_portrait = current_ruler
+
+	option = {	# Raise Fisa's dikes
+		name = me_arteon_gen.40.a
+		p:881 = {
+			add_permanent_province_modifier = {
+				name = arteon_fisa_dikes_pmod
+				duration = -1
+			}
+		}
+		p:966 = {
+			add_permanent_province_modifier = {
+				name = arteon_fisa_dikes_pmod
+				duration = -1
+			}
+		}
+		p:1013 = {
+			add_permanent_province_modifier = {
+				name = arteon_fisa_dikes_pmod
+				duration = -1
+			}
+		}
+		ai_chance = { factor = 60 }
+	}
+	option = {	# Let the river keep its old bed
+		name = me_arteon_gen.40.b
+		trigger = { owns_or_subject_owns = 888 }
+		p:888 = {
+			add_permanent_province_modifier = {
+				name = arteon_myahud_silt_pmod
+				duration = -1
+			}
+		}
+		add_stability = 5
+		ai_chance = { factor = 40 }
+	}
+}
+
+# Arunggilo II: the four shrines of victory
+me_arteon_gen.41 = {
+	type = country_event
+	title = me_arteon_gen.41.t
+	desc = me_arteon_gen.41.desc
+	picture = hellenic_temple
+	left_portrait = current_ruler
+
+	option = {	# Viza
+		name = me_arteon_gen.41.a
+		add_country_modifier = {
+			name = arteon_face_of_viza_mod
+			duration = 7300
+		}
+		current_ruler = { add_zeal = 2 }
+		ai_chance = { factor = 40 }
+	}
+	option = {	# Fisa
+		name = me_arteon_gen.41.b
+		add_country_modifier = {
+			name = arteon_face_of_fisa_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 30 }
+	}
+	option = {	# Tuma
+		name = me_arteon_gen.41.c
+		add_country_modifier = {
+			name = arteon_face_of_tuma_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 30 }
+	}
+}
+
+# Arunggishay I: the carriers
+me_arteon_gen.42 = {
+	type = country_event
+	title = me_arteon_gen.42.t
+	desc = me_arteon_gen.42.desc
+	picture = road_construction
+	left_portrait = current_ruler
+
+	option = {	# Tax the carrier families
+		name = me_arteon_gen.42.a
+		add_country_modifier = {
+			name = arteon_carrier_tolls_mod
+			duration = 3650
+		}
+		ai_chance = { factor = 50 }
+	}
+	option = {	# Grant them the road rights
+		name = me_arteon_gen.42.b
+		capital_scope = {
+			save_scope_as = arteon_road_hub
+			every_neighbor_province = {
+				limit = {
+					owner = root
+					NOT = { has_road_towards = scope:arteon_road_hub }
+				}
+				add_road_towards = scope:arteon_road_hub
+			}
+		}
+		add_country_modifier = {
+			name = arteon_carrier_rights_mod
+			duration = 3650
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+# Arunggishay II: kin on both sides of the boundary
+me_arteon_gen.43 = {
+	type = country_event
+	title = me_arteon_gen.43.t
+	desc = me_arteon_gen.43.desc
+	picture = council_country
+	left_portrait = current_ruler
+
+	immediate = {
+		random_owned_province = {
+			limit = {
+				any_neighbor_province = {
+					omni_arteon_kin_province_trigger = yes
+				}
+			}
+			random_neighbor_province = {
+				limit = {
+					omni_arteon_kin_province_trigger = yes
+				}
+				save_scope_as = arteon_kin_province
+				owner = { save_scope_as = arteon_kin_owner }
+			}
+		}
+	}
+
+	option = {	# Ask the kin to open the gates
+		name = me_arteon_gen.43.a
+		trigger = { exists = scope:arteon_kin_province }
+		add_treasury = -200
+		scope:arteon_kin_owner = {
+			add_opinion = {
+				modifier = unfriendly_neighbors
+				target = root
+			}
+		}
+		scope:arteon_kin_province = { set_owned_by = root }
+		ai_chance = { factor = 40 }
+	}
+	option = {	# Marry into the kin
+		name = me_arteon_gen.43.b
+		trigger = { exists = scope:arteon_kin_owner }
+		scope:arteon_kin_owner = {
+			add_opinion = {
+				modifier = opinion_gift
+				target = root
+			}
+		}
+		add_country_modifier = {
+			name = arteon_kin_marriages_mod
+			duration = 3650
+		}
+		ai_chance = { factor = 30 }
+	}
+	option = {	# Write down the kin's grievances
+		name = me_arteon_gen.43.c
+		if = {
+			limit = { exists = scope:arteon_kin_province }
+			scope:arteon_kin_province.area = {
+				every_area_province = {
+					limit = { NOT = { owned_or_subject_owned = root } }
+					add_claim = root
+				}
+			}
+		}
+		else = {
+			add_political_influence = 50
+		}
+		ai_chance = { factor = 30 }
+	}
+}
+
+# Arungluyop I: guest-right
+me_arteon_gen.44 = {
+	type = country_event
+	title = me_arteon_gen.44.t
+	desc = me_arteon_gen.44.desc
+	picture = Event_north_lord_hall
+	left_portrait = current_ruler
+
+	option = {	# The law of the realm
+		name = me_arteon_gen.44.a
+		add_country_modifier = {
+			name = arteon_guest_right_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 50 }
+	}
+	option = {	# A family custom
+		name = me_arteon_gen.44.b
+		current_ruler = { add_popularity = 15 }
+		add_country_modifier = {
+			name = arteon_hospitable_houses_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+# Arungluyop II: the houses that kept faith
+me_arteon_gen.45 = {
+	type = country_event
+	title = me_arteon_gen.45.t
+	desc = me_arteon_gen.45.desc
+	picture = senator_conversing
+	left_portrait = current_ruler
+
+	option = {	# Confirm the old houses
+		name = me_arteon_gen.45.a
+		capital_scope.region = {
+			every_region_province = {
+				limit = { owner = root }
+				add_province_modifier = {
+					name = arteon_kept_faith_pmod
+					duration = 7300
+				}
+			}
+		}
+		add_stability = 5
+		ai_chance = { factor = 40 }
+	}
+	option = {	# Raise new houses from our captains
+		name = me_arteon_gen.45.b
+		create_character = {
+			hidden_effect = {
+				add_martial = 6
+				add_trait = honest
+			}
+		}
+		create_character = {
+			hidden_effect = {
+				add_martial = 6
+				add_trait = steadfast
+			}
+		}
+		add_country_modifier = {
+			name = arteon_new_houses_mod
+			duration = 3650
+		}
+		ai_chance = { factor = 40 }
+	}
+	option = {	# Sell the honors
+		name = me_arteon_gen.45.c
+		add_treasury = 250
+		add_stability = -5
+		ai_chance = { factor = 20 }
+	}
+}
+
+# Arungdirong I: Artheous was a man
+me_arteon_gen.46 = {
+	type = country_event
+	title = me_arteon_gen.46.t
+	desc = me_arteon_gen.46.desc
+	picture = religious_rite
+	left_portrait = current_ruler
+
+	option = {	# Send the rite south to the Elders
+		name = me_arteon_gen.46.a
+		every_country = {
+			limit = {
+				NOT = { this = root }
+				has_land = yes
+				is_subject = no
+				OR = {
+					country_culture_group = middleonian
+					country_culture_group = westeonian
+					country_culture_group = arteonian
+				}
+				capital_scope = {
+					OR = {
+						is_in_region = arteon_shout_region
+						is_in_region = arteon_eastern_region
+						is_in_region = arteon_north_region
+						is_in_region = arteon_western_region
+					}
+				}
+			}
+			add_opinion = {
+				modifier = opinion_gift
+				target = root
+			}
+		}
+		add_country_modifier = {
+			name = arteon_schism_mended_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 40 }
+	}
+	option = {	# Keep the northern rite
+		name = me_arteon_gen.46.b
+		add_country_modifier = {
+			name = arteon_northern_rite_mod
+			duration = 7300
+		}
+		set_variable = arteon_northern_rite
+		ai_chance = { factor = 60 }
+	}
+}
+
+# Arungdirong II: the cousins' curse
+me_arteon_gen.47 = {
+	type = country_event
+	title = me_arteon_gen.47.t
+	desc = me_arteon_gen.47.desc
+	picture = event_nazgul
+	left_portrait = current_ruler
+
+	option = {	# Break with the cursed cousins
+		name = me_arteon_gen.47.a
+		omni_arteon_claim_pact_house_effect = { TAG = AR7 }
+		omni_arteon_claim_pact_house_effect = { TAG = MH3 }
+		omni_arteon_claim_pact_house_effect = { TAG = MH4 }
+		add_country_modifier = {
+			name = arteon_cousin_hunters_mod
+			duration = 3650
+		}
+		ai_chance = { factor = 60 }
+	}
+	option = {	# Shelter under their walls
+		name = me_arteon_gen.47.b
+		omni_arteon_truce_pact_house_effect = { TAG = AR7 }
+		omni_arteon_truce_pact_house_effect = { TAG = MH3 }
+		omni_arteon_truce_pact_house_effect = { TAG = MH4 }
+		if = {
+			limit = { has_variable = arteon_northern_rite }
+			add_stability = -5
+		}
+		else = {
+			add_stability = 5
+		}
+		ai_chance = { factor = 40 }
+	}
+}
+
+# Arungdirong, optional: word from Heskoh
+me_arteon_gen.48 = {
+	type = country_event
+	title = me_arteon_gen.48.t
+	desc = me_arteon_gen.48.desc
+	picture = trade_port
+	left_portrait = current_ruler
+
+	option = {	# Bring the exiles' grandchildren home
+		name = me_arteon_gen.48.a
+		capital_scope = {
+			create_state_pop = freemen
+			create_state_pop = freemen
+			create_state_pop = freemen
+		}
+		ai_chance = { factor = 50 }
+	}
+	option = {	# Keep the sea road open
+		name = me_arteon_gen.48.b
+		trigger = { exists = c:UPL }
+		c:UPL = {
+			add_opinion = {
+				modifier = opinion_gift
+				target = root
+			}
+		}
+		add_country_modifier = {
+			name = arteon_heskoh_compact_mod
+			duration = 3650
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+# Pact I: the cousins' oath
+me_arteon_gen.49 = {
+	type = country_event
+	title = me_arteon_gen.49.t
+	desc = me_arteon_gen.49.desc
+	picture = cave_entrance
+	left_portrait = current_ruler
+
+	option = {	# Renew the oath
+		name = me_arteon_gen.49.a
+		omni_arteon_truce_pact_house_effect = { TAG = AR7 }
+		omni_arteon_truce_pact_house_effect = { TAG = MH3 }
+		omni_arteon_truce_pact_house_effect = { TAG = MH4 }
+		add_country_modifier = {
+			name = arteon_pact_renewed_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 70 }
+	}
+	option = {	# Let the oath lapse
+		name = me_arteon_gen.49.b
+		omni_arteon_claim_pact_house_effect = { TAG = AR7 }
+		omni_arteon_claim_pact_house_effect = { TAG = MH3 }
+		omni_arteon_claim_pact_house_effect = { TAG = MH4 }
+		add_stability = -5
+		set_variable = arteon_pact_broken
+		ai_chance = { factor = 30 }
+	}
+}
+
+# Pact II: the lord who gave the gift
+me_arteon_gen.50 = {
+	type = country_event
+	title = me_arteon_gen.50.t
+	desc = me_arteon_gen.50.desc
+	picture = event_barrow_white
+	left_portrait = current_ruler
+
+	option = {	# Follow the rumors to the Yedidyah
+		name = me_arteon_gen.50.a
+		trigger = {
+			exists = c:AR3
+			c:AR3 = { has_land = yes }
+		}
+		c:AR3 = {
+			add_opinion = {
+				modifier = opinion_gift
+				target = root
+			}
+		}
+		create_character = {
+			hidden_effect = {
+				add_finesse = 8
+				force_add_trait = vampire_trait
+			}
+		}
+		ai_chance = { factor = 40 }
+	}
+	option = {	# Seal the crypt and forget the name
+		name = me_arteon_gen.50.b
+		create_country_treasure = {
+			key = "arteon_crypt_oath_treasure"
+			icon = "cr_treasure_golden_lion_rhyton_01"
+			modifier = {
+				monthly_legitimacy = 0.1
+				global_monthly_state_loyalty = 0.02
+			}
+		}
+		ai_chance = { factor = 60 }
+	}
+}
+
+# Yedidyah I: the Bardidzor compact
+me_arteon_gen.51 = {
+	type = country_event
+	title = me_arteon_gen.51.t
+	desc = me_arteon_gen.51.desc
+	picture = greek_court
+	left_portrait = current_ruler
+
+	option = {	# Extend the compact to the Zwyegweyan
+		name = me_arteon_gen.51.a
+		trigger = {
+			any_country_culture = {
+				is_culture = zwyegweyan
+				is_integrated = no
+			}
+		}
+		random_country_culture = {
+			limit = {
+				is_culture = zwyegweyan
+				is_integrated = no
+			}
+			ROOT = { integrate_country_culture = PREV }
+		}
+		ai_chance = { factor = 50 }
+	}
+	option = {	# Keep it to the Bardidzor
+		name = me_arteon_gen.51.b
+		add_country_modifier = {
+			name = arteon_bardidzor_loyalty_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+# Yedidyah II: seekers of the Eternal Night. One outcome; the Dark Lord is never found.
+me_arteon_gen.52 = {
+	type = country_event
+	title = me_arteon_gen.52.t
+	desc = me_arteon_gen.52.desc
+	picture = event_mountain_village
+	left_portrait = current_ruler
+
+	option = {
+		name = me_arteon_gen.52.a
+		random_list = {
+			40 = {
+				create_country_treasure = {
+					key = "arteon_eternal_night_relic"
+					icon = "cr_treasure_golden_lion_rhyton_01"
+					modifier = {
+						monthly_legitimacy = 0.05
+						global_monthly_state_loyalty = 0.02
+					}
+				}
+			}
+			35 = {
+				create_character = {
+					hidden_effect = {
+						add_finesse = 7
+						add_zeal = 6
+						force_add_trait = vampire_trait
+					}
+				}
+			}
+			25 = {
+				add_stability = -5
+				current_ruler = { add_zeal = 2 }
+			}
+		}
+	}
+}
+
+# Nivan I: the missionaries of the Wyrm-Slayer
+me_arteon_gen.53 = {
+	type = country_event
+	title = me_arteon_gen.53.t
+	desc = me_arteon_gen.53.desc
+	picture = oration
+	left_portrait = current_ruler
+
+	option = {	# Send them home
+		name = me_arteon_gen.53.a
+		add_country_modifier = {
+			name = arteon_old_frost_gods_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 60 }
+	}
+	option = {	# Take the Wyrm-Slayer's faith
+		name = me_arteon_gen.53.b
+		set_country_religion = artheous_pantheon
+		every_country = {
+			limit = {
+				NOT = { this = root }
+				has_land = yes
+				religion = artheous_pantheon
+				capital_scope = {
+					OR = {
+						is_in_region = arteon_shout_region
+						is_in_region = arteon_eastern_region
+						is_in_region = arteon_north_region
+						is_in_region = arteon_western_region
+					}
+				}
+			}
+			add_opinion = {
+				modifier = opinion_gift
+				target = root
+			}
+		}
+		ai_chance = { factor = 40 }
+	}
+}
+
+# Nivan II: the cairns (report)
+me_arteon_gen.54 = {
+	type = country_event
+	title = me_arteon_gen.54.t
+	desc = me_arteon_gen.54.desc
+	picture = event_barrow_white
+	left_portrait = current_ruler
+
+	option = {
+		name = me_arteon_gen.54.a
+		show_as_tooltip = {
+			add_military_experience = -30
+			p:410 = {
+				add_permanent_province_modifier = {
+					name = arteon_nivan_cairns_pmod
+					duration = -1
+				}
+			}
+		}
+	}
+}
+
+# Colonial I: the Charter Roll
+me_arteon_gen.55 = {
+	type = country_event
+	title = me_arteon_gen.55.t
+	desc = me_arteon_gen.55.desc
+	picture = event_elf_councilor
+	left_portrait = current_ruler
+
+	option = {	# Answer Ousred'Eson
+		name = me_arteon_gen.55.a
+		trigger = {
+			exists = c:ATH
+			c:ATH = { has_land = yes }
+		}
+		c:ATH = {
+			add_opinion = {
+				modifier = opinion_gift
+				target = root
+			}
+		}
+		add_country_modifier = {
+			name = arteon_crown_envoys_mod
+			duration = 3650
+		}
+		ai_chance = { factor = 30 }
+	}
+	option = {	# Answer Ussonbrifhaerme
+		name = me_arteon_gen.55.b
+		trigger = {
+			exists = c:ACY
+			c:ACY = { has_land = yes }
+		}
+		c:ACY = {
+			add_opinion = {
+				modifier = opinion_gift
+				target = root
+			}
+		}
+		add_country_modifier = {
+			name = arteon_crown_envoys_mod
+			duration = 3650
+		}
+		ai_chance = { factor = 30 }
+	}
+	option = {	# Answer neither
+		name = me_arteon_gen.55.c
+		add_stability = 10
+		add_country_modifier = {
+			name = arteon_charter_roll_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 40 }
+	}
+}
+
+# Colonial II: the slave ledger
+me_arteon_gen.56 = {
+	type = country_event
+	title = me_arteon_gen.56.t
+	desc = me_arteon_gen.56.desc
+	picture = slaves_working
+	left_portrait = current_ruler
+
+	option = {	# Free the capital's slaves
+		name = me_arteon_gen.56.a
+		capital_scope = {
+			every_pops_in_province = {
+				limit = { pop_type = slaves }
+				set_pop_type = freemen
+			}
+		}
+		add_country_modifier = {
+			name = arteon_manumission_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 30 }
+	}
+	option = {	# Buy more from the slaver navies
+		name = me_arteon_gen.56.b
+		capital_scope = {
+			create_state_pop = slaves
+			create_state_pop = slaves
+			create_state_pop = slaves
+		}
+		add_country_modifier = {
+			name = arteon_slave_ledger_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 70 }
+	}
+}
+
+# Colonial, optional: the field of Athlarethere
+me_arteon_gen.57 = {
+	type = country_event
+	title = me_arteon_gen.57.t
+	desc = me_arteon_gen.57.desc
+	picture = event_barrow_white
+	left_portrait = current_ruler
+
+	option = {	# Raise a cenotaph
+		name = me_arteon_gen.57.a
+		p:420 = {
+			add_permanent_province_modifier = {
+				name = arteon_athlarethere_cenotaph_pmod
+				duration = -1
+			}
+		}
+		if = {
+			limit = { exists = c:ATH }
+			c:ATH = {
+				add_opinion = {
+					modifier = opinion_gift
+					target = root
+				}
+			}
+		}
+		if = {
+			limit = { exists = c:ACY }
+			c:ACY = {
+				add_opinion = {
+					modifier = opinion_gift
+					target = root
+				}
+			}
+		}
+		ai_chance = { factor = 50 }
+	}
+	option = {	# Plough the field under
+		name = me_arteon_gen.57.b
+		p:420 = {
+			add_permanent_province_modifier = {
+				name = arteon_athlarethere_fields_pmod
+				duration = -1
+			}
+		}
+		add_stability = 5
+		ai_chance = { factor = 50 }
+	}
+}
+
+# Alu-sarian I: two altars in Saousvad'E
+me_arteon_gen.58 = {
+	type = country_event
+	title = me_arteon_gen.58.t
+	desc = me_arteon_gen.58.desc
+	picture = religious_rite
+	left_portrait = current_ruler
+
+	option = {	# Keep both altars
+		name = me_arteon_gen.58.a
+		add_country_modifier = {
+			name = arteon_two_altars_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 60 }
+	}
+	option = {	# One faith for the realm
+		name = me_arteon_gen.58.b
+		add_stability = -5
+		add_country_modifier = {
+			name = arteon_one_altar_mod
+			duration = 7300
+		}
+		ai_chance = { factor = 40 }
+	}
+}
+
+# Alu-sarian II: the day the conqueror fell
+me_arteon_gen.59 = {
+	type = country_event
+	title = me_arteon_gen.59.t
+	desc = me_arteon_gen.59.desc
+	picture = celtic_religious_festival
+	left_portrait = current_ruler
+
+	option = {	# Hold the games
+		name = me_arteon_gen.59.a
+		add_stability = 10
+		current_ruler = { add_popularity = 15 }
+		p:662 = {
+			add_province_modifier = {
+				name = arteon_conqueror_games_pmod
+				duration = 3650
+			}
+		}
+		ai_chance = { factor = 50 }
+	}
+	option = {	# Teach the Blade Storm to the garrison
+		name = me_arteon_gen.59.b
+		create_character = {
+			culture = alusarian
+			hidden_effect = {
+				add_martial = 7
+				omni_folk_initiate_practitioner = yes
+				omni_learn_spell = { SPELL = blade_storm }
+			}
+		}
+		ai_chance = { factor = 50 }
 	}
 }

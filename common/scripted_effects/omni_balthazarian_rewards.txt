@@ -1,26 +1,67 @@
-﻿# Once-only small awards for milestones without a direct personal/economic reward.
-ob_milestone_reward_5 = {
-    if = { limit = { NOT = { has_variable = ob_milestone_rewarded_5 } }
-        set_variable = { name = ob_milestone_rewarded_5 }
-        add_political_influence = 5
+﻿# Country scope. The same treasure returns to the vault whenever its bearer relinquishes it.
+ob_store_bastion_shield = {
+    create_country_treasure = {
+        key = ob_bastion_shield
+        icon = "cr_treasure_shield_of_diomedes_01"
+        modifier = { local_defensive = 0.10 }
     }
 }
-ob_milestone_reward_6 = {
-    if = { limit = { NOT = { has_variable = ob_milestone_rewarded_6 } }
-        set_variable = { name = ob_milestone_rewarded_6 }
-        add_political_influence = 3
+
+# Country scope. Once per campaign, including campaigns that finished before the artifact was added.
+ob_award_bastion_shield = {
+    if = {
+        limit = { NOT = { has_global_variable = ob_bastion_shield_awarded } }
+        hidden_effect = {
+            set_global_variable = { name = ob_bastion_shield_awarded value = 1 }
+            if = {
+                limit = { NOT = { is_target_in_global_variable_list = { name = item_shield target = flag:item_artifact_ob_bastion_shield } } }
+                assing_item_to_category = { item_category = shield item_ID = item_artifact_ob_bastion_shield }
+            }
+        }
+        ob_store_bastion_shield = yes
     }
 }
+
+# Character scope.
+ob_return_bastion_shield = {
+    remove_character_item = { item_ID = item_artifact_ob_bastion_shield }
+    country = {
+        remove_country_modifier = item_artifact_ob_bastion_shield_army
+        ob_store_bastion_shield = yes
+    }
+}
+
+ob_finish_order_finale = {
+    if = {
+        limit = { NOT = { has_variable = ob_scene_24 } }
+        hidden_effect = {
+            set_variable = { name = ob_scene_24 }
+            set_variable = { name = ob_tree_finished }
+        }
+        add_country_modifier = { name = ob_final duration = -1 }
+        add_stability = 10
+        show_as_tooltip = {
+            create_country_treasure = {
+                key = "ob_bastion_shield"
+                icon = "cr_treasure_shield_of_diomedes_01"
+                modifier = { local_defensive = 0.10 }
+            }
+        }
+    }
+}
+
+# Once-only small awards for milestones without a direct personal/economic reward.
 ob_milestone_reward_13 = {
     if = { limit = { NOT = { has_variable = ob_milestone_rewarded_13 } }
         set_variable = { name = ob_milestone_rewarded_13 }
         current_ruler = { add_popularity = 5 }
     }
 }
-ob_milestone_reward_17 = {
-    if = { limit = { NOT = { has_variable = ob_milestone_rewarded_17 } }
-        set_variable = { name = ob_milestone_rewarded_17 }
-        add_political_influence = 5
+ob_reward_herue_crown = {
+    if = {
+        limit = { NOT = { has_variable = ob_herue_settlement_rewarded } }
+        hidden_effect = { set_variable = { name = ob_herue_settlement_rewarded } }
+        add_country_modifier = { name = ob_herulian_watch_oath duration = 1095 }
     }
 }
 ob_milestone_reward_20 = {

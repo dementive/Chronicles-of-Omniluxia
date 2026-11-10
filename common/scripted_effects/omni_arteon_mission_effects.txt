@@ -1,0 +1,322 @@
+﻿# Country scope. Helpers for 03_arteon_generic (The Battle For Arteon).
+# Claims follow the home unification ladder: capital area and one neighbor, then the ring
+# around the capital area (choice event), then the rest of the home region.
+
+omni_arteon_opening_claims_effect = {
+    custom_tooltip = omni_arteon_opening_claims_tt
+    hidden_effect = {
+        capital_scope.area = {
+            save_scope_as = omni_arteon_home_area
+            every_area_province = {
+                limit = { NOT = { owned_or_subject_owned = root } }
+                add_claim = root
+            }
+        }
+        # One foreign-held area bordering the capital area, inside the home region.
+        capital_scope.region = {
+            random_region_province = {
+                limit = {
+                    has_owner = yes
+                    NOT = { owned_or_subject_owned = root }
+                    NOT = { area = scope:omni_arteon_home_area }
+                    any_neighbor_province = { area = scope:omni_arteon_home_area }
+                }
+                area = {
+                    every_area_province = {
+                        limit = { NOT = { owned_or_subject_owned = root } }
+                        add_claim = root
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Every area of the home region that borders the capital area.
+omni_arteon_ring_claims_effect = {
+    custom_tooltip = omni_arteon_ring_claims_tt
+    hidden_effect = {
+        capital_scope.area = {
+            save_scope_as = omni_arteon_home_area
+        }
+        capital_scope.region = {
+            every_region_province = {
+                limit = {
+                    NOT = { area = scope:omni_arteon_home_area }
+                    any_neighbor_province = { area = scope:omni_arteon_home_area }
+                }
+                area = {
+                    every_area_province = {
+                        limit = { NOT = { owned_or_subject_owned = root } }
+                        add_claim = root
+                    }
+                }
+            }
+        }
+    }
+}
+
+omni_arteon_home_region_claims_effect = {
+    custom_tooltip = omni_arteon_home_region_claims_tt
+    hidden_effect = {
+        capital_scope.region = {
+            every_region_province = {
+                limit = { NOT = { owned_or_subject_owned = root } }
+                add_claim = root
+            }
+        }
+    }
+}
+
+# Each country holding land beside the capital area remembers the gifts once.
+omni_arteon_border_gifts_effect = {
+    custom_tooltip = omni_arteon_border_gifts_tt
+    hidden_effect = {
+        capital_scope.area = {
+            save_scope_as = omni_arteon_home_area
+        }
+        every_country = {
+            limit = {
+                NOT = { this = root }
+                has_land = yes
+                capital_scope = {
+                    OR = {
+                        is_in_region = arteon_shout_region
+                        is_in_region = arteon_eastern_region
+                        is_in_region = arteon_north_region
+                        is_in_region = arteon_western_region
+                    }
+                }
+                any_owned_province = {
+                    any_neighbor_province = { area = scope:omni_arteon_home_area }
+                }
+            }
+            add_opinion = {
+                modifier = border_friends
+                target = root
+            }
+        }
+    }
+}
+
+# Forges of the Eternal War: a new iron seam opens in an owned stone or base-metal territory on Arteon.
+omni_arteon_new_iron_seam_effect = {
+    if = {
+        limit = {
+            any_owned_province = {
+                omni_arteon_iron_seam_candidate_trigger = yes
+            }
+        }
+        random_owned_province = {
+            limit = {
+                omni_arteon_iron_seam_candidate_trigger = yes
+            }
+            custom_tooltip = omni_arteon_new_iron_seam_tt
+            hidden_effect = {
+                set_trade_goods = iron
+            }
+        }
+        hidden_effect = {
+            set_variable = { name = arteon_new_iron_seam_opened days = 30 }
+        }
+    }
+}
+
+# Guarded: the sarcophagus may have been lost between task completion and the event.
+omni_arteon_destroy_sarcophagus_effect = {
+    if = {
+        limit = {
+            any_country_treasure = {
+                this = treasure:treasure_ascendic_sarcophagus
+            }
+        }
+        treasure:treasure_ascendic_sarcophagus = {
+            destroy_treasure = yes
+        }
+    }
+}
+
+omni_arteon_clear_mission_variables_effect = {
+    hidden_effect = {
+        remove_variable = arteon_heritage_arunggilo
+        remove_variable = arteon_heritage_arunggishay
+        remove_variable = arteon_heritage_arungluyop
+        remove_variable = arteon_heritage_arungdirong
+        remove_variable = arteon_heritage_pact
+        remove_variable = arteon_heritage_yedidyah
+        remove_variable = arteon_heritage_nivan
+        remove_variable = arteon_heritage_colonial
+        remove_variable = arteon_heritage_alusarian
+        remove_variable = arteon_northern_rite
+        remove_variable = arteon_pact_broken
+        remove_variable = arteon_route_artheousan
+        remove_variable = arteon_route_ascendic
+        remove_variable = arteon_route_viktreic
+        remove_variable = arteon_route_old_faith
+        remove_variable = arteon_old_faith_target_shout
+        remove_variable = arteon_old_faith_target_eastern
+        remove_variable = arteon_old_faith_target_western
+        remove_variable = arteon_old_faith_target_north
+    }
+}
+
+# Finale. Executed by task 14 and previewed by me_arteon_gen.14 with the same effect,
+# so the tooltip and the award cannot drift apart.
+omni_arteon_finale_rewards_effect = {
+    add_5_free_province_investments = yes
+    current_ruler = {
+        if = {
+            limit = {
+                root = { omni_arteon_route_ascendic_trigger = yes }
+                omni_eptelon_ascendic_bloodline_eligible = yes
+            }
+            add_bloodline_effect = { BLOODLINE = blood_of_atheusian_shores }
+        }
+        else = {
+            add_bloodline_effect = { BLOODLINE = blood_of_the_artheousan_kings }
+        }
+        family = {
+            add_prestige = 200
+        }
+        if = {
+            limit = {
+                is_male = yes
+            }
+            add_nickname = NICKNAME_LORD_ARTEON
+        }
+        else = {
+            add_nickname = NICKNAME_LADY_ARTEON
+        }
+    }
+    create_country_treasure = {
+        key = "treasure_crown_of_arteon"
+        icon = "treasure_crown_of_upper_egypt"
+        modifier = {
+            local_population_happiness = 0.1
+            monthly_legitimacy = 0.1
+            monthly_centralization = 0.05
+        }
+    }
+    current_ruler = {
+        give_character_an_item = {
+            item_ID = item_crown_of_arteon
+        }
+    }
+    if = {
+        limit = { omni_arteon_route_ascendic_trigger = yes }
+        add_country_modifier = {
+            name = arteon_ascendic_throne_mod
+            duration = -1
+        }
+    }
+    else_if = {
+        limit = { omni_arteon_route_viktreic_trigger = yes }
+        add_country_modifier = {
+            name = arteon_sacred_victory_mod
+            duration = -1
+        }
+    }
+    else_if = {
+        limit = { omni_arteon_route_old_faith_trigger = yes }
+        add_country_modifier = {
+            name = arteon_old_gods_crown_mod
+            duration = -1
+        }
+    }
+    else = {
+        add_country_modifier = {
+            name = arteon_united_empire_mod
+            duration = -1
+        }
+    }
+}
+
+# Recorded once in on_start (Fezzani pattern). Tag first for the three Unholy Pact houses.
+omni_arteon_set_heritage_effect = {
+    hidden_effect = {
+        if = {
+            limit = {
+                OR = {
+                    tag = AR7
+                    tag = MH3
+                    tag = MH4
+                }
+            }
+            set_variable = arteon_heritage_pact
+        }
+        else_if = {
+            limit = { country_culture_group = northern_arteonian }
+            set_variable = arteon_heritage_arungdirong
+        }
+        else_if = {
+            limit = { country_culture_group = arteonian }
+            set_variable = arteon_heritage_arunggilo
+        }
+        else_if = {
+            limit = { country_culture_group = middleonian }
+            set_variable = arteon_heritage_arunggishay
+        }
+        else_if = {
+            limit = { country_culture_group = westeonian }
+            set_variable = arteon_heritage_arungluyop
+        }
+        else_if = {
+            limit = { country_culture_group = yedidyah }
+            set_variable = arteon_heritage_yedidyah
+        }
+        else_if = {
+            limit = { country_culture_group = horteonian }
+            set_variable = arteon_heritage_nivan
+        }
+        else_if = {
+            limit = { country_culture_group = high_half_elves }
+            set_variable = arteon_heritage_alusarian
+        }
+        else_if = {
+            limit = { country_culture_group = high_elves }
+            set_variable = arteon_heritage_colonial
+        }
+    }
+}
+
+# Country scope. Claims on the capital area of one Unholy Pact house, if it still stands.
+omni_arteon_claim_pact_house_effect = {
+    if = {
+        limit = {
+            exists = c:$TAG$
+            NOT = { this = c:$TAG$ }
+            c:$TAG$ = { has_land = yes }
+        }
+        c:$TAG$.capital_scope.area = {
+            every_area_province = {
+                limit = { NOT = { owned_or_subject_owned = root } }
+                add_claim = root
+            }
+        }
+    }
+}
+
+# Country scope. A truce and good opinion with one Unholy Pact house, if it still stands.
+omni_arteon_truce_pact_house_effect = {
+    if = {
+        limit = {
+            exists = c:$TAG$
+            NOT = { this = c:$TAG$ }
+            c:$TAG$ = { has_land = yes }
+        }
+        add_truce = {
+            target = c:$TAG$
+            duration = 3650
+        }
+        c:$TAG$ = {
+            add_truce = {
+                target = root
+                duration = 3650
+            }
+            add_opinion = {
+                modifier = opinion_gift
+                target = root
+            }
+        }
+    }
+}

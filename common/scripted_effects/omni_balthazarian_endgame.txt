@@ -1,0 +1,463 @@
+﻿# Balthazarian Order endgame: the divided seal, the civil war, and the Deep Host.
+# All campaign state stays on the Order country. Saved event scopes are rebuilt on use.
+
+# ---------------------------------------------------------------- the summons (task 19)
+ob_summons_start = {
+    if = {
+        limit = { NOT = { has_variable = ob_summons_active } }
+        set_variable = { name = ob_summons_active }
+        if = {
+            limit = { ob_can_seek_see_charter = yes omni_sf_relationship_trigger = yes }
+            set_variable = { name = ob_charter_shannah value = var:omni_sf_shannah }
+            add_country_modifier = { name = ob_faith_master_abroad duration = 180 }
+            trigger_event = { id = ob_order.600 }
+        }
+        else = { set_variable = { name = ob_local_charter } }
+    }
+}
+
+# ---------------------------------------------------------------- the ultimatum (task 13)
+ob_issue_ultimatum = {
+    ob_ensure_second_master = yes
+    ob_save_rival = yes
+    if = { limit = { exists = scope:ob_rival }
+        set_variable = { name = ob_ultimatum }
+        trigger_event = { id = ob_order.300 }
+    }
+    else = {
+        set_variable = { name = ob_challenger_absent }
+        set_variable = { name = ob_internal_resolved }
+        trigger_event = { id = ob_order.302 }
+    }
+}
+
+# Called from the ultimatum. The rival's war is shaped by the support gathered in Act III.
+ob_begin_chapter_war = {
+    save_scope_as = ob_order
+    ob_save_rival = yes
+    if = {
+        limit = { exists = scope:ob_rival NOT = { has_variable = ob_war_started } NOT = { has_variable = ob_internal_resolved } }
+        scope:ob_rival = { remove_all_positions = yes remove_loyalty = ob_dual_mandate }
+        change_government = ob_protectorate
+        start_civil_war = scope:ob_rival
+        if = {
+            limit = { has_civil_war = yes exists = scope:ob_rival.employer scope:ob_rival.employer = { civil_war_with = root } }
+            set_variable = { name = ob_war_started }
+            scope:ob_rival.employer = { save_scope_as = ob_rebels }
+            set_variable = { name = ob_rebel_country value = scope:ob_rebels }
+            scope:ob_rebels = {
+                # Civil-war countries must never run a second copy of the campaign.
+                remove_variable = ob_identity remove_variable = ob_tree_started
+                set_variable = { name = ob_rebel_chapter value = scope:ob_order }
+                change_country_name = "ob_rebel_name"
+                add_treasury = 50
+                if = { limit = { scope:ob_order = { var:ob_support >= 2 } } add_treasury = 50 }
+            }
+            ob_split_frontier_states = yes
+            ob_defect_unsworn = yes
+            ob_raise_frontier_companies = yes
+            scope:ob_rebels = { every_owned_province = { add_claim = scope:ob_order } }
+        }
+        else = {
+            # No rebel country appeared: the challenge collapses without a war.
+            change_government = ob_order
+            set_as_coruler = scope:ob_rival
+            remove_variable = ob_ultimatum
+            set_variable = { name = ob_internal_resolved }
+            trigger_event = { id = ob_order.302 }
+        }
+    }
+}
+
+ob_split_frontier_states = {
+    set_variable = { name = ob_split_left value = var:ob_support }
+    if = { limit = { var:ob_split_left > 3 } set_variable = { name = ob_split_left value = 3 } }
+    while = {
+        limit = { var:ob_split_left > 0 any_country_state = { ob_rebel_state_candidate = yes } }
+        random_country_state = {
+            limit = { ob_rebel_state_candidate = yes }
+            every_state_province = { set_owned_by = scope:ob_rebels }
+        }
+        change_variable = { name = ob_split_left subtract = 1 }
+    }
+    remove_variable = ob_split_left
+}
+
+ob_defect_unsworn = {
+    every_character = {
+        limit = {
+            employer = root is_alive = yes is_adult = yes prisoner = no
+            NOT = { this = root.current_ruler }
+            NOT = { has_character_modifier = ob_seal_sworn }
+            OR = {
+                loyalty < 50
+                AND = { has_variable = ob_frontier_brother root = { var:ob_support >= 2 NOT = { has_variable = ob_shannah_rebuke } } }
+            }
+        }
+        remove_all_positions = yes
+        move_country = scope:ob_rebels
+    }
+}
+
+ob_raise_frontier_companies = {
+    set_variable = { name = ob_rebel_cohorts value = ob_rebel_cohorts_svalue }
+    scope:ob_rebels = {
+        create_unit = {
+            name = ob_frontier_companies_name
+            location = scope:ob_rebels.capital_scope
+            set_as_commander = scope:ob_rival
+            while = {
+                limit = { scope:ob_order.var:ob_rebel_cohorts > 0 }
+                random_list = {
+                    50 = { add_subunit = heavy_infantry }
+                    25 = { add_subunit = archers }
+                    25 = { add_subunit = heavy_cavalry }
+                }
+                scope:ob_order = { change_variable = { name = ob_rebel_cohorts subtract = 1 } }
+            }
+            add_food = 300 add_morale = 2
+        }
+    }
+    remove_variable = ob_rebel_cohorts
+}
+
+# Third answer to the ultimatum: the Shannah's legate judges the seals.
+ob_appeal_to_see = {
+    save_scope_as = ob_order
+    omni_sf_gain_effect = { AMOUNT = -30 }
+    ob_save_rival = yes
+    if = {
+        limit = { OR = { has_variable = ob_shannah_rebuke var:ob_support <= 1 } }
+        set_variable = { name = ob_arbitrated }
+        set_variable = { name = ob_legate }
+        set_variable = { name = ob_internal_resolved }
+        remove_variable = ob_ultimatum
+        add_manpower = -3
+        if = { limit = { exists = scope:ob_rival }
+            scope:ob_rival = { remove_all_positions = yes }
+            if = { limit = { exists = var:omni_sf_see var:omni_sf_see = { has_land = yes } }
+                scope:ob_rival = { move_country = root.var:omni_sf_see }
+            }
+        }
+        ob_install_loyal_sword = yes
+        trigger_event = { id = ob_order.305 }
+    }
+    else = {
+        set_variable = { name = ob_see_defied }
+        ob_begin_chapter_war = yes
+        if = { limit = { has_variable = ob_war_started exists = var:ob_rebel_country }
+            var:ob_rebel_country = { add_country_modifier = { name = omni_shannah_excommunicated duration = 3650 } }
+            every_country = {
+                limit = { has_land = yes religion = helluvian NOT = { this = root.var:ob_rebel_country } }
+                add_opinion = { target = root.var:ob_rebel_country modifier = omni_shannah_excommunication_opinion }
+            }
+        }
+        if = { limit = { has_variable = ob_war_started } trigger_event = { id = ob_order.306 } }
+    }
+}
+
+ob_install_loyal_sword = {
+    change_government = ob_order
+    random_character = {
+        limit = {
+            employer = root is_alive = yes is_adult = yes prisoner = no
+            has_variable = ob_frontier_brother
+            NOT = { this = root.current_ruler }
+        }
+        save_scope_as = ob_new_sword
+    }
+    if = { limit = { exists = scope:ob_new_sword }
+        scope:ob_new_sword = { remove_all_positions = yes add_loyalty = ob_dual_mandate add_character_modifier = { name = ob_seal_sworn duration = -1 } }
+        set_as_coruler = scope:ob_new_sword
+        set_variable = { name = ob_rival value = scope:ob_new_sword }
+    }
+    else = { ob_ensure_second_master = yes }
+}
+
+# ---------------------------------------------------------------- the war (task 27)
+ob_civil_war_pulse = {
+    if = { limit = { NOT = { has_variable = ob_dark_tower_timer } }
+        if = { limit = { has_variable = ob_dark_tower_armed }
+            ob_darken_tower = yes
+            trigger_event = { id = ob_order.654 }
+        }
+        set_variable = { name = ob_dark_tower_armed }
+        set_variable = { name = ob_dark_tower_timer days = 180 }
+    }
+    if = { limit = { NOT = { has_variable = ob_cw_event_cd } }
+        set_variable = { name = ob_cw_event_cd days = 120 }
+        random_list = {
+            10 = { trigger = { NOT = { has_variable = ob_cw_650 } } trigger_event = { id = ob_order.650 } }
+            10 = { trigger = { NOT = { has_variable = ob_cw_651 } } trigger_event = { id = ob_order.651 } }
+            10 = {
+                trigger = {
+                    NOT = { has_variable = ob_cw_652 } NOT = { has_variable = ob_lanuthua_bargain }
+                    exists = var:ob_returned var:ob_returned = { is_alive = yes prisoner = yes employer = root }
+                }
+                trigger_event = { id = ob_order.652 }
+            }
+            15 = { trigger = { NOT = { has_variable = ob_cw_653 } has_variable = ob_letters_known } trigger_event = { id = ob_order.653 } }
+            5 = { }
+        }
+    }
+}
+
+ob_darken_tower = {
+    if = { limit = { NOT = { has_variable = ob_dark_towers } } set_variable = { name = ob_dark_towers value = 0 } }
+    change_variable = { name = ob_dark_towers add = 1 }
+    random_owned_province = {
+        limit = { has_province_modifier = ob_watch }
+        remove_province_modifier = ob_watch
+    }
+}
+
+ob_cleanup_civil_war = {
+    remove_variable = ob_rebel_country
+    remove_variable = ob_cw_event_cd
+    remove_variable = ob_dark_tower_timer
+    remove_variable = ob_dark_tower_armed
+}
+
+# Loss route: the rebel chapter inherits the campaign when the old Order is gone.
+ob_rebel_inherit = {
+    var:ob_rebel_chapter = { save_scope_as = ob_old_order }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_roads } } set_variable = { name = ob_roads } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_grain } } set_variable = { name = ob_grain } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_watch } } set_variable = { name = ob_watch } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_intelligence } } set_variable = { name = ob_intelligence } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_early_resolved } } set_variable = { name = ob_early_resolved } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_early_prevented } } set_variable = { name = ob_early_prevented } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_early_dispersed } } set_variable = { name = ob_early_dispersed } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_early_launched } } set_variable = { name = ob_early_launched } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_cave_returned } } set_variable = { name = ob_cave_returned } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_cave_threat_applied } } set_variable = { name = ob_cave_threat_applied } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_rimebound_found } } set_variable = { name = ob_rimebound_found } }
+    if = {
+        limit = { exists = scope:ob_old_order.var:ob_returned }
+        set_variable = { name = ob_returned value = scope:ob_old_order.var:ob_returned }
+    }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_lanuthua_burned } } set_variable = { name = ob_lanuthua_burned } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_dispute_resolved } } set_variable = { name = ob_dispute_resolved } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_charter } } set_variable = { name = ob_charter } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_local_charter } } set_variable = { name = ob_local_charter } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_crown_route } } set_variable = { name = ob_crown_route } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_direct_rule } } set_variable = { name = ob_direct_rule } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_herue_settlement_rewarded } } set_variable = { name = ob_herue_settlement_rewarded } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_towns_sworn } } set_variable = { name = ob_towns_sworn } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_12 } } set_variable = { name = ob_scene_12 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_requisition_paid } } set_variable = { name = ob_requisition_paid } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_hospice_exemption } } set_variable = { name = ob_hospice_exemption } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_watch_unlocked } } set_variable = { name = ob_watch_unlocked } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_deep_road_known } } set_variable = { name = ob_deep_road_known } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_shannah_knows } } set_variable = { name = ob_shannah_knows } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_half_account } } set_variable = { name = ob_half_account } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_shannah_rebuke } } set_variable = { name = ob_shannah_rebuke } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_letters_known } } set_variable = { name = ob_letters_known } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_faith_petition } } set_variable = { name = ob_faith_petition } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_conference_failed } } set_variable = { name = ob_conference_failed } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_lanuthua_bargain } } set_variable = { name = ob_lanuthua_bargain } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_dark_towers } } set_variable = { name = ob_dark_towers value = scope:ob_old_order.var:ob_dark_towers } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_rupture_clock } } set_variable = { name = ob_rupture_clock } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_gathering_support } } set_variable = { name = ob_gathering_support } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_1 } } set_variable = { name = ob_task_done_1 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_2 } } set_variable = { name = ob_task_done_2 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_3 } } set_variable = { name = ob_task_done_3 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_4 } } set_variable = { name = ob_task_done_4 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_5 } } set_variable = { name = ob_task_done_5 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_6 } } set_variable = { name = ob_task_done_6 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_herue_claims_issued } } set_variable = { name = ob_herue_claims_issued } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_7 } } set_variable = { name = ob_task_done_7 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_8 } } set_variable = { name = ob_task_done_8 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_9 } } set_variable = { name = ob_task_done_9 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_10 } } set_variable = { name = ob_task_done_10 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_11 } } set_variable = { name = ob_task_done_11 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_12 } } set_variable = { name = ob_task_done_12 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_13 } } set_variable = { name = ob_task_done_13 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_14 } } set_variable = { name = ob_task_done_14 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_15 } } set_variable = { name = ob_task_done_15 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_16 } } set_variable = { name = ob_task_done_16 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_17 } } set_variable = { name = ob_task_done_17 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_18 } } set_variable = { name = ob_task_done_18 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_19 } } set_variable = { name = ob_task_done_19 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_20 } } set_variable = { name = ob_task_done_20 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_21 } } set_variable = { name = ob_task_done_21 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_22 } } set_variable = { name = ob_task_done_22 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_23 } } set_variable = { name = ob_task_done_23 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_24 } } set_variable = { name = ob_task_done_24 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_25 } } set_variable = { name = ob_task_done_25 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_26 } } set_variable = { name = ob_task_done_26 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_28 } } set_variable = { name = ob_task_done_28 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_29 } } set_variable = { name = ob_task_done_29 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_30 } } set_variable = { name = ob_task_done_30 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_1 } } set_variable = { name = ob_scene_1 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_2 } } set_variable = { name = ob_scene_2 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_3 } } set_variable = { name = ob_scene_3 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_4 } } set_variable = { name = ob_scene_4 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_5 } } set_variable = { name = ob_scene_5 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_7 } } set_variable = { name = ob_scene_7 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_8 } } set_variable = { name = ob_scene_8 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_9 } } set_variable = { name = ob_scene_9 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_10 } } set_variable = { name = ob_scene_10 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_11 } } set_variable = { name = ob_scene_11 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_13 } } set_variable = { name = ob_scene_13 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_14 } } set_variable = { name = ob_scene_14 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_15 } } set_variable = { name = ob_scene_15 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_16 } } set_variable = { name = ob_scene_16 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_17 } } set_variable = { name = ob_scene_17 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_18 } } set_variable = { name = ob_scene_18 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_19 } } set_variable = { name = ob_scene_19 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_20 } } set_variable = { name = ob_scene_20 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_21 } } set_variable = { name = ob_scene_21 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_22 } } set_variable = { name = ob_scene_22 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_23 } } set_variable = { name = ob_scene_23 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_24 } } set_variable = { name = ob_scene_24 } }
+    set_variable = { name = ob_identity }
+    set_variable = { name = ob_tree_started }
+    set_variable = { name = ob_support value = 0 }
+    set_variable = { name = ob_surrendered }
+    set_variable = { name = ob_rival_won }
+    set_variable = { name = ob_war_started }
+    set_variable = { name = ob_internal_resolved }
+    set_variable = { name = ob_legacy_rupture }
+    set_variable = { name = ob_endgame_v2 }
+    set_variable = { name = ob_task_done_13 }
+    remove_variable = ob_rebel_chapter
+    change_government = ob_protectorate
+    trigger_event = { id = ob_order.307 }
+}
+
+# ---------------------------------------------------------------- the Deep Host (tasks 23, 29)
+ob_launch_deep_host = {
+    save_scope_as = ob_order
+    set_variable = { name = ob_deep_host_launched }
+    # A great invasion already marching on us becomes the Deep Host.
+    random_country = {
+        limit = { has_variable = is_drow_invasion_leader war_with = root }
+        save_scope_as = ob_deep_leader
+    }
+    if = { limit = { exists = scope:ob_deep_leader } set_variable = { name = ob_deep_adopted } }
+    else = {
+        random_neighbour_country = { limit = { ob_deep_candidate = yes } save_scope_as = ob_deep_leader }
+        if = { limit = { NOT = { exists = scope:ob_deep_leader } }
+            ordered_country = {
+                limit = { ob_deep_candidate = yes }
+                order_by = zerywani_horde_power_score_svalue
+                position = 0
+                save_scope_as = ob_deep_leader
+            }
+        }
+    }
+    if = { limit = { exists = scope:ob_deep_leader }
+        set_variable = { name = ob_deep_enemy value = scope:ob_deep_leader }
+        set_variable = { name = ob_deep_host_active }
+        if = { limit = { NOT = { has_variable = ob_deep_adopted } }
+            scope:ob_deep_leader = {
+                set_variable = { name = ob_deep_declaring }
+                set_variable = { name = is_not_allowed_to_go_broke days = 1825 }
+                add_treasury = 300
+                if = { limit = { has_truce_with = scope:ob_order } end_truce = scope:ob_order }
+                if = { limit = { NOT = { war_with = scope:ob_order } }
+                    declare_war_with_wargoal = { war_goal = ob_deep_host_wargoal target = scope:ob_order }
+                }
+                remove_variable = ob_deep_declaring
+            }
+        }
+        if = {
+            limit = { scope:ob_deep_leader = { war_with = scope:ob_order } }
+            set_variable = { name = ob_deep_war_seen }
+            set_global_variable = { name = drow_invasion_fired }
+            if = {
+                limit = { NOT = { has_variable = ob_deep_adopted } }
+                # The host comes up the road Lanuthua described, inside the Order's own mountains.
+                scope:ob_deep_leader.capital_scope = { save_scope_as = ob_deep_exit }
+                if = {
+                    limit = { p:1036 = { owner = scope:ob_order } }
+                    p:1036 = { save_scope_as = ob_deep_exit }
+                }
+                set_variable = { name = ob_deep_host_raised value = ob_deep_host_strength }
+                set_variable = { name = ob_deep_cohorts value = var:ob_deep_host_raised }
+                scope:ob_deep_leader = {
+                    create_character = {
+                        culture = scope:ob_deep_leader.culture
+                        religion = scope:ob_deep_leader.religion
+                        female = yes age = 41
+                        add_trait = archmage_trait
+                        add_martial = 8
+                        save_scope_as = ob_deep_commander
+                        omni_check_magic_prestige = yes
+                    }
+                    create_unit = {
+                        name = ob_deep_host_name
+                        location = scope:ob_deep_exit
+                        set_as_commander = scope:ob_deep_commander
+                        save_scope_as = ob_deep_army
+                        while = {
+                            limit = { scope:ob_order.var:ob_deep_cohorts > 0 }
+                            random_list = {
+                                45 = { add_subunit = light_infantry }
+                                30 = { add_subunit = archers }
+                                25 = { add_subunit = heavy_infantry }
+                            }
+                            scope:ob_order = { change_variable = { name = ob_deep_cohorts subtract = 1 } }
+                        }
+                        add_food = 1000 add_morale = 3
+                    }
+                }
+                remove_variable = ob_deep_cohorts
+                set_variable = { name = ob_deep_army value = scope:ob_deep_army }
+            }
+            trigger_event = { id = ob_order.700 }
+        }
+        else = { ob_resolve_deep_host = yes }
+    }
+    else = {
+        # No drow realm remains to send it: authored fallback.
+        set_variable = { name = ob_deep_host_resolved }
+        set_variable = { name = ob_deep_host_absent }
+        trigger_event = { id = ob_order.704 }
+    }
+}
+
+ob_deep_host_monitor = {
+    if = {
+        limit = { exists = var:ob_deep_enemy var:ob_deep_enemy = { war_with = root } }
+        set_variable = { name = ob_deep_war_seen }
+        if = { limit = { p:870 = { controller = root.var:ob_deep_enemy } } set_variable = { name = ob_deep_870_fell } }
+    }
+    else = { ob_resolve_deep_host = yes }
+}
+
+ob_resolve_deep_host = {
+    remove_variable = ob_deep_host_active
+    set_variable = { name = ob_deep_host_resolved }
+    if = { limit = { NOT = { has_variable = ob_deep_war_seen } } set_variable = { name = ob_deep_host_absent } }
+    else_if = { limit = { OR = { has_variable = ob_deep_870_fell NOT = { owns = 870 } } } set_variable = { name = ob_deep_host_bitter } }
+    if = { limit = { exists = var:ob_deep_army } var:ob_deep_army = { destroy_unit = yes } }
+    remove_variable = ob_deep_army
+    if = { limit = { exists = var:ob_swords_army } var:ob_swords_army = { destroy_unit = yes } }
+    remove_variable = ob_swords_army
+    if = { limit = { exists = var:ob_levies_army } var:ob_levies_army = { destroy_unit = yes } }
+    remove_variable = ob_levies_army
+    # Task 29's completion event carries the outcome; only an empty road needs its own notice.
+    if = { limit = { has_variable = ob_deep_host_absent } trigger_event = { id = ob_order.704 } }
+}
+
+ob_deep_host_reward = {
+    if = { limit = { NOT = { has_variable = ob_deep_rewarded } }
+        set_variable = { name = ob_deep_rewarded }
+        if = {
+            limit = { has_variable = ob_deep_host_absent }
+            add_stability = 3
+        }
+        else_if = {
+            limit = { has_variable = ob_deep_host_bitter }
+            add_military_experience = 10
+        }
+        else = {
+            add_military_experience = 20
+            add_country_modifier = { name = ob_deep_host_broken duration = 7300 }
+        }
+        if = { limit = { p:1228 = { NOT = { owner = root } } } p:1228 = { add_claim = root } }
+    }
+}
+

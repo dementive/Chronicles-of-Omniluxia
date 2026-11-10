@@ -54,14 +54,30 @@ ob_cave_return = {
 ob_cave_apply_threat = {
     if = { limit = { NOT = { has_variable = ob_cave_threat_applied } }
         set_variable = { name = ob_cave_threat_applied }
-        if = { limit = { NOT = { has_variable = ob_early_launched } NOT = { has_variable = ob_early_resolved } }
-            if = { limit = { NOT = { has_variable = ob_threat_adjustment } } set_variable = { name = ob_threat_adjustment value = 0 } }
-            if = { limit = { has_variable = ob_cave_stores_burned } change_variable = { name = ob_threat_adjustment subtract = 20 } }
-            else_if = { limit = { has_variable = ob_cave_drow_alerted } change_variable = { name = ob_threat_adjustment add = 10 } }
+        if = { limit = { ob_early_threat_pending = yes }
             if = { limit = { NOT = { has_variable = ob_warning } } set_variable = { name = ob_warning } trigger_event = { id = ob_order.200 days = 9 } }
-            if = { limit = { ob_report_threat >= 100 } ob_launch_early_host = yes }
+            if = { limit = { has_variable = ob_cave_stores_burned } ob_delay_early_threat = { AMOUNT = 20 } }
+            else_if = { limit = { has_variable = ob_cave_drow_alerted } ob_raise_early_threat = { AMOUNT = 10 } }
+            if = { limit = { ob_early_threat_pending = yes ob_report_threat >= 100 } ob_launch_early_host = yes }
         }
     }
+}
+
+ob_delay_early_threat = {
+    if = {
+        limit = { NOT = { has_variable = ob_threat_adjustment } }
+        set_variable = { name = ob_threat_adjustment value = 0 }
+    }
+    change_variable = { name = ob_threat_adjustment subtract = $AMOUNT$ }
+}
+
+ob_raise_early_threat = {
+    # Increase the reported threat even when a previous delay pushed the raw total below zero.
+    set_variable = {
+        name = ob_threat_adjustment
+        value = { value = ob_report_threat subtract = ob_threat_calendar add = $AMOUNT$ }
+    }
+    if = { limit = { ob_report_threat >= 100 } ob_launch_early_host = yes }
 }
 
 ob_prepare_lanuthua = {

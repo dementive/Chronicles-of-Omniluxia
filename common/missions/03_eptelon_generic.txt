@@ -7,6 +7,11 @@
 
     potential = {
         NOT = { has_variable = mission_cooldown_var }
+        # AI countries wait out the shared start-of-game conquest stagger so claim grants do not arrive together.
+        trigger_if = {
+            limit = { is_ai = yes }
+            NOT = { has_variable = omni_conquer_mission_delay }
+        }
         capital_scope = {
             OR = {
                 is_in_region = eptelon_north_region
@@ -18,6 +23,7 @@
     abort = {}
     on_start = {
         start_mission_ai_effect = yes
+        omni_eptelon_set_heritage_effect = yes
     }
     on_abort = {
         custom_tooltip = general_mission_cooldown_tt
@@ -25,6 +31,7 @@
             name = mission_cooldown_var
             days = 7300
         }
+        omni_eptelon_clear_heritage_effect = yes
     }
     on_completion = {
         capital_scope = {
@@ -62,7 +69,7 @@
     03_eptelon_generic_task_ascendic_preparations = {
         icon = "task_expansion"
         duration = 60
-        requires = { 03_eptelon_generic_task_12 }
+        requires = { 03_eptelon_generic_task_1 }
         bypass = { NOT = { country_culture_group = high_elves } }
         allow = {
             war = no
@@ -90,10 +97,11 @@
         }
     }
 
+    # No task potential: task 4 requires this task for every culture, and the bypass alone
+    # carries other cultures past it.
     03_eptelon_generic_task_ascendic_independence = {
-        potential = { country_culture_group = high_elves }
         icon = "task_diplomatic"
-        requires = { 03_eptelon_generic_task_ascendic_preparations 03_eptelon_generic_task_12}
+        requires = { 03_eptelon_generic_task_ascendic_preparations }
         bypass = { NOT = { country_culture_group = high_elves } }
         allow = {
             war = no
@@ -139,8 +147,11 @@
                 has_law = coin_minting_law
             }
             trigger_else = {
-                hidden:capital_scope = {
-                    has_building = commerce_building
+                custom_tooltip = {
+                    text = eptelon_task_3_market_tt
+                    capital_scope = {
+                        has_building = commerce_building
+                    }
                 }
             }
         }
@@ -187,7 +198,7 @@
             show_as_tooltip = {
                 add_country_modifier = {
                     name = eptelon_maritime_ledgers_mod
-                    duration = -1
+                    duration = 7300
                 }
             }
         }
@@ -247,6 +258,360 @@
 
         on_completion = {
             trigger_event = sum_khaya_adv.1
+        }
+    }
+
+    # -----------------------------------------------------------
+    # SIGNATURE GOOD — THE SILPHIUM OF EPTELON
+    # Silphium grows on the northern slopes (eptelon_north_area_1, _2). Optional arm,
+    # open from task 4 until the finale. Events own the rewards, as elsewhere in this tree.
+    # -----------------------------------------------------------
+
+    03_eptelon_generic_task_silphium_1 = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_4 }
+        duration = 60
+
+        highlight = {
+            scope:province = {
+                trade_goods = silphium
+                OR = {
+                    is_in_region = eptelon_north_region
+                    is_in_region = eptelon_shout_region
+                }
+            }
+        }
+
+        allow = {
+            treasury >= 75
+            custom_tooltip = {
+                text = eptelon_silphium_3_tt
+                any_owned_province = {
+                    count >= 3
+                    trade_goods = silphium
+                    OR = {
+                        is_in_region = eptelon_north_region
+                        is_in_region = eptelon_shout_region
+                    }
+                }
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.70
+            show_as_tooltip = {
+                add_treasury = -75
+                add_country_modifier = {
+                    name = eptelon_silphium_slopes_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    # The choice event decides who the harvest serves.
+    03_eptelon_generic_task_silphium_2 = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_silphium_1 03_eptelon_generic_task_3_hept }
+        duration = 90
+
+        highlight = {
+            scope:province = {
+                owner = root
+                is_capital = yes
+            }
+        }
+
+        allow = {
+            political_influence >= 25
+            custom_tooltip = {
+                text = eptelon_silphium_surplus_tt
+                capital_scope.state = {
+                    trade_good_surplus = {
+                        target = silphium
+                        value >= 2
+                    }
+                }
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.71
+            show_as_tooltip = {
+                add_political_influence = -25
+            }
+        }
+    }
+
+    03_eptelon_generic_task_silphium_3 = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_silphium_2 }
+        duration = 180
+
+        highlight = {
+            scope:province = {
+                trade_goods = silphium
+                OR = {
+                    is_in_region = eptelon_north_region
+                    is_in_region = eptelon_shout_region
+                }
+            }
+        }
+
+        allow = {
+            treasury >= 150
+            custom_tooltip = {
+                text = eptelon_silphium_5_tt
+                any_owned_province = {
+                    count >= 5
+                    trade_goods = silphium
+                    OR = {
+                        is_in_region = eptelon_north_region
+                        is_in_region = eptelon_shout_region
+                    }
+                }
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.72
+            show_as_tooltip = {
+                add_treasury = -150
+                capital_scope = {
+                    add_permanent_province_modifier = {
+                        name = eptelon_silphium_exchange_pmod
+                        duration = -1
+                    }
+                }
+                custom_tooltip = omni_eptelon_new_silphium_terrace_tt
+            }
+        }
+    }
+
+    # -----------------------------------------------------------
+    # HERITAGE TASKS. Each people sees two (three with a condition).
+    # Heritage is recorded in on_start. Slot I is required by task 9, slot II by task 10;
+    # hidden versions do not block. Events apply the rewards, as elsewhere in this tree.
+    # -----------------------------------------------------------
+
+    # Native Eptelonians
+    03_eptelon_generic_task_her_native_1 = {
+        icon = "task_expansion"
+        requires = { 03_eptelon_generic_task_1 }
+        duration = 90
+
+        potential = { omni_eptelon_heritage_native_trigger = yes }
+
+        allow = {
+            capital_scope = { is_coastal = yes }
+            treasury >= 100
+            political_influence >= 20
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.80
+            show_as_tooltip = {
+                add_treasury = -100
+                add_political_influence = -20
+            }
+        }
+    }
+
+    03_eptelon_generic_task_her_native_2 = {
+        icon = "task_religion"
+        requires = { 03_eptelon_generic_task_4 }
+
+        potential = { omni_eptelon_heritage_native_trigger = yes }
+
+        bypass = {
+            p:450 = { is_holy_site = no }
+        }
+
+        highlight = {
+            scope:province = {
+                province_id = 450
+            }
+        }
+
+        allow = {
+            owns_or_subject_owns = 450
+            p:450 = { is_holy_site = yes }
+            treasury >= 150
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.81
+            show_as_tooltip = {
+                add_treasury = -150
+            }
+        }
+    }
+
+    # Aeptelonian merchant houses
+    03_eptelon_generic_task_her_aeptelonian_1 = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_1 }
+        duration = 120
+
+        potential = { omni_eptelon_heritage_aeptelonian_trigger = yes }
+
+        allow = {
+            treasury >= 150
+            num_of_ships >= 5
+            capital_scope = { has_building = port_building }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.82
+            show_as_tooltip = {
+                add_treasury = -150
+                capital_scope = {
+                    create_state_pop = freemen
+                    create_state_pop = freemen
+                    create_state_pop = freemen
+                }
+                add_country_modifier = {
+                    name = eptelon_ransom_house_mod
+                    duration = 3650
+                }
+            }
+        }
+    }
+
+    03_eptelon_generic_task_her_aeptelonian_2 = {
+        icon = "task_diplomatic"
+        requires = { 03_eptelon_generic_task_4 }
+        duration = 90
+
+        potential = { omni_eptelon_heritage_aeptelonian_trigger = yes }
+
+        allow = {
+            war = no
+            treasury >= 300
+            political_influence >= 40
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.83
+            show_as_tooltip = {
+                add_political_influence = -40
+            }
+        }
+    }
+
+    # Optional, while Myahudya stands: the merchant houses' cousins at Yeza.
+    03_eptelon_generic_task_her_yeza = {
+        icon = "task_diplomatic"
+        requires = { 03_eptelon_generic_task_1 }
+
+        potential = {
+            omni_eptelon_heritage_aeptelonian_trigger = yes
+            exists = c:MH1
+            c:MH1 = { has_land = yes }
+        }
+
+        allow = {
+            political_influence >= 30
+            num_of_ships >= 10
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.84
+            show_as_tooltip = {
+                add_political_influence = -30
+            }
+        }
+    }
+
+    # Heptelonian colonists
+    03_eptelon_generic_task_her_heptelonian_1 = {
+        icon = "task_battle"
+        requires = { 03_eptelon_generic_task_1 }
+
+        potential = { omni_eptelon_heritage_heptelonian_trigger = yes }
+
+        allow = {
+            military_experience >= 20
+            political_influence >= 25
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.85
+        }
+    }
+
+    03_eptelon_generic_task_her_heptelonian_2 = {
+        icon = "task_political"
+        requires = { 03_eptelon_generic_task_4 }
+
+        potential = { omni_eptelon_heritage_heptelonian_trigger = yes }
+
+        highlight = {
+            scope:province = {
+                province_id = 653
+            }
+        }
+
+        allow = {
+            owns_or_subject_owns = 653
+            p:653 = { has_building = fortress_building }
+            stability >= 45
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.86
+        }
+    }
+
+    # Elven colonies
+    03_eptelon_generic_task_her_colonial_1 = {
+        icon = "task_calm"
+        requires = { 03_eptelon_generic_task_1 }
+
+        potential = { omni_eptelon_heritage_colonial_trigger = yes }
+
+        allow = {
+            stability >= 45
+            treasury >= 100
+            capital_scope = { has_no_ongoing_construction = yes }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.87
+            show_as_tooltip = {
+                add_treasury = -100
+            }
+        }
+    }
+
+    # Optional: needs the silphium line, so it is not joined to task 10.
+    03_eptelon_generic_task_her_colonial_2 = {
+        icon = "task_economical"
+        requires = { 03_eptelon_generic_task_4 03_eptelon_generic_task_silphium_1 }
+        duration = 180
+
+        potential = { omni_eptelon_heritage_colonial_trigger = yes }
+
+        highlight = {
+            scope:province = {
+                is_in_region = eptelon_north_region
+                has_building = mage_tower_building
+            }
+        }
+
+        allow = {
+            treasury >= 200
+            any_owned_province = {
+                is_in_region = eptelon_north_region
+                has_building = mage_tower_building
+            }
+        }
+
+        on_completion = {
+            trigger_event = me_eptelon_gen.88
+            show_as_tooltip = {
+                add_treasury = -200
+            }
         }
     }
 
@@ -335,8 +700,11 @@
         }
 
         allow = {
-            hidden:capital_scope = {
-                has_building = temple_building
+            custom_tooltip = {
+                text = eptelon_elder_mark_temple_tt
+                capital_scope = {
+                    has_building = temple_building
+                }
             }
             treasury >= 150
         }
@@ -376,8 +744,11 @@
             treasury >= 200
             political_influence >= 50
             stability >= 60
-            hidden:capital_scope.state = {
-                trade_good_surplus = { target = marble value >= 2 }
+            custom_tooltip = {
+                text = eptelon_tribal_council_marble_tt
+                capital_scope.state = {
+                    trade_good_surplus = { target = marble value >= 2 }
+                }
             }
         }
 
@@ -416,8 +787,11 @@
 
         allow = {
             has_law = recruit_from_nobles
-            hidden:capital_scope = {
-                has_building = military_building
+            custom_tooltip = {
+                text = eptelon_task_5b_barracks_tt
+                capital_scope = {
+                    has_building = military_building
+                }
             }
         }
 
@@ -473,7 +847,7 @@
         }
     }
 
-    # Citadels of the Shore — grants the Black Pearl of Atheus (unique item)
+    # Citadels of the Shore — the branch capstone; follows task 8b (IDs predate the reorder and are kept for saves).
     03_eptelon_generic_task_7b = {
         icon = "task_expansion"
         requires = { 03_eptelon_generic_task_8b }
@@ -501,7 +875,7 @@
             show_as_tooltip = {
                 add_country_modifier = {
                     name = eptelon_citadels_shore_mod
-                    duration = -1
+                    duration = 7300
                 }
             }
         }
@@ -577,11 +951,14 @@
         }
 
         allow = {
-            hidden:capital_scope = {
-                has_city_status = yes
-                OR = {
-                    has_building = library_building
-                    has_building = commerce_building
+            custom_tooltip = {
+                text = eptelon_task_5c_capital_tt
+                capital_scope = {
+                    has_city_status = yes
+                    OR = {
+                        has_building = library_building
+                        has_building = commerce_building
+                    }
                 }
             }
         }
@@ -721,7 +1098,8 @@
 
     03_eptelon_generic_task_9 = {
         icon = "task_battle"
-        requires = { 03_eptelon_generic_task_4 }
+        # Heritage slot I joins here; only the country's own version is visible.
+        requires = { 03_eptelon_generic_task_4 03_eptelon_generic_task_her_native_1 03_eptelon_generic_task_her_aeptelonian_1 03_eptelon_generic_task_her_heptelonian_1 03_eptelon_generic_task_her_colonial_1 }
 
         highlight = {
             scope:province = {
@@ -749,7 +1127,8 @@
 
     03_eptelon_generic_task_10 = {
         icon = "task_economical"
-        requires = { 03_eptelon_generic_task_3 }
+        # Heritage slot II joins here (the elven distillers stay optional).
+        requires = { 03_eptelon_generic_task_3 03_eptelon_generic_task_9 03_eptelon_generic_task_her_native_2 03_eptelon_generic_task_her_aeptelonian_2 03_eptelon_generic_task_her_heptelonian_2 }
 
         highlight = {
             scope:province = {
@@ -786,7 +1165,7 @@
             show_as_tooltip = {
                 add_country_modifier = {
                     name = eptelon_rebuilt_shore_mod
-                    duration = -1
+                    duration = 7300
                 }
             }
         }
@@ -806,7 +1185,7 @@
                 add_stability = 10
                 add_country_modifier = {
                     name = eptelon_grand_fleet_mod
-                    duration = -1
+                    duration = 7300
                 }
             }
         }
@@ -814,7 +1193,8 @@
 
     03_eptelon_generic_task_12 = {
         icon = "task_calm"
-    
+        requires = { 03_eptelon_generic_task_1 }
+
         allow = {
             capital_scope = {
                 num_of_fortress_building >= 2
@@ -842,7 +1222,9 @@
 
     03_eptelon_generic_task_13 = {
         icon = "task_diplomatic"
-        requires = { 03_eptelon_generic_task_11 }
+        # Each culture branch's capstone must be settled before the finale can close the tree.
+        # Branches of other cultures are bypassed and count as done.
+        requires = { 03_eptelon_generic_task_11 03_eptelon_generic_task_tribal_council 03_eptelon_generic_task_7b 03_eptelon_generic_task_8c }
         duration = 90
 
         allow = {

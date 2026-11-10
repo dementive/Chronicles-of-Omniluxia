@@ -1,0 +1,69 @@
+﻿# Seek Treatment fee, scaled by the patient's realm RANK (same rank tiers and
+# if / else_if shape as rank_scaled_treasury_svalue in Invictus 00_mission.txt).
+#
+#   migrant_horde 50 | city_power 65 | local_power 80
+#   regional_power 110 | major_power 150 | great_power 200   (hard cap 200)
+#
+# Two copies of ONE table because the scope differs:
+#   omni_treatment_cost_svalue          CHARACTER scope (patient / ruler): personal gold.
+#   omni_treatment_cost_country_svalue  COUNTRY scope (the patient's employer): treasury.
+# Keep them identical. Every consumer (seek_treatment interaction, scheme_seek_treatment,
+# scheme_seek_treatment_start) reads these - never retype a number.
+
+omni_treatment_cost_svalue = {
+	value = 0
+	if = {
+		limit = { employer = { rank = migrant_horde } }
+		add = 50
+	}
+	else_if = {
+		limit = { employer = { rank = city_power } }
+		add = 65
+	}
+	else_if = {
+		limit = { employer = { rank = local_power } }
+		add = 80
+	}
+	else_if = {
+		limit = { employer = { rank = regional_power } }
+		add = 110
+	}
+	else_if = {
+		limit = { employer = { rank = major_power } }
+		add = 150
+	}
+	else_if = {
+		limit = { employer = { rank = great_power } }
+		add = 200
+	}
+	max = 200
+}
+
+omni_treatment_cost_country_svalue = {
+	value = 0
+	if = {
+		limit = { rank = migrant_horde }
+		add = 50
+	}
+	else_if = {
+		limit = { rank = city_power }
+		add = 65
+	}
+	else_if = {
+		limit = { rank = local_power }
+		add = 80
+	}
+	else_if = {
+		limit = { rank = regional_power }
+		add = 110
+	}
+	else_if = {
+		limit = { rank = major_power }
+		add = 150
+	}
+	else_if = {
+		limit = { rank = great_power }
+		add = 200
+	}
+	max = 200
+}

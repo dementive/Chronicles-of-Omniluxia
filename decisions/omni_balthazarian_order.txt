@@ -71,4 +71,66 @@
         effect = { ob_demand_herue_submission = yes }
         ai_will_do = { base = 10 }
     }
+
+    # ------------------------------------------------ The Deep Host
+    ob_call_omostthanat = {
+        potential = { ob_country = yes has_variable = ob_deep_host_active has_variable = ob_charter NOT = { has_variable = ob_omostthanat_called } }
+        allow = {
+            religion = helluvian
+            custom_tooltip = { text = ob_shannah_relationship_requirement_tt omni_sf_relationship_trigger = yes }
+            custom_tooltip = { text = ob_shannah_favor_50_tt omni_sf_favor_value >= 50 }
+        }
+        effect = {
+            omni_sf_gain_effect = { AMOUNT = -40 }
+            set_variable = { name = ob_omostthanat_called }
+            custom_tooltip = ob_swords_of_hellas_tt
+            hidden_effect = {
+                create_unit = {
+                    name = ob_swords_of_hellas_name location = root.capital_scope save_scope_as = ob_swords
+                    while = { count = 4 add_subunit = heavy_infantry }
+                    while = { count = 2 add_subunit = heavy_cavalry }
+                    while = { count = 2 add_subunit = archers }
+                    add_food = 300 add_morale = 3
+                }
+                set_variable = { name = ob_swords_army value = scope:ob_swords }
+            }
+            trigger_event = { id = ob_order.710 }
+        }
+        ai_will_do = { base = 100 }
+    }
+    ob_lanuthua_road = {
+        potential = { ob_country = yes has_variable = ob_deep_host_active ob_lanuthua_chained = yes NOT = { has_variable = ob_lanuthua_bargain } }
+        allow = { stability >= 30 }
+        effect = {
+            add_stability = -3
+            set_variable = { name = ob_lanuthua_bargain }
+            add_country_modifier = { name = ob_lanuthua_road_mod duration = 730 }
+            if = { limit = { has_variable = ob_shannah_knows } omni_sf_gain_effect = { AMOUNT = -10 } }
+            trigger_event = { id = ob_order.711 }
+        }
+        ai_will_do = { base = 0 }
+    }
+    ob_herue_levies = {
+        potential = {
+            ob_country = yes has_variable = ob_deep_host_active has_variable = ob_crown_route NOT = { has_variable = ob_levies_called }
+            exists = c:HEO c:HEO = { has_land = yes is_subject_of = root }
+        }
+        allow = { treasury >= 50 }
+        effect = {
+            add_treasury = -50
+            set_variable = { name = ob_levies_called }
+            custom_tooltip = ob_herulian_levies_tt
+            hidden_effect = {
+                create_unit = {
+                    name = ob_herulian_levies_name location = root.capital_scope save_scope_as = ob_levies
+                    while = { count = 6 add_subunit = light_infantry }
+                    while = { count = 2 add_subunit = light_cavalry }
+                    add_food = 200 add_morale = 2
+                }
+                set_variable = { name = ob_levies_army value = scope:ob_levies }
+            }
+            c:HEO = { add_opinion = { target = root modifier = ob_agreement_opinion } }
+        }
+        ai_will_do = { base = 100 }
+    }
 }

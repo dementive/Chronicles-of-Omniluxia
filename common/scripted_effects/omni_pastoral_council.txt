@@ -217,7 +217,7 @@ omni_pc_agenda_discipline_effect = {
     omni_pc_finish_effect = yes
 }
 
-# 3. Embassy to the Dissenters: chance to move one contesting realm to conditional recognition.
+# 3. Embassy to the Dissenters: reconcile an AI realm or reopen talks with a player.
 omni_pc_agenda_embassy_effect = {
     omni_pc_begin_effect = { AGENDA = 3 }
     custom_tooltip = omni_pc_embassy_tt
@@ -230,12 +230,16 @@ omni_pc_agenda_embassy_effect = {
                 modifier = { factor = 0.5 omni_hc_authority < 25 }
                 set_variable = { name = omni_pc_embassy_success days = 120 }
                 scope:omni_pc_dissenter = {
-                    set_variable = { name = omni_hc_recognition value = 2 }
-                    # Conditional recognition opens the standard concession negotiation, which
-                    # settles on recognition or rejection; the embassy reopens earlier talks.
                     set_variable = { name = omni_hc_see value = scope:omni_pc_host }
-                    remove_variable = omni_hc_negotiation_holder
-                    omni_hc_begin_negotiation_effect = yes
+                    if = {
+                        limit = { is_ai = yes }
+                        set_variable = { name = omni_hc_recognition value = 1 }
+                    }
+                    else = {
+                        set_variable = { name = omni_hc_recognition value = 2 }
+                        remove_variable = omni_hc_negotiation_holder
+                        omni_hc_begin_negotiation_effect = yes
+                    }
                     remove_opinion = { target = scope:omni_pc_host modifier = omni_pc_embassy_opinion }
                     add_opinion = { target = scope:omni_pc_host modifier = omni_pc_embassy_opinion }
                 }

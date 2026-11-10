@@ -193,7 +193,6 @@ ob_launch_early_host = {
 }
 ob_start_rupture_clock = {
     set_variable = { name = ob_rupture_clock }
-    set_variable = { name = ob_rupture_grace days = 180 }
 }
 ob_form_herue = {
     # Same territorial rewards as restore_herue, preserving the Lord Protector government.
@@ -284,7 +283,7 @@ ob_maintenance = {
 
     if = {
         limit = { has_variable = ob_expedition NOT = { has_variable = ob_early_launched }
-            OR = { NOT = { ob_frontier_ready = yes } NOT = { ob_supply_ready = yes } } }
+            NOT = { ob_supply_ready = yes } }
         remove_variable = ob_expedition remove_variable = ob_expedition_days
         remove_country_modifier = ob_expedition_timer
         trigger_event = { id = ob_order.206 }
@@ -309,6 +308,22 @@ ob_maintenance = {
 
 ob_prepare_herue_settlement = {
     set_variable = { name = ob_conference_failed }
+}
+
+ob_issue_herue_claims = {
+    if = {
+        limit = {
+            NOR = {
+                has_variable = ob_herue_claims_issued
+                has_variable = ob_task_done_6
+            }
+        }
+        mission_claim_region_effect = { REGION = great_herue }
+        hidden_effect = {
+            set_variable = { name = ob_herue_claims_issued }
+            set_variable = { name = ob_roads }
+        }
+    }
 }
 
 ob_establish_client_herue = {
@@ -340,6 +355,7 @@ ob_establish_client_herue = {
             }
         }
         set_variable = { name = ob_recognised_realm value = scope:ob_client_herue }
+        ob_reward_herue_crown = yes
     }
 }
 

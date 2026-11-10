@@ -1,15 +1,44 @@
 ﻿# Additive pulse registration, matching the Shannah and invader hooks.
+on_character_death = { on_actions = { ob_bastion_shield_on_death } }
+ob_bastion_shield_on_death = {
+    trigger = { exists = country has_item = { item_ID = item_artifact_ob_bastion_shield } }
+    effect = { ob_return_bastion_shield = yes }
+}
+
 on_game_initialized = { on_actions = { ob_startup } }
 ob_startup = {
     trigger = { tag = BLZ has_land = yes NOT = { has_variable = ob_identity } }
     effect = { ob_initialise = yes }
 }
-monthly_country_pulse = { on_actions = { ob_monthly } }
+monthly_country_pulse = { on_actions = { ob_monthly ob_rebel_monthly } }
+# Loss route: if the rebel chapter wins, it inherits the campaign.
+ob_rebel_monthly = {
+    trigger = { has_variable = ob_rebel_chapter has_land = yes has_civil_war = no }
+    effect = {
+        if = { limit = { exists = var:ob_rebel_chapter var:ob_rebel_chapter = { has_land = no } }
+            ob_rebel_inherit = yes
+        }
+        else = { remove_variable = ob_rebel_chapter }
+    }
+}
 ob_monthly = {
     trigger = { has_land = yes OR = { tag = BLZ has_variable = ob_identity } }
     effect = {
         if = { limit = { NOT = { has_variable = ob_identity } tag = BLZ }
             ob_initialise = yes
+        }
+        # Catch campaigns that had already finished the summit before its claims moved.
+        if = {
+            limit = {
+                OR = {
+                    has_variable = ob_scene_5
+                    AND = {
+                        NOT = { has_variable = ob_task_done_5 }
+                        has_completed_mission_task = ob_task_5
+                    }
+                }
+            }
+            ob_issue_herue_claims = yes
         }
         if = {
             limit = {
@@ -18,6 +47,13 @@ ob_monthly = {
             }
             remove_variable = ob_rimebound_blade_pending
             trigger_event = { id = ob_order.925 }
+        }
+        if = {
+            limit = {
+                has_variable = ob_tree_finished
+                NOT = { has_global_variable = ob_bastion_shield_awarded }
+            }
+            ob_award_bastion_shield = yes
         }
         ob_maintenance = yes
         ob_ensure_second_master = yes
@@ -31,10 +67,12 @@ ob_monthly = {
                     var:ob_rival = { NOT = { employer = root } }
                 }
             }
-            # An absent/dead challenger cannot leave a permanently unanswered ultimatum.
-            remove_variable = ob_ultimatum change_government = ob_order
+            remove_variable = ob_ultimatum
+            set_variable = { name = ob_challenger_absent }
+            set_variable = { name = ob_internal_resolved }
+            change_government = ob_order
             ob_ensure_second_master = yes
-            set_variable = { name = ob_rupture_grace days = 30 }
+            trigger_event = { id = ob_order.302 }
         }
         if = {
             limit = {
@@ -75,29 +113,77 @@ ob_monthly = {
                 trigger_event = { id = ob_order.203 }
             }
         }
-        if = {
-            limit = { has_variable = ob_tree_started has_variable = ob_early_resolved
-                NOT = { has_variable = ob_rupture_clock } }
-            ob_start_rupture_clock = yes
+        # The rupture is task-driven (An Accounting of Command -> The Chapter of Broken Seals).
+        # Saves where the old calendar ultimatum already fired keep their recorded outcome.
+        if = { limit = { NOT = { has_variable = ob_endgame_v2 } }
+            set_variable = { name = ob_endgame_v2 }
+            if = {
+                limit = { OR = { has_variable = ob_ultimatum has_variable = ob_war_started has_variable = ob_surrendered has_variable = ob_internal_resolved } }
+                set_variable = { name = ob_legacy_rupture }
+            }
         }
+        # Older cleanup could drop an unanswered ultimatum without closing the contest.
         if = {
             limit = {
-                has_variable = ob_rupture_clock NOT = { has_variable = ob_rupture_grace }
-                NOT = { has_variable = ob_ultimatum } NOT = { has_variable = ob_internal_resolved }
-                has_civil_war = no exists = current_ruler
+                has_variable = ob_task_done_13
+                NOT = { has_variable = ob_internal_resolved }
+                NOT = { has_variable = ob_ultimatum }
+                NOT = { has_variable = ob_war_started }
+                has_civil_war = no
             }
-            ob_ensure_second_master = yes
-            ob_save_rival = yes
-            if = { limit = { exists = scope:ob_rival }
-                set_variable = { name = ob_ultimatum }
-                trigger_event = { id = ob_order.300 }
-            }
+            set_variable = { name = ob_challenger_absent }
+            set_variable = { name = ob_internal_resolved }
+            trigger_event = { id = ob_order.302 }
         }
+        # A missing prisoner formerly bypassed the hearing without recording the road.
+        if = {
+            limit = {
+                has_variable = ob_rimebound_found
+                NOT = { has_variable = ob_deep_road_known }
+                NOT = { has_variable = ob_ice_hearing_started }
+                OR = { has_variable = ob_task_done_21 has_completed_mission_task = ob_task_21 }
+            }
+            set_variable = { name = ob_ice_hearing_started }
+            trigger_event = { id = ob_order.21 }
+        }
+        # Older saves can have a settled rupture or a completed summons without a charter.
+        if = {
+            limit = {
+                is_ai = no
+                OR = { has_variable = ob_legacy_rupture has_variable = ob_task_done_19 }
+                NOT = { has_variable = ob_summons_active }
+                NOT = { has_variable = ob_charter }
+                NOT = { has_variable = ob_charter_recovery_offered }
+            }
+            set_variable = { name = ob_charter_recovery_offered }
+            set_variable = { name = ob_local_charter }
+            trigger_event = { id = ob_order.19 }
+        }
+        # A migrated save can already have lit the watch without having scheduled the host.
+        if = {
+            limit = {
+                has_variable = ob_task_done_23
+                NOT = { has_variable = ob_deep_host_launched }
+                NOT = { has_variable = ob_deep_host_pending }
+                NOT = { has_variable = ob_tree_finished }
+            }
+            trigger_event = { id = ob_order.699 }
+        }
+        # While the Faith Master is at Ddu-Nuinop, the Sword Master holds the house.
+        if = {
+            limit = { has_country_modifier = ob_faith_master_abroad NOT = { has_variable = ob_abroad_drift } NOT = { has_variable = ob_summons_retinue } }
+            random = { chance = 17 change_variable = { name = ob_support add = 1 } set_variable = { name = ob_abroad_drift } }
+        }
+        if = {
+            limit = { has_variable = ob_war_started has_civil_war = yes NOT = { has_variable = ob_internal_resolved } }
+            ob_civil_war_pulse = yes
+        }
+        if = { limit = { has_variable = ob_deep_host_active } ob_deep_host_monitor = yes }
         if = {
             limit = { has_variable = ob_war_started NOT = { has_civil_war = yes }
                 NOT = { has_variable = ob_internal_resolved } }
+            # Whose Oath Endures? tells the end of the war; no separate notice.
             set_variable = { name = ob_internal_resolved }
-            trigger_event = { id = ob_order.301 }
         }
     }
 }
@@ -105,6 +191,19 @@ ob_monthly = {
 on_province_occupied = { on_actions = { omni_balthazarian_order_on_province_occupied } }
 omni_balthazarian_order_on_province_occupied = {
     effect = {
+        if = {
+            limit = {
+                province_id = 870
+                exists = owner
+                exists = controller
+                owner = {
+                    has_variable = ob_deep_host_active
+                    exists = var:ob_deep_enemy
+                    var:ob_deep_enemy = { this = root.controller }
+                }
+            }
+            owner = { set_variable = { name = ob_deep_870_fell } }
+        }
         if = {
             limit = {
                 exists = controller

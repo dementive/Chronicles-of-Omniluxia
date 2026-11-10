@@ -1,0 +1,1022 @@
+﻿03_zaraken = {
+    header = "lotr_generic_mission_city_headers"
+    icon = "zaraken_kyaxares"
+    repeatable = no
+    chance = { factor = 100 }
+
+    potential = {
+        OR = { tag = ZAK tag = ZAE }
+        is_ai = no
+        NOT = { has_variable = mission_cooldown_var }
+    }
+
+    abort = {}
+    on_abort = {
+        custom_tooltip = general_mission_cooldown_tt
+        set_variable = { name = mission_cooldown_var days = 7300 }
+        zaraken_mission_cleanup_effect = yes
+    }
+
+    # Requirement design: each task asks for a different kind of proof, and the
+    # gates get harder and more cross-linked the deeper the task sits in the tree.
+    # Tier 1-2: one concrete action plus the cost. Tier 3: a district-specific twist.
+    # Tier 4: combined arms or cross-arm dependencies (roads, the crown's progress, traditions).
+    # Tier 5-7: realm-wide conditions that can be lost again before completion.
+
+    ### TIER 1 ###########################################################
+
+    03_zaraken_task_1 = {
+        icon = "task_political"
+
+        highlight = {
+            scope:province = { this = p:4662 }
+        }
+        allow = {
+            can_form_nation_trigger = yes
+            stability >= 45
+            treasury >= 75
+            political_influence >= 15
+            custom_tooltip = {
+                text = 03_zaraken_t1_retinues_tt
+                any_character = {
+                    count >= 2
+                    is_general = yes
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_1_completion_effect = yes
+            trigger_event = { id = me_zaraken.1 }
+        }
+    }
+
+    ### TIER 2 ###########################################################
+
+    03_zaraken_task_2 = {
+        icon = "task_diplomatic"
+        duration = 90
+        requires = { 03_zaraken_task_1 }
+
+        highlight = {
+            scope:province = { is_in_area = zainddian_eteradica_area_6 }
+        }
+        allow = {
+            political_influence >= 20
+            war = no
+        }
+        on_completion = {
+            zaraken_task_2_completion_effect = yes
+            trigger_event = { id = me_zaraken.102 }
+        }
+    }
+
+    03_zaraken_task_5 = {
+        icon = "task_atlas"
+        requires = { 03_zaraken_task_1 }
+        duration = 365
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    this = p:4662
+                    this = p:4619
+                    this = p:4493
+                }
+            }
+        }
+        allow = {
+            treasury >= 250
+            political_influence >= 25
+            war = no
+            p:4662 = {
+                owner = root
+                num_of_commerce_building >= 2
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t5_road_ground_tt
+                p:4619 = { owner = root }
+                p:4493 = { owner = root }
+            }
+        }
+        on_start = {
+            add_treasury = -250
+            add_political_influence = -25
+        }
+        on_completion = {
+            zaraken_task_5_completion_effect = yes
+            trigger_event = { id = me_zaraken.105 }
+        }
+    }
+
+    03_zaraken_task_10 = {
+        icon = "task_expansion"
+        requires = { 03_zaraken_task_1 }
+
+        highlight = {
+            scope:province = { OR = { is_in_area = vast_great_stepes_3 is_in_area = vast_great_stepes_4 } }
+        }
+        allow = {
+            political_influence >= 25
+            custom_tooltip = {
+                text = 03_zaraken_t10_escort_tt
+                manpower_percentage >= 0.6
+                any_character = {
+                    is_general = yes
+                    martial >= 6
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_10_completion_effect = yes
+            trigger_event = { id = me_zaraken.110 }
+        }
+    }
+
+    03_zaraken_task_13 = {
+        icon = "task_religion"
+        requires = { 03_zaraken_task_1 }
+
+        highlight = {
+            scope:province = { this = p:4662 }
+        }
+        allow = {
+            p:4662 = {
+                owner = root
+                num_of_temple_building >= 1
+            }
+        }
+        on_completion = {
+            zaraken_task_13_completion_effect = yes
+            trigger_event = { id = me_zaraken.113 }
+        }
+    }
+
+    03_zaraken_task_19 = {
+        icon = "task_economical"
+        requires = { 03_zaraken_task_1 }
+
+        highlight = {
+            scope:province = { OR = { this = p:4662 this = p:4619 this = p:4759 this = p:4666 this = p:4761 } }
+        }
+        allow = {
+            treasury >= 250
+            custom_tooltip = {
+                text = 03_zaraken_t19_ground_tt
+                p:4662 = { owner = root }
+                p:4619 = { owner = root }
+                p:4759 = { owner = root }
+                p:4666 = { owner = root }
+                p:4761 = { owner = root }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t19_surveyors_tt
+                p:4662 = { total_population >= 40 }
+            }
+        }
+        on_completion = {
+            zaraken_task_19_completion_effect = yes
+            trigger_event = { id = me_zaraken.119 }
+        }
+    }
+
+    ### TIER 3 ###########################################################
+
+    03_zaraken_task_3 = {
+        icon = "task_conquest"
+        requires = { 03_zaraken_task_2 }
+
+        highlight = {
+            scope:province = { is_in_area = zainddian_eteradica_area_6 }
+        }
+        allow = {
+            owns_or_subject_owns_area = zainddian_eteradica_area_6
+            treasury >= 35
+            custom_tooltip = {
+                text = 03_zaraken_t3_banner_tt
+                owns = 4758
+                owns = 4722
+            }
+        }
+        on_completion = {
+            zaraken_task_3_completion_effect = yes
+            trigger_event = { id = me_zaraken.103 }
+        }
+    }
+
+    03_zaraken_task_25 = {
+        icon = "task_calm"
+        requires = { 03_zaraken_task_5 }
+
+        allow = {
+            treasury >= 150
+            current_ruler = {finesse >= 8}
+        }
+        bypass = {
+            has_variable = 03_zaraken_razani_roadbuilding
+        }
+        on_completion = {
+            zaraken_task_25_completion_effect = yes
+            trigger_event = { id = me_zaraken.125 }
+        }
+    }
+
+    ### RIVAL ARC: YAMHAD ##############################################
+    # The Golden Dwarves of Yamhad hold the end of the Razani road.
+    # me_zaraken.131 and .132 own their rewards; the tasks pay costs only.
+
+    03_zaraken_task_32 = {
+        icon = "task_diplomatic"
+        requires = { 03_zaraken_task_5 }
+
+        highlight = {
+            scope:province = { this = p:4358 }
+        }
+        bypass = {
+            OR = {
+                NOT = { exists = c:YMH }
+                tag = YMH
+                c:YMH = { is_subject_of = root }
+            }
+        }
+        allow = {
+            war = no
+            political_influence >= 25
+            custom_tooltip = {
+                text = 03_zaraken_t32_herald_tt
+                num_of_unit_type = { type = heavy_cavalry value >= 2 }
+            }
+        }
+        on_completion = {
+            add_political_influence = -25
+            trigger_event = { id = me_zaraken.131 }
+        }
+    }
+
+    03_zaraken_task_33 = {
+        icon = "task_conquest"
+        requires = { 03_zaraken_task_32 }
+
+        highlight = {
+            scope:province = { this = p:4358 }
+        }
+        allow = {
+            custom_tooltip = {
+                text = 03_zaraken_t33_gurhak_tt
+                p:4358 = { owner = root }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t33_king_tt
+                OR = {
+                    NOT = { exists = c:YMH }
+                    c:YMH = { is_subject_of = root }
+                }
+            }
+        }
+        on_completion = {
+            trigger_event = { id = me_zaraken.132 }
+        }
+    }
+
+    03_zaraken_task_6 = {
+        icon = "task_viza"
+        requires = { 03_zaraken_task_33 }
+
+        highlight = {
+            scope:province = { is_in_area = the_bronze_foothils_3 }
+        }
+        allow = {
+            owns_or_subject_owns_area = the_bronze_foothils_3
+            political_influence >= 10
+            custom_tooltip = {
+                text = 03_zaraken_t6_camp_tt
+                p:4493 = {
+                    owner = root
+                    num_of_military_building >= 1
+                }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t6_garrison_tt
+                p:4493 = {
+                    owner = root
+                    state_loyalty >= 55
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_6_completion_effect = yes
+            trigger_event = { id = me_zaraken.106 }
+        }
+    }
+
+    03_zaraken_task_11 = {
+        icon = "task_zeus_cornucopia"
+        requires = { 03_zaraken_task_10 }
+
+        highlight = {
+            scope:province = { is_in_area = vast_great_stepes_3 }
+        }
+        allow = {
+            owns_or_subject_owns_area = vast_great_stepes_3
+            treasury >= 50
+            custom_tooltip = {
+                text = 03_zaraken_t11_fodder_tt
+                p:4704 = {
+                    owner = root
+                    state = { trade_good_surplus = { target = grain value >= 1 } }
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_11_completion_effect = yes
+            trigger_event = { id = me_zaraken.111 }
+        }
+    }
+
+    03_zaraken_task_14 = {
+        icon = "task_expansion"
+        requires = { 03_zaraken_task_13 }
+
+        highlight = {
+            scope:province = { this = p:4666 }
+        }
+        allow = {
+            political_influence >= 20
+            p:4666 = {
+                owner = root
+                num_of_commerce_building >= 1
+                num_of_port_building >= 1
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t14_boats_tt
+                num_of_ships >= 30
+            }
+        }
+        on_completion = {
+            zaraken_task_14_completion_effect = yes
+            trigger_event = { id = me_zaraken.114 }
+        }
+    }
+
+    ### TIER 4 ###########################################################
+
+    03_zaraken_task_4 = {
+        icon = "task_apollo"
+        requires = { 03_zaraken_task_3 }
+
+        highlight = {
+            scope:province = { OR = { this = p:4662 this = p:4739 } }
+        }
+        allow = {
+            p:4739 = {
+                owner = root
+                num_of_fortress_building >= 1
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t4_patrol_tt
+                num_of_unit_type = { type = camels value >= 3 }
+            }
+        }
+        on_completion = {
+            zaraken_task_4_completion_effect = yes
+            trigger_event = { id = me_zaraken.104 }
+        }
+    }
+
+    03_zaraken_task_22 = {
+        icon = "task_heracles"
+        requires = { 03_zaraken_task_19 03_zaraken_task_3 }
+
+        highlight = {
+            scope:province = { this = p:4759 }
+        }
+        allow = {
+            p:4759 = {
+                owner = root
+                num_of_workshop_building >= 1
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t22_hands_tt
+                p:4759 = { num_of_slaves >= 6 }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t22_iron_tt
+                p:4759 = { state = { trade_good_surplus = { target = iron value >= 2 } } }
+            }
+        }
+        on_completion = {
+            zaraken_task_22_completion_effect = yes
+            trigger_event = { id = me_zaraken.122 }
+        }
+    }
+
+    03_zaraken_task_21 = {
+        icon = "task_economical"
+        requires = { 03_zaraken_task_19 03_zaraken_task_6 }
+
+        highlight = {
+            scope:province = { OR = { this = p:4619 this = p:4662 } }
+        }
+        allow = {
+            p:4619 = {
+                owner = root
+                total_population >= 40
+                num_of_commerce_building >= 2
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t21_road_tt
+                p:4662 = { has_road_towards = p:4619 }
+            }
+        }
+        on_completion = {
+            zaraken_task_21_completion_effect = yes
+            trigger_event = { id = me_zaraken.121 }
+        }
+    }
+
+    03_zaraken_task_7 = {
+        icon = "task_battle"
+        requires = { 03_zaraken_task_6 }
+
+        highlight = {
+            scope:province = { is_in_area = vast_great_stepes_1 }
+        }
+        allow = {
+            owns_or_subject_owns_area = vast_great_stepes_1
+            treasury >= 40
+            p:4602 = { owner = root }
+            custom_tooltip = {
+                text = 03_zaraken_t7_string_tt
+                OR = {
+                    any_owned_province = {
+                        is_importing_trade_good = horses
+                    }
+                    p:4812 = {
+                        owner = root
+                        state = { trade_good_surplus = { target = horses value >= 2 } }
+                    }
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_7_completion_effect = yes
+            trigger_event = { id = me_zaraken.107 }
+        }
+    }
+
+    03_zaraken_task_12 = {
+        icon = "task_golem_guardian"
+        requires = { 03_zaraken_task_11 }
+
+        highlight = {
+            scope:province = { this = p:4761 }
+        }
+        allow = {
+            p:4761 = {
+                owner = root
+                num_of_fortress_building >= 1
+                num_of_military_building >= 1
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t12_shod_tt
+                num_of_unit_type = { type = heavy_cavalry value >= 4 }
+            }
+        }
+        on_completion = {
+            zaraken_task_12_completion_effect = yes
+            trigger_event = { id = me_zaraken.112 }
+        }
+    }
+
+    03_zaraken_task_8 = {
+        icon = "task_wood_elf_ranger"
+        requires = { 03_zaraken_task_11 }
+
+        highlight = {
+            scope:province = { is_in_area = vast_great_stepes_4 }
+        }
+        allow = {
+            owns_or_subject_owns_area = vast_great_stepes_4
+            custom_tooltip = {
+                text = 03_zaraken_t8_watch_tt
+                p:4937 = { owner = root }
+                OR = {
+                    num_of_unit_type = { type = light_cavalry value >= 4 }
+                    num_of_unit_type = { type = horse_archers value >= 4 }
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_8_completion_effect = yes
+            hidden_effect = { set_variable = 03_zaraken_hajar_raid_pending }
+            trigger_event = { id = me_zaraken.108 }
+        }
+    }
+
+    03_zaraken_task_9 = {
+        icon = "task_political"
+        requires = { 03_zaraken_task_3 03_zaraken_task_14 }
+
+        highlight = {
+            scope:province = { this = p:4662 }
+        }
+        allow = {
+            can_form_nation_trigger = yes
+            treasury >= 75
+            p:4662 = {
+                owner = root
+                num_of_court_building >= 1
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t9_houses_tt
+                NOT = {
+                    any_character = {
+                        is_head_of_family = yes
+                        is_ruler = no
+                        loyalty < 55
+                    }
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_9_completion_effect = yes
+            trigger_event = { id = me_zaraken.109 }
+        }
+    }
+
+    ### TIER 5 ###########################################################
+
+    03_zaraken_task_15 = {
+        icon = "task_political"
+        requires = { 03_zaraken_task_4 03_zaraken_task_6 03_zaraken_task_7 03_zaraken_task_8 03_zaraken_task_9 03_zaraken_task_12 }
+
+        highlight = {
+            scope:province = { is_in_region = golden_foothills_eteradica }
+        }
+        allow = {
+            custom_tooltip = {
+                text = 03_zaraken_t15_bounds_tt
+                has_variable = zaraken_bounds_ridden
+                var:zaraken_bounds_ridden >= 1
+            }
+            custom_tooltip = {
+                text = 03_zaraken_hajar_raid_resolved_tt
+                NOT = { has_variable = 03_zaraken_hajar_raid_pending }
+            }
+            war = no
+            treasury >= 75
+            zaraken_empire_heartland_trigger = yes
+            custom_tooltip = {
+                text = 03_zaraken_t15_delegates_tt
+                NOT = {
+                    any_owned_province = {
+                        is_in_region = golden_foothills_eteradica
+                        is_state_capital = yes
+                        state_loyalty < 50
+                    }
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_15_completion_effect = yes
+            hidden_effect = { set_variable = 03_zaraken_assembly_pending }
+            trigger_event = { id = me_zaraken.2 }
+        }
+    }
+
+    03_zaraken_task_20 = {
+        icon = "task_zeus_cornucopia"
+        requires = { 03_zaraken_task_19 03_zaraken_task_9 }
+
+        highlight = {
+            scope:province = { this = p:4662 }
+        }
+        allow = {
+            p:4662 = {
+                owner = root
+                total_population >= 45
+                num_of_population_building >= 2
+                num_of_aqueduct_building >= 1
+            }
+        }
+        on_completion = {
+            zaraken_task_20_completion_effect = yes
+            trigger_event = { id = me_zaraken.120 }
+        }
+    }
+
+    03_zaraken_task_23 = {
+        icon = "task_expansion"
+        requires = { 03_zaraken_task_19 03_zaraken_task_9 }
+
+        highlight = {
+            scope:province = { this = p:4666 }
+        }
+        allow = {
+            p:4666 = {
+                owner = root
+                num_of_port_building >= 4
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t23_fleet_tt
+                any_character = {
+                    is_admiral = yes
+                    martial >= 7
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_23_completion_effect = yes
+            trigger_event = { id = me_zaraken.123 }
+        }
+    }
+
+    03_zaraken_task_24 = {
+        icon = "task_viza"
+        requires = { 03_zaraken_task_19 03_zaraken_task_12 }
+
+        highlight = {
+            scope:province = { this = p:4761 }
+        }
+        allow = {
+            military_experience >= 30
+            p:4761 = {
+                owner = root
+                num_of_military_building >= 2
+            }
+            custom_tooltip = {
+                text = 03_zaraken_escort_iron_tt
+                p:4761 = { state = { trade_good_surplus = { target = iron value >= 2 } } }
+            }
+        }
+        on_completion = {
+            zaraken_task_24_completion_effect = yes
+            trigger_event = { id = me_zaraken.124 }
+        }
+    }
+
+    ### TIER 6 ###########################################################
+
+    03_zaraken_task_16 = {
+        icon = "task_calm"
+        requires = { 03_zaraken_task_15 }
+
+        highlight = {
+            scope:province = { this = p:4662 }
+        }
+        allow = {
+            custom_tooltip = {
+                text = 03_zaraken_assembly_resolved_tt
+                NOT = { has_variable = 03_zaraken_assembly_pending }
+            }
+            treasury >= 100
+            p:4662 = {
+                owner = root
+                num_of_library_building >= 1
+                civilization_value >= 55
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t16_keeper_tt
+                any_character = {
+                    has_any_office = yes
+                    is_ruler = no
+                    finesse >= 9
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_16_completion_effect = yes
+            trigger_event = { id = me_zaraken.116 }
+        }
+    }
+
+    03_zaraken_task_17 = {
+        icon = "task_battle"
+        requires = { 03_zaraken_task_15 }
+
+        highlight = {
+            scope:province = { OR = { this = p:4739 this = p:4761 } }
+        }
+        allow = {
+            custom_tooltip = {
+                text = 03_zaraken_t17_charge_tt
+                has_variable = zaraken_charges_sounded
+                var:zaraken_charges_sounded >= 1
+            }
+            custom_tooltip = {
+                text = 03_zaraken_assembly_resolved_tt
+                NOT = { has_variable = 03_zaraken_assembly_pending }
+            }
+            treasury >= 100
+            p:4739 = {
+                owner = root
+                num_of_fortress_building >= 1
+            }
+            p:4761 = {
+                owner = root
+                num_of_fortress_building >= 2
+            }
+            has_military_bonus = zarakens_imperial_path_2
+            custom_tooltip = {
+                text = 03_zaraken_t17_marshal_tt
+                exists = job_holder:office_marshal
+                job_holder:office_marshal = {
+                    martial >= 8
+                    loyalty >= 60
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_17_completion_effect = yes
+            trigger_event = { id = me_zaraken.117 }
+        }
+    }
+
+    ### TIER 7: FINALE ###################################################
+
+    ### FAITH ARM: THE GRAVE OF JAOZ ###################################
+    # Tasks 26-30 spread the Zainudian faith from the tomb at Kyaxares.
+    # Convention: the tasks pay their costs and fixed rewards through the
+    # zaraken_task_N_completion_effect helpers; the choice events 126 and 128
+    # own their own rewards, and the reports 127, 129, and 130 preview them.
+
+    03_zaraken_task_26 = {
+        icon = "task_religion"
+        requires = { 03_zaraken_task_13 }
+        bypass = {
+            has_variable = 03_zaraken_route_roots
+        }
+
+        highlight = {
+            scope:province = { this = p:4662 }
+        }
+        allow = {
+            treasury >= 100
+            political_influence >= 30
+            custom_tooltip = {
+                text = 03_zaraken_t26_tomb_tt
+                OR = {
+                    any_country_treasure = { this = treasure:treasure_tomb_jaoz }
+                    p:4662 = {
+                        owner = root
+                        num_of_temple_building >= 2
+                    }
+                }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t26_kaxud_tt
+                any_owned_province = { has_province_modifier = zainudian_mosque_mod }
+            }
+        }
+        on_completion = {
+            zaraken_task_26_completion_effect = yes
+            trigger_event = { id = me_zaraken.126 }
+        }
+    }
+
+    03_zaraken_task_27 = {
+        icon = "task_religion"
+        requires = { 03_zaraken_task_26 03_zaraken_task_6 }
+        bypass = {
+            has_variable = 03_zaraken_route_roots
+        }
+
+        highlight = {
+            scope:province = { this = p:4358 }
+        }
+        allow = {
+            treasury >= 100
+            p:4358 = {
+                owner = root
+                num_of_temple_building >= 1
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t27_gurhak_tt
+                p:4358 = {
+                    owner = root
+                    dominant_province_religion = zainuddian
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_27_completion_effect = yes
+            trigger_event = { id = me_zaraken.127 }
+        }
+    }
+
+    03_zaraken_task_28 = {
+        icon = "task_religion"
+        requires = { 03_zaraken_task_26 }
+        bypass = {
+            has_variable = 03_zaraken_route_roots
+        }
+        duration = 180
+
+        highlight = {
+            scope:province = { OR = { this = p:4662 this = p:4790 } }
+        }
+        allow = {
+            war = no
+            treasury >= 150
+            political_influence >= 25
+            custom_tooltip = {
+                text = 03_zaraken_t28_priest_tt
+                exists = job_holder:office_high_priest_monarchy
+                job_holder:office_high_priest_monarchy = {
+                    has_religion = zainuddian
+                    zeal >= 6
+                }
+            }
+        }
+        on_start = {
+            add_treasury = -150
+            add_political_influence = -25
+        }
+        on_completion = {
+            trigger_event = { id = me_zaraken.128 }
+        }
+    }
+
+    03_zaraken_task_29 = {
+        icon = "task_religion"
+        requires = { 03_zaraken_task_27 03_zaraken_task_28 }
+        bypass = {
+            has_variable = 03_zaraken_route_roots
+        }
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    is_in_region = golden_foothills_eteradica
+                    this = p:4962
+                }
+            }
+        }
+        allow = {
+            stability >= 55
+            treasury >= 150
+            custom_tooltip = {
+                text = 03_zaraken_t29_temples_tt
+                any_owned_province = { is_in_area = zainddian_eteradica_area_6 num_of_temple_building >= 1 }
+                any_owned_province = { is_in_area = the_bronze_foothils_3 num_of_temple_building >= 1 }
+                any_owned_province = { is_in_area = vast_great_stepes_1 num_of_temple_building >= 1 }
+                any_owned_province = { is_in_area = vast_great_stepes_3 num_of_temple_building >= 1 }
+                any_owned_province = { is_in_area = vast_great_stepes_4 num_of_temple_building >= 1 }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t29_qaenab_tt
+                p:4962 = {
+                    owned_or_subject_owned = root
+                    dominant_province_religion = zainuddian
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_29_completion_effect = yes
+            trigger_event = { id = me_zaraken.129 }
+        }
+    }
+
+    03_zaraken_task_30 = {
+        icon = "task_religion"
+        requires = { 03_zaraken_task_29 03_zaraken_task_15 }
+        bypass = {
+            has_variable = 03_zaraken_route_roots
+        }
+
+        highlight = {
+            scope:province = { is_in_region = golden_foothills_eteradica }
+        }
+        allow = {
+            political_influence >= 50
+            custom_tooltip = {
+                text = 03_zaraken_t30_faithful_tt
+                NOT = {
+                    any_owned_province = {
+                        is_in_region = golden_foothills_eteradica
+                        NOT = { dominant_province_religion = zainuddian }
+                    }
+                }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t30_route_tt
+                OR = {
+                    has_variable = 03_zaraken_makox_recognized
+                    p:4662 = {
+                        owner = root
+                        num_of_temple_building >= 2
+                    }
+                }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t30_devout_tt
+                OR = {
+                    current_ruler = { zeal >= 8 }
+                    AND = {
+                        exists = job_holder:office_high_priest_monarchy
+                        job_holder:office_high_priest_monarchy = { zeal >= 12 }
+                    }
+                }
+            }
+        }
+        on_completion = {
+            zaraken_task_30_completion_effect = yes
+            trigger_event = { id = me_zaraken.130 }
+        }
+    }
+
+    ### THE FORK: ROOTS OR PROPHETS ####################################
+    # After the Assembly the crown either claims the older, pre-Zainudian
+    # crown (task 35) or the heritage of the prophet (task 30). Finishing
+    # one sets a route variable that bypasses the other, so the finale can
+    # require both and read which one was taken.
+
+    03_zaraken_task_35 = {
+        icon = "task_heracles"
+        requires = { 03_zaraken_task_15 }
+
+        highlight = {
+            scope:province = { this = p:4662 }
+        }
+        bypass = {
+            has_variable = 03_zaraken_route_prophets
+        }
+        allow = {
+            political_influence >= 40
+            legitimacy >= 65
+            custom_tooltip = {
+                text = 03_zaraken_t35_houses_tt
+                NOT = { has_variable = 03_zaraken_faith_zealous }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t35_knights_tt
+                num_of_unit_type = { type = heavy_cavalry value >= 8 }
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t35_charges_tt
+                has_variable = zaraken_charges_sounded
+                var:zaraken_charges_sounded >= 2
+            }
+        }
+        on_completion = {
+            zaraken_task_35_completion_effect = yes
+            trigger_event = { id = me_zaraken.133 }
+        }
+    }
+
+    03_zaraken_task_18 = {
+        icon = "task_atlas"
+        requires = { 03_zaraken_task_16 03_zaraken_task_17 03_zaraken_task_20 03_zaraken_task_21 03_zaraken_task_22 03_zaraken_task_23 03_zaraken_task_24 03_zaraken_task_30 03_zaraken_task_35 }
+        final = yes
+
+        highlight = {
+            scope:province = { is_in_region = golden_foothills_eteradica }
+        }
+        allow = {
+            custom_tooltip = {
+                text = 03_zaraken_t18_bounds_tt
+                has_variable = zaraken_bounds_ridden
+                var:zaraken_bounds_ridden >= 3
+            }
+            war = no
+            has_civil_war = no
+            custom_tooltip = {
+                text = 03_zaraken_t18_heartland_tt
+                owns_or_subject_owns_region = golden_foothills_eteradica
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t18_title_tt
+                OR = {
+                    tag = ZAE
+                    AND = {
+                        tag = ZAK
+                        zaraken_empire_formation_eligible_trigger = yes
+                        NOT = { exists = c:ZAE }
+                    }
+                }
+            }
+            stability >= 55
+            political_influence >= 40
+            p:4662 = {
+                owner = root
+                has_province_rank = city_metropolis
+            }
+            custom_tooltip = {
+                text = 03_zaraken_t18_muster_tt
+                legitimacy >= 75
+                current_ruler = { popularity >= 60 }
+            }
+        }
+        on_completion = {
+            zaraken_task_18_completion_effect = yes
+            zaraken_mission_cleanup_effect = yes
+            if = {
+                limit = { NOT = { tag = ZAE } }
+                zaraken_form_empire_effect = yes
+                trigger_event = { id = me_zaraken.118 }
+            }
+            else = {
+                trigger_event = { id = me_zaraken.3 }
+            }
+        }
+    }
+}
