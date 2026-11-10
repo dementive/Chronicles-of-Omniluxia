@@ -3,10 +3,10 @@
     icon = "zaraken_kyaxares"
     repeatable = no
     chance = { factor = 100 }
+    ai_chance = { factor = 0 }
 
     potential = {
         OR = { tag = ZAK tag = ZAE }
-        is_ai = no
         NOT = { has_variable = mission_cooldown_var }
     }
 
@@ -193,8 +193,8 @@
             treasury >= 35
             custom_tooltip = {
                 text = 03_zaraken_t3_banner_tt
-                owns = 4758
-                owns = 4722
+                p:4758 = { zaraken_kashan_garrison_secured_trigger = yes }
+                p:4722 = { zaraken_kashan_garrison_secured_trigger = yes }
             }
         }
         on_completion = {
@@ -207,12 +207,16 @@
         icon = "task_calm"
         requires = { 03_zaraken_task_5 }
 
+        bypass = {
+            OR = {
+                civic_tech >= 5
+                has_variable = 03_zaraken_razani_roadbuilding
+            }
+        }
+
         allow = {
             treasury >= 150
             current_ruler = {finesse >= 8}
-        }
-        bypass = {
-            has_variable = 03_zaraken_razani_roadbuilding
         }
         on_completion = {
             zaraken_task_25_completion_effect = yes
@@ -229,7 +233,7 @@
         requires = { 03_zaraken_task_5 }
 
         highlight = {
-            scope:province = { this = p:4358 }
+            scope:province = { OR = { this = p:4493 this = p:4358 } }
         }
         bypass = {
             OR = {
@@ -241,9 +245,22 @@
         allow = {
             war = no
             political_influence >= 25
+            p:4493 = {
+                owner = root
+                num_of_commerce_building >= 1
+            }
             custom_tooltip = {
                 text = 03_zaraken_t32_herald_tt
-                num_of_unit_type = { type = heavy_cavalry value >= 2 }
+                any_unit = {
+                    is_army = yes
+                    unit_owner = root
+                    unit_location = p:4493
+                    is_moving = no
+                    has_commander = yes
+                    commander = { is_mercenary = no }
+                    unit_size >= 8
+                    any_sub_unit = { count >= 3 sub_unit_type = heavy_cavalry }
+                }
             }
         }
         on_completion = {
@@ -322,7 +339,7 @@
                 text = 03_zaraken_t11_fodder_tt
                 p:4704 = {
                     owner = root
-                    state = { trade_good_surplus = { target = grain value >= 1 } }
+                    state = { trade_good_surplus = { target = grain value >= 2 } }
                 }
             }
         }
@@ -343,8 +360,9 @@
             political_influence >= 20
             p:4666 = {
                 owner = root
-                num_of_commerce_building >= 1
-                num_of_port_building >= 1
+                num_of_commerce_building >= 2
+                num_of_port_building >= 3
+                has_no_ongoing_construction = yes
             }
             custom_tooltip = {
                 text = 03_zaraken_t14_boats_tt
@@ -360,20 +378,16 @@
     ### TIER 4 ###########################################################
 
     03_zaraken_task_4 = {
-        icon = "task_apollo"
+        icon = "task_economical"
         requires = { 03_zaraken_task_3 }
 
         highlight = {
-            scope:province = { OR = { this = p:4662 this = p:4739 } }
+            scope:province = { this = p:4739 }
         }
         allow = {
             p:4739 = {
                 owner = root
-                num_of_fortress_building >= 1
-            }
-            custom_tooltip = {
-                text = 03_zaraken_t4_patrol_tt
-                num_of_unit_type = { type = camels value >= 3 }
+                has_city_status = yes
             }
         }
         on_completion = {
@@ -417,6 +431,14 @@
             scope:province = { OR = { this = p:4619 this = p:4662 } }
         }
         allow = {
+            custom_tooltip = {
+                text = 03_zaraken_t21_spices_tt
+                has_variable = spices_province_decision_2_var
+                p:4662 = {
+                    owner = root
+                    has_province_modifier = dioscoridus_spices_mod
+                }
+            }
             p:4619 = {
                 owner = root
                 total_population >= 40
@@ -473,13 +495,12 @@
         allow = {
             p:4761 = {
                 owner = root
-                num_of_fortress_building >= 1
-                num_of_military_building >= 1
+                OR = {
+                    num_of_fortress_building >= 2
+                    num_of_military_building >= 2
+                }
             }
-            custom_tooltip = {
-                text = 03_zaraken_t12_shod_tt
-                num_of_unit_type = { type = heavy_cavalry value >= 4 }
-            }
+            
         }
         on_completion = {
             zaraken_task_12_completion_effect = yes
@@ -740,6 +761,7 @@
     # own their own rewards, and the reports 127, 129, and 130 preview them.
 
     03_zaraken_task_26 = {
+        duration = 180
         icon = "task_religion"
         requires = { 03_zaraken_task_13 }
         bypass = {
@@ -750,7 +772,6 @@
             scope:province = { this = p:4662 }
         }
         allow = {
-            treasury >= 100
             political_influence >= 30
             custom_tooltip = {
                 text = 03_zaraken_t26_tomb_tt
@@ -1017,6 +1038,7 @@
             else = {
                 trigger_event = { id = me_zaraken.3 }
             }
+            omni_unlock_achievement = { ACH = omni_ach_under_one_standard EVENT = omni_ach.44 }
         }
     }
 }

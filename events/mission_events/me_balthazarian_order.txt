@@ -429,24 +429,32 @@ ob_order.15 = { type = country_event
     title = ob_order.15.t desc = ob_order.15.desc picture = army_desert left_portrait = root.current_ruler
 
     option = {
-
         name = ob_order.15.a
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_15 } } hidden_effect = { set_variable = { name = ob_scene_15 } } add_stability = 5
+        if = {
+            limit = { NOT = { has_variable = ob_scene_15 } }
+            hidden_effect = { set_variable = { name = ob_scene_15 } }
+            add_manpower = 2
+            add_stability = 5
             every_character = {
                 limit = { employer = root is_alive = yes prisoner = no has_variable = ob_frontier_brother }
                 add_loyalty = ob_frontier_heard
             }
-            add_country_modifier = { name = ob_recovery duration = 1825 } }
-
-    } option = {
-
+            add_country_modifier = { name = ob_recovery duration = 1825 }
+        }
+    }
+    option = {
         name = ob_order.15.b
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_15 } } hidden_effect = { set_variable = { name = ob_scene_15 } } add_tyranny = 2 add_political_influence = 15 add_country_modifier = { name = ob_recovery duration = 1825 } }
-
+        if = {
+            limit = { NOT = { has_variable = ob_scene_15 } }
+            hidden_effect = { set_variable = { name = ob_scene_15 } }
+            add_tyranny = 2
+            add_political_influence = 15
+            add_country_modifier = { name = ob_recovery duration = 1825 }
+        }
     }
 }
 
@@ -809,7 +817,20 @@ ob_order.23 = { type = country_event
         name = ob_order.23.a
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_23 } } hidden_effect = { set_variable = { name = ob_scene_23 } } hidden_effect = { set_variable = { name = ob_watch_unlocked } set_variable = { name = ob_relief_companies } } add_military_experience = 10 add_stability = 3 }
+        if = {
+            limit = { NOT = { has_variable = ob_scene_23 } }
+            if = {
+                limit = { NOT = { has_variable = ob_deep_host_launched } }
+                custom_tooltip = ob_relief_deep_host_tt
+            }
+            hidden_effect = {
+                set_variable = { name = ob_scene_23 }
+                set_variable = { name = ob_watch_unlocked }
+                set_variable = { name = ob_relief_companies }
+            }
+            add_military_experience = 10
+            add_stability = 3
+        }
 
     }
 
@@ -1754,14 +1775,28 @@ ob_order.711 = { type = country_event
 # =====================================================================
 
 ob_order.750 = { type = country_event
-    title = ob_order.750.t desc = ob_order.750.desc picture = omni_event_scene_dengolo_stones
+    title = ob_order.750.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = ob_cairn_local } desc = ob_order.750.desc_local }
+            desc = ob_order.750.desc
+        }
+    }
+    picture = omni_event_scene_dengolo_stones
     left_portrait = root.current_ruler right_portrait = root.current_co_ruler
 
     option = {
         name = ob_order.750.a
-        if = { limit = { NOT = { has_variable = ob_cairn_raised } }
-            hidden_effect = { set_variable = { name = ob_cairn_raised } }
-            p:1228 = { add_province_modifier = { name = ob_masters_cairn duration = -1 } }
+        if = {
+            limit = { NOR = { has_variable = ob_cairn_raised has_variable = ob_cairn_local_held } }
+            if = {
+                limit = { has_variable = ob_cairn_local }
+                hidden_effect = { set_variable = { name = ob_cairn_local_held } }
+            }
+            else = {
+                hidden_effect = { set_variable = { name = ob_cairn_raised } }
+                p:1228 = { add_province_modifier = { name = ob_masters_cairn duration = -1 } }
+            }
             current_ruler = { add_popularity = 10 }
             if = { limit = { exists = current_co_ruler } current_co_ruler = { add_loyalty = ob_frontier_heard } }
             add_stability = 5
@@ -1782,6 +1817,7 @@ ob_order.760 = { type = country_event
         ai_chance = { factor = 70 }
         if = {
             limit = { NOT = { has_variable = ob_deep_host_launched } }
+            custom_tooltip = ob_armories_deep_host_tt
         }
         hidden_effect = { set_variable = { name = ob_armories } }
         add_country_modifier = { name = ob_watch_armories duration = 7300 }

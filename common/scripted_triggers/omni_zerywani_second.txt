@@ -47,30 +47,37 @@ z2_frontier_target_trigger = {
     NOT = { has_variable = z2_member }
     has_civil_war = no
     OR = {
-        z2_border_country_trigger = yes
-        any_subject = { z2_border_country_trigger = yes }
+        z2_border_country_trigger = { HOST = scope:z2_host }
+        any_subject = { z2_border_country_trigger = { HOST = scope:z2_host } }
     }
 }
 z2_prize_city_trigger = {
     is_in_luxterra = yes
     z2_mainland_trigger = yes
     NOT = { is_in_region = dissolved_island_region }
-    z2_homeland_trigger = no
     has_city_status = yes
     has_owner = yes
     is_sea = no
     is_uninhabitable = no
-    NOT = { owner = scope:z2_host }
-    NOT = { owner = { is_subject_of = scope:z2_host } }
+    owner = {
+        NOT = { this = $HOST$ }
+        NOT = { is_subject_of = $HOST$ }
+        z2_border_country_trigger = { HOST = $HOST$ }
+    }
 }
 
 # An overlord can be reached through its military subjects' frontier.
 z2_border_country_trigger = {
     any_owned_province = {
         is_in_luxterra = yes
+        is_sea = no
+        is_uninhabitable = no
         any_neighbor_province = {
+            is_in_luxterra = yes
+            is_sea = no
+            is_uninhabitable = no
             exists = owner
-            owner = { OR = { this = scope:z2_host is_subject_of = scope:z2_host } }
+            owner = { OR = { this = $HOST$ is_subject_of = $HOST$ } }
         }
     }
 }

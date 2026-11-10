@@ -1,0 +1,90 @@
+﻿sell_all_to_slavery = {
+	scope = country
+
+	confirm_title = "sell_all_to_slavery_confirm_t"
+	confirm_text = "sell_all_to_slavery_desc"
+
+	is_shown = {
+		NOT = { has_variable = omni_prisoner_sale_tyranny_gained }
+		any_character = { omni_bulk_prisoner_sale_eligible = yes }
+	}
+
+	ai_is_valid = {
+		always = no
+	}
+
+	is_valid = {
+		NOT = { has_variable = omni_prisoner_sale_tyranny_gained }
+		tyranny < 99
+		any_character = { omni_bulk_prisoner_sale_eligible = yes }
+	}
+
+	effect = {
+		save_scope_as = actor
+		hidden_effect = {
+			set_variable = {
+				name = omni_prisoner_sale_tyranny_gained
+				value = omni_bulk_prisoner_sale_tyranny
+			}
+			set_variable = {
+				name = omni_prisoner_sale_gold_gained
+				value = omni_bulk_prisoner_sale_income
+			}
+			add_treasury = var:omni_prisoner_sale_gold_gained
+			add_tyranny = var:omni_prisoner_sale_tyranny_gained
+			every_character = {
+				limit = { omni_bulk_prisoner_sale_eligible = yes }
+				save_scope_as = target
+				if = {
+					limit = { is_minor_character = no }
+					if = {
+						limit = { is_head_of_family = yes }
+						family = {
+							add_prestige = -100
+							if = {
+								limit = { sell_into_slavery_count_svalue > 0 }
+								every_family_member = {
+									limit = { employer = scope:actor }
+									add_loyalty = loyalty_sold_family_head
+								}
+							}
+						}
+					}
+					else = {
+						family = {
+							add_prestige = -50
+							if = {
+								limit = { sell_into_slavery_count_svalue > 0 }
+								every_family_member = {
+									limit = { employer = scope:actor }
+									add_loyalty = loyalty_sold_family_member
+								}
+							}
+						}
+					}
+				}
+
+				set_as_minor_character = THIS
+				remove_all_positions = yes
+				move_country = c:REB
+				c:REB = {
+					imprison = { target = scope:target }
+				}
+
+				scope:actor = {
+					random_country = {
+						limit = { NOT = { this = scope:actor } }
+						weight = {
+							modifier = {
+								factor = 100
+								in_diplomatic_range = scope:actor
+							}
+						}
+						trigger_event = { id = influence.6 }
+					}
+				}
+			}
+			trigger_event = { id = omni_prisoner_sale.1 }
+		}
+	}
+}

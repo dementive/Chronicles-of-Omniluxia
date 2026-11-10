@@ -25,13 +25,15 @@
             political_influence >= 25
         }
         on_completion = {
-            capital_formable_large_effect = yes
             if = {
                 limit = { NOT = { has_variable = ob_task_done_1 } }
                 set_variable = { name = ob_task_done_1 }
                 add_treasury = -50
                 add_political_influence = -25
-                capital_scope = { while = { count = 4 define_pop = { type = freemen culture = root.culture religion = root.religion } } }
+                capital_scope = {
+                    capital_formable_large_effect = yes
+                    while = { count = 4 define_pop = { type = freemen culture = root.culture religion = root.religion } }
+                }
                 mission_claim_region_effect = { REGION = norrfalian_borderland }
                 trigger_event = { id = ob_order.1 }
             }
@@ -543,11 +545,27 @@
 
         bypass = { has_variable = ob_task_done_15 }
         allow = {
-            has_war_exhaustion <= 5
             war = no
             stability >= 50
-            custom_tooltip = { text = ob_veteran_companies_tt
-                any_unit = { is_army = yes unit_owner = root unit_size >= 25 }
+            treasury >= 50
+            trigger_if = {
+                limit = { has_variable = ob_war_started }
+                has_war_exhaustion <= 5
+            }
+            trigger_if = {
+                limit = { is_ai = no }
+                custom_tooltip = {
+                    text = ob_frontier_muster_tt
+                    any_unit = {
+                        is_army = yes
+                        unit_owner = root
+                        unit_location = p:870
+                        unit_size >= 6
+                        is_moving = no
+                        has_commander = yes
+                        commander = { is_mercenary = no }
+                    }
+                }
             }
         }
         on_completion = {
@@ -559,7 +577,7 @@
             }
         }
 
-        highlight = { scope:province = { owner = root } }
+        highlight = { scope:province = { province_id = 870 } }
     }
 
     ob_task_16 = {
@@ -653,6 +671,10 @@
                 set_variable = { name = ob_task_done_22 }
                 add_treasury = -250
                 trigger_event = { id = ob_order.22 }
+                if = {
+                    limit = { has_variable = ob_towns_sworn NOT = { has_variable = ob_deep_host_launched } }
+                    custom_tooltip = ob_towns_deep_host_tt
+                }
             }
         }
 
@@ -757,32 +779,39 @@
         bypass = { OR = { has_variable = ob_task_done_30 is_ai = yes } }
         allow = {
             war = no
-            custom_tooltip = { text = ob_kiaguthmajnnorr_held_tt
-                p:1228 = { OR = { owner = root owner = { is_subject_of = root } owner = { alliance_with = root } } }
-            }
-            OR = { has_variable = ob_cairn_journey treasury >= 50 }
-        }
-        on_start = {
-            if = {
+            owns = 870
+            trigger_if = {
                 limit = { NOT = { has_variable = ob_cairn_journey } }
-                add_treasury = -50
-                set_variable = { name = ob_cairn_journey }
+                treasury >= 50
             }
         }
         on_completion = {
             if = {
                 limit = { NOT = { has_variable = ob_task_done_30 } }
                 set_variable = { name = ob_task_done_30 }
+                # The receipt also covers journeys paid for at the start in older saves.
+                if = {
+                    limit = { NOT = { has_variable = ob_cairn_journey } }
+                    add_treasury = -50
+                    hidden_effect = { set_variable = { name = ob_cairn_journey } }
+                }
+                if = {
+                    limit = { ob_cairn_passage = no }
+                    set_variable = { name = ob_cairn_local }
+                }
                 trigger_event = { id = ob_order.750 }
                 show_as_tooltip = {
-                    p:1228 = { add_province_modifier = { name = ob_masters_cairn duration = -1 } }
                     current_ruler = { add_popularity = 10 }
                     add_stability = 5
+                }
+                if = {
+                    limit = { ob_cairn_passage = yes }
+                    show_as_tooltip = { p:1228 = { add_province_modifier = { name = ob_masters_cairn duration = -1 } } }
                 }
             }
         }
 
-        highlight = { scope:province = { province_id = 1228 } }
+        highlight = { scope:province = { OR = { province_id = 1228 province_id = 870 } } }
     }
 
     ob_task_24 = {

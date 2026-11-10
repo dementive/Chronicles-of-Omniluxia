@@ -236,7 +236,9 @@ me_zaraken.102 = {
         name = "me_zaraken.102.c"
         trigger = {
             treasury >= 25
-            NOT = { owns_or_subject_owns_area = zainddian_eteradica_area_6 }
+            is_subject = no
+            war = no
+            any_country = { zaraken_kashan_offer_recipient_trigger = yes }
         }
         add_manpower = 2
         add_military_experience = 10
@@ -245,6 +247,14 @@ me_zaraken.102 = {
             add_political_influence = -20
         }
         custom_tooltip = 03_zaraken_kashan_claims_tt
+        custom_tooltip = 03_zaraken_kashan_offers_tt
+        hidden_effect = {
+            save_scope_as = zaraken_kashan_sender
+            every_country = {
+                limit = { zaraken_kashan_offer_recipient_trigger = yes }
+                trigger_event = { id = me_zaraken.134 days = 1 }
+            }
+        }
     }
 
     option = {
@@ -278,7 +288,7 @@ me_zaraken.104 = {
     type = country_event
     title = "me_zaraken.104.t"
     desc = "me_zaraken.104.desc"
-    picture = army_desert
+    picture = event_harbor_night
     left_portrait = current_ruler
 
     option = {
@@ -543,7 +553,7 @@ me_zaraken.114 = {
     type = country_event
     title = "me_zaraken.114.t"
     desc = "me_zaraken.114.desc"
-    picture = event_city_skyline
+    picture = grand_ship
     left_portrait = current_ruler
 
     option = {
@@ -638,7 +648,7 @@ me_zaraken.119 = {
     type = country_event
     title = "me_zaraken.119.t"
     desc = "me_zaraken.119.desc"
-    picture = omni_event_scene_kyaxares
+    picture = greek_city_market
     left_portrait = current_ruler
 
     option = {
@@ -715,7 +725,7 @@ me_zaraken.123 = {
     type = country_event
     title = "me_zaraken.123.t"
     desc = "me_zaraken.123.desc"
-    picture = grand_ship
+    picture = event_corsair_ships
     left_portrait = current_ruler
 
     option = {
@@ -754,7 +764,7 @@ me_zaraken.125 = {
 
     option = {
         name = "me_zaraken.125.a"
-        custom_tooltip = 03_zaraken_razani_roadbuilding_tt
+        zaraken_task_25_completion_effect = yes
     }
 }
 
@@ -932,25 +942,31 @@ me_zaraken.131 = {
     title = "me_zaraken.131.t"
     desc = "me_zaraken.131.desc"
     picture = event_humans_court
-    left_portrait = current_ruler
+    left_portrait = root.current_ruler
+    right_portrait = c:YMH.current_ruler
 
-    option = {   # Answer the insult on the road
+    option = {
         name = "me_zaraken.131.a"
         add_country_modifier = { name = zaraken_toll_grievance_mod duration = 1825 }
         add_stability = 2
+        custom_tooltip = 03_zaraken_yamhad_engineers_tt
+        hidden_effect = {
+            create_unit = {
+                location = root.capital_scope
+                add_subunit = engineer_cohort
+                add_subunit = engineer_cohort
+            }
+        }
         ai_chance = { factor = 60 }
     }
 
-    option = {   # Pay the toll and keep the receipts
+    option = {
         name = "me_zaraken.131.b"
-        trigger = { treasury >= 100 }
-        add_treasury = -100
-        p:4493 = {
-            add_province_modifier = { name = zaraken_toll_ledger_mod duration = 3650 }
-        }
-        if = {
-            limit = { exists = c:YMH }
-            c:YMH = { add_treasury = 100 }
+        trigger = { zaraken_yamhad_terms_available_trigger = yes }
+        custom_tooltip = 03_zaraken_yamhad_offer_tt
+        hidden_effect = {
+            save_scope_as = zaraken_yamhad_sender
+            c:YMH = { trigger_event = { id = me_zaraken.137 days = 1 } }
         }
         ai_chance = { factor = 40 }
     }
@@ -1037,5 +1053,193 @@ me_zaraken.133 = {
         show_as_tooltip = {
             zaraken_task_35_completion_effect = yes
         }
+    }
+}
+
+me_zaraken.134 = {
+    type = country_event
+    title = "me_zaraken.134.t"
+    desc = "me_zaraken.134.desc"
+    picture = event_desert_coast
+    left_portrait = root.current_ruler
+    right_portrait = scope:zaraken_kashan_sender.current_ruler
+    trigger = {
+        zaraken_kashan_offer_recipient_trigger = yes
+        exists = scope:zaraken_kashan_sender
+        scope:zaraken_kashan_sender = { has_land = yes is_subject = no war = no }
+    }
+
+    option = {
+        name = "me_zaraken.134.a"
+        ai_chance = { factor = 30 }
+        trigger = {
+            zaraken_kashan_offer_recipient_trigger = yes
+            exists = scope:zaraken_kashan_sender
+            scope:zaraken_kashan_sender = { has_land = yes is_subject = no war = no }
+        }
+        custom_tooltip = 03_zaraken_kashan_accept_tt
+        hidden_effect = {
+            save_scope_as = zaraken_kashan_recipient
+            scope:zaraken_kashan_sender = {
+                if = {
+                    limit = { scope:zaraken_kashan_recipient = { is_tribal = yes } }
+                    make_subject = { target = scope:zaraken_kashan_recipient type = vassal_tribe }
+                }
+                else = {
+                    make_subject = { target = scope:zaraken_kashan_recipient type = princedom_vassal }
+                }
+                if = {
+                    limit = { scope:zaraken_kashan_recipient = { is_subject_of = scope:zaraken_kashan_sender } }
+                    scope:zaraken_kashan_recipient = {
+                        set_variable = { name = zaraken_kashan_submission value = scope:zaraken_kashan_sender }
+                    }
+                    trigger_event = { id = me_zaraken.135 days = 1 }
+                }
+            }
+        }
+    }
+
+    option = {
+        name = "me_zaraken.134.b"
+        ai_chance = { factor = 70 }
+        custom_tooltip = 03_zaraken_kashan_refuse_tt
+        hidden_effect = {
+            if = {
+                limit = { exists = scope:zaraken_kashan_sender scope:zaraken_kashan_sender = { has_land = yes } }
+                save_scope_as = zaraken_kashan_recipient
+                scope:zaraken_kashan_sender = { trigger_event = { id = me_zaraken.136 days = 1 } }
+            }
+        }
+    }
+}
+
+me_zaraken.135 = {
+    type = country_event
+    title = "me_zaraken.135.t"
+    desc = "me_zaraken.135.desc"
+    picture = event_desert_coast
+    left_portrait = root.current_ruler
+    right_portrait = scope:zaraken_kashan_recipient.current_ruler
+    trigger = {
+        exists = scope:zaraken_kashan_recipient
+        scope:zaraken_kashan_recipient = { is_subject_of = root }
+    }
+
+    option = {
+        name = "me_zaraken.135.a"
+        custom_tooltip = 03_zaraken_kashan_accepted_tt
+    }
+}
+
+me_zaraken.136 = {
+    type = country_event
+    title = "me_zaraken.136.t"
+    desc = "me_zaraken.136.desc"
+    picture = event_desert_coast
+    left_portrait = root.current_ruler
+    right_portrait = scope:zaraken_kashan_recipient.current_ruler
+    trigger = {
+        exists = scope:zaraken_kashan_recipient
+        scope:zaraken_kashan_recipient = { has_land = yes }
+    }
+
+    option = {
+        name = "me_zaraken.136.a"
+        custom_tooltip = 03_zaraken_kashan_refused_tt
+    }
+}
+
+me_zaraken.137 = {
+    type = country_event
+    title = "me_zaraken.137.t"
+    desc = "me_zaraken.137.desc"
+    picture = event_humans_court
+    left_portrait = root.current_ruler
+    right_portrait = scope:zaraken_yamhad_sender.current_ruler
+    trigger = {
+        tag = YMH
+        exists = scope:zaraken_yamhad_sender
+        scope:zaraken_yamhad_sender = { zaraken_yamhad_terms_available_trigger = yes }
+    }
+
+    option = {
+        name = "me_zaraken.137.a"
+        ai_chance = { factor = 30 }
+        trigger = {
+            exists = scope:zaraken_yamhad_sender
+            scope:zaraken_yamhad_sender = { zaraken_yamhad_terms_available_trigger = yes }
+        }
+        custom_tooltip = 03_zaraken_yamhad_accept_tt
+        hidden_effect = {
+            scope:zaraken_yamhad_sender = {
+                make_subject = { target = root type = princedom_vassal }
+            }
+            if = {
+                limit = { is_subject_of = scope:zaraken_yamhad_sender }
+                if = {
+                    limit = { p:4358 = { is_capital = yes } }
+                    ordered_owned_province = {
+                        limit = { NOT = { this = p:4358 } }
+                        order_by = total_population
+                        position = 0
+                        save_scope_as = zaraken_yamhad_new_capital
+                    }
+                    set_capital = scope:zaraken_yamhad_new_capital
+                }
+                p:4358 = { set_owned_by = scope:zaraken_yamhad_sender }
+                add_treasury = 200
+                scope:zaraken_yamhad_sender = {
+                    add_treasury = -200
+                    if = {
+                        limit = { owns = 4493 }
+                        p:4493 = { add_province_modifier = { name = zaraken_toll_ledger_mod duration = 3650 } }
+                    }
+                    trigger_event = { id = me_zaraken.138 days = 1 }
+                }
+            }
+        }
+    }
+
+    option = {
+        name = "me_zaraken.137.b"
+        ai_chance = { factor = 70 }
+        custom_tooltip = 03_zaraken_yamhad_decline_tt
+        hidden_effect = {
+            if = {
+                limit = { exists = scope:zaraken_yamhad_sender scope:zaraken_yamhad_sender = { has_land = yes } }
+                scope:zaraken_yamhad_sender = {
+                    add_country_modifier = { name = zaraken_toll_grievance_mod duration = 1825 }
+                    trigger_event = { id = me_zaraken.139 days = 1 }
+                }
+            }
+        }
+    }
+}
+
+me_zaraken.138 = {
+    type = country_event
+    title = "me_zaraken.138.t"
+    desc = "me_zaraken.138.desc"
+    picture = event_humans_court
+    left_portrait = root.current_ruler
+    right_portrait = c:YMH.current_ruler
+
+    option = {
+        name = "me_zaraken.138.a"
+        custom_tooltip = 03_zaraken_yamhad_accepted_tt
+    }
+}
+
+me_zaraken.139 = {
+    type = country_event
+    title = "me_zaraken.139.t"
+    desc = "me_zaraken.139.desc"
+    picture = event_humans_court
+    left_portrait = root.current_ruler
+    right_portrait = c:YMH.current_ruler
+
+    option = {
+        name = "me_zaraken.139.a"
+        custom_tooltip = 03_zaraken_yamhad_declined_tt
     }
 }

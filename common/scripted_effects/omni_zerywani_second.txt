@@ -10,31 +10,49 @@ z2_restore_effect = {
     }
 }
 
-# ROOT/THIS is the chosen tribal host, not the human scheduler.
-z2_prepare_effect = {
-    save_scope_as = z2_host
+# Called in the host country after saving scope:z2_host.
+z2_select_goal_effect = {
+    remove_variable = z2_goal
+    clear_saved_scope = target_province
     ordered_country = {
-        limit = {
-            has_land = yes
-            NOT = { this = scope:z2_host }
-            any_owned_province = { z2_prize_city_trigger = yes }
-        }
+        limit = { any_owned_province = { z2_prize_city_trigger = { HOST = scope:z2_host } } }
         order_by = z2_country_prize_score
         position = 0
         ordered_owned_province = {
-            limit = { z2_prize_city_trigger = yes }
+            limit = { z2_prize_city_trigger = { HOST = scope:z2_host } }
             order_by = z2_city_score
             position = 0
-            save_scope_as = z2_selected_goal
+            save_scope_as = target_province
+            scope:z2_host = { set_variable = { name = z2_goal value = scope:target_province } }
         }
     }
+}
+z2_refresh_goal_effect = {
     if = {
-        limit = { exists = scope:z2_selected_goal }
-        scope:z2_selected_goal = { save_scope_as = target_province }
+        limit = {
+            NOT = {
+                exists = var:z2_goal
+                var:z2_goal = {
+                    OR = {
+                        owner = scope:z2_host
+                        z2_prize_city_trigger = { HOST = scope:z2_host }
+                    }
+                }
+            }
+        }
+        z2_select_goal_effect = yes
+    }
+}
+
+# ROOT/THIS is the chosen tribal host, not the human scheduler.
+z2_prepare_effect = {
+    save_scope_as = z2_host
+    z2_select_goal_effect = yes
+    if = {
+        limit = { exists = var:z2_goal }
         set_global_variable = { name = z2_warned }
         set_global_variable = { name = z2_host value = scope:z2_host }
         set_variable = { name = z2_preparing }
-        set_variable = { name = z2_goal value = scope:target_province }
         # Prefer a surviving veteran; otherwise create the obscure soldier explicitly.
         if = {
             limit = { any_character = { has_variable = zerywani_first_generation is_alive = yes is_female = no age >= 50 } }
@@ -166,7 +184,11 @@ z2_start_effect = {
                 trigger_event = { id = zerywani_second.3 days = 1 }
             }
         }
-        every_country = { limit = { is_ai = no } trigger_event = { id = zerywani_second.4 days = 2 } }
+        z2_refresh_goal_effect = yes
+        if = {
+            limit = { exists = var:z2_goal }
+            every_country = { limit = { is_ai = no } trigger_event = { id = zerywani_second.4 days = 2 } }
+        }
         set_variable = { name = z2_campaign_delay days = 60 }
     }
 }
@@ -238,6 +260,7 @@ z2_raise_army_effect = {
 }
 z2_next_campaign_effect = {
     z2_restore_effect = yes
+    if = { limit = { NOT = { has_variable = z2_settled } } z2_refresh_goal_effect = yes }
     ordered_country = {
         limit = { z2_frontier_target_trigger = yes }
         order_by = z2_frontier_score
