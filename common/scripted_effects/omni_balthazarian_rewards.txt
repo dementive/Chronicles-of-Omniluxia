@@ -31,6 +31,42 @@ ob_return_bastion_shield = {
     }
 }
 
+# Country scope.
+ob_store_lord_protector_sword = {
+    create_country_treasure = {
+        key = ob_lord_protector_sword
+        icon = "cr_treasure_ceremonial_acinaces_01"
+        modifier = { local_manpower_modifier = 0.15 }
+    }
+}
+
+# Country scope. The covenant awards a single sword per campaign.
+ob_award_lord_protector_sword = {
+    if = {
+        limit = { NOT = { has_global_variable = ob_lord_protector_sword_awarded } }
+        hidden_effect = {
+            set_global_variable = { name = ob_lord_protector_sword_awarded value = 1 }
+            # Register the weapon when awarded in an existing campaign.
+            if = {
+                limit = {
+                    NOT = { is_target_in_global_variable_list = { name = item_weapon target = flag:item_artifact_ob_lord_protector_sword } }
+                }
+                assing_item_to_category = { item_category = weapon item_ID = item_artifact_ob_lord_protector_sword }
+            }
+        }
+        ob_store_lord_protector_sword = yes
+    }
+}
+
+# Character scope.
+ob_return_lord_protector_sword = {
+    remove_character_item = { item_ID = item_artifact_ob_lord_protector_sword }
+    country = {
+        remove_country_modifier = item_artifact_ob_lord_protector_sword_army
+        ob_store_lord_protector_sword = yes
+    }
+}
+
 ob_finish_order_finale = {
     if = {
         limit = { NOT = { has_variable = ob_scene_24 } }

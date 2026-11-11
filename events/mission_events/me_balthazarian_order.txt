@@ -117,7 +117,14 @@ ob_order.2 = {
 }
 
 ob_order.3 = { type = country_event
-    title = ob_order.3.t desc = ob_order.3.desc picture = event_bread_basket left_portrait = root.current_ruler right_portrait = root.current_co_ruler
+    title = ob_order.3.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { government = ob_protectorate } desc = ob_order.3.desc_protector }
+            desc = ob_order.3.desc
+        }
+    }
+    picture = event_bread_basket left_portrait = root.current_ruler right_portrait = root.current_co_ruler
 
     option = {
 
@@ -176,7 +183,10 @@ ob_order.5 = { type = country_event
             trigger = { exists = scope:ob_summit_left_king }
             desc = ob_order.5.desc_left_guest
         }
-        desc = ob_order.5.desc_private
+        first_valid = {
+            triggered_desc = { trigger = { government = ob_protectorate } desc = ob_order.5.desc_private_protector }
+            desc = ob_order.5.desc_private
+        }
     }
     picture = event_empty_thrones
     left_portrait = root.current_ruler
@@ -486,7 +496,7 @@ ob_order.16 = { type = country_event
     title = ob_order.16.t desc = {
         desc = ob_order.16.desc
         triggered_desc = { trigger = { has_variable = ob_legate } desc = ob_order.16.desc_legate }
-    } picture = event_human_council left_portrait = root.current_ruler
+    } picture = Event_north_lord_hall left_portrait = root.current_ruler
 
     option = {
 
@@ -494,14 +504,25 @@ ob_order.16 = { type = country_event
         trigger = { OR = { NOT = { has_variable = ob_rival_won } AND = { treasury >= 75 political_influence >= 15 } } }
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_16 } } hidden_effect = { set_variable = { name = ob_scene_16 } } if = { limit = { has_variable = ob_rival_won } add_treasury = -75 add_political_influence = -15 } change_government = ob_order hidden_effect = { remove_variable = ob_ultimatum } hidden_effect = { set_variable = { name = ob_constitution } } hidden_effect = { ob_ensure_second_master = yes } current_ruler = { add_zeal = 1 } if = { limit = { exists = current_co_ruler } current_co_ruler = { add_martial = 1 } } add_country_modifier = { name = ob_shared duration = -1 } }
+        if = { limit = { NOT = { has_variable = ob_scene_16 } } hidden_effect = { set_variable = { name = ob_scene_16 } } if = { limit = { has_variable = ob_rival_won } add_treasury = -75 add_political_influence = -15 } change_government = ob_order hidden_effect = { remove_variable = ob_ultimatum } hidden_effect = { set_variable = { name = ob_constitution } } hidden_effect = { ob_ensure_second_master = yes } current_ruler = { add_zeal = 1 } add_country_modifier = { name = ob_shared duration = -1 } }
 
     } option = {
 
         name = ob_order.16.b
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_16 } } hidden_effect = { set_variable = { name = ob_scene_16 } remove_variable = ob_ultimatum } change_government = ob_protectorate hidden_effect = { set_variable = { name = ob_constitution } } add_country_modifier = { name = ob_sole duration = -1 } }
+        if = {
+            limit = { NOT = { has_variable = ob_scene_16 } }
+            hidden_effect = {
+                set_variable = { name = ob_scene_16 }
+                remove_variable = ob_ultimatum
+                set_variable = { name = ob_constitution }
+            }
+            current_ruler = { add_martial = 3 }
+            change_government = ob_protectorate
+            add_country_modifier = { name = ob_sole duration = -1 }
+            ob_award_lord_protector_sword = yes
+        }
 
     }
     option = {
@@ -1650,7 +1671,14 @@ ob_order.650 = { type = country_event
 }
 
 ob_order.651 = { type = country_event
-    title = ob_order.651.t desc = ob_order.651.desc picture = winter_camp
+    title = ob_order.651.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = ob_scene_12 } desc = ob_order.651.desc }
+            desc = ob_order.651.desc_no_hearing
+        }
+    }
+    picture = winter_camp
     left_portrait = root.current_ruler
     trigger = { has_civil_war = yes exists = var:ob_rebel_country }
     immediate = { set_variable = { name = ob_cw_651 } }
