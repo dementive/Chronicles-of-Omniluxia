@@ -138,8 +138,8 @@ omni_perf.7 = {
 }
 
 
-# Quarterly AI follow-up: loyalty upkeep (75-day guard -> every call) and law choice
-# (165-day guard -> only the mid-year call gets through). AI-only, early-out trigger.
+# Quarterly AI follow-up: the quarterly (75-day guard -> every call) and half-yearly
+# (165-day guard -> roughly every other call) Invictus effects. AI-only, early-out trigger.
 omni_perf.8 = {
 	type = country_event
 	hidden = yes
@@ -150,8 +150,20 @@ omni_perf.8 = {
 	}
 
 	immediate = {
-		ai_fix_character_loyalty = yes
-		ai_choose_and_enact_law = yes
+		# Invictus runs these from its monthly pulse and lets each one's own guard set the
+		# cadence (75 days = quarterly, 165 days = half-yearly). Here they only got one attempt
+		# a year, and an attempt that failed its entry check (at war, short of gold or
+		# influence) waited a full year for the next. Same order as Invictus - they compete for
+		# the same resources. Every one opens with has_variable / is_ai / treasury tests, so an
+		# attempt that does not go through costs a handful of comparisons.
+		ai_revoke_free_hands = yes                # 165-day guard
+		ai_fix_character_loyalty = yes            # 75-day guard
+		ai_choose_and_enact_law = yes             # 165-day guard
+		ai_perform_divine_sacrifice = yes         # 75-day guard - AI buys back stability below 45
+		ai_try_upgrading_city_to_metropolis = yes # 165-day guard
+		ai_choose_territory_and_found_city = yes  # 165-day guard
+		ai_press_hold_games_button = yes          # 75-day guard, tribes only
+		ai_choose_and_make_investment = yes       # 165-day guard
 		# Rulers are excluded from the regular character scheme picker.
 		current_ruler = {
 			if = {

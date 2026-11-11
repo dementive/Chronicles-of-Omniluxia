@@ -59,6 +59,7 @@ ob_monthly = {
         ob_ensure_second_master = yes
         if = {
             limit = {
+                has_civil_war = no
                 has_variable = ob_ultimatum NOT = { has_variable = ob_internal_resolved }
                 NOT = { has_variable = ob_war_started }
                 OR = {
@@ -68,11 +69,22 @@ ob_monthly = {
                 }
             }
             remove_variable = ob_ultimatum
+            remove_variable = ob_ultimatum_pending
             set_variable = { name = ob_challenger_absent }
             set_variable = { name = ob_internal_resolved }
             change_government = ob_order
             ob_ensure_second_master = yes
             trigger_event = { id = ob_order.302 }
+        }
+        # A chapter interrupted by another revolt waits until the Order is at peace.
+        if = {
+            limit = {
+                has_variable = ob_ultimatum_pending
+                war = no
+                has_civil_war = no
+                NOR = { has_variable = ob_war_started has_variable = ob_internal_resolved }
+            }
+            ob_issue_ultimatum = yes
         }
         if = {
             limit = {
@@ -127,6 +139,7 @@ ob_monthly = {
             limit = {
                 has_variable = ob_task_done_13
                 NOT = { has_variable = ob_internal_resolved }
+                NOT = { has_variable = ob_ultimatum_pending }
                 NOT = { has_variable = ob_ultimatum }
                 NOT = { has_variable = ob_war_started }
                 has_civil_war = no

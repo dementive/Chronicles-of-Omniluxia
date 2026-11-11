@@ -29,9 +29,44 @@ yearly_country_pulse = {
 	}
 }
 
+# Each country keeps the SAME slot in the year, every year. The old days = { 0 300 } re-rolled
+# annually, so a country that drew day 250 one year and day 40 the next ran its "yearly" AI pass
+# only 155 days apart. Every effect in the chain guards itself with a 345-day variable, so that
+# second pass was silently skipped: roads, pop moving, economic policy and the research cache
+# were lost for the whole year (roughly 4 years in 10 per country). A fixed slot keeps passes
+# 360-370 days apart, which always clears the 345-day guards, and still spreads the world's
+# countries over 12 slots so there is no Jan 1 spike.
 omniluxia_ai_yearly_pulse = {
 	effect = {
-		trigger_event = { id = omni_perf.3 days = { 0 300 } }
+		if = {
+			limit = { NOT = { has_variable = omni_ai_year_slot } }
+			random_list = {
+				1 = { set_variable = { name = omni_ai_year_slot value = 0 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 1 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 2 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 3 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 4 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 5 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 6 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 7 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 8 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 9 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 10 } }
+				1 = { set_variable = { name = omni_ai_year_slot value = 11 } }
+			}
+		}
+		if = { limit = { var:omni_ai_year_slot = 0 } trigger_event = { id = omni_perf.3 days = { 0 5 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 1 } trigger_event = { id = omni_perf.3 days = { 25 30 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 2 } trigger_event = { id = omni_perf.3 days = { 50 55 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 3 } trigger_event = { id = omni_perf.3 days = { 75 80 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 4 } trigger_event = { id = omni_perf.3 days = { 100 105 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 5 } trigger_event = { id = omni_perf.3 days = { 125 130 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 6 } trigger_event = { id = omni_perf.3 days = { 150 155 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 7 } trigger_event = { id = omni_perf.3 days = { 175 180 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 8 } trigger_event = { id = omni_perf.3 days = { 200 205 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 9 } trigger_event = { id = omni_perf.3 days = { 225 230 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 10 } trigger_event = { id = omni_perf.3 days = { 250 255 } } }
+		else_if = { limit = { var:omni_ai_year_slot = 11 } trigger_event = { id = omni_perf.3 days = { 275 280 } } }
 	}
 }
 

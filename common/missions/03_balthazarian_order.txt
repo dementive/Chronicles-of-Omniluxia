@@ -15,6 +15,7 @@
     on_abort = { }
     on_completion = { }
 
+    # The opening muster and public inquiry.
     ob_task_1 = {
         duration = 90
         icon = "task_heracles"
@@ -47,9 +48,9 @@
 
         bypass = { has_variable = ob_task_done_2 }
         allow = {
-            exists = current_co_ruler
             has_civil_war = no
-            NOT = { has_variable = ob_ultimatum }
+            OR = { ob_seal_contest_started = no has_variable = ob_internal_resolved }
+            OR = { exists = current_co_ruler government = ob_protectorate }
             stability >= 50 hidden:capital_scope = { has_building = court_building }
         }
         on_completion = {
@@ -58,29 +59,6 @@
                 set_variable = { name = ob_task_done_2 }
                 trigger_event = { id = ob_order.2 }
 
-            }
-        }
-
-        highlight = { scope:province = { owner = root is_capital = yes } }
-    }
-
-    ob_task_3 = {
-        icon = "task_economical" requires = { ob_task_1 }
-
-        bypass = { has_variable = ob_task_done_3 }
-        allow = {
-            capital_scope = {
-                has_building = population_building
-                state = { has_state_food >= 500 }
-                is_importing_trade_good = grain
-            }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_3 } }
-                set_variable = { name = ob_task_done_3 }
-                trigger_event = { id = ob_order.3 }
-                show_as_tooltip = { capital_scope = { add_province_modifier = { name = ob_relief duration = 3650 } } }
             }
         }
 
@@ -110,397 +88,45 @@
         highlight = { scope:province = { owner = root has_building = library_building } }
     }
 
-    ob_task_5 = {
-        duration = 30
-        icon = "task_diplomatic" requires = { ob_task_2 }
+    # The disputed seal and the settlement that follows.
+    ob_task_13 = {
+        icon = "task_political"
 
-        bypass = {
-            OR = {
-                has_variable = ob_task_done_5
-                NOT = { any_country = { count >= 2 ob_claimant = yes } }
-            }
-        }
-        on_bypass = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_5 } }
-                ob_issue_herue_claims = yes
+        bypass = { ob_seal_contest_started = yes }
+        # The AI still waits until the northern watch and the warrants hearing are in place.
+        ai_chance = {
+            factor = 1
+            modifier = {
+                factor = 0
+                NAND = { has_variable = ob_task_done_11 has_variable = ob_task_done_12 }
             }
         }
         allow = {
-            treasury >= 25
-            political_influence >= 15
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_5 } }
-                set_variable = { name = ob_task_done_5 }
-                add_treasury = -25
-                add_political_influence = -15
-                trigger_event = { id = ob_order.5 }
-            }
-        }
-
-        highlight = { scope:province = { is_in_region = great_herue } }
-
-        on_start = { ob_invite_claimants = yes }
-    }
-
-    ob_task_7 = {
-        icon = "task_expansion" requires = { ob_task_3 }
-
-        bypass = { OR = { has_variable = ob_task_done_7 is_ai = yes } }
-        allow = {
-            custom_tooltip = { text = ob_port_at_balthazaria_tt
-                p:870 = { owner = root has_building = port_building }
-            }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_7 } }
-                set_variable = { name = ob_task_done_7 }
-                trigger_event = { id = ob_order.7 }
-                show_as_tooltip = {
-                    add_country_modifier = { name = ob_open_harbors duration = 3650 }
-                }
-            }
-        }
-
-        highlight = { scope:province = { province_id = 870 } }
-    }
-
-    ob_task_8 = {
-        icon = "task_economical" requires = { ob_task_7 }
-        bypass = { OR = { has_variable = ob_task_done_8 is_ai = yes } }
-        allow = {
-            capital_scope = { is_importing_trade_good = grain }
-            country_trade_good_imports = { target = grain value >= 2 }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_8 } }
-                set_variable = { name = ob_task_done_8 }
-                hidden_effect = { set_variable = { name = ob_grain } }
-                capital_scope = {
-                    add_province_modifier = { name = ob_northern_grain_trade duration = -1 }
-                }
-                trigger_event = { id = ob_order.8 }
-            }
-        }
-        highlight = { scope:province = { owner = root is_capital = yes } }
-    }
-
-    ob_task_9 = {
-        icon = "task_golem_guardian" requires = { ob_task_8 }
-
-        bypass = { OR = { has_variable = ob_task_done_9 is_ai = yes } }
-        allow = {
-            custom_tooltip = { text = ob_ruler_knows_dreaming_tt
-                OR = {
-                    current_ruler = { omni_knows_spell = { SPELL = dreaming } }
-                    has_variable = ob_cave_returned
-                }
-            }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_9 } }
-                set_variable = { name = ob_task_done_9 }
-                trigger_event = { id = ob_order.9 }
-            }
-        }
-
-        highlight = { scope:province = { OR = { province_id = 380 province_id = 1036 } } }
-    }
-
-    ob_task_10 = {
-
-        icon = "task_wood_elf_ranger" requires = { ob_task_1 }
-
-        bypass = { OR = { has_variable = ob_task_done_10 is_ai = yes } }
-
-        allow = {
-            ob_cave_land = yes
-            custom_tooltip = {
-                text = ob_cave_ready_army_tt
-                any_unit = { ob_cave_army = yes }
-            }
-        }
-
-        on_completion = { if = { limit = { NOT = { has_variable = ob_task_done_10 } } set_variable = { name = ob_task_done_10 } trigger_event = { id = ob_order.900 }  } }
-
-        highlight = { scope:province = { province_id = 1036 } }
-
-    }
-
-    ob_task_11 = {
-        icon = "task_battle" requires = { ob_task_9 ob_task_10 }
-
-        bypass = { has_variable = ob_task_done_11 }
-        allow = {
-            has_variable = ob_early_resolved
-            war = no
-            has_civil_war = no
-            owns = 870
-            stability >= 50 capital_scope = { state = { has_state_food >= 1000 } }
-            custom_tooltip = { text = ob_cave_returned_tt OR = { has_variable = ob_cave_returned is_ai = yes } }
-            custom_tooltip = { text = ob_owned_fortress_building_2_tt
-                any_owned_province = { count >= 2 is_in_region = norrfalian_borderland has_building = fortress_building }
-            }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_11 } }
-                set_variable = { name = ob_task_done_11 }
-                trigger_event = { id = ob_order.11 }
-                show_as_tooltip = {
-                    add_stability = 5
-                }
-            }
-        }
-
-        highlight = { scope:province = { OR = { province_id = 870 AND = { owner = root has_building = fortress_building } } } }
-    }
-
-    # ACT III - THE DIVIDED SEAL. Faith column.
-    ob_task_12 = {
-        icon = "task_atlas" requires = { ob_task_11 }
-
-        bypass = { has_variable = ob_task_done_12 }
-        allow = {
-            owns = 870
-            political_influence >= 30
+            government = ob_order
             custom_tooltip = { text = ob_both_masters_tt
                 current_ruler = { prisoner = no }
                 exists = current_co_ruler
                 current_co_ruler = { prisoner = no }
             }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_12 } }
-                set_variable = { name = ob_task_done_12 }
-                add_political_influence = -30
-                hidden_effect = {
-                    set_variable = { name = ob_gathering_support }
-                }
-                custom_tooltip = ob_gathering_support_unlocked_tt
-                trigger_event = { id = ob_order.12 }
-            }
-        }
-
-        highlight = { scope:province = { owner = root has_city_status = yes } }
-    }
-
-    ob_task_19 = {
-        icon = "task_religion" requires = { ob_task_12 }
-        duration = 180
-
-        bypass = {
-            OR = {
-                has_variable = ob_task_done_19
-                has_variable = ob_legacy_rupture
-                is_ai = yes
-            }
-        }
-        allow = {
-            trigger_if = {
-                limit = { NOT = { has_variable = ob_summons_active } }
-                has_variable = ob_scene_12
-                war = no
-                has_civil_war = no
-                custom_tooltip = {
-                    text = ob_owned_great_temple_tt
-                    any_owned_province = { has_building = temple_building }
-                }
-                trigger_if = {
-                    limit = { ob_can_seek_see_charter = yes }
-                    custom_tooltip = { text = ob_shannah_relationship_requirement_tt
-                        omni_sf_relationship_trigger = yes
-                    }
-                    custom_tooltip = { text = ob_shannah_favor_requirement_tt
-                        omni_sf_favor_value >= 40
-                    }
-                    treasury >= 25
-                }
-            }
-        }
-        on_start = {
-            ob_summons_start = yes
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_19 } }
-                set_variable = { name = ob_task_done_19 }
-                trigger_event = { id = ob_order.604 }
-                custom_tooltip = ob_summons_return_tt
-            }
-        }
-
-        highlight = { scope:province = { province_id = 2706 } }
-    }
-
-    # Chapter column.
-    ob_task_26 = {
-        icon = "task_apollo" requires = { ob_task_12 }
-
-        bypass = {
-            OR = {
-                has_variable = ob_task_done_26
-                has_variable = ob_legacy_rupture
-                is_ai = yes
-            }
-        }
-        allow = {
-            has_variable = ob_scene_12
-            custom_tooltip = { text = ob_seal_sworn_requirement_tt
-                OR = {
-                    any_character = { count >= 3 employer = root is_alive = yes has_character_modifier = ob_seal_sworn }
-                    trigger_if = { limit = { has_variable = ob_support } var:ob_support <= 0 } trigger_else = { always = yes }
-                }
-            }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_26 } }
-                set_variable = { name = ob_task_done_26 }
-                trigger_event = { id = ob_order.622 }
-            }
-        }
-
-        highlight = { scope:province = { owner = root is_capital = yes } }
-    }
-
-    # Sword column.
-    ob_task_17 = {
-        icon = "task_viza" requires = { ob_task_5 }
-
-        bypass = { has_variable = ob_task_done_17 }
-        allow = {
-            ob_herue_consolidated = yes
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_17 } }
-                set_variable = { name = ob_task_done_17 }
-                trigger_event = { id = ob_order.17 }
-                custom_tooltip = ob_task_17_rewards_tt
-            }
-        }
-
-        highlight = { scope:province = { is_in_region = great_herue } }
-    }
-
-    ob_task_18 = {
-        icon = "task_economical" requires = { ob_task_17 }
-
-        bypass = { has_variable = ob_task_done_18 }
-        allow = {
-            treasury >= 100
-            war = no
-            owns = 870
-            custom_tooltip = { text = ob_convoy_port_tt p:870 = { has_building = port_building } }
-            trigger_if = {
-                limit = { is_ai = no }
-                custom_tooltip = {
-                    text = ob_convoy_fleet_tt
-                    any_unit = {
-                        is_navy = yes
-                        unit_owner = root
-                        unit_location = p:870
-                        any_sub_unit = { count >= 10 }
-                    }
-                }
-                custom_tooltip = {
-                    text = ob_convoy_supplies_tt
-                    p:870 = {
-                        is_importing_trade_good = wood
-                        is_importing_trade_good = salt
-                    }
-                }
-            }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_18 } }
-                set_variable = { name = ob_task_done_18 }
-                add_treasury = -100
-                trigger_event = { id = ob_order.18 }
-            }
-        }
-
-        highlight = { scope:province = { OR = { province_id = 870 province_id = 1199 province_id = 1230 province_id = 1331 } } }
-    }
-
-    ob_task_28 = {
-        icon = "task_wood_elf_ranger" requires = { ob_task_17 }
-
-        bypass = {
-            OR = {
-                has_variable = ob_task_done_28
-                has_variable = ob_legacy_rupture
-                is_ai = yes
-            }
-        }
-        allow = {
-            war = no
-            treasury >= 100
-            manpower >= 6
-            owns = 870
-            owns = 1036
-            custom_tooltip = {
-                text = ob_balthazaria_beacon_tt
-                p:870 = {
-                    has_building = fortress_building
-                    state = { has_state_food >= 300 }
-                }
-            }
-            custom_tooltip = {
-                text = ob_ridkiath_beacon_tt
-                p:1036 = {
-                    is_state_capital = yes
-                    has_building = fortress_building
-                    state = { has_state_food >= 300 }
-                }
-            }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_28 } }
-                set_variable = { name = ob_task_done_28 }
-                add_treasury = -100
-                p:870 = { add_province_modifier = { name = ob_beacon_fort duration = 1825 } }
-                p:1036 = { add_province_modifier = { name = ob_beacon_fort duration = 1825 } }
-                trigger_event = { id = ob_order.640 }
-            }
-        }
-
-        highlight = { scope:province = { OR = { province_id = 870 province_id = 1036 } } }
-    }
-
-    # THE ULTIMATUM. Fired by this task, never by the calendar.
-    ob_task_13 = {
-        icon = "task_political" requires = { ob_task_19 ob_task_26 ob_task_28 }
-
-        bypass = {
-            OR = {
-                has_variable = ob_task_done_13
-                has_variable = ob_legacy_rupture
-            }
-        }
-        allow = {
-            government = ob_order
-            exists = current_co_ruler
             war = no
             has_civil_war = no
             owns = 870
-            OR = { has_variable = ob_charter is_ai = yes }
-            NOT = { has_country_modifier = ob_faith_master_abroad }
+            trigger_if = {
+                limit = { has_country_modifier = ob_faith_master_abroad }
+                custom_tooltip = { text = ob_chapter_wait_for_faith_master_tt always = no }
+            }
+            trigger_else_if = {
+                limit = { has_variable = ob_summons_active }
+                custom_tooltip = { text = ob_chapter_wait_for_charter_tt always = no }
+            }
         }
         on_completion = {
             if = {
                 limit = { NOT = { has_variable = ob_task_done_13 } }
                 set_variable = { name = ob_task_done_13 }
+                set_variable = { name = ob_endgame_v2 }
                 custom_tooltip = ob_ultimatum_tt
+                custom_tooltip = ob_rebel_reinforcements_tt
                 hidden_effect = { ob_issue_ultimatum = yes }
             }
         }
@@ -508,7 +134,6 @@
         highlight = { scope:province = { province_id = 870 } }
     }
 
-    # The contest for the seal. Covers the civil war when one is fought.
     ob_task_14 = {
         icon = "task_dying_gaul" requires = { ob_task_13 }
 
@@ -538,6 +163,26 @@
         }
 
         highlight = { scope:province = { province_id = 870 } }
+    }
+
+    ob_task_16 = {
+        icon = "task_diplomatic" requires = { ob_task_14 }
+
+        bypass = { has_variable = ob_task_done_16 }
+        allow = {
+            political_influence >= 20
+            hidden:capital_scope = { has_building = court_building }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_16 } }
+                set_variable = { name = ob_task_done_16 }
+                add_political_influence = -20
+                trigger_event = { id = ob_order.16 }
+            }
+        }
+
+        highlight = { scope:province = { owner = root is_capital = yes } }
     }
 
     ob_task_15 = {
@@ -580,25 +225,424 @@
         highlight = { scope:province = { province_id = 870 } }
     }
 
-    ob_task_16 = {
-        icon = "task_diplomatic" requires = { ob_task_14 }
+    # Preparations that close when the chapter is called.
+    ob_task_12 = {
+        icon = "task_atlas" requires = { ob_task_1 }
 
-        bypass = { has_variable = ob_task_done_16 }
+        bypass = { OR = { has_variable = ob_task_done_12 ob_seal_contest_started = yes } }
         allow = {
-            political_influence >= 20
-            has_variable = ob_scene_12
-            hidden:capital_scope = { has_building = court_building }
+            owns = 870
+            political_influence >= 30
+            custom_tooltip = { text = ob_both_masters_tt
+                current_ruler = { prisoner = no }
+                exists = current_co_ruler
+                current_co_ruler = { prisoner = no }
+            }
         }
         on_completion = {
             if = {
-                limit = { NOT = { has_variable = ob_task_done_16 } }
-                set_variable = { name = ob_task_done_16 }
-                add_political_influence = -20
-                trigger_event = { id = ob_order.16 }
+                limit = { NOT = { has_variable = ob_task_done_12 } }
+                set_variable = { name = ob_task_done_12 }
+                add_political_influence = -30
+                hidden_effect = {
+                    set_variable = { name = ob_gathering_support }
+                }
+                custom_tooltip = ob_gathering_support_unlocked_tt
+                trigger_event = { id = ob_order.12 }
+            }
+        }
+
+        highlight = { scope:province = { owner = root has_city_status = yes } }
+    }
+
+    ob_task_19 = {
+        icon = "task_religion" requires = { ob_task_12 }
+        duration = 180
+
+        bypass = {
+            OR = {
+                has_variable = ob_task_done_19
+                ob_seal_contest_started = yes
+                is_ai = yes
+            }
+        }
+        allow = {
+            trigger_if = {
+                limit = { NOT = { has_variable = ob_summons_active } }
+                has_variable = ob_scene_12
+                war = no
+                has_civil_war = no
+                custom_tooltip = {
+                    text = ob_owned_great_temple_tt
+                    any_owned_province = { has_building = temple_building }
+                }
+                trigger_if = {
+                    limit = { ob_can_seek_see_charter = yes }
+                    custom_tooltip = { text = ob_shannah_relationship_requirement_tt
+                        omni_sf_relationship_trigger = yes
+                    }
+                    custom_tooltip = { text = ob_shannah_favor_requirement_tt
+                        omni_sf_favor_value >= 40
+                    }
+                    treasury >= 25
+                }
+            }
+        }
+        on_start = {
+            ob_summons_start = yes
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_19 } }
+                set_variable = { name = ob_task_done_19 }
+                trigger_event = { id = ob_order.604 }
+                custom_tooltip = ob_summons_return_tt
+            }
+        }
+
+        highlight = { scope:province = { province_id = 2706 } }
+    }
+
+    ob_task_26 = {
+        icon = "task_apollo" requires = { ob_task_12 }
+
+        bypass = {
+            OR = {
+                has_variable = ob_task_done_26
+                ob_seal_contest_started = yes
+                is_ai = yes
+            }
+        }
+        allow = {
+            has_variable = ob_scene_12
+            custom_tooltip = { text = ob_seal_sworn_requirement_tt
+                ob_has_three_sworn_brothers = yes
+            }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_26 } }
+                set_variable = { name = ob_task_done_26 }
+                trigger_event = { id = ob_order.622 }
             }
         }
 
         highlight = { scope:province = { owner = root is_capital = yes } }
+    }
+
+    # Capital provisions and the opening of the harbor.
+    ob_task_3 = {
+        icon = "task_economical" requires = { ob_task_1 }
+
+        bypass = { has_variable = ob_task_done_3 }
+        allow = {
+            hidden:capital_scope = {
+                has_building = population_building
+                state = { has_state_food >= 500 }
+                is_importing_trade_good = grain
+            }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_3 } }
+                set_variable = { name = ob_task_done_3 }
+                trigger_event = { id = ob_order.3 }
+                show_as_tooltip = { capital_scope = { add_province_modifier = { name = ob_relief duration = 3650 } } }
+            }
+        }
+
+        highlight = { scope:province = { owner = root is_capital = yes } }
+    }
+
+    ob_task_7 = {
+        icon = "task_expansion" requires = { ob_task_3 }
+
+        bypass = { OR = { has_variable = ob_task_done_7 is_ai = yes } }
+        allow = {
+            hidden:p:870 = { has_building = port_building }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_7 } }
+                set_variable = { name = ob_task_done_7 }
+                trigger_event = { id = ob_order.7 }
+                show_as_tooltip = {
+                    add_country_modifier = { name = ob_open_harbors duration = 3650 }
+                }
+            }
+        }
+
+        highlight = { scope:province = { province_id = 870 } }
+    }
+
+    ob_task_8 = {
+        icon = "task_economical" requires = { ob_task_7 }
+        bypass = { OR = { has_variable = ob_task_done_8 is_ai = yes } }
+        allow = {
+            capital_scope = { is_importing_trade_good = grain }
+            country_trade_good_imports = { target = grain value >= 2 }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_8 } }
+                set_variable = { name = ob_task_done_8 }
+                hidden_effect = { set_variable = { name = ob_grain } }
+                capital_scope = {
+                    add_province_modifier = { name = ob_northern_grain_trade duration = -1 }
+                }
+                trigger_event = { id = ob_order.8 }
+            }
+        }
+        highlight = { scope:province = { owner = root is_capital = yes } }
+    }
+
+    # Herue's succession and the escorted winter trade.
+    ob_task_5 = {
+        duration = 30
+        icon = "task_diplomatic"
+
+        bypass = {
+            OR = {
+                has_variable = ob_task_done_5
+                NOT = { any_country = { count >= 2 ob_claimant = yes } }
+            }
+        }
+        on_bypass = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_5 } }
+                ob_issue_herue_claims = yes
+            }
+        }
+        allow = {
+            treasury >= 25
+            political_influence >= 15
+            custom_tooltip = { text = ob_requirements_5_tt ob_requirement_5 = yes }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_5 } }
+                set_variable = { name = ob_task_done_5 }
+                add_treasury = -25
+                add_political_influence = -15
+                trigger_event = { id = ob_order.5 }
+            }
+        }
+
+        highlight = { scope:province = { is_in_region = great_herue } }
+    }
+
+    ob_task_17 = {
+        icon = "task_viza" requires = { ob_task_5 }
+
+        bypass = { has_variable = ob_task_done_17 }
+        allow = {
+            ob_herue_consolidated = yes
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_17 } }
+                set_variable = { name = ob_task_done_17 }
+                trigger_event = { id = ob_order.17 }
+                custom_tooltip = ob_task_17_rewards_tt
+            }
+        }
+
+        highlight = { scope:province = { is_in_region = great_herue } }
+    }
+
+    ob_task_18 = {
+        icon = "task_economical" requires = { ob_task_17 ob_task_8 }
+
+        bypass = { has_variable = ob_task_done_18 }
+        allow = {
+            treasury >= 100
+            war = no
+            owns = 870
+            custom_tooltip = { text = ob_convoy_port_tt p:870 = { num_of_port_building = 2 } }
+            trigger_if = {
+                limit = { is_ai = no }
+                custom_tooltip = {
+                    text = ob_convoy_fleet_tt
+                    any_unit = {
+                        is_navy = yes
+                        unit_owner = root
+                        unit_location = p:870
+                        any_sub_unit = { count >= 10 }
+                    }
+                }
+                custom_tooltip = {
+                    text = ob_convoy_supplies_tt
+                    p:870 = {
+                        is_importing_trade_good = wood
+                        is_importing_trade_good = salt
+                    }
+                }
+            }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_18 } }
+                set_variable = { name = ob_task_done_18 }
+                add_treasury = -100
+                trigger_event = { id = ob_order.18 }
+            }
+        }
+
+        highlight = { scope:province = { OR = { province_id = 870 province_id = 1199 province_id = 1230 province_id = 1331 } } }
+    }
+
+    # The northern expedition and border defenses.
+    ob_task_10 = {
+
+        icon = "task_wood_elf_ranger" requires = { ob_task_1 }
+
+        bypass = { OR = { has_variable = ob_task_done_10 is_ai = yes } }
+
+        allow = {
+            ob_cave_land = yes
+            custom_tooltip = {
+                text = ob_cave_ready_army_tt
+                any_unit = { ob_cave_army = yes }
+            }
+        }
+
+        on_completion = { if = { limit = { NOT = { has_variable = ob_task_done_10 } } set_variable = { name = ob_task_done_10 } trigger_event = { id = ob_order.900 }  } }
+
+        highlight = { scope:province = { province_id = 1036 } }
+
+    }
+
+    ob_task_9 = {
+        icon = "task_golem_guardian" requires = { ob_task_1 }
+
+        bypass = { OR = { has_variable = ob_task_done_9 is_ai = yes } }
+        allow = {
+            custom_tooltip = { text = ob_ruler_knows_dreaming_tt
+                OR = {
+                    current_ruler = { omni_knows_spell = { SPELL = dreaming } }
+                    has_variable = ob_cave_returned
+                }
+            }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_9 } }
+                set_variable = { name = ob_task_done_9 }
+                trigger_event = { id = ob_order.9 }
+            }
+        }
+
+        highlight = { scope:province = { OR = { province_id = 380 province_id = 1036 } } }
+    }
+
+    ob_task_28 = {
+        icon = "task_wood_elf_ranger" requires = { ob_task_10 }
+
+        bypass = {
+            OR = {
+                has_variable = ob_task_done_28
+                ob_seal_contest_started = yes
+                is_ai = yes
+            }
+        }
+        allow = {
+            war = no
+            treasury >= 100
+            manpower >= 6
+            owns = 870
+            owns = 1036
+            custom_tooltip = {
+                text = ob_balthazaria_beacon_tt
+                p:870 = {
+                    num_of_fortress_building >= 2
+                    state = { has_state_food >= 500 }
+                }
+            }
+            custom_tooltip = {
+                text = ob_ridkiath_beacon_tt
+                p:1036 = {
+                    is_state_capital = yes
+                    has_building = fortress_building
+                    state = { has_state_food >= 300 }
+                }
+            }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_28 } }
+                set_variable = { name = ob_task_done_28 }
+                add_treasury = -100
+                p:870 = { add_province_modifier = { name = ob_beacon_fort duration = 1825 } }
+                p:1036 = { add_province_modifier = { name = ob_beacon_fort duration = 1825 } }
+                trigger_event = { id = ob_order.640 }
+            }
+        }
+
+        highlight = { scope:province = { OR = { province_id = 870 province_id = 1036 } } }
+    }
+
+    ob_task_11 = {
+        icon = "task_battle" requires = { ob_task_10 ob_task_9 }
+
+        bypass = { has_variable = ob_task_done_11 }
+        allow = {
+            custom_tooltip = { text = ob_task_11_tt has_variable = ob_early_resolved }
+            war = no
+            has_civil_war = no
+            owns = 870
+            custom_tooltip = { text = ob_cave_returned_tt OR = { has_variable = ob_cave_returned is_ai = yes } }
+            custom_tooltip = { text = ob_owned_fortress_building_2_tt
+                any_owned_province = {
+                    count >= 2
+                    is_in_region = norrfalian_borderland
+                    has_building = fortress_building
+                    state_loyalty >= 50
+                }
+            }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_11 } }
+                set_variable = { name = ob_task_done_11 }
+                trigger_event = { id = ob_order.11 }
+                show_as_tooltip = {
+                    custom_tooltip = ob_raise_winter_watch_tt
+                    add_country_modifier = { name = ob_winter_watch_endowment duration = 3650 }
+                }
+            }
+        }
+
+        highlight = { scope:province = { OR = { province_id = 870 AND = { owner = root is_in_region = norrfalian_borderland has_building = fortress_building } } } }
+    }
+
+    ob_task_31 = {
+        icon = "task_economical" requires = { ob_task_11 }
+
+        bypass = { has_variable = ob_task_done_31 }
+        allow = {
+            war = no
+            treasury >= 75
+            custom_tooltip = { text = ob_iron_supply_tt
+                OR = {
+                    country_trade_good_imports = { target = iron value >= 1 }
+                    any_owned_province = { count >= 2 trade_goods = iron }
+                }
+            }
+            custom_tooltip = {
+                text = ob_owned_training_camp_tt
+                any_owned_province = { has_building = military_building }
+            }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_31 } }
+                set_variable = { name = ob_task_done_31 }
+                add_treasury = -75
+                trigger_event = { id = ob_order.760 }
+            }
+        }
+
+        highlight = { scope:province = { owner = root OR = { trade_goods = iron has_building = military_building } } }
     }
 
     ob_task_20 = {
@@ -643,6 +687,7 @@
         highlight = { scope:province = { OR = { province_id = 1135 province_id = 1138 province_id = 1153 province_id = 1271 province_id = 1313 province_id = 1339 province_id = 5709 province_id = 5710 province_id = 5711 province_id = 5714 province_id = 5715 } } }
     }
 
+    # The settlement in Herue and the Deep Host.
     ob_task_22 = {
         icon = "task_economical" requires = { ob_task_16 ob_task_18 }
 
@@ -681,39 +726,8 @@
         highlight = { scope:province = { owner = root } }
     }
 
-    # ACT IV - THE DEEP HOST.
-    ob_task_31 = {
-        icon = "task_economical" requires = { ob_task_14 }
-
-        bypass = { has_variable = ob_task_done_31 }
-        allow = {
-            war = no
-            treasury >= 75
-            custom_tooltip = { text = ob_iron_supply_tt
-                OR = {
-                    country_trade_good_imports = { target = iron value >= 1 }
-                    any_owned_province = { count >= 2 trade_goods = iron }
-                }
-            }
-            custom_tooltip = {
-                text = ob_owned_training_camp_tt
-                any_owned_province = { has_building = military_building }
-            }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_31 } }
-                set_variable = { name = ob_task_done_31 }
-                add_treasury = -75
-                trigger_event = { id = ob_order.760 }
-            }
-        }
-
-        highlight = { scope:province = { owner = root OR = { trade_goods = iron has_building = military_building } } }
-    }
-
     ob_task_23 = {
-        icon = "task_golem_guardian" requires = { ob_task_16 ob_task_21 }
+        icon = "task_golem_guardian" requires = { ob_task_16 ob_task_11 ob_task_21 }
 
         bypass = { has_variable = ob_task_done_23 }
         allow = {
@@ -825,7 +839,6 @@
             }
             war = no has_civil_war = no
             has_variable = ob_constitution
-            custom_tooltip = { text = ob_charter_requirement_tt OR = { has_variable = ob_charter is_ai = yes } }
             stability >= 60
             custom_tooltip = { text = ob_deep_host_resolved_tt has_variable = ob_deep_host_resolved }
             OR = { government = ob_protectorate AND = { government = ob_order exists = current_co_ruler } }

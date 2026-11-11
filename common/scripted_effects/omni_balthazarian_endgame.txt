@@ -18,16 +18,23 @@ ob_summons_start = {
 
 # ---------------------------------------------------------------- the ultimatum (task 13)
 ob_issue_ultimatum = {
-    ob_ensure_second_master = yes
-    ob_save_rival = yes
-    if = { limit = { exists = scope:ob_rival }
-        set_variable = { name = ob_ultimatum }
-        trigger_event = { id = ob_order.300 }
+    if = {
+        limit = { has_civil_war = yes }
+        set_variable = { name = ob_ultimatum_pending }
     }
     else = {
-        set_variable = { name = ob_challenger_absent }
-        set_variable = { name = ob_internal_resolved }
-        trigger_event = { id = ob_order.302 }
+        remove_variable = ob_ultimatum_pending
+        ob_ensure_second_master = yes
+        ob_save_rival = yes
+        if = { limit = { exists = scope:ob_rival }
+            set_variable = { name = ob_ultimatum }
+            trigger_event = { id = ob_order.300 }
+        }
+        else = {
+            set_variable = { name = ob_challenger_absent }
+            set_variable = { name = ob_internal_resolved }
+            trigger_event = { id = ob_order.302 }
+        }
     }
 }
 
@@ -36,7 +43,13 @@ ob_begin_chapter_war = {
     save_scope_as = ob_order
     ob_save_rival = yes
     if = {
-        limit = { exists = scope:ob_rival NOT = { has_variable = ob_war_started } NOT = { has_variable = ob_internal_resolved } }
+        limit = {
+            has_civil_war = no
+            exists = scope:ob_rival
+            NOR = { has_variable = ob_war_started has_variable = ob_internal_resolved }
+        }
+        # Count sworn brothers while they are still at the Order's court.
+        set_variable = { name = ob_rebel_cohorts value = ob_rebel_cohorts_svalue }
         scope:ob_rival = { remove_all_positions = yes remove_loyalty = ob_dual_mandate }
         change_government = ob_protectorate
         start_civil_war = scope:ob_rival
@@ -48,6 +61,7 @@ ob_begin_chapter_war = {
             scope:ob_rebels = {
                 # Civil-war countries must never run a second copy of the campaign.
                 remove_variable = ob_identity remove_variable = ob_tree_started
+                remove_variable = ob_rebel_cohorts
                 set_variable = { name = ob_rebel_chapter value = scope:ob_order }
                 change_country_name = "ob_rebel_name"
                 add_treasury = 50
@@ -66,6 +80,7 @@ ob_begin_chapter_war = {
             set_variable = { name = ob_internal_resolved }
             trigger_event = { id = ob_order.302 }
         }
+        remove_variable = ob_rebel_cohorts
     }
 }
 
@@ -100,7 +115,6 @@ ob_defect_unsworn = {
 }
 
 ob_raise_frontier_companies = {
-    set_variable = { name = ob_rebel_cohorts value = ob_rebel_cohorts_svalue }
     scope:ob_rebels = {
         create_unit = {
             name = ob_frontier_companies_name
@@ -118,7 +132,6 @@ ob_raise_frontier_companies = {
             add_food = 300 add_morale = 2
         }
     }
-    remove_variable = ob_rebel_cohorts
 }
 
 # Third answer to the ultimatum: the Shannah's legate judges the seals.
@@ -244,6 +257,7 @@ ob_rebel_inherit = {
     if = { limit = { scope:ob_old_order = { has_variable = ob_direct_rule } } set_variable = { name = ob_direct_rule } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_herue_settlement_rewarded } } set_variable = { name = ob_herue_settlement_rewarded } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_towns_sworn } } set_variable = { name = ob_towns_sworn } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_armories } } set_variable = { name = ob_armories } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_scene_12 } } set_variable = { name = ob_scene_12 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_requisition_paid } } set_variable = { name = ob_requisition_paid } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_hospice_exemption } } set_variable = { name = ob_hospice_exemption } }
@@ -260,7 +274,8 @@ ob_rebel_inherit = {
     if = { limit = { scope:ob_old_order = { has_variable = ob_rupture_clock } } set_variable = { name = ob_rupture_clock } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_gathering_support } } set_variable = { name = ob_gathering_support } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_1 } } set_variable = { name = ob_task_done_1 } }
-    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_2 } } set_variable = { name = ob_task_done_2 } }
+    # The successor can reopen the inquiry if the old chapter fell before delivering a verdict.
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_2 has_variable = ob_dispute_resolved } } set_variable = { name = ob_task_done_2 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_3 } } set_variable = { name = ob_task_done_3 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_4 } } set_variable = { name = ob_task_done_4 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_5 } } set_variable = { name = ob_task_done_5 } }
@@ -289,8 +304,9 @@ ob_rebel_inherit = {
     if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_28 } } set_variable = { name = ob_task_done_28 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_29 } } set_variable = { name = ob_task_done_29 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_30 } } set_variable = { name = ob_task_done_30 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_task_done_31 } } set_variable = { name = ob_task_done_31 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_scene_1 } } set_variable = { name = ob_scene_1 } }
-    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_2 } } set_variable = { name = ob_scene_2 } }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_scene_2 has_variable = ob_dispute_resolved } } set_variable = { name = ob_scene_2 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_scene_3 } } set_variable = { name = ob_scene_3 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_scene_4 } } set_variable = { name = ob_scene_4 } }
     if = { limit = { scope:ob_old_order = { has_variable = ob_scene_5 } } set_variable = { name = ob_scene_5 } }
@@ -318,7 +334,7 @@ ob_rebel_inherit = {
     set_variable = { name = ob_rival_won }
     set_variable = { name = ob_war_started }
     set_variable = { name = ob_internal_resolved }
-    set_variable = { name = ob_legacy_rupture }
+    if = { limit = { scope:ob_old_order = { has_variable = ob_legacy_rupture } } set_variable = { name = ob_legacy_rupture } }
     set_variable = { name = ob_endgame_v2 }
     set_variable = { name = ob_task_done_13 }
     remove_variable = ob_rebel_chapter

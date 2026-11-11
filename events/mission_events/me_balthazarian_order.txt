@@ -74,7 +74,10 @@ ob_order.2 = {
     type = country_event
     title = ob_order.2.t
     desc = {
-        desc = ob_order.2.desc
+        first_valid = {
+            triggered_desc = { trigger = { government = ob_protectorate } desc = ob_order.2.desc_protector }
+            desc = ob_order.2.desc
+        }
         triggered_desc = {
             trigger = { exists = scope:ob_norskulane }
             desc = ob_order.2.desc_norskulane
@@ -135,7 +138,12 @@ ob_order.3 = { type = country_event
 }
 
 ob_order.4 = { type = country_event
-    title = ob_order.4.t desc = ob_order.4.desc picture = Event_citadel_library left_portrait = root.current_ruler right_portrait = root.current_co_ruler
+    title = ob_order.4.t desc = {
+        first_valid = {
+            triggered_desc = { trigger = { government = ob_protectorate } desc = ob_order.4.desc_protector }
+            desc = ob_order.4.desc
+        }
+    } picture = Event_citadel_library left_portrait = root.current_ruler right_portrait = root.current_co_ruler
 
     option = {
 
@@ -204,7 +212,7 @@ ob_order.5 = { type = country_event
 
     immediate = {
         if = {
-            limit = { exists = c:NR5 c:NR5 = { ob_claimant = yes exists = var:ob_summit_attendee var:ob_summit_attendee = root } }
+            limit = { exists = c:NR5 c:NR5 = { ob_friendly_herue_claimant = yes } }
             c:NR5.current_ruler = {
                 if = {
                     limit = { NOT = { exists = scope:ob_summit_left_king } }
@@ -217,7 +225,7 @@ ob_order.5 = { type = country_event
             }
         }
         if = {
-            limit = { exists = c:NR7 c:NR7 = { ob_claimant = yes exists = var:ob_summit_attendee var:ob_summit_attendee = root } }
+            limit = { exists = c:NR7 c:NR7 = { ob_friendly_herue_claimant = yes } }
             c:NR7.current_ruler = {
                 if = {
                     limit = { NOT = { exists = scope:ob_summit_left_king } }
@@ -230,7 +238,7 @@ ob_order.5 = { type = country_event
             }
         }
         if = {
-            limit = { exists = c:NR8 c:NR8 = { ob_claimant = yes exists = var:ob_summit_attendee var:ob_summit_attendee = root } }
+            limit = { exists = c:NR8 c:NR8 = { ob_friendly_herue_claimant = yes } }
             c:NR8.current_ruler = {
                 if = {
                     limit = { NOT = { exists = scope:ob_summit_left_king } }
@@ -243,7 +251,7 @@ ob_order.5 = { type = country_event
             }
         }
         if = {
-            limit = { exists = c:GN2 c:GN2 = { ob_claimant = yes exists = var:ob_summit_attendee var:ob_summit_attendee = root } }
+            limit = { exists = c:GN2 c:GN2 = { ob_friendly_herue_claimant = yes } }
             c:GN2.current_ruler = {
                 if = {
                     limit = { NOT = { exists = scope:ob_summit_left_king } }
@@ -256,7 +264,7 @@ ob_order.5 = { type = country_event
             }
         }
         if = {
-            limit = { exists = c:HEO c:HEO = { ob_claimant = yes exists = var:ob_summit_attendee var:ob_summit_attendee = root } }
+            limit = { exists = c:HEO c:HEO = { ob_friendly_herue_claimant = yes } }
             c:HEO.current_ruler = {
                 if = {
                     limit = { NOT = { exists = scope:ob_summit_left_king } }
@@ -352,13 +360,29 @@ ob_order.10 = { type = country_event
 }
 
 ob_order.11 = { type = country_event
-    title = ob_order.11.t desc = ob_order.11.desc picture = farming left_portrait = root.current_ruler
+    title = ob_order.11.t desc = ob_order.11.desc picture = Event_wall_watchers left_portrait = root.current_ruler right_portrait = root.current_co_ruler
 
     option = {
         name = ob_order.11.a
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_11 } } hidden_effect = { set_variable = { name = ob_scene_11 } } add_stability = 5 }
+        if = {
+            limit = { NOT = { has_variable = ob_scene_11 } }
+            custom_tooltip = ob_raise_winter_watch_tt
+            hidden_effect = {
+                set_variable = { name = ob_scene_11 }
+                create_unit = {
+                    name = "The Winter Watch"
+                    navy = no
+                    location = capital_scope
+                    add_subunit = heavy_infantry
+                    add_subunit = heavy_infantry
+                    add_subunit = archers
+                    add_subunit = archers
+                }
+            }
+            add_country_modifier = { name = ob_winter_watch_endowment duration = 3650 }
+        }
 
     }
 }
@@ -477,7 +501,7 @@ ob_order.16 = { type = country_event
         name = ob_order.16.b
         ai_chance = { factor = 50 }
 
-        if = { limit = { NOT = { has_variable = ob_scene_16 } } hidden_effect = { set_variable = { name = ob_scene_16 } } change_government = ob_protectorate hidden_effect = { set_variable = { name = ob_constitution } } add_country_modifier = { name = ob_sole duration = -1 } }
+        if = { limit = { NOT = { has_variable = ob_scene_16 } } hidden_effect = { set_variable = { name = ob_scene_16 } remove_variable = ob_ultimatum } change_government = ob_protectorate hidden_effect = { set_variable = { name = ob_constitution } } add_country_modifier = { name = ob_sole duration = -1 } }
 
     }
     option = {
@@ -871,22 +895,6 @@ ob_order.24 = { type = country_event
     }
 }
 
-ob_order.100 = { type = country_event
-    title = ob_order.100.t desc = ob_order.100.desc picture = Event_north_lord_hall left_portrait = root.current_ruler
-    trigger = { has_land = yes is_subject = no religion = helluvian has_variable = ob_petitioner exists = var:ob_petitioner var:ob_petitioner = { ob_country = yes has_land = yes } }
-
-    option = {
-        name = ob_order.100.a
-        ai_chance = { factor = 80 }
-        custom_tooltip = ob_effect_100_a_tt
-        hidden_effect = { set_variable = { name = ob_summit_attendee value = var:ob_petitioner } }
-    } option = {
-        name = ob_order.100.b
-        ai_chance = { factor = 20 }
-        custom_tooltip = ob_effect_100_b_tt
-    }
-}
-
 ob_order.200 = { type = country_event
     title = ob_order.200.t desc = ob_order.200.desc picture = event_forest_rangers left_portrait = root.current_ruler
 
@@ -1006,13 +1014,14 @@ ob_order.300 = { type = country_event
     } picture = omni_event_scene_balthazaria_hall left_portrait = root.current_ruler
     right_portrait = scope:ob_rival
 
+    trigger = { has_civil_war = no }
     immediate = { save_scope_as = ob_order ob_save_rival = yes }
     option = {
         name = ob_order.300.a
         ai_chance = { factor = 30 }
         custom_tooltip = ob_effect_300_a_tt
         hidden_effect = {
-            if = { limit = { NOT = { has_variable = ob_internal_resolved } }
+            if = { limit = { has_civil_war = no NOT = { has_variable = ob_internal_resolved } }
                 ob_save_rival = yes
                 if = { limit = { exists = scope:ob_rival }
                     scope:ob_rival = { remove_all_positions = yes }
@@ -1027,6 +1036,7 @@ ob_order.300 = { type = country_event
         name = ob_order.300.b
         ai_chance = { factor = 70 }
         custom_tooltip = ob_effect_300_b_tt
+        custom_tooltip = ob_rebel_reinforcements_tt
         hidden_effect = {
             ob_begin_chapter_war = yes
         }
@@ -1042,7 +1052,19 @@ ob_order.300 = { type = country_event
         ai_chance = { factor = 50 }
         custom_tooltip = ob_effect_300_c_tt
         hidden_effect = {
-            ob_appeal_to_see = yes
+            if = {
+                limit = { has_civil_war = no }
+                ob_appeal_to_see = yes
+            }
+        }
+    }
+    after = {
+        if = {
+            limit = {
+                has_civil_war = yes
+                NOR = { has_variable = ob_war_started has_variable = ob_internal_resolved }
+            }
+            set_variable = { name = ob_ultimatum_pending }
         }
     }
 }
@@ -1137,7 +1159,12 @@ ob_order.13 = {
 ob_order.210 = {
     type = country_event
     title = ob_order.210.t
-    desc = ob_order.210.desc
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { government = ob_protectorate } desc = ob_order.210.desc_protector }
+            desc = ob_order.210.desc
+        }
+    }
     picture = Event_north_lord_hall
     left_portrait = root.current_ruler
     left_portrait = scope:ob_tethurane
@@ -1170,7 +1197,12 @@ ob_order.210 = {
 ob_order.211 = {
     type = country_event
     title = ob_order.211.t
-    desc = ob_order.211.desc
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { government = ob_protectorate } desc = ob_order.211.desc_protector }
+            desc = ob_order.211.desc
+        }
+    }
     picture = Event_north_lord_hall
     left_portrait = root.current_ruler
     left_portrait = scope:ob_tethurane
@@ -1523,6 +1555,7 @@ ob_order.640 = { type = country_event
         name = ob_order.640.a
         trigger = { exists = current_co_ruler }
         ai_chance = { factor = 50 }
+        custom_tooltip = ob_sword_beacon_reinforcements_tt
         if = {
             limit = { NOT = { has_variable = ob_scene_28 } }
             hidden_effect = {
@@ -1538,6 +1571,7 @@ ob_order.640 = { type = country_event
     option = {
         name = ob_order.640.b
         ai_chance = { factor = 50 }
+        custom_tooltip = ob_wardens_beacon_reinforcements_tt
         if = {
             limit = { NOT = { has_variable = ob_scene_28 } }
             hidden_effect = {
