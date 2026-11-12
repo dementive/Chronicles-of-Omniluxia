@@ -1,69 +1,134 @@
 ﻿# Country scope. Helpers for 03_arteon_generic (The Battle For Arteon).
-# Claims follow the home unification ladder: capital area and one neighbor, then the ring
-# around the capital area (choice event), then the rest of the home region.
+# Opening claims are confined to the capital area. The Boundary Stones can press
+# the rest of the home region before the later campaign reaches the other shores.
 
 omni_arteon_opening_claims_effect = {
-    custom_tooltip = omni_arteon_opening_claims_tt
+    capital_scope.area = {
+        if = {
+            limit = { any_area_province = { omni_arteon_can_gain_claim_trigger = yes } }
+            custom_tooltip = omni_arteon_opening_claims_tt
+            hidden_effect = {
+                every_area_province = {
+                    limit = { omni_arteon_can_gain_claim_trigger = yes }
+                    add_claim = root
+                }
+            }
+        }
+    }
+}
+
+omni_arteon_boundary_claims_effect = {
+    custom_tooltip = omni_arteon_boundary_claims_tt
     hidden_effect = {
-        capital_scope.area = {
-            save_scope_as = omni_arteon_home_area
-            every_area_province = {
-                limit = { NOT = { owned_or_subject_owned = root } }
+        capital_scope.region = {
+            every_region_province = {
+                limit = { omni_arteon_boundary_claim_target_trigger = yes }
                 add_claim = root
             }
         }
-        # One foreign-held area bordering the capital area, inside the home region.
-        capital_scope.region = {
+    }
+}
+
+# Named targets used by the faith branches, the northern campaign and the Arteon formable.
+omni_arteon_claim_region_effect = {
+    region:$REGION$ = {
+        if = {
+            limit = { any_region_province = { omni_arteon_can_gain_claim_trigger = yes } }
             random_region_province = {
-                limit = {
-                    has_owner = yes
-                    NOT = { owned_or_subject_owned = root }
-                    NOT = { area = scope:omni_arteon_home_area }
-                    any_neighbor_province = { area = scope:omni_arteon_home_area }
-                }
-                area = {
-                    every_area_province = {
-                        limit = { NOT = { owned_or_subject_owned = root } }
-                        add_claim = root
-                    }
+                limit = { omni_arteon_can_gain_claim_trigger = yes }
+                custom_tooltip = omni_arteon_missing_region_claims_tt
+            }
+            hidden_effect = {
+                every_region_province = {
+                    limit = { omni_arteon_can_gain_claim_trigger = yes }
+                    add_claim = root
                 }
             }
         }
     }
 }
 
-# Every area of the home region that borders the capital area.
-omni_arteon_ring_claims_effect = {
-    custom_tooltip = omni_arteon_ring_claims_tt
-    hidden_effect = {
-        capital_scope.area = {
-            save_scope_as = omni_arteon_home_area
-        }
-        capital_scope.region = {
-            every_region_province = {
-                limit = {
-                    NOT = { area = scope:omni_arteon_home_area }
-                    any_neighbor_province = { area = scope:omni_arteon_home_area }
-                }
-                area = {
-                    every_area_province = {
-                        limit = { NOT = { owned_or_subject_owned = root } }
-                        add_claim = root
-                    }
+omni_arteon_claim_area_effect = {
+    area:$AREA$ = {
+        if = {
+            limit = { any_area_province = { omni_arteon_can_gain_claim_trigger = yes } }
+            random_area_province = {
+                limit = { omni_arteon_can_gain_claim_trigger = yes }
+                custom_tooltip = omni_arteon_missing_area_claims_tt
+            }
+            hidden_effect = {
+                every_area_province = {
+                    limit = { omni_arteon_can_gain_claim_trigger = yes }
+                    add_claim = root
                 }
             }
         }
     }
 }
 
-omni_arteon_home_region_claims_effect = {
-    custom_tooltip = omni_arteon_home_region_claims_tt
-    hidden_effect = {
-        capital_scope.region = {
-            every_region_province = {
-                limit = { NOT = { owned_or_subject_owned = root } }
-                add_claim = root
-            }
+omni_arteon_campaign_claims_effect = {
+    omni_arteon_claim_region_effect = { REGION = arteon_shout_region }
+    omni_arteon_claim_region_effect = { REGION = arteon_eastern_region }
+    omni_arteon_claim_region_effect = { REGION = arteon_western_region }
+    omni_arteon_claim_region_effect = { REGION = arteon_north_region }
+}
+
+omni_arteon_homeland_rewards_effect = {
+    capital_scope.state = {
+        add_state_modifier = {
+            name = arteon_heartland_survey_smod
+            duration = 3650
+        }
+    }
+}
+
+omni_arteon_lasting_peace_rewards_effect = {
+    add_political_influence = -50
+    capital_scope = {
+        if = {
+            limit = { NOT = { has_province_rank = city_metropolis } }
+            set_city_status = city_metropolis
+        }
+    }
+    add_country_modifier = {
+        name = arteon_lasting_peace_mod
+        duration = -1
+    }
+}
+
+omni_arteon_east_settlement_rewards_effect = {
+    add_stability = 15
+    if = {
+        limit = { omni_arteon_two_altars_trigger = yes }
+        add_1_free_province_investments = yes
+    }
+    else = {
+        add_country_modifier = {
+            name = emra_abominations_purged_mod
+            duration = -1
+        }
+    }
+}
+
+omni_arteon_ascendic_capstone_rewards_effect = {
+    capital_scope = {
+        create_state_pop = citizen
+        create_state_pop = citizen
+        create_state_pop = citizen
+        create_state_pop = freemen
+        create_state_pop = freemen
+    }
+    if = {
+        limit = { omni_arteon_two_altars_trigger = yes }
+        add_country_modifier = {
+            name = arteon_both_altars_compact_mod
+            duration = -1
+        }
+    }
+    else = {
+        add_country_modifier = {
+            name = high_elven_supremacy_mod
+            duration = -1
         }
     }
 }
@@ -147,6 +212,8 @@ omni_arteon_clear_mission_variables_effect = {
         remove_variable = arteon_heritage_nivan
         remove_variable = arteon_heritage_colonial
         remove_variable = arteon_heritage_alusarian
+        remove_variable = arteon_kept_both_altars
+        remove_variable = arteon_two_altars_compact
         remove_variable = arteon_northern_rite
         remove_variable = arteon_pact_broken
         remove_variable = arteon_route_artheousan
@@ -163,7 +230,6 @@ omni_arteon_clear_mission_variables_effect = {
 # Finale. Executed by task 14 and previewed by me_arteon_gen.14 with the same effect,
 # so the tooltip and the award cannot drift apart.
 omni_arteon_finale_rewards_effect = {
-    add_5_free_province_investments = yes
     current_ruler = {
         if = {
             limit = {
@@ -289,7 +355,7 @@ omni_arteon_claim_pact_house_effect = {
         }
         c:$TAG$.capital_scope.area = {
             every_area_province = {
-                limit = { NOT = { owned_or_subject_owned = root } }
+                limit = { omni_arteon_can_gain_claim_trigger = yes }
                 add_claim = root
             }
         }
@@ -318,5 +384,17 @@ omni_arteon_truce_pact_house_effect = {
                 target = root
             }
         }
+    }
+}
+
+# Country scope. Create the pupil shown in the anniversary event.
+omni_arteon_create_blade_storm_pupil_effect = {
+    create_character = {
+        culture = alusarian
+        religion = root.religion
+        add_martial = 7
+        omni_folk_initiate_practitioner = yes
+        omni_learn_spell = { SPELL = blade_storm }
+        save_scope_as = arteon_blade_storm_pupil
     }
 }

@@ -1,6 +1,6 @@
 ﻿03_arteon_generic = {
     header = "lotr_generic_mission_city_headers"
-    icon = "battle_for_arteon"
+    icon = "battle_for_arteon_painted"
 
     repeatable = no
     chance = { factor = 1000 }
@@ -35,14 +35,8 @@
         }
         omni_arteon_clear_mission_variables_effect = yes
     }
-    on_completion = {
-        capital_scope = {
-            capital_formable_large_effect = yes
-        }
-    }
-
     # -------------------------------------------------
-    # Opening — muster, mercenaries, coasts, home ring
+    # Opening — muster, mercenaries, home ring
     # -------------------------------------------------
     03_arteon_generic_task_1 = {
         icon = "task_battle"
@@ -104,32 +98,8 @@
         }
     }
 
-    03_arteon_generic_task_3 = {
-        icon = "task_expansion"
-        requires = { 03_arteon_generic_task_1 }
-
-        allow = {
-            num_of_ships >= 10
-            custom_tooltip = {
-                text = we_need_port_building_tt
-                any_owned_province = {
-                    has_building = port_building
-                }
-            }
-        }
-
-        on_completion = {
-            add_military_experience = 10
-            add_country_modifier = {
-                name = arteon_slaver_defense_mod
-                duration = 3650
-            }
-            trigger_event = me_arteon_gen.3
-        }
-    }
-
     # Home unification ladder, rung 1: no rival banner left in the capital's own area.
-    # The choice event owns the reward: claims on the next ring, border gifts, or a raid.
+    # The choice event owns the reward: claims in the rest of the home region, gifts, or a raid.
     03_arteon_generic_task_home_1 = {
         icon = "task_expansion"
         requires = { 03_arteon_generic_task_1 }
@@ -160,38 +130,65 @@
         }
     }
 
-    # Rung 2: a quarter of the home region. Claims on the rest of the region follow.
+    # Rung 2: bring a neighboring area into the capital's administration.
     03_arteon_generic_task_4 = {
         icon = "task_conquest"
-        # The Nivan faith question comes first, so its answer decides which faith branch opens.
-        requires = { 03_arteon_generic_task_2 03_arteon_generic_task_3 03_arteon_generic_task_home_1 03_arteon_generic_task_her_nivan_1 }
+        requires = { 03_arteon_generic_task_home_1 }
 
         highlight = {
             scope:province = {
                 region = root.capital_scope.region
+                area = {
+                    any_area_province = { omni_arteon_home_ring_border_trigger = yes }
+                }
             }
         }
 
         allow = {
-            owns_percent_of_region = {
-                PROVINCE = capital_scope
-                PERCENT = "0.25"
+            # These choices must precede the faith branches. Each start only sees its own task.
+            trigger_if = {
+                limit = { omni_arteon_heritage_nivan_trigger = yes }
+                custom_tooltip = {
+                    text = arteon_nivan_faith_settled_tt
+                    has_completed_mission_task = 03_arteon_generic_task_her_nivan_1
+                }
+            }
+            trigger_if = {
+                limit = { omni_arteon_heritage_alusarian_trigger = yes }
+                custom_tooltip = {
+                    text = arteon_alusarian_faith_settled_tt
+                    has_completed_mission_task = 03_arteon_generic_task_her_alusarian_1
+                }
+            }
+            custom_tooltip = {
+                text = arteon_home_ring_held_tt
+                capital_scope.region = {
+                    any_region_area = {
+                        any_area_province = {
+                            omni_arteon_home_ring_border_trigger = yes
+                            owned_or_subject_owned = root
+                        }
+                        NOT = {
+                            any_area_province = {
+                                has_owner = yes
+                                NOT = { owned_or_subject_owned = root }
+                            }
+                        }
+                    }
+                }
             }
         }
 
         on_completion = {
+            omni_arteon_homeland_rewards_effect = yes
             trigger_event = me_arteon_gen.4
-            omni_arteon_home_region_claims_effect = yes
-            add_1_free_province_investments = yes
-            add_military_experience = 10
         }
     }
 
     # Rung 3: the whole home region. Pays the lasting heartland reward.
     03_arteon_generic_task_home_2 = {
         icon = "task_conquest"
-        # Heritage slot I: only the country's own version is visible, the rest do not block.
-        requires = { 03_arteon_generic_task_4 03_arteon_generic_task_her_arunggilo_1 03_arteon_generic_task_her_arunggishay_1 03_arteon_generic_task_her_arungluyop_1 03_arteon_generic_task_her_arungdirong_1 03_arteon_generic_task_her_pact_1 03_arteon_generic_task_her_yedidyah_1 03_arteon_generic_task_her_nivan_1 03_arteon_generic_task_her_colonial_1 03_arteon_generic_task_her_alusarian_1 }
+        requires = { 03_arteon_generic_task_4 }
 
         highlight = {
             scope:province = {
@@ -225,6 +222,62 @@
                     name = arteon_heartland_seat_pmod
                     duration = -1
                 }
+            }
+        }
+    }
+
+    03_arteon_generic_task_10 = {
+        icon = "task_economical"
+        requires = { 03_arteon_generic_task_home_2 }
+
+        highlight = {
+            scope:province = {
+                OR = {
+                    has_city_status = yes
+                    has_province_rank = city_metropolis
+                }
+                OR = {
+                    is_in_region = arteon_shout_region
+                    is_in_region = arteon_eastern_region
+                    is_in_region = arteon_north_region
+                    is_in_region = arteon_western_region
+                }
+            }
+        }
+
+        allow = {
+            custom_tooltip = {
+                text = trigger_arteon_generic_task_10
+                any_owned_province = {
+                    count >= 10
+                    OR = {
+                        has_city_status = yes
+                        has_province_rank = city_metropolis
+                    }
+                    total_population >= 15
+                    OR = {
+                        AND = {
+                            num_of_military_building >= 2
+                            num_of_court_building >= 1
+                        }
+                        num_of_temple_building >= 1
+                    }
+                    OR = {
+                        is_in_region = arteon_shout_region
+                        is_in_region = arteon_eastern_region
+                        is_in_region = arteon_north_region
+                        is_in_region = arteon_western_region
+                    }
+                }
+            }
+        }
+
+        on_completion = {
+            add_treasury = 300
+            trigger_event = me_arteon_gen.10
+            add_country_modifier = {
+                name = arteon_rebuilt_cities_mod
+                duration = 3650
             }
         }
     }
@@ -324,6 +377,41 @@
         }
     }
 
+    # The smiths' charter arms the garrisons of the fortified capital.
+    03_arteon_generic_task_12 = {
+        icon = "task_calm"
+        requires = { 03_arteon_generic_task_iron_2 }
+
+        allow = {
+            capital_scope = {
+                num_of_fortress_building >= 2
+                has_no_ongoing_construction = yes
+            }
+            capital_scope.state = {
+                calc_true_if = {
+                    amount >= 3
+                    state_improvement_military_trigger = yes
+                    state_improvement_civic_trigger = yes
+                    state_improvement_oratory_trigger = yes
+                    state_improvement_religious_trigger = yes
+                }
+            }
+            custom_tooltip = {
+                text = we_need_improved_fortification_tt
+                has_high_economic_policy = expense_fort
+            }
+            stability >= 60
+        }
+
+        on_completion = {
+            trigger_event = me_arteon_gen.12
+            add_country_modifier = {
+                name = arteon_fortified_interior_mod
+                duration = 3650
+            }
+        }
+    }
+
     03_arteon_generic_task_iron_3 = {
         icon = "task_economical"
         requires = { 03_arteon_generic_task_iron_2 03_arteon_generic_task_home_2 }
@@ -385,21 +473,13 @@
     }
 
     # -------------------------------------------------
-    # Eptelonian Expansion
+    # Coastal defense, overseas expansion and naval supremacy
     # -------------------------------------------------
-    # Claims on Sum Khaya's area arrive before the landing that takes it.
-    03_arteon_generic_task_eptelon_1 = {
-        icon = "task_diplomatic"
-        requires = { 03_arteon_generic_task_4 }
-
-        highlight = {
-            scope:province = {
-                is_in_area = eptelon_north_area_3
-            }
-        }
+    03_arteon_generic_task_3 = {
+        icon = "task_expansion"
+        requires = { 03_arteon_generic_task_1 }
 
         allow = {
-            political_influence >= 20
             num_of_ships >= 10
             custom_tooltip = {
                 text = we_need_port_building_tt
@@ -410,9 +490,51 @@
         }
 
         on_completion = {
+            add_military_experience = 10
+            add_country_modifier = {
+                name = arteon_slaver_defense_mod
+                duration = 3650
+            }
+            trigger_event = me_arteon_gen.3
+        }
+    }
+
+    03_arteon_generic_task_11 = {
+        icon = "task_political"
+        requires = { 03_arteon_generic_task_3 }
+
+        allow = {
+            num_of_ships >= 60
+        }
+
+        on_completion = {
+            trigger_event = me_arteon_gen.11
+            add_country_modifier = {
+                name = arteon_grand_ports_mod
+                duration = -1
+            }
+        }
+    }
+
+    # Claims on Sum Khaya's area arrive before the landing that takes it.
+    03_arteon_generic_task_eptelon_1 = {
+        icon = "task_diplomatic"
+        requires = { 03_arteon_generic_task_3 }
+
+        highlight = {
+            scope:province = {
+                is_in_area = eptelon_north_area_3
+            }
+        }
+
+        allow = {
+            political_influence >= 20
+        }
+
+        on_completion = {
             add_political_influence = -20
             trigger_event = me_arteon_gen_eptelon.1
-            mission_claim_area_effect = { AREA = eptelon_north_area_3 }
+            omni_arteon_claim_area_effect = { AREA = eptelon_north_area_3 }
             add_country_modifier = {
                 name = arteon_mercenary_discount_mod
                 duration = 3650
@@ -439,7 +561,6 @@
         on_completion = {
             add_treasury = -100
             trigger_event = me_arteon_gen_eptelon.2
-            mission_claim_region_effect = { REGION = eptelon_north_region }
             create_unit = {
                 navy = no
                 name = arteonian_expeditionary_force_name
@@ -522,7 +643,7 @@
         on_completion = {
             add_political_influence = -20
             trigger_event = me_arteon_gen.15
-            mission_claim_region_effect = { REGION = arteon_shout_region }
+            omni_arteon_claim_region_effect = { REGION = arteon_shout_region }
             add_country_modifier = {
                 name = artheousan_diplomatic_dominance_mod
                 duration = 3650
@@ -559,7 +680,7 @@
 
         on_completion = {
             trigger_event = me_arteon_gen.18
-            mission_claim_region_effect = { REGION = arteon_western_region }
+            omni_arteon_claim_region_effect = { REGION = arteon_western_region }
         }
     }
 
@@ -705,7 +826,6 @@
 
         on_completion = {
             trigger_event = me_arteon_gen.24
-            mission_claim_region_effect = { REGION = arteon_north_region }
             set_variable = arteon_route_artheousan
             add_country_modifier = {
                 name = first_great_war_avenged_mod
@@ -734,7 +854,7 @@
         on_completion = {
             add_political_influence = -20
             trigger_event = me_arteon_gen.16
-            mission_claim_region_effect = { REGION = arteon_eastern_region }
+            omni_arteon_claim_region_effect = { REGION = arteon_eastern_region }
             add_country_modifier = {
                 name = ascendic_conquest_mod
                 duration = 3650
@@ -754,7 +874,7 @@
             religion = transcendence_enlighten
             stability >= 50
             custom_tooltip = {
-                text = perform_divine_sacrifice_please_stab_the_pig
+                text = arteon_divine_sacrifice_tt
                 has_country_modifier = stability_investment
             }
             custom_tooltip = {
@@ -786,9 +906,12 @@
         allow = {
             religion = transcendence_enlighten
             owns_or_subject_owns_region = arteon_eastern_region
-            p:919 = {
-                is_holy_site = no
-                has_province_rank = settlement
+            trigger_if = {
+                limit = { omni_arteon_two_altars_trigger = no }
+                p:919 = {
+                    is_holy_site = no
+                    has_province_rank = settlement
+                }
             }
         }
 
@@ -799,12 +922,12 @@
         }
 
         on_completion = {
-            trigger_event = me_arteon_gen.22
-            add_stability = 15
-            add_country_modifier = {
-                name = emra_abominations_purged_mod
-                duration = -1
+            omni_arteon_east_settlement_rewards_effect = yes
+            if = {
+                limit = { omni_arteon_two_altars_trigger = yes }
+                trigger_event = me_arteon_gen.62
             }
+            else = { trigger_event = me_arteon_gen.22 }
         }
     }
 
@@ -818,24 +941,18 @@
 
         allow = {
             religion = transcendence_enlighten
-            num_of_ships >= 25
+            stability >= 50
         }
 
         on_completion = {
-            trigger_event = me_arteon_gen.25
-            mission_claim_region_effect = { REGION = arteon_north_region }
             set_variable = arteon_route_ascendic
-            capital_scope = {
-                create_state_pop = citizen
-                create_state_pop = citizen
-                create_state_pop = citizen
-                create_state_pop = freemen
-                create_state_pop = freemen
+            omni_arteon_ascendic_capstone_rewards_effect = yes
+            if = {
+                limit = { omni_arteon_two_altars_trigger = yes }
+                hidden_effect = { set_variable = arteon_two_altars_compact }
+                trigger_event = me_arteon_gen.63
             }
-            add_country_modifier = {
-                name = high_elven_supremacy_mod
-                duration = -1
-            }
+            else = { trigger_event = me_arteon_gen.25 }
         }
     }
 
@@ -858,7 +975,7 @@
 
         on_completion = {
             trigger_event = me_arteon_gen.17
-            mission_claim_region_effect = { REGION = arteon_north_region }
+            omni_arteon_claim_area_effect = { AREA = arteon_north_area_6 }
             add_country_modifier = {
                 name = viktreic_holy_crusade_mod
                 duration = 3650
@@ -942,12 +1059,12 @@
 
         allow = {
             religion = victory_pantheon
-            owns_or_subject_owns_region = arteon_north_region
+            owns_or_subject_owns_area = arteon_north_area_6
         }
 
         highlight = {
             scope:province = {
-                is_in_region = arteon_north_region
+                is_in_area = arteon_north_area_6
             }
         }
 
@@ -1047,7 +1164,6 @@
 
         on_completion = {
             trigger_event = me_arteon_gen.33
-            mission_claim_region_effect = { REGION = arteon_north_region }
             set_variable = arteon_route_old_faith
             add_stability = 10
             add_country_modifier = {
@@ -1064,7 +1180,7 @@
     # -------------------------------------------------
     # Heritage tasks. Each people sees two (three with a condition).
     # Heritage is recorded in on_start (Fezzani pattern), so a tag or culture change later keeps them.
-    # Slot I is required by task_home_2, slot II by task_10; hidden versions do not block.
+    # Heritage tasks run alongside the heartland ladder. Task 4 checks the two faith choices.
     # -------------------------------------------------
 
     # Arunggilo (Myahudyan, Tyuhan, Zwyegweyan)
@@ -1391,7 +1507,7 @@
     }
 
     # Nivan (Horteonian refugees of North Arteon)
-    # Comes before task 4, so the answer decides which faith branch opens.
+    # Task 4 checks this choice so its answer decides which faith branch opens.
     03_arteon_generic_task_her_nivan_1 = {
         icon = "task_religion"
         requires = { 03_arteon_generic_task_home_1 }
@@ -1534,7 +1650,7 @@
 
     03_arteon_generic_task_her_alusarian_2 = {
         icon = "task_battle"
-        requires = { 03_arteon_generic_task_home_2 }
+        requires = { 03_arteon_generic_task_1 }
 
         potential = { omni_arteon_heritage_alusarian_trigger = yes }
 
@@ -1551,7 +1667,7 @@
             owns_or_subject_owns = 662
             owns_or_subject_owns = 684
             treasury >= 150
-            num_of_unit_type = { type = heavy_infantry value >= 6 }
+            military_experience >= 15
         }
 
         on_completion = {
@@ -1593,9 +1709,35 @@
     # -------------------------------------------------
     # Shared Late Game
     # -------------------------------------------------
+    03_arteon_generic_task_campaign_writs = {
+        icon = "task_conquest"
+        requires = { 03_arteon_generic_task_home_2 03_arteon_generic_task_8a 03_arteon_generic_task_8b 03_arteon_generic_task_8c 03_arteon_generic_task_6d }
+
+        bypass = { omni_arteon_four_shores_held_trigger = yes }
+
+        allow = { always = yes }
+
+        highlight = {
+            scope:province = {
+                omni_arteon_can_gain_claim_trigger = yes
+                OR = {
+                    is_in_region = arteon_shout_region
+                    is_in_region = arteon_eastern_region
+                    is_in_region = arteon_western_region
+                    is_in_region = arteon_north_region
+                }
+            }
+        }
+
+        on_completion = {
+            omni_arteon_campaign_claims_effect = yes
+            trigger_event = me_arteon_gen.60
+        }
+    }
+
     03_arteon_generic_task_9 = {
         icon = "task_battle"
-        requires = { 03_arteon_generic_task_8a 03_arteon_generic_task_8b 03_arteon_generic_task_8c 03_arteon_generic_task_6d }
+        requires = { 03_arteon_generic_task_campaign_writs }
 
         highlight = {
             scope:province = {
@@ -1671,64 +1813,6 @@
         }
     }
 
-    # Rebuilding follows the united heartland as well as the northern war.
-    03_arteon_generic_task_10 = {
-        icon = "task_economical"
-        # Heritage slot II joins here as well.
-        requires = { 03_arteon_generic_task_9 03_arteon_generic_task_home_2 03_arteon_generic_task_her_arunggilo_2 03_arteon_generic_task_her_arunggishay_2 03_arteon_generic_task_her_arungluyop_2 03_arteon_generic_task_her_arungdirong_2 03_arteon_generic_task_her_pact_2 03_arteon_generic_task_her_yedidyah_2 03_arteon_generic_task_her_nivan_2 03_arteon_generic_task_her_colonial_2 03_arteon_generic_task_her_alusarian_2 }
-
-        highlight = {
-            scope:province = {
-                OR = {
-                    has_city_status = yes
-                    has_province_rank = city_metropolis
-                }
-                OR = {
-                    is_in_region = arteon_shout_region
-                    is_in_region = arteon_eastern_region
-                    is_in_region = arteon_north_region
-                    is_in_region = arteon_western_region
-                }
-            }
-        }
-
-        allow = {
-            custom_tooltip = {
-                text = trigger_arteon_generic_task_10
-                any_owned_province = {
-                    count >= 10
-                    OR = {
-                        has_city_status = yes
-                        has_province_rank = city_metropolis
-                    }
-                    total_population >= 15
-                    OR = {
-                        AND = {
-                            num_of_military_building >= 2
-                            num_of_court_building >= 1
-                        }
-                        num_of_temple_building >= 1
-                    }
-                    OR = {
-                        is_in_region = arteon_shout_region
-                        is_in_region = arteon_eastern_region
-                        is_in_region = arteon_north_region
-                        is_in_region = arteon_western_region
-                    }
-                }
-            }
-        }
-
-        on_completion = {
-            add_treasury = 300
-            trigger_event = me_arteon_gen.10
-            add_country_modifier = {
-                name = arteon_rebuilt_cities_mod
-                duration = 3650
-            }
-        }
-    }
-
     03_arteon_generic_task_9_vampire_lord = {
         icon = "task_conquest"
         requires = { 03_arteon_generic_task_9 }
@@ -1775,85 +1859,31 @@
         }
     }
 
-    03_arteon_generic_task_11 = {
-        icon = "task_political"
-        requires = { 03_arteon_generic_task_10 }
-
-        allow = {
-            num_of_ships >= 40
-        }
-
-        on_completion = {
-            trigger_event = me_arteon_gen.11
-            add_country_modifier = {
-                name = arteon_grand_ports_mod
-                duration = -1
-            }
-        }
-    }
-
-    # The smiths' charter arms the garrisons of the fortified capital.
-    03_arteon_generic_task_12 = {
-        icon = "task_calm"
-        requires = { 03_arteon_generic_task_10 03_arteon_generic_task_iron_2 }
-
-        allow = {
-            capital_scope = {
-                num_of_fortress_building >= 2
-                has_no_ongoing_construction = yes
-            }
-            capital_scope.state = {
-                calc_true_if = {
-                    amount >= 3
-                    state_improvement_military_trigger = yes
-                    state_improvement_civic_trigger = yes
-                    state_improvement_oratory_trigger = yes
-                    state_improvement_religious_trigger = yes
-                }
-            }
-            custom_tooltip = {
-                text = we_need_improved_fortification_tt
-                has_high_economic_policy = expense_fort
-            }
-            stability >= 60
-        }
-
-        on_completion = {
-            trigger_event = me_arteon_gen.12
-            add_country_modifier = {
-                name = arteon_fortified_interior_mod
-                duration = 3650
-            }
-        }
-    }
-
+    # The four shores are consolidated in the same milestone as the peace settlement.
     03_arteon_generic_task_13 = {
         icon = "task_diplomatic"
-        requires = { 03_arteon_generic_task_11 03_arteon_generic_task_12 }
+        requires = { 03_arteon_generic_task_9 03_arteon_generic_task_10 03_arteon_generic_task_12 }
         duration = 90
 
         allow = {
+            omni_arteon_four_shores_held_trigger = yes
+            war = no
+            stability >= 60
             political_influence >= 50
             has_aggressive_expansion <= 15
-            num_of_ships >= 60
             capital_scope = {
-                has_city_status = yes
-                num_of_fortress_building >= 2
+                OR = {
+                    has_city_status = yes
+                    has_province_rank = city_metropolis
+                }
                 civilization_value >= 60
                 total_population >= 70
             }
         }
 
         on_completion = {
-            add_political_influence = -50
+            omni_arteon_lasting_peace_rewards_effect = yes
             trigger_event = me_arteon_gen.13
-            capital_scope = {
-                set_city_status = city_metropolis
-            }
-            add_country_modifier = {
-                name = arteon_lasting_peace_mod
-                duration = -1
-            }
         }
     }
 
@@ -1864,6 +1894,7 @@
         requires = { 03_arteon_generic_task_13 }
 
         allow = {
+            omni_arteon_four_shores_held_trigger = yes
             custom_tooltip = {
                 text = you_need_to_form_arteon_tt
                 tag = ART
@@ -1884,8 +1915,8 @@
 
         on_completion = {
             omni_unlock_achievement = { ACH = omni_ach_four_shores EVENT = omni_ach.31 }
-            trigger_event = me_arteon_gen.14
             omni_arteon_finale_rewards_effect = yes
+            trigger_event = me_arteon_gen.14
         }
     }
 }
