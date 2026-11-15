@@ -221,25 +221,29 @@ base_window = {
 								tooltip = "[CharacterWindow.GetCharacter.GetExperienceInformation]"
 							}
 
-								# OMNI: "Cast Spell On" button. Shown at the top-left of the portrait
-								# when the viewed character is a valid target and the player has an
-								# eligible mage. Replaces the old "Cast Spell On" character interaction.
+								### OMNI: Spellbook shortcut. Opens the Spellbook window (gui/omni_spellbook.gui)
+								### on this character; the main entry point is the Spellbook seal by the outliner.
 								icon_button_square = {
-									name = "omni_cast_spell_button"
+									name = "omni_spellbook_button"
 									parentanchor = top|left
-									position = { 196 6 }
+									position = { 82 6 }
 									size = { 34 34 }
-									datacontext = "[GetScriptedGui('omni_cast_spell_character_button')]"
+									datacontext = "[GetScriptedGui('omni_sb_open_for_character')]"
 									visible = "[And( And( CharacterWindow.GetCharacter.IsValid, CharacterWindow.GetCharacter.IsAlive ), ScriptedGui.IsShown( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
-									enabled = "[And( And( CharacterWindow.GetCharacter.IsValid, CharacterWindow.GetCharacter.IsAlive ), ScriptedGui.IsValid( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
-									tooltip = "[SelectLocalization( ScriptedGui.IsValid( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End ), 'omni_cast_spell_character_button_tooltip', 'omni_cast_spell_no_affordable_mage_tooltip' )]"
+									tooltip = "omni_sb_open_tt"
 									blockoverride "On_click"
 									{
 										onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( CharacterWindow.GetCharacter.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+										onclick = "[GetVariableSystem.Clear('omni_hc_picker')]"
+										onclick = "[GetVariableSystem.Clear('omni_sf_panel')]"
+										onclick = "[ExecuteConsoleCommand('gui.ClearWidgets omni_shannah_court')]"
+										onclick = "[ExecuteConsoleCommand('gui.ClearWidgets omni_helluvian_targets')]"
+										onclick = "[GetVariableSystem.Set( 'omni_spellbook', 'omnic' )]"
+										clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
 									}
 									blockoverride "Icon"
 									{
-										texture = "gfx/interface/buttons/magic_window/magic_button.dds"
+										texture = "gfx/interface/omniluxia/spellbook_seal.dds"
 										size = { 34 34 }
 									}
 								}

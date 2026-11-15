@@ -1,0 +1,93 @@
+﻿# Game-start spell kits: a random sprinkling of spells for mages placed by setup files
+# and starting events. Runs ONCE per country, one day after game start
+# (events/omni_starting_spells.txt), so mages created by start-up lore events count.
+#
+# Regular kits only teach spells. The Shannah has a dedicated Hierophant kit.
+#   Mage:      2 random Tier I spells
+#   Archmage:  2 Tier I + 1 Tier II + 1 Tier III (never a Tier IV capstone)
+# Family: read from the mage's school trait, school rank or study affinity if they
+# have one; otherwise random. Special traditions and folk practitioners are skipped
+# (see omni_sb_needs_starting_spells).
+
+# Character scope.
+omni_sb_starting_spells_character = {
+	set_variable = omni_sb_start_checked
+	if = {
+		limit = { omni_sb_start_knows_any_academy_spell = no }
+		# Temporary family code: 1 omnic, 2 aldic, 3 amten, 4 melodian.
+		if = { limit = { OR = { has_trait = diviner_trait has_trait = hierophant_trait } } set_variable = { name = omni_sb_start_family value = 1 } }
+		else_if = { limit = { OR = { has_trait = cleric_trait has_trait = illusionist_trait } } set_variable = { name = omni_sb_start_family value = 2 } }
+		else_if = { limit = { OR = { has_trait = elementalist_trait has_trait = druid_trait } } set_variable = { name = omni_sb_start_family value = 3 } }
+		else_if = { limit = { OR = { has_trait = necromancer_trait has_trait = warlock_trait has_trait = lich_trait } } set_variable = { name = omni_sb_start_family value = 4 } }
+		else_if = { limit = { omni_sb_omnic_t1_access = yes } set_variable = { name = omni_sb_start_family value = 1 } }
+		else_if = { limit = { omni_sb_aldic_t1_access = yes } set_variable = { name = omni_sb_start_family value = 2 } }
+		else_if = { limit = { omni_sb_amten_t1_access = yes } set_variable = { name = omni_sb_start_family value = 3 } }
+		else_if = { limit = { omni_sb_melodian_t1_access = yes } set_variable = { name = omni_sb_start_family value = 4 } }
+		else_if = { limit = { has_variable = omni_best_affinity_var var:omni_best_affinity_var = 1 } set_variable = { name = omni_sb_start_family value = 1 } }
+		else_if = { limit = { has_variable = omni_best_affinity_var var:omni_best_affinity_var = 2 } set_variable = { name = omni_sb_start_family value = 2 } }
+		else_if = { limit = { has_variable = omni_best_affinity_var var:omni_best_affinity_var = 3 } set_variable = { name = omni_sb_start_family value = 3 } }
+		else_if = { limit = { has_variable = omni_best_affinity_var var:omni_best_affinity_var = 4 } set_variable = { name = omni_sb_start_family value = 4 } }
+		else = {
+			random_list = {
+				1 = { set_variable = { name = omni_sb_start_family value = 1 } }
+				1 = { set_variable = { name = omni_sb_start_family value = 2 } }
+				1 = { set_variable = { name = omni_sb_start_family value = 3 } }
+				1 = { set_variable = { name = omni_sb_start_family value = 4 } }
+			}
+		}
+		if = { limit = { var:omni_sb_start_family = 1 } omni_sb_starting_kit = { FAMILY = omnic } }
+		else_if = { limit = { var:omni_sb_start_family = 2 } omni_sb_starting_kit = { FAMILY = aldic } }
+		else_if = { limit = { var:omni_sb_start_family = 3 } omni_sb_starting_kit = { FAMILY = amten } }
+		else_if = { limit = { var:omni_sb_start_family = 4 } omni_sb_starting_kit = { FAMILY = melodian } }
+		remove_variable = omni_sb_start_family
+	}
+}
+
+omni_sb_starting_kit = {
+	omni_sb_start_learn_random_$FAMILY$_t1 = yes
+	omni_sb_start_learn_random_$FAMILY$_t1 = yes
+	if = {
+		limit = { OR = { has_trait = archmage_trait has_trait = grand_archmage_trait has_trait = magus_supreme_trait } }
+		omni_sb_start_learn_random_$FAMILY$_t2 = yes
+		omni_sb_start_learn_random_$FAMILY$_t3 = yes
+	}
+}
+
+# The starting Shannah receives four distinct divine Omnic spells.
+# His starting Hierophant ranks let him cast every spell in this pool.
+omni_sb_starting_shannah_spells = {
+	set_variable = omni_sb_start_checked
+	set_variable = hierophant_t2_unlocked_var
+	set_variable = hierophant_t3_unlocked_var
+	set_variable = hierophant_t4_unlocked_var
+	set_variable = hierophant_mastered_var
+	while = {
+		count = 4
+		random_list = {
+			1 = { trigger = { NOT = { omni_knows_spell = { SPELL = sword_of_zanis } } } omni_learn_spell = { SPELL = sword_of_zanis } }
+			1 = { trigger = { NOT = { omni_knows_spell = { SPELL = exorcism } } } omni_learn_spell = { SPELL = exorcism } }
+			1 = { trigger = { NOT = { omni_knows_spell = { SPELL = revelation } } } omni_learn_spell = { SPELL = revelation } }
+			1 = { trigger = { NOT = { omni_knows_spell = { SPELL = blessing } } } omni_learn_spell = { SPELL = blessing } }
+			1 = { trigger = { NOT = { omni_knows_spell = { SPELL = light_of_true_faith } } } omni_learn_spell = { SPELL = light_of_true_faith } }
+		}
+	}
+}
+
+# Country scope. Runs once per country (guarded).
+omni_sb_starting_spells_country = {
+	if = {
+		limit = { NOT = { has_variable = omni_sb_start_spells_done } }
+		set_variable = omni_sb_start_spells_done
+		if = {
+			limit = {
+				tag = IF3
+				current_ruler = { is_alive = yes has_trait = shannah_trait }
+			}
+			current_ruler = { omni_sb_starting_shannah_spells = yes }
+		}
+		every_character = {
+			limit = { omni_sb_needs_starting_spells = yes }
+			omni_sb_starting_spells_character = yes
+		}
+	}
+}

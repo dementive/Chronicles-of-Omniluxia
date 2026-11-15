@@ -1,0 +1,732 @@
+﻿# GENERATED FILE: do not hand edit. Source: tools/spellbook/build_spellbook.py + spellbook_registry.txt
+# Character scope.
+
+# Called by every study-course ending instead of the old random grant.
+#   omni_sb_grant_spell_points = { FAMILY = omnic AMOUNT = 1 }
+# Humans keep the points for the Spellbook; AI characters spend them at once.
+omni_sb_grant_spell_points = {
+	custom_tooltip = omni_sb_gain_points_$AMOUNT$_tt
+	hidden_effect = {
+		if = { limit = { NOT = { has_variable = omni_spell_points } } set_variable = { name = omni_spell_points value = 0 } }
+		change_variable = { name = omni_spell_points add = $AMOUNT$ }
+		if = {
+			limit = { omni_sb_belongs_to_player = no }
+			omni_sb_ai_spend_points_$FAMILY$ = yes
+		}
+	}
+}
+
+# COUNTRY scope. Rebuilds the Spellbook mage list and keeps a valid selection,
+# preferring a mage with unspent points. Runs only when the Spellbook opens.
+omni_sb_refresh_mage_list = {
+	save_scope_as = omni_sb_owner
+	clear_variable_list = omni_sb_mages
+	every_character = {
+		limit = { is_alive = yes omni_sb_listable_mage = yes }
+		save_scope_as = omni_sb_candidate
+		scope:omni_sb_owner = { add_to_variable_list = { name = omni_sb_mages target = scope:omni_sb_candidate } }
+	}
+	if = {
+		limit = {
+			has_variable = omni_sb_selected_mage
+			NOT = { is_target_in_variable_list = { name = omni_sb_mages target = var:omni_sb_selected_mage } }
+		}
+		remove_variable = omni_sb_selected_mage
+	}
+	if = {
+		limit = { NOT = { has_variable = omni_sb_selected_mage } }
+		if = {
+			limit = { any_in_list = { variable = omni_sb_mages omni_sb_has_points = { N = 1 } } }
+			random_in_list = { variable = omni_sb_mages limit = { omni_sb_has_points = { N = 1 } } save_scope_as = omni_sb_default }
+		}
+		else_if = {
+			limit = { any_in_list = { variable = omni_sb_mages } }
+			random_in_list = { variable = omni_sb_mages save_scope_as = omni_sb_default }
+		}
+		if = {
+			limit = { exists = scope:omni_sb_default }
+			set_variable = { name = omni_sb_selected_mage value = scope:omni_sb_default }
+		}
+	}
+}
+
+omni_sb_buy_battle_clarity = {
+	if = { limit = { omni_sb_own_battle_clarity = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = battle_clarity }
+}
+omni_sb_buy_sword_of_zanis = {
+	if = { limit = { omni_sb_own_sword_of_zanis = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = sword_of_zanis }
+}
+omni_sb_buy_light_shields = {
+	if = { limit = { omni_sb_own_light_shields = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = light_shields }
+}
+omni_sb_buy_light_rays = {
+	if = { limit = { omni_sb_own_light_rays = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = light_rays }
+}
+omni_sb_buy_exorcism = {
+	if = { limit = { omni_sb_own_exorcism = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = exorcism }
+}
+omni_sb_buy_revelation = {
+	if = { limit = { omni_sb_own_revelation = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = revelation }
+}
+omni_sb_buy_blinding_flash = {
+	if = { limit = { omni_sb_own_blinding_flash = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = blinding_flash }
+}
+omni_sb_buy_battle_hymn = {
+	if = { limit = { omni_sb_own_battle_hymn = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = battle_hymn }
+}
+omni_sb_buy_light_of_true_faith = {
+	if = { limit = { omni_sb_own_light_of_true_faith = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = light_of_true_faith }
+}
+omni_sb_buy_light_rays_ii = {
+	if = { limit = { omni_sb_own_light_rays_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = light_rays_ii }
+}
+omni_sb_buy_light_walls = {
+	if = { limit = { omni_sb_own_light_walls = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = light_walls }
+}
+omni_sb_buy_blessing = {
+	if = { limit = { omni_sb_own_blessing = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = blessing }
+}
+omni_sb_buy_exorcism_ii = {
+	if = { limit = { omni_sb_own_exorcism_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = exorcism_ii }
+}
+omni_sb_buy_chain_lightning = {
+	if = { limit = { omni_sb_own_chain_lightning = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = chain_lightning }
+}
+omni_sb_buy_blessing_of_war = {
+	if = { limit = { omni_sb_own_blessing_of_war = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = blessing_of_war }
+}
+omni_sb_buy_harbor_ward = {
+	if = { limit = { omni_sb_own_harbor_ward = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = harbor_ward }
+}
+omni_sb_buy_divine_ceremonies = {
+	if = { limit = { omni_sb_own_divine_ceremonies = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = divine_ceremonies }
+}
+omni_sb_buy_spirit_bomb = {
+	if = { limit = { omni_sb_own_spirit_bomb = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = spirit_bomb }
+}
+omni_sb_buy_revelation_ii = {
+	if = { limit = { omni_sb_own_revelation_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = revelation_ii }
+}
+omni_sb_buy_gravity_well = {
+	if = { limit = { omni_sb_own_gravity_well = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = gravity_well }
+}
+omni_sb_buy_chronostasis_field = {
+	if = { limit = { omni_sb_own_chronostasis_field = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = chronostasis_field }
+}
+omni_sb_buy_arcane_aegis = {
+	if = { limit = { omni_sb_own_arcane_aegis = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = arcane_aegis }
+}
+omni_sb_buy_hand_of_adaralu = {
+	if = { limit = { omni_sb_own_hand_of_adaralu = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = hand_of_adaralu }
+}
+omni_sb_buy_restoration = {
+	if = { limit = { omni_sb_own_restoration = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = restoration }
+}
+omni_sb_buy_healing_light = {
+	if = { limit = { omni_sb_own_healing_light = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = healing_light }
+}
+omni_sb_buy_altered_inspiration = {
+	if = { limit = { omni_sb_own_altered_inspiration = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = altered_inspiration }
+}
+omni_sb_buy_inspired_thoughts = {
+	if = { limit = { omni_sb_own_inspired_thoughts = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = inspired_thoughts }
+}
+omni_sb_buy_arcane_volley = {
+	if = { limit = { omni_sb_own_arcane_volley = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = arcane_volley }
+}
+omni_sb_buy_unrest_cleansing = {
+	if = { limit = { omni_sb_own_unrest_cleansing = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = unrest_cleansing }
+}
+omni_sb_buy_counterward = {
+	if = { limit = { omni_sb_own_counterward = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = counterward }
+}
+omni_sb_buy_illusion_walls = {
+	if = { limit = { omni_sb_own_illusion_walls = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = illusion_walls }
+}
+omni_sb_buy_golden_fingers_of_the_pharon = {
+	if = { limit = { omni_sb_own_golden_fingers_of_the_pharon = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = golden_fingers_of_the_pharon }
+}
+omni_sb_buy_healing_light_ii = {
+	if = { limit = { omni_sb_own_healing_light_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = healing_light_ii }
+}
+omni_sb_buy_vitality = {
+	if = { limit = { omni_sb_own_vitality = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = vitality }
+}
+omni_sb_buy_mind_break = {
+	if = { limit = { omni_sb_own_mind_break = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = mind_break }
+}
+omni_sb_buy_warped_flesh = {
+	if = { limit = { omni_sb_own_warped_flesh = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = warped_flesh }
+}
+omni_sb_buy_corrosive_rain = {
+	if = { limit = { omni_sb_own_corrosive_rain = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = corrosive_rain }
+}
+omni_sb_buy_pestilence = {
+	if = { limit = { omni_sb_own_pestilence = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = pestilence }
+}
+omni_sb_buy_warped_flesh_ii = {
+	if = { limit = { omni_sb_own_warped_flesh_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = warped_flesh_ii }
+}
+omni_sb_buy_meteor_strike = {
+	if = { limit = { omni_sb_own_meteor_strike = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = meteor_strike }
+}
+omni_sb_buy_word_of_annihilation = {
+	if = { limit = { omni_sb_own_word_of_annihilation = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = word_of_annihilation }
+}
+omni_sb_buy_blighted_ground = {
+	if = { limit = { omni_sb_own_blighted_ground = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = blighted_ground }
+}
+omni_sb_buy_mudbind = {
+	if = { limit = { omni_sb_own_mudbind = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = mudbind }
+}
+omni_sb_buy_burning_pitch = {
+	if = { limit = { omni_sb_own_burning_pitch = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = burning_pitch }
+}
+omni_sb_buy_conjured_supply = {
+	if = { limit = { omni_sb_own_conjured_supply = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = conjured_supply }
+}
+omni_sb_buy_arrows_of_lavas = {
+	if = { limit = { omni_sb_own_arrows_of_lavas = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = arrows_of_lavas }
+}
+omni_sb_buy_detect_minerals = {
+	if = { limit = { omni_sb_own_detect_minerals = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = detect_minerals }
+}
+omni_sb_buy_winds_of_pedentrutzu = {
+	if = { limit = { omni_sb_own_winds_of_pedentrutzu = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = winds_of_pedentrutzu }
+}
+omni_sb_buy_fireball = {
+	if = { limit = { omni_sb_own_fireball = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = fireball }
+}
+omni_sb_buy_plant_growth = {
+	if = { limit = { omni_sb_own_plant_growth = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = plant_growth }
+}
+omni_sb_buy_summon_dryads = {
+	if = { limit = { omni_sb_own_summon_dryads = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = summon_dryads }
+}
+omni_sb_buy_frostbite_wind = {
+	if = { limit = { omni_sb_own_frostbite_wind = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = frostbite_wind }
+}
+omni_sb_buy_breaching_tremor = {
+	if = { limit = { omni_sb_own_breaching_tremor = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = breaching_tremor }
+}
+omni_sb_buy_weathercall_growth = {
+	if = { limit = { omni_sb_own_weathercall_growth = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = weathercall_growth }
+}
+omni_sb_buy_migration_beacon = {
+	if = { limit = { omni_sb_own_migration_beacon = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = migration_beacon }
+}
+omni_sb_buy_feast_of_ugone = {
+	if = { limit = { omni_sb_own_feast_of_ugone = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = feast_of_ugone }
+}
+omni_sb_buy_detect_minerals_ii = {
+	if = { limit = { omni_sb_own_detect_minerals_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = detect_minerals_ii }
+}
+omni_sb_buy_rock_slide = {
+	if = { limit = { omni_sb_own_rock_slide = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = rock_slide }
+}
+omni_sb_buy_plant_growth_ii = {
+	if = { limit = { omni_sb_own_plant_growth_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = plant_growth_ii }
+}
+omni_sb_buy_nature_bounty = {
+	if = { limit = { omni_sb_own_nature_bounty = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = nature_bounty }
+}
+omni_sb_buy_seismic_tremor = {
+	if = { limit = { omni_sb_own_seismic_tremor = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = seismic_tremor }
+}
+omni_sb_buy_magical_construction = {
+	if = { limit = { omni_sb_own_magical_construction = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = magical_construction }
+}
+omni_sb_buy_summon_earthworks = {
+	if = { limit = { omni_sb_own_summon_earthworks = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = summon_earthworks }
+}
+omni_sb_buy_nature_bounty_ii = {
+	if = { limit = { omni_sb_own_nature_bounty_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = nature_bounty_ii }
+}
+omni_sb_buy_glacial_tomb = {
+	if = { limit = { omni_sb_own_glacial_tomb = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = glacial_tomb }
+}
+omni_sb_buy_summon_elemental_colossus = {
+	if = { limit = { omni_sb_own_summon_elemental_colossus = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = summon_elemental_colossus }
+}
+omni_sb_buy_fear_hex = {
+	if = { limit = { omni_sb_own_fear_hex = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = fear_hex }
+}
+omni_sb_buy_cursed_rigging = {
+	if = { limit = { omni_sb_own_cursed_rigging = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = cursed_rigging }
+}
+omni_sb_buy_spectral_boarders = {
+	if = { limit = { omni_sb_own_spectral_boarders = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = spectral_boarders }
+}
+omni_sb_buy_wasting_rot = {
+	if = { limit = { omni_sb_own_wasting_rot = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = wasting_rot }
+}
+omni_sb_buy_battle_surge = {
+	if = { limit = { omni_sb_own_battle_surge = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = battle_surge }
+}
+omni_sb_buy_summon_warborn = {
+	if = { limit = { omni_sb_own_summon_warborn = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = summon_warborn }
+}
+omni_sb_buy_curse = {
+	if = { limit = { omni_sb_own_curse = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = curse }
+}
+omni_sb_buy_rage = {
+	if = { limit = { omni_sb_own_rage = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = rage }
+}
+omni_sb_buy_dark_offering = {
+	if = { limit = { omni_sb_own_dark_offering = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = dark_offering }
+}
+omni_sb_buy_igniting_spark = {
+	if = { limit = { omni_sb_own_igniting_spark = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = igniting_spark }
+}
+omni_sb_buy_hammer_of_melodias = {
+	if = { limit = { omni_sb_own_hammer_of_melodias = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = hammer_of_melodias }
+}
+omni_sb_buy_hex = {
+	if = { limit = { omni_sb_own_hex = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = hex }
+}
+omni_sb_buy_curse_ii = {
+	if = { limit = { omni_sb_own_curse_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = curse_ii }
+}
+omni_sb_buy_death_ray = {
+	if = { limit = { omni_sb_own_death_ray = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = death_ray }
+}
+omni_sb_buy_dark_visions = {
+	if = { limit = { omni_sb_own_dark_visions = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = dark_visions }
+}
+omni_sb_buy_storm_wrack = {
+	if = { limit = { omni_sb_own_storm_wrack = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = storm_wrack }
+}
+omni_sb_buy_heroic_resonance = {
+	if = { limit = { omni_sb_own_heroic_resonance = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = heroic_resonance }
+}
+omni_sb_buy_storm_of_the_siege = {
+	if = { limit = { omni_sb_own_storm_of_the_siege = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = storm_of_the_siege }
+}
+omni_sb_buy_raise_workers = {
+	if = { limit = { omni_sb_own_raise_workers = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = raise_workers }
+}
+omni_sb_buy_dark_offering_ii = {
+	if = { limit = { omni_sb_own_dark_offering_ii = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = dark_offering_ii }
+}
+omni_sb_buy_plague_miasma = {
+	if = { limit = { omni_sb_own_plague_miasma = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = plague_miasma }
+}
+omni_sb_buy_cataclysmic_eruption = {
+	if = { limit = { omni_sb_own_cataclysmic_eruption = yes } change_variable = { name = omni_spell_points subtract = 1 } }
+	else = { change_variable = { name = omni_spell_points subtract = 2 } }
+	omni_learn_spell = { SPELL = cataclysmic_eruption }
+}
+
+# AI picks: weighted toward higher tiers; only buyable spells are eligible.
+omni_sb_ai_pick_omnic = {
+	random_list = {
+		10 = { trigger = { omni_sb_can_buy_battle_clarity = yes } omni_sb_buy_battle_clarity = yes }
+		10 = { trigger = { omni_sb_can_buy_sword_of_zanis = yes } omni_sb_buy_sword_of_zanis = yes }
+		10 = { trigger = { omni_sb_can_buy_light_shields = yes } omni_sb_buy_light_shields = yes }
+		10 = { trigger = { omni_sb_can_buy_light_rays = yes } omni_sb_buy_light_rays = yes }
+		10 = { trigger = { omni_sb_can_buy_exorcism = yes } omni_sb_buy_exorcism = yes }
+		10 = { trigger = { omni_sb_can_buy_revelation = yes } omni_sb_buy_revelation = yes }
+		10 = { trigger = { omni_sb_can_buy_blinding_flash = yes } omni_sb_buy_blinding_flash = yes }
+		20 = { trigger = { omni_sb_can_buy_battle_hymn = yes } omni_sb_buy_battle_hymn = yes }
+		20 = { trigger = { omni_sb_can_buy_light_of_true_faith = yes } omni_sb_buy_light_of_true_faith = yes }
+		20 = { trigger = { omni_sb_can_buy_light_rays_ii = yes } omni_sb_buy_light_rays_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_light_walls = yes } omni_sb_buy_light_walls = yes }
+		20 = { trigger = { omni_sb_can_buy_blessing = yes } omni_sb_buy_blessing = yes }
+		20 = { trigger = { omni_sb_can_buy_exorcism_ii = yes } omni_sb_buy_exorcism_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_chain_lightning = yes } omni_sb_buy_chain_lightning = yes }
+		30 = { trigger = { omni_sb_can_buy_blessing_of_war = yes } omni_sb_buy_blessing_of_war = yes }
+		30 = { trigger = { omni_sb_can_buy_harbor_ward = yes } omni_sb_buy_harbor_ward = yes }
+		30 = { trigger = { omni_sb_can_buy_divine_ceremonies = yes } omni_sb_buy_divine_ceremonies = yes }
+		30 = { trigger = { omni_sb_can_buy_spirit_bomb = yes } omni_sb_buy_spirit_bomb = yes }
+		30 = { trigger = { omni_sb_can_buy_revelation_ii = yes } omni_sb_buy_revelation_ii = yes }
+		30 = { trigger = { omni_sb_can_buy_gravity_well = yes } omni_sb_buy_gravity_well = yes }
+		50 = { trigger = { omni_sb_can_buy_chronostasis_field = yes } omni_sb_buy_chronostasis_field = yes }
+	}
+}
+
+omni_sb_ai_pick_aldic = {
+	random_list = {
+		10 = { trigger = { omni_sb_can_buy_arcane_aegis = yes } omni_sb_buy_arcane_aegis = yes }
+		10 = { trigger = { omni_sb_can_buy_hand_of_adaralu = yes } omni_sb_buy_hand_of_adaralu = yes }
+		10 = { trigger = { omni_sb_can_buy_restoration = yes } omni_sb_buy_restoration = yes }
+		10 = { trigger = { omni_sb_can_buy_healing_light = yes } omni_sb_buy_healing_light = yes }
+		10 = { trigger = { omni_sb_can_buy_altered_inspiration = yes } omni_sb_buy_altered_inspiration = yes }
+		10 = { trigger = { omni_sb_can_buy_inspired_thoughts = yes } omni_sb_buy_inspired_thoughts = yes }
+		10 = { trigger = { omni_sb_can_buy_arcane_volley = yes } omni_sb_buy_arcane_volley = yes }
+		20 = { trigger = { omni_sb_can_buy_unrest_cleansing = yes } omni_sb_buy_unrest_cleansing = yes }
+		20 = { trigger = { omni_sb_can_buy_counterward = yes } omni_sb_buy_counterward = yes }
+		20 = { trigger = { omni_sb_can_buy_illusion_walls = yes } omni_sb_buy_illusion_walls = yes }
+		20 = { trigger = { omni_sb_can_buy_golden_fingers_of_the_pharon = yes } omni_sb_buy_golden_fingers_of_the_pharon = yes }
+		20 = { trigger = { omni_sb_can_buy_healing_light_ii = yes } omni_sb_buy_healing_light_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_vitality = yes } omni_sb_buy_vitality = yes }
+		20 = { trigger = { omni_sb_can_buy_mind_break = yes } omni_sb_buy_mind_break = yes }
+		20 = { trigger = { omni_sb_can_buy_warped_flesh = yes } omni_sb_buy_warped_flesh = yes }
+		20 = { trigger = { omni_sb_can_buy_corrosive_rain = yes } omni_sb_buy_corrosive_rain = yes }
+		30 = { trigger = { omni_sb_can_buy_pestilence = yes } omni_sb_buy_pestilence = yes }
+		30 = { trigger = { omni_sb_can_buy_warped_flesh_ii = yes } omni_sb_buy_warped_flesh_ii = yes }
+		30 = { trigger = { omni_sb_can_buy_meteor_strike = yes } omni_sb_buy_meteor_strike = yes }
+		50 = { trigger = { omni_sb_can_buy_word_of_annihilation = yes } omni_sb_buy_word_of_annihilation = yes }
+	}
+}
+
+omni_sb_ai_pick_amten = {
+	random_list = {
+		10 = { trigger = { omni_sb_can_buy_blighted_ground = yes } omni_sb_buy_blighted_ground = yes }
+		10 = { trigger = { omni_sb_can_buy_mudbind = yes } omni_sb_buy_mudbind = yes }
+		10 = { trigger = { omni_sb_can_buy_burning_pitch = yes } omni_sb_buy_burning_pitch = yes }
+		10 = { trigger = { omni_sb_can_buy_conjured_supply = yes } omni_sb_buy_conjured_supply = yes }
+		10 = { trigger = { omni_sb_can_buy_arrows_of_lavas = yes } omni_sb_buy_arrows_of_lavas = yes }
+		10 = { trigger = { omni_sb_can_buy_detect_minerals = yes } omni_sb_buy_detect_minerals = yes }
+		10 = { trigger = { omni_sb_can_buy_winds_of_pedentrutzu = yes } omni_sb_buy_winds_of_pedentrutzu = yes }
+		10 = { trigger = { omni_sb_can_buy_fireball = yes } omni_sb_buy_fireball = yes }
+		10 = { trigger = { omni_sb_can_buy_plant_growth = yes } omni_sb_buy_plant_growth = yes }
+		10 = { trigger = { omni_sb_can_buy_summon_dryads = yes } omni_sb_buy_summon_dryads = yes }
+		10 = { trigger = { omni_sb_can_buy_frostbite_wind = yes } omni_sb_buy_frostbite_wind = yes }
+		20 = { trigger = { omni_sb_can_buy_breaching_tremor = yes } omni_sb_buy_breaching_tremor = yes }
+		20 = { trigger = { omni_sb_can_buy_weathercall_growth = yes } omni_sb_buy_weathercall_growth = yes }
+		20 = { trigger = { omni_sb_can_buy_migration_beacon = yes } omni_sb_buy_migration_beacon = yes }
+		20 = { trigger = { omni_sb_can_buy_feast_of_ugone = yes } omni_sb_buy_feast_of_ugone = yes }
+		20 = { trigger = { omni_sb_can_buy_detect_minerals_ii = yes } omni_sb_buy_detect_minerals_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_rock_slide = yes } omni_sb_buy_rock_slide = yes }
+		20 = { trigger = { omni_sb_can_buy_plant_growth_ii = yes } omni_sb_buy_plant_growth_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_nature_bounty = yes } omni_sb_buy_nature_bounty = yes }
+		20 = { trigger = { omni_sb_can_buy_seismic_tremor = yes } omni_sb_buy_seismic_tremor = yes }
+		30 = { trigger = { omni_sb_can_buy_magical_construction = yes } omni_sb_buy_magical_construction = yes }
+		30 = { trigger = { omni_sb_can_buy_summon_earthworks = yes } omni_sb_buy_summon_earthworks = yes }
+		30 = { trigger = { omni_sb_can_buy_nature_bounty_ii = yes } omni_sb_buy_nature_bounty_ii = yes }
+		30 = { trigger = { omni_sb_can_buy_glacial_tomb = yes } omni_sb_buy_glacial_tomb = yes }
+		50 = { trigger = { omni_sb_can_buy_summon_elemental_colossus = yes } omni_sb_buy_summon_elemental_colossus = yes }
+	}
+}
+
+omni_sb_ai_pick_melodian = {
+	random_list = {
+		10 = { trigger = { omni_sb_can_buy_fear_hex = yes } omni_sb_buy_fear_hex = yes }
+		10 = { trigger = { omni_sb_can_buy_cursed_rigging = yes } omni_sb_buy_cursed_rigging = yes }
+		10 = { trigger = { omni_sb_can_buy_spectral_boarders = yes } omni_sb_buy_spectral_boarders = yes }
+		10 = { trigger = { omni_sb_can_buy_wasting_rot = yes } omni_sb_buy_wasting_rot = yes }
+		10 = { trigger = { omni_sb_can_buy_battle_surge = yes } omni_sb_buy_battle_surge = yes }
+		10 = { trigger = { omni_sb_can_buy_summon_warborn = yes } omni_sb_buy_summon_warborn = yes }
+		10 = { trigger = { omni_sb_can_buy_curse = yes } omni_sb_buy_curse = yes }
+		10 = { trigger = { omni_sb_can_buy_rage = yes } omni_sb_buy_rage = yes }
+		10 = { trigger = { omni_sb_can_buy_dark_offering = yes } omni_sb_buy_dark_offering = yes }
+		10 = { trigger = { omni_sb_can_buy_igniting_spark = yes } omni_sb_buy_igniting_spark = yes }
+		20 = { trigger = { omni_sb_can_buy_hammer_of_melodias = yes } omni_sb_buy_hammer_of_melodias = yes }
+		20 = { trigger = { omni_sb_can_buy_hex = yes } omni_sb_buy_hex = yes }
+		20 = { trigger = { omni_sb_can_buy_curse_ii = yes } omni_sb_buy_curse_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_death_ray = yes } omni_sb_buy_death_ray = yes }
+		20 = { trigger = { omni_sb_can_buy_dark_visions = yes } omni_sb_buy_dark_visions = yes }
+		20 = { trigger = { omni_sb_can_buy_fireball = yes } omni_sb_buy_fireball = yes }
+		30 = { trigger = { omni_sb_can_buy_storm_wrack = yes } omni_sb_buy_storm_wrack = yes }
+		30 = { trigger = { omni_sb_can_buy_heroic_resonance = yes } omni_sb_buy_heroic_resonance = yes }
+		30 = { trigger = { omni_sb_can_buy_storm_of_the_siege = yes } omni_sb_buy_storm_of_the_siege = yes }
+		30 = { trigger = { omni_sb_can_buy_raise_workers = yes } omni_sb_buy_raise_workers = yes }
+		30 = { trigger = { omni_sb_can_buy_dark_offering_ii = yes } omni_sb_buy_dark_offering_ii = yes }
+		30 = { trigger = { omni_sb_can_buy_plague_miasma = yes } omni_sb_buy_plague_miasma = yes }
+		50 = { trigger = { omni_sb_can_buy_cataclysmic_eruption = yes } omni_sb_buy_cataclysmic_eruption = yes }
+	}
+}
+
+omni_sb_ai_pick_any = {
+	random_list = {
+		10 = { trigger = { omni_sb_can_buy_battle_clarity = yes } omni_sb_buy_battle_clarity = yes }
+		10 = { trigger = { omni_sb_can_buy_sword_of_zanis = yes } omni_sb_buy_sword_of_zanis = yes }
+		10 = { trigger = { omni_sb_can_buy_light_shields = yes } omni_sb_buy_light_shields = yes }
+		10 = { trigger = { omni_sb_can_buy_light_rays = yes } omni_sb_buy_light_rays = yes }
+		10 = { trigger = { omni_sb_can_buy_exorcism = yes } omni_sb_buy_exorcism = yes }
+		10 = { trigger = { omni_sb_can_buy_revelation = yes } omni_sb_buy_revelation = yes }
+		10 = { trigger = { omni_sb_can_buy_blinding_flash = yes } omni_sb_buy_blinding_flash = yes }
+		20 = { trigger = { omni_sb_can_buy_battle_hymn = yes } omni_sb_buy_battle_hymn = yes }
+		20 = { trigger = { omni_sb_can_buy_light_of_true_faith = yes } omni_sb_buy_light_of_true_faith = yes }
+		20 = { trigger = { omni_sb_can_buy_light_rays_ii = yes } omni_sb_buy_light_rays_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_light_walls = yes } omni_sb_buy_light_walls = yes }
+		20 = { trigger = { omni_sb_can_buy_blessing = yes } omni_sb_buy_blessing = yes }
+		20 = { trigger = { omni_sb_can_buy_exorcism_ii = yes } omni_sb_buy_exorcism_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_chain_lightning = yes } omni_sb_buy_chain_lightning = yes }
+		30 = { trigger = { omni_sb_can_buy_blessing_of_war = yes } omni_sb_buy_blessing_of_war = yes }
+		30 = { trigger = { omni_sb_can_buy_harbor_ward = yes } omni_sb_buy_harbor_ward = yes }
+		30 = { trigger = { omni_sb_can_buy_divine_ceremonies = yes } omni_sb_buy_divine_ceremonies = yes }
+		30 = { trigger = { omni_sb_can_buy_spirit_bomb = yes } omni_sb_buy_spirit_bomb = yes }
+		30 = { trigger = { omni_sb_can_buy_revelation_ii = yes } omni_sb_buy_revelation_ii = yes }
+		30 = { trigger = { omni_sb_can_buy_gravity_well = yes } omni_sb_buy_gravity_well = yes }
+		50 = { trigger = { omni_sb_can_buy_chronostasis_field = yes } omni_sb_buy_chronostasis_field = yes }
+		10 = { trigger = { omni_sb_can_buy_arcane_aegis = yes } omni_sb_buy_arcane_aegis = yes }
+		10 = { trigger = { omni_sb_can_buy_hand_of_adaralu = yes } omni_sb_buy_hand_of_adaralu = yes }
+		10 = { trigger = { omni_sb_can_buy_restoration = yes } omni_sb_buy_restoration = yes }
+		10 = { trigger = { omni_sb_can_buy_healing_light = yes } omni_sb_buy_healing_light = yes }
+		10 = { trigger = { omni_sb_can_buy_altered_inspiration = yes } omni_sb_buy_altered_inspiration = yes }
+		10 = { trigger = { omni_sb_can_buy_inspired_thoughts = yes } omni_sb_buy_inspired_thoughts = yes }
+		10 = { trigger = { omni_sb_can_buy_arcane_volley = yes } omni_sb_buy_arcane_volley = yes }
+		20 = { trigger = { omni_sb_can_buy_unrest_cleansing = yes } omni_sb_buy_unrest_cleansing = yes }
+		20 = { trigger = { omni_sb_can_buy_counterward = yes } omni_sb_buy_counterward = yes }
+		20 = { trigger = { omni_sb_can_buy_illusion_walls = yes } omni_sb_buy_illusion_walls = yes }
+		20 = { trigger = { omni_sb_can_buy_golden_fingers_of_the_pharon = yes } omni_sb_buy_golden_fingers_of_the_pharon = yes }
+		20 = { trigger = { omni_sb_can_buy_healing_light_ii = yes } omni_sb_buy_healing_light_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_vitality = yes } omni_sb_buy_vitality = yes }
+		20 = { trigger = { omni_sb_can_buy_mind_break = yes } omni_sb_buy_mind_break = yes }
+		20 = { trigger = { omni_sb_can_buy_warped_flesh = yes } omni_sb_buy_warped_flesh = yes }
+		20 = { trigger = { omni_sb_can_buy_corrosive_rain = yes } omni_sb_buy_corrosive_rain = yes }
+		30 = { trigger = { omni_sb_can_buy_pestilence = yes } omni_sb_buy_pestilence = yes }
+		30 = { trigger = { omni_sb_can_buy_warped_flesh_ii = yes } omni_sb_buy_warped_flesh_ii = yes }
+		30 = { trigger = { omni_sb_can_buy_meteor_strike = yes } omni_sb_buy_meteor_strike = yes }
+		50 = { trigger = { omni_sb_can_buy_word_of_annihilation = yes } omni_sb_buy_word_of_annihilation = yes }
+		10 = { trigger = { omni_sb_can_buy_blighted_ground = yes } omni_sb_buy_blighted_ground = yes }
+		10 = { trigger = { omni_sb_can_buy_mudbind = yes } omni_sb_buy_mudbind = yes }
+		10 = { trigger = { omni_sb_can_buy_burning_pitch = yes } omni_sb_buy_burning_pitch = yes }
+		10 = { trigger = { omni_sb_can_buy_conjured_supply = yes } omni_sb_buy_conjured_supply = yes }
+		10 = { trigger = { omni_sb_can_buy_arrows_of_lavas = yes } omni_sb_buy_arrows_of_lavas = yes }
+		10 = { trigger = { omni_sb_can_buy_detect_minerals = yes } omni_sb_buy_detect_minerals = yes }
+		10 = { trigger = { omni_sb_can_buy_winds_of_pedentrutzu = yes } omni_sb_buy_winds_of_pedentrutzu = yes }
+		20 = { trigger = { omni_sb_can_buy_fireball = yes } omni_sb_buy_fireball = yes }
+		10 = { trigger = { omni_sb_can_buy_plant_growth = yes } omni_sb_buy_plant_growth = yes }
+		10 = { trigger = { omni_sb_can_buy_summon_dryads = yes } omni_sb_buy_summon_dryads = yes }
+		10 = { trigger = { omni_sb_can_buy_frostbite_wind = yes } omni_sb_buy_frostbite_wind = yes }
+		20 = { trigger = { omni_sb_can_buy_breaching_tremor = yes } omni_sb_buy_breaching_tremor = yes }
+		20 = { trigger = { omni_sb_can_buy_weathercall_growth = yes } omni_sb_buy_weathercall_growth = yes }
+		20 = { trigger = { omni_sb_can_buy_migration_beacon = yes } omni_sb_buy_migration_beacon = yes }
+		20 = { trigger = { omni_sb_can_buy_feast_of_ugone = yes } omni_sb_buy_feast_of_ugone = yes }
+		20 = { trigger = { omni_sb_can_buy_detect_minerals_ii = yes } omni_sb_buy_detect_minerals_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_rock_slide = yes } omni_sb_buy_rock_slide = yes }
+		20 = { trigger = { omni_sb_can_buy_plant_growth_ii = yes } omni_sb_buy_plant_growth_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_nature_bounty = yes } omni_sb_buy_nature_bounty = yes }
+		20 = { trigger = { omni_sb_can_buy_seismic_tremor = yes } omni_sb_buy_seismic_tremor = yes }
+		30 = { trigger = { omni_sb_can_buy_magical_construction = yes } omni_sb_buy_magical_construction = yes }
+		30 = { trigger = { omni_sb_can_buy_summon_earthworks = yes } omni_sb_buy_summon_earthworks = yes }
+		30 = { trigger = { omni_sb_can_buy_nature_bounty_ii = yes } omni_sb_buy_nature_bounty_ii = yes }
+		30 = { trigger = { omni_sb_can_buy_glacial_tomb = yes } omni_sb_buy_glacial_tomb = yes }
+		50 = { trigger = { omni_sb_can_buy_summon_elemental_colossus = yes } omni_sb_buy_summon_elemental_colossus = yes }
+		10 = { trigger = { omni_sb_can_buy_fear_hex = yes } omni_sb_buy_fear_hex = yes }
+		10 = { trigger = { omni_sb_can_buy_cursed_rigging = yes } omni_sb_buy_cursed_rigging = yes }
+		10 = { trigger = { omni_sb_can_buy_spectral_boarders = yes } omni_sb_buy_spectral_boarders = yes }
+		10 = { trigger = { omni_sb_can_buy_wasting_rot = yes } omni_sb_buy_wasting_rot = yes }
+		10 = { trigger = { omni_sb_can_buy_battle_surge = yes } omni_sb_buy_battle_surge = yes }
+		10 = { trigger = { omni_sb_can_buy_summon_warborn = yes } omni_sb_buy_summon_warborn = yes }
+		10 = { trigger = { omni_sb_can_buy_curse = yes } omni_sb_buy_curse = yes }
+		10 = { trigger = { omni_sb_can_buy_rage = yes } omni_sb_buy_rage = yes }
+		10 = { trigger = { omni_sb_can_buy_dark_offering = yes } omni_sb_buy_dark_offering = yes }
+		10 = { trigger = { omni_sb_can_buy_igniting_spark = yes } omni_sb_buy_igniting_spark = yes }
+		20 = { trigger = { omni_sb_can_buy_hammer_of_melodias = yes } omni_sb_buy_hammer_of_melodias = yes }
+		20 = { trigger = { omni_sb_can_buy_hex = yes } omni_sb_buy_hex = yes }
+		20 = { trigger = { omni_sb_can_buy_curse_ii = yes } omni_sb_buy_curse_ii = yes }
+		20 = { trigger = { omni_sb_can_buy_death_ray = yes } omni_sb_buy_death_ray = yes }
+		20 = { trigger = { omni_sb_can_buy_dark_visions = yes } omni_sb_buy_dark_visions = yes }
+		30 = { trigger = { omni_sb_can_buy_storm_wrack = yes } omni_sb_buy_storm_wrack = yes }
+		30 = { trigger = { omni_sb_can_buy_heroic_resonance = yes } omni_sb_buy_heroic_resonance = yes }
+		30 = { trigger = { omni_sb_can_buy_storm_of_the_siege = yes } omni_sb_buy_storm_of_the_siege = yes }
+		30 = { trigger = { omni_sb_can_buy_raise_workers = yes } omni_sb_buy_raise_workers = yes }
+		30 = { trigger = { omni_sb_can_buy_dark_offering_ii = yes } omni_sb_buy_dark_offering_ii = yes }
+		30 = { trigger = { omni_sb_can_buy_plague_miasma = yes } omni_sb_buy_plague_miasma = yes }
+		50 = { trigger = { omni_sb_can_buy_cataclysmic_eruption = yes } omni_sb_buy_cataclysmic_eruption = yes }
+	}
+}
+
+omni_sb_ai_spend_points_omnic = {
+	# Every pass spends at least one point, so the loop always ends.
+	while = {
+		limit = { omni_sb_can_buy_any = yes }
+		if = { limit = { omni_sb_can_buy_in_omnic = yes } omni_sb_ai_pick_omnic = yes }
+		else = { omni_sb_ai_pick_any = yes }
+	}
+}
+
+omni_sb_ai_spend_points_aldic = {
+	# Every pass spends at least one point, so the loop always ends.
+	while = {
+		limit = { omni_sb_can_buy_any = yes }
+		if = { limit = { omni_sb_can_buy_in_aldic = yes } omni_sb_ai_pick_aldic = yes }
+		else = { omni_sb_ai_pick_any = yes }
+	}
+}
+
+omni_sb_ai_spend_points_amten = {
+	# Every pass spends at least one point, so the loop always ends.
+	while = {
+		limit = { omni_sb_can_buy_any = yes }
+		if = { limit = { omni_sb_can_buy_in_amten = yes } omni_sb_ai_pick_amten = yes }
+		else = { omni_sb_ai_pick_any = yes }
+	}
+}
+
+omni_sb_ai_spend_points_melodian = {
+	# Every pass spends at least one point, so the loop always ends.
+	while = {
+		limit = { omni_sb_can_buy_any = yes }
+		if = { limit = { omni_sb_can_buy_in_melodian = yes } omni_sb_ai_pick_melodian = yes }
+		else = { omni_sb_ai_pick_any = yes }
+	}
+}
+

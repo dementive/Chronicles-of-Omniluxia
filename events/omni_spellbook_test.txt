@@ -1,0 +1,56 @@
+﻿namespace = omni_spellbook_test
+
+# Console only: event omni_spellbook_test.1
+omni_spellbook_test.1 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		debug_log = "OMNI_SPELLBOOK_TEST: sampling up to 24 AI countries with trained mages."
+		while = {
+			count = 24
+			random_country = {
+				limit = {
+					is_ai = yes
+					NOT = { has_variable = omni_sb_test_sampled }
+					any_character = {
+						is_alive = yes
+						omni_sb_belongs_to_player = no
+						omni_sb_any_t1_access = yes
+					}
+				}
+				set_variable = omni_sb_test_sampled
+				save_scope_as = omni_sb_test_country
+				random_character = {
+					limit = {
+						is_alive = yes
+						omni_sb_belongs_to_player = no
+						omni_sb_any_t1_access = yes
+					}
+					save_scope_as = omni_sb_test_mage
+					if = {
+						limit = { omni_sb_omnic_t1_access = yes }
+						omni_sb_grant_spell_points = { FAMILY = omnic AMOUNT = 2 }
+					}
+					else_if = {
+						limit = { omni_sb_aldic_t1_access = yes }
+						omni_sb_grant_spell_points = { FAMILY = aldic AMOUNT = 2 }
+					}
+					else_if = {
+						limit = { omni_sb_amten_t1_access = yes }
+						omni_sb_grant_spell_points = { FAMILY = amten AMOUNT = 2 }
+					}
+					else = {
+						omni_sb_grant_spell_points = { FAMILY = melodian AMOUNT = 2 }
+					}
+					debug_log = "OMNI_SPELLBOOK_TEST: awarded 2 points to [SCOPE.sC('omni_sb_test_mage').GetName] in [SCOPE.sCountry('omni_sb_test_country').GetName]."
+				}
+			}
+		}
+		every_country = {
+			limit = { has_variable = omni_sb_test_sampled }
+			remove_variable = omni_sb_test_sampled
+		}
+		debug_log = "OMNI_SPELLBOOK_TEST: finished sampling."
+	}
+}

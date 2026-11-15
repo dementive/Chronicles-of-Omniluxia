@@ -86,18 +86,25 @@ window = {
 	alwaystransparent = yes
 	allow_outside = yes
 
-            # OMNI SHANNAH LAUNCHER BEGIN â€” FMO ages-button widget pattern.
+            # OMNI SEAL LAUNCHERS BEGIN - FMO ages-button widget pattern.
+            # One vertical stack: each seal keeps its own visibility rule and a hidden
+            # seal collapses (ignoreinvisible), so neither can hide the other.
 
-            container = {
+            flowcontainer = {
 
-                name = "omni_sf_launcher"
+                name = "omni_seal_launchers"
                 visible = "[Not(IsReplayShown)]"
 
                 position = { -100 46 }
+                direction = vertical
+                ignoreinvisible = yes
+                spacing = 6
                 allow_outside = yes
 
+                # Shannah's Court (Helluvian authority is reached from inside it).
                 button = {
 
+                    name = "omni_sf_launcher"
                     visible = "[GetScriptedGui('omni_sf_launcher_visible').IsShown( GuiScope.SetRoot( GetProvince('(int32)2706').MakeScope ).AddScope('player', Player.MakeScope ).End )]"
 
                     size = { 70 70 }
@@ -107,6 +114,7 @@ window = {
 
                     tooltip = "omni_sf_launcher_tt"
 
+                    onclick = "[GetVariableSystem.Clear('omni_spellbook')]"
                     onclick = "[GetScriptedGui('omni_sf_open').Execute( GuiScope.SetRoot( Player.MakeScope ).End )]"
 
                     onclick = "[ExecuteConsoleCommand('gui.createwidget gui/omni_shannah_court.gui omni_shannah_court')]"
@@ -114,9 +122,31 @@ window = {
 
                 }
 
+                # Spellbook (window type in gui/omni_spellbook.gui, instanced in ingame_topbar.gui).
+                button = {
+
+                    name = "omni_sb_launcher"
+                    visible = "[GetScriptedGui('omni_sb_launcher_visible').IsShown( GuiScope.SetRoot( GetProvince('(int32)2706').MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+
+                    size = { 70 70 }
+                    enabled = "[Not(GetVariableSystem.Exists('omni_spellbook'))]"
+
+                    texture = "gfx/interface/omniluxia/spellbook_seal.dds"
+
+                    tooltip = "omni_sb_launcher_tt"
+
+                    onclick = "[GetVariableSystem.Clear('omni_hc_picker')]"
+                    onclick = "[GetVariableSystem.Clear('omni_sf_panel')]"
+                    onclick = "[ExecuteConsoleCommand('gui.ClearWidgets omni_shannah_court')]"
+                    onclick = "[ExecuteConsoleCommand('gui.ClearWidgets omni_helluvian_targets')]"
+                    onclick = "[GetScriptedGui('omni_sb_open').Execute( GuiScope.SetRoot( Player.MakeScope ).End )]"
+                    onclick = "[GetVariableSystem.Set('omni_spellbook', 'omnic')]"
+
+                }
+
             }
 
-            # OMNI SHANNAH LAUNCHER END
+            # OMNI SEAL LAUNCHERS END
 
 	vbox = {
 		visible = "[Not(IsReplayShown)]"

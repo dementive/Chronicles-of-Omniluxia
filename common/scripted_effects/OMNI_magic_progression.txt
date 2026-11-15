@@ -93,7 +93,8 @@ omni_finish_capped_magic_study_course = {
 # FAMILY is passed in alongside SCHOOL rather than derived from it, because script
 # parameters are literal text substitution - there is no string-comparison trigger
 # to map a school name to its family at runtime. Passing both lets
-# omni_grant_random_$FAMILY$_t$TIER$ resolve straight to the generated pool effect.
+# omni_sb_grant_spell_points route the course reward to that family (AI spending
+# prefers it; Spellbook cost is 1 point inside a studied family, 2 outside).
 #   Omnic    = diviner / hierophant
 #   Aldic    = cleric / illusionist
 #   Amten    = elementalist / druid
@@ -110,8 +111,8 @@ omni_grant_next_school_tier = {
 }
 
 # One school's T2 -> T3 -> T4 ladder. Idempotent: re-running on a capped character
-# is a no-op. Each unlock also grants that tier's spells from the generated pools
-# so knowing a tier and knowing spells stay in sync.
+# is a no-op. Each unlock grants Spellbook points (1, 1, then 2 for mastery) that
+# the player spends in the Spellbook panel; AI characters spend them immediately.
 omni_advance_school_tier = {
 	if = {
 		limit = { NOT = { has_variable = $SCHOOL$_t2_unlocked_var } }
@@ -121,23 +122,22 @@ omni_advance_school_tier = {
 			add_trait = mage_trait
 		}
 		if = { limit = { has_variable = first_time_mage_var } remove_variable = first_time_mage_var }
-		omni_grant_random_$FAMILY$_t1 = yes
+		omni_sb_grant_spell_points = { FAMILY = $FAMILY$ AMOUNT = 1 }
 		omni_finish_magic_study_course = yes
 	}
 	else_if = {
 		limit = { NOT = { has_variable = $SCHOOL$_t3_unlocked_var } }
 		set_variable = $SCHOOL$_t3_unlocked_var
-		omni_grant_random_$FAMILY$_t2 = yes
+		omni_sb_grant_spell_points = { FAMILY = $FAMILY$ AMOUNT = 1 }
 		omni_finish_magic_study_course = yes
 	}
 	else_if = {
 		limit = { NOT = { has_variable = $SCHOOL$_t4_unlocked_var } }
 		set_variable = $SCHOOL$_t4_unlocked_var
 		set_variable = $SCHOOL$_mastered_var
-		# T4 unlock grants from the t3 AND t4 pools - the t4 pools hold a single
-		# capstone spell each, so this is the only chance to receive it.
-		omni_grant_random_$FAMILY$_t3 = yes
-		omni_grant_random_$FAMILY$_t4 = yes
+		# Mastery pays 2 points: enough for a Tier III spell plus the family's
+		# Tier IV capstone (which requires a known Tier III of that family).
+		omni_sb_grant_spell_points = { FAMILY = $FAMILY$ AMOUNT = 2 }
 		# A single mastered school is not Archmage rank. The central prestige
 		# ladder grants that trait only after any two schools are mastered.
 		omni_check_magic_prestige = yes
