@@ -1,0 +1,45 @@
+﻿# Country scope, with scope:target set to the victim.
+omni_apply_skull_curse = {
+    save_scope_as = skull_curse_caster_country
+    scope:target = {
+        set_variable = { name = omni_skull_curse_country value = scope:skull_curse_caster_country }
+        force_add_trait = skull_curse_trait
+    }
+}
+
+# Character scope.
+omni_remove_skull_curse = {
+    remove_trait = skull_curse_trait
+    if = {
+        limit = { has_variable = omni_skull_curse_country }
+        remove_variable = omni_skull_curse_country
+    }
+}
+
+omni_raise_skull_curse_wraith = {
+    save_scope_as = skull_curse_victim
+    if = {
+        limit = { exists = var:omni_skull_curse_country }
+        var:omni_skull_curse_country = {
+            trigger_event = me_zorgo_magic_focus.24
+        }
+    }
+    else_if = {
+        limit = { exists = employer }
+        employer = {
+            trigger_event = me_zorgo_magic_focus.24
+        }
+    }
+}
+
+omni_start_skull_wraith_service = {
+    if = {
+        limit = {
+            has_variable = omni_skull_wraith_awaiting_command
+            is_general = yes
+        }
+        remove_variable = omni_skull_wraith_awaiting_command
+        set_variable = omni_skull_wraith_in_service
+        trigger_event = { id = omni_skull_wraith.1 days = 365 }
+    }
+}

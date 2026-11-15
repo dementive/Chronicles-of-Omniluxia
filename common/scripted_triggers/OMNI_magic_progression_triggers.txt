@@ -1,4 +1,27 @@
-﻿# True while a character has an active magic-study course. Course effects use
+﻿# Character scope. Academy access follows the character's current employer.
+omni_can_learn_academy_magic = {
+	is_alive = yes
+	exists = employer
+	employer = { NOT = { has_law = magic_banned } }
+	trigger_if = {
+		limit = { employer = { has_law = magic_mages_guilds } }
+		OR = { is_ruler = yes has_doctor_office_trigger = yes }
+	}
+}
+
+# Country scope. The AI enroller saves its student before the first event.
+omni_academy_course_student_allowed = {
+	trigger_if = {
+		limit = { exists = scope:omni_study_target }
+		scope:omni_study_target = { employer = root omni_can_learn_academy_magic = yes }
+	}
+	trigger_else = {
+		exists = scope:target
+		scope:target = { employer = root omni_can_learn_academy_magic = yes }
+	}
+}
+
+# True while a character has an active magic-study course. Course effects use
 # this after awarding progress: when a tier-up clears the study flags, no follow-up
 # event is queued and the course ends immediately.
 omni_has_active_magic_study_course = {
@@ -19,5 +42,24 @@ omni_has_active_magic_study_course = {
 		has_variable = omni_studying_silver_dwarf_magic_var
 		has_variable = omni_studying_palpan_curse_var
 		has_variable = omni_studying_soul_magic_var
+	}
+}
+
+# Character scope. Recurring Spellbook point study uses its own timer.
+omni_academy_can_start_course = {
+	omni_can_learn_academy_magic = yes
+	NOT = { has_variable = omni_studying_magic_cooldown }
+	NOT = { omni_has_active_magic_study_course = yes }
+}
+
+# Country scope. Ignore any queued course event after its student finishes.
+omni_academy_course_is_active = {
+	omni_academy_course_student_allowed = yes
+	trigger_if = {
+		limit = { exists = scope:omni_study_target }
+		scope:omni_study_target = { omni_has_active_magic_study_course = yes }
+	}
+	trigger_else = {
+		scope:target = { omni_has_active_magic_study_course = yes }
 	}
 }

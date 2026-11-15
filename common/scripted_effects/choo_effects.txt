@@ -1655,17 +1655,20 @@ char_has_magic = {
 # Magic and Racial Effects
 #Magic
 magic_studying_t1_effect = {
-    scope:target = {
-        omni_add_study_progress = yes
-        omni_resolve_magic_study_state = yes
-        omni_migrate_legacy_magic = yes
-		omni_grant_two_beginner_spells = yes
-		omni_finish_capped_magic_study_course = yes
+    if = {
+        limit = { scope:target = { employer = root omni_can_learn_academy_magic = yes } }
+        scope:target = {
+            omni_add_study_progress = yes
+            omni_resolve_magic_study_state = yes
+            omni_migrate_legacy_magic = yes
+            omni_grant_two_beginner_spells = yes
+            omni_finish_capped_magic_study_course = yes
+        }
     }
 	# A tier-up clears the course flags. Do not queue another event after that:
 	# one enrolment may award at most one school tier.
 	if = {
-		limit = { scope:target = { omni_has_active_magic_study_course = yes } }
+		limit = { scope:target = { employer = root omni_can_learn_academy_magic = yes omni_has_active_magic_study_course = yes } }
 		random_list = {
         5 = {
             if = {
@@ -1790,15 +1793,18 @@ magic_studying_t1_effect = {
 }
 
 magic_studying_t2_effect = {
-    scope:target = {
-        omni_add_study_progress = yes
-        omni_resolve_magic_study_state = yes
-        omni_migrate_legacy_magic = yes
-		omni_finish_capped_magic_study_course = yes
+    if = {
+        limit = { scope:target = { employer = root omni_can_learn_academy_magic = yes } }
+        scope:target = {
+            omni_add_study_progress = yes
+            omni_resolve_magic_study_state = yes
+            omni_migrate_legacy_magic = yes
+            omni_finish_capped_magic_study_course = yes
+        }
     }
 	# Preserve the narrative chain only while the course is still active.
 	if = {
-		limit = { scope:target = { omni_has_active_magic_study_course = yes } }
+		limit = { scope:target = { employer = root omni_can_learn_academy_magic = yes omni_has_active_magic_study_course = yes } }
 		if = {
         limit = {
             scope:target = {
@@ -2112,15 +2118,18 @@ magic_studying_t2_effect = {
 }
 
 magic_studying_t3_effect = {
-    scope:target = {
-        omni_add_study_progress = yes
-        omni_resolve_magic_study_state = yes
-        omni_migrate_legacy_magic = yes
-		omni_finish_capped_magic_study_course = yes
+    if = {
+        limit = { scope:target = { employer = root omni_can_learn_academy_magic = yes } }
+        scope:target = {
+            omni_add_study_progress = yes
+            omni_resolve_magic_study_state = yes
+            omni_migrate_legacy_magic = yes
+            omni_finish_capped_magic_study_course = yes
+        }
     }
 	# Preserve the narrative chain only while the course is still active.
 	if = {
-		limit = { scope:target = { omni_has_active_magic_study_course = yes } }
+		limit = { scope:target = { employer = root omni_can_learn_academy_magic = yes omni_has_active_magic_study_course = yes } }
 		random_list = {
         5 = {
             if = {
@@ -2796,7 +2805,7 @@ check_mage_effect = {
 					exists = scope:target
 					scope:target = {
 						is_alive = yes
-						has_variable = magic_study_progress
+						employer = root
 					}
 				}
 			}
@@ -3988,12 +3997,56 @@ race_expel_events_effect = {
         trigger_event = { id = me_racial_events.50 days = 180 }
     }
 }
+race_half_elf_intermixing_effect = {
+    scope:chosen_culture = { save_scope_as = race_intermixing_culture }
+    random_owned_province = {
+        limit = {
+            any_pops_in_province = { pop_culture = root.culture }
+            any_pops_in_province = { pop_culture = scope:race_intermixing_culture.culture }
+        }
+        save_scope_as = race_intermixing_town
+        root = { trigger_event = me_racial_events.30 }
+    }
+}
+race_local_integration_report_effect = {
+    if = {
+        limit = {
+            country_culture_group = sea_elves
+            has_variable = integrate_human_var
+            NOT = { has_variable = race_harbor_pilots_seen }
+        }
+        random_owned_province = {
+            limit = {
+                is_port = yes
+                any_pops_in_province = { pop_culture_group = sea_elves }
+                any_pops_in_province = { pop_culture = scope:chosen_culture.culture }
+            }
+            save_scope_as = race_pilots_port
+            root = { trigger_event = me_racial_events.54 }
+        }
+    }
+    else_if = {
+        limit = {
+            OR = { country_culture_group = gnome country_culture_group = deep_gnome }
+            has_variable = integrate_dwarf_var
+            NOT = { has_variable = race_shared_drainage_seen }
+        }
+        random_owned_province = {
+            limit = {
+                has_building = slave_mine_building
+                any_pops_in_province = { OR = { pop_culture_group = gnome pop_culture_group = deep_gnome } }
+                any_pops_in_province = { pop_culture = scope:chosen_culture.culture }
+            }
+            save_scope_as = race_drainage_mine
+            root = { trigger_event = me_racial_events.56 }
+        }
+    }
+}
 race_policy_report_effect = {
     random_list = {
         10 = { trigger_event = me_racial_events.21 }
         10 = { trigger_event = me_racial_events.22 }
         10 = { trigger_event = me_racial_events.23 }
-        2 = { trigger = { has_variable = integrate_dragkhan_var OR = { country_culture_group = common_dwarves country_culture_group = gold_dwarves country_culture_group = silver_dwarves country_culture_group = castaway_dwarves } } trigger_event = me_racial_events.34 }
         2 = { trigger = { has_variable = integrate_human_var country_culture_group = high_elves } trigger_event = me_racial_events.35 }
         2 = { trigger = { has_variable = integrate_gnome_var } trigger_event = me_racial_events.36 }
         2 = { trigger = { has_variable = integrate_goblin_var } trigger_event = me_racial_events.37 }

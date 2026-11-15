@@ -5,96 +5,51 @@
 		battle_enemy_unit
 	}
 
-	# Root is the force in battle. Using the unit as root avoids combat-window
-	# refreshes passing an invalid placeholder character into ScriptedGui.
+
+	# Root is the leading unit of the battle side. An attached unit can supply
+	# the caster when the leading commander has no available battle spell.
 	is_shown = {
+		in_combat = yes
+		scope:player = { is_ai = no }
 		OR = {
-			is_army = yes
-			is_navy = yes
-		}
-		unit_owner = {
-			this = scope:player
-		}
-		exists = commander
-		commander = {
-			is_alive = yes
-			OR = {
-				is_general = yes
-				is_admiral = yes
+			omni_battle_mage_unit = yes
+			unit_location = {
+				any_unit_in_province = { omni_battle_mage_unit = yes }
 			}
-			NOT = { has_variable = is_the_revant }
-			omni_character_is_eligible_caster = yes
-		}
-		scope:player = {
-			is_ai = no
 		}
 	}
 
-	ai_is_valid = {
-		always = no
-	}
+	ai_is_valid = { always = no }
 
 	is_valid = {
-		custom_tooltip = {
-			text = omni_battle_magic_unit_button_tooltip
-		}
-
+		in_combat = yes
+		custom_tooltip = { text = omni_battle_magic_unit_button_tooltip }
 		custom_tooltip = {
 			text = omni_battle_magic_need_spell_tt
-			commander = {
-				OR = {
-					AND = {
-						omni_can_afford_spell = { BASE = 10 }
-						omni_caster_melodian_t1 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 25 }
-						OR = {
-							omni_caster_aldic_t1 = yes
-							has_variable = folk_unlocked_var
-						}
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 30 }
-						omni_caster_melodian_t2 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 50 }
-						omni_caster_any_school_t2 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 60 }
-						omni_caster_aldic_t2 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 75 }
-						omni_caster_melodian_t3 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 90 }
-						omni_caster_melodian_t3 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 100 }
-						omni_caster_any_school_t3 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 165 }
-						omni_any_discipline_mastered = yes
-						omni_caster_melodian_t3 = yes
-					}
-					AND = {
-						omni_can_afford_spell = { BASE = 175 }
-						omni_any_discipline_mastered = yes
-					}
+			OR = {
+				omni_battle_mage_unit_ready = yes
+				unit_location = {
+					any_unit_in_province = { omni_battle_mage_unit_ready = yes }
 				}
 			}
 		}
 	}
 
 	effect = {
-		commander = {
-			save_scope_as = target
+		if = {
+			limit = { omni_battle_mage_unit_ready = yes }
+			commander = { save_scope_as = target }
+		}
+		else = {
+			unit_location = {
+				every_unit_in_province = {
+					limit = {
+						NOT = { exists = scope:target }
+						omni_battle_mage_unit_ready = yes
+					}
+					commander = { save_scope_as = target }
+				}
+			}
 		}
 		if = {
 			limit = { exists = scope:battle_enemy_unit }
@@ -108,9 +63,12 @@
 				}
 			}
 		}
-		scope:player = {
-			save_scope_as = battle_spell_context
-			trigger_event = { id = me_zorgo_magic_focus.29 }
+		if = {
+			limit = { exists = scope:target }
+			scope:player = {
+				save_scope_as = battle_spell_context
+				trigger_event = { id = me_zorgo_magic_focus.29 }
+			}
 		}
 	}
 }

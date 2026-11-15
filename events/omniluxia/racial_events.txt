@@ -5412,11 +5412,31 @@ me_racial_events.29 = {
     immediate = { race_integrate_events_effect = yes }
 }
 
+# Human households and an integrated Half-Elven community share a territory.
 me_racial_events.30 = {
     type = country_event
-    hidden = yes
-    trigger = { has_country_modifier = racial_focus_mod OR = { has_variable = integrate_arame_var has_variable = integrate_austropetolian_var has_variable = integrate_ayrith_var has_variable = integrate_chivix_var has_variable = integrate_dragkhan_var has_variable = integrate_drow_var has_variable = integrate_dwarf_var has_variable = integrate_ettin_var has_variable = integrate_gnome_var has_variable = integrate_goblin_var has_variable = integrate_golem_var has_variable = integrate_half_elf_var has_variable = integrate_halfling_var has_variable = integrate_high_elf_var has_variable = integrate_hobgoblin_var has_variable = integrate_human_var has_variable = integrate_kinones_var has_variable = integrate_mycelar_var has_variable = integrate_orc_var has_variable = integrate_sea_elf_var has_variable = integrate_snakefolk_var has_variable = integrate_vampire_var has_variable = integrate_wood_elf_var has_variable = integrate_wraith_var has_variable = integrate_zorg_var } }
-    immediate = { race_integrate_events_effect = yes }
+    title = me_racial_events_30_title
+    desc = me_racial_events_30_desc
+    picture = omni_race_elf_page
+    left_portrait = current_ruler
+    immediate = { set_variable = race_half_elf_intermixing_seen }
+    option = {
+        name = me_racial_events_30.a
+        custom_tooltip = me_racial_events_30.a_tt
+        if = {
+            limit = { omni_crusade_human_realm_trigger = yes }
+            scope:race_intermixing_town = {
+                if = {
+                    limit = { owner = root any_pops_in_province = { pop_culture = root.culture } }
+                    random_pops_in_province = {
+                        limit = { pop_culture = scope:race_intermixing_culture.culture }
+                        set_pop_culture = root.culture
+                    }
+                }
+            }
+        }
+    }
+    option = { name = me_racial_events_30.b }
 }
 
 me_racial_events.31 = {
@@ -5444,10 +5464,13 @@ me_racial_events.34 = {
     type = country_event
     title = me_racial_events_34_title
     desc = me_racial_events_34_desc
-    picture = omni_race_focus_court
+    picture = omni_race_grudges_court
     left_portrait = current_ruler
     trigger = { has_country_modifier = racial_focus_mod has_variable = integrate_dragkhan_var }
-    immediate = { choose_race_integrate_effect = yes }
+    immediate = {
+        set_variable = race_dwarven_grudges_seen
+        choose_race_integrate_effect = yes
+    }
     option = {
         name = me_racial_events_34.a
         add_political_influence = -8
@@ -6829,10 +6852,43 @@ me_racial_events.49 = {
         choose_race_integrate_effect = yes
         if = {
             limit = { has_variable = race_target_found }
-            race_integrate_positive_level_effect = yes
-            choose_race_integrate_effect = yes
-            if = { limit = { has_variable = race_target_found } race_policy_report_effect = yes }
-            else = { trigger_event = me_racial_events.51 }
+            if = {
+                limit = {
+                    has_variable = integrate_dragkhan_var
+                    NOT = { has_variable = race_dwarven_grudges_seen }
+                    OR = {
+                        country_culture_group = common_dwarves
+                        country_culture_group = gold_dwarves
+                        country_culture_group = silver_dwarves
+                        country_culture_group = castaway_dwarves
+                    }
+                }
+                trigger_event = me_racial_events.34
+            }
+            else_if = {
+                limit = {
+                    has_variable = integrate_hobgoblin_var
+                    OR = { country_culture_group = orcish country_culture_group = orcish_humano }
+                    NOT = { has_variable = race_hobgoblin_muster_seen }
+                }
+                trigger_event = me_racial_events.55
+            }
+            else = {
+                race_integrate_positive_level_effect = yes
+                race_local_integration_report_effect = yes
+                if = {
+                    limit = {
+                        has_variable = integrate_half_elf_var
+                        omni_crusade_human_realm_trigger = yes
+                        NOT = { has_variable = race_half_elf_intermixing_seen }
+                        scope:chosen_culture = { is_integrated = yes }
+                    }
+                    race_half_elf_intermixing_effect = yes
+                }
+                choose_race_integrate_effect = yes
+                if = { limit = { has_variable = race_target_found } race_policy_report_effect = yes }
+                else = { trigger_event = me_racial_events.51 }
+            }
         }
         else = { trigger_event = me_racial_events.51 }
     }
@@ -6869,6 +6925,14 @@ me_racial_events.50 = {
                     }
                     add_state_loyalty = -2
                 }
+                if = {
+                    limit = {
+                        has_variable = expel_drow_var
+                        omni_crusade_human_realm_trigger = yes
+                        NOT = { has_variable = race_drow_expulsion_seen }
+                    }
+                    trigger_event = me_racial_events.53
+                }
                 choose_race_integrate_effect = yes
                 if = { limit = { NOT = { has_variable = race_target_found } } trigger_event = me_racial_events.51 }
             }
@@ -6898,4 +6962,98 @@ me_racial_events.52 = {
     picture = omni_race_focus_locals
     option = { name = race_policy_blocked.a }
     option = { name = me_racial_events_2.c race_end_focus_effect = yes }
+}
+
+# The first completed Drow relocation under a Human crown.
+me_racial_events.53 = {
+    type = country_event
+    title = me_racial_events_53_title
+    desc = me_racial_events_53_desc
+    picture = omni_race_drow_expulsion_court
+    left_portrait = current_ruler
+    immediate = { set_variable = race_drow_expulsion_seen }
+    option = {
+        name = me_racial_events_53.a
+        trigger = { treasury >= 10 }
+        add_treasury = -10
+        add_stability = 2
+    }
+    option = { name = me_racial_events_53.b }
+}
+
+# Sea-Elven harbor pilots
+me_racial_events.54 = {
+    type = country_event
+    title = me_racial_events_54_title
+    desc = me_racial_events_54_desc
+    picture = omni_event_scene_sum_khaya_harbor_civic
+    left_portrait = current_ruler
+    immediate = { set_variable = race_harbor_pilots_seen }
+    option = {
+        name = me_racial_events_54.a
+        trigger = { treasury >= 15 scope:race_pilots_port = { owner = root is_port = yes } }
+        add_treasury = -15
+        scope:race_pilots_port = {
+            add_province_modifier = { name = race_harbor_pilots_mod duration = 1825 }
+        }
+    }
+    option = { name = me_racial_events_54.b }
+}
+
+# Hobgoblin veterans petition an Orcish crown
+me_racial_events.55 = {
+    type = country_event
+    title = me_racial_events_55_title
+    desc = me_racial_events_55_desc
+    picture = omni_race_hobgoblin_muster
+    left_portrait = current_ruler
+    trigger = { has_country_modifier = racial_focus_mod has_variable = integrate_hobgoblin_var }
+    immediate = {
+        set_variable = race_hobgoblin_muster_seen
+        choose_race_integrate_effect = yes
+    }
+    option = {
+        name = me_racial_events_55.a
+        trigger = { treasury >= 15 }
+        add_treasury = -15
+        add_manpower = 1
+        if = {
+            limit = { has_variable = integrate_hobgoblin_var }
+            choose_race_integrate_effect = yes
+            if = {
+                limit = { has_variable = race_target_found }
+                race_integrate_positive_level_effect = yes
+                race_integrate_events_effect = yes
+            }
+            else = { trigger_event = me_racial_events.51 }
+        }
+    }
+    option = {
+        name = me_racial_events_55.b
+        race_integrate_events_effect = yes
+    }
+    option = {
+        name = me_racial_events_21.c
+        custom_tooltip = end_focus_tooltip
+        race_end_focus_effect = yes
+    }
+}
+
+# Gnomish and Dwarven mining crews
+me_racial_events.56 = {
+    type = country_event
+    title = me_racial_events_56_title
+    desc = me_racial_events_56_desc
+    picture = omni_event_scene_bad_furqorin_mine_road
+    left_portrait = current_ruler
+    immediate = { set_variable = race_shared_drainage_seen }
+    option = {
+        name = me_racial_events_56.a
+        trigger = { treasury >= 20 scope:race_drainage_mine = { owner = root has_building = slave_mine_building } }
+        add_treasury = -20
+        scope:race_drainage_mine = {
+            add_province_modifier = { name = race_shared_drainage_mod duration = 1825 }
+        }
+    }
+    option = { name = me_racial_events_56.b }
 }

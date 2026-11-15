@@ -21,18 +21,17 @@ omni_city_actor_change_gold = {
 	else = { add_gold = { value = $VALUE$ multiply = $MULTIPLY$ } }
 }
 
-# Uses treasury when a ruler has no separately saved visitor; otherwise charges
-# the visiting character's personal wealth.
-omni_city_actor_pay_magic_store_cost = {
-	if = {
-		limit = { exists = scope:omni_city_visitor }
-		scope:omni_city_visitor = { add_gold = { value = $PRICE$ multiply = -1 } }
-	}
-	else_if = {
-		limit = { is_ruler = yes }
-		country = { add_treasury = -$PRICE$ }
-	}
-	else = {
-		add_gold = { value = $PRICE$ multiply = -1 }
+# PRICE is evaluated on the visitor, even when the treasury pays.
+omni_pay_mage_tower_price = {
+	scope:omni_city_visitor = {
+		if = {
+			limit = { is_ruler = yes }
+			custom_tooltip = omni_academy_ruler_payment_tt
+			employer = { add_treasury = { value = scope:omni_city_visitor.$PRICE$ multiply = -1 } }
+		}
+		else = {
+			custom_tooltip = omni_academy_personal_payment_tt
+			add_gold = { value = $PRICE$ multiply = -1 }
+		}
 	}
 }

@@ -78,16 +78,23 @@ omni_sb_starting_spells_country = {
 	if = {
 		limit = { NOT = { has_variable = omni_sb_start_spells_done } }
 		set_variable = omni_sb_start_spells_done
-		if = {
-			limit = {
-				tag = IF3
-				current_ruler = { is_alive = yes has_trait = shannah_trait }
-			}
-			current_ruler = { omni_sb_starting_shannah_spells = yes }
+		omni_sb_starting_spells_pass = yes
+	}
+}
+
+# Country scope. Idempotent per character (omni_sb_start_checked), so it can run
+# immediately at game start (Spellbook seal visible on day one) and again a day
+# later to catch mages created by start-up lore events.
+omni_sb_starting_spells_pass = {
+	if = {
+		limit = {
+			tag = IF3
+			current_ruler = { is_alive = yes has_trait = shannah_trait NOT = { has_variable = omni_sb_start_checked } }
 		}
-		every_character = {
-			limit = { omni_sb_needs_starting_spells = yes }
-			omni_sb_starting_spells_character = yes
-		}
+		current_ruler = { omni_sb_starting_shannah_spells = yes }
+	}
+	every_character = {
+		limit = { omni_sb_needs_starting_spells = yes }
+		omni_sb_starting_spells_character = yes
 	}
 }

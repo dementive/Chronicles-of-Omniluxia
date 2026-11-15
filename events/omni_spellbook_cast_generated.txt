@@ -403,9 +403,7 @@ omni_spellbook_cast.33 = { # curse_ii
             scope:selected_mage = {
                 omni_spell_mana_cost_effect = { BASE = 100 }
             }
-            scope:target = {
-                force_add_trait = skull_curse_trait
-            }
+            omni_apply_skull_curse = yes
         }
     }
 }
@@ -535,16 +533,24 @@ omni_spellbook_cast.40 = { # detect_minerals_ii
     hidden = yes
     immediate = {
         if = {
-            limit = { omni_sb_can_cast_detect_minerals_ii = yes }
-            random_owned_province = { limit = { has_minable_trade_good_trigger = yes NOT = { has_province_modifier = amten_elementalist_spell_t2_mod } } save_scope_as = mineral_target }
-            scope:target = {
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            scope:mineral_target = {
-                add_province_modifier = {
-                    name = amten_elementalist_spell_t2_mod
-                    duration = 180
+            limit = { omni_sb_can_cast_detect_minerals_ii = yes omni_sb_can_target_detect_minerals_ii = yes }
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_mineral = yes
+                    }
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_detect_minerals_ii = yes
+                        omni_can_afford_spell = { BASE = 50 }
+                    }
                 }
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 50 }
+                }
+                scope:target = { add_province_modifier = { name = amten_elementalist_spell_t2_mod duration = 180 } }
             }
         }
     }
@@ -636,7 +642,7 @@ omni_spellbook_cast.45 = { # exorcism
             scope:target = {
                 remove_trait = wishtheon_curse_trait
                 remove_trait = blood_angel_curse_trait
-                remove_trait = skull_curse_trait
+                omni_remove_skull_curse = yes
                 remove_trait = blood_curse_trait
                 if = {
                     limit = {
@@ -889,16 +895,23 @@ omni_spellbook_cast.60 = { # harbor_ward
     immediate = {
         if = {
             limit = { omni_sb_can_cast_harbor_ward = yes omni_sb_can_target_harbor_ward = yes }
-            scope:selected_mage = {
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            scope:target.country = {
-                capital_scope = {
-                    add_province_modifier = {
-                        name = omni_harbor_ward_mod
-                        duration = 365
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_harbor_ward = yes
+                    }
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_harbor_ward = yes
+                        omni_can_afford_spell = { BASE = 50 }
                     }
                 }
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 50 }
+                }
+                scope:target = { add_province_modifier = { name = omni_harbor_ward_mod duration = 365 } }
             }
         }
     }
@@ -1220,16 +1233,23 @@ omni_spellbook_cast.84 = { # migration_beacon
     immediate = {
         if = {
             limit = { omni_sb_can_cast_migration_beacon = yes omni_sb_can_target_migration_beacon = yes }
-            scope:selected_mage = {
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            scope:target.country = {
-                capital_scope = {
-                    add_province_modifier = {
-                        name = omni_migration_beacon_mod
-                        duration = 365
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_migration_beacon = yes
+                    }
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_migration_beacon = yes
+                        omni_can_afford_spell = { BASE = 50 }
                     }
                 }
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 50 }
+                }
+                scope:target = { add_province_modifier = { name = omni_migration_beacon_mod duration = 365 } }
             }
         }
     }
@@ -1302,14 +1322,26 @@ omni_spellbook_cast.88 = { # nature_bounty
     hidden = yes
     immediate = {
         if = {
-            limit = { omni_sb_can_cast_nature_bounty = yes }
-            random_owned_province = { limit = { has_food_trade_good_trigger = yes NOT = { has_province_modifier = amten_druid_spell_t2_mod } } save_scope_as = food_target }
-            scope:target = {
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            add_stability = 2
-            scope:food_target.state = {
-                add_state_food = 500
+            limit = { omni_sb_can_cast_nature_bounty = yes omni_sb_can_target_nature_bounty = yes }
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_food = yes
+                        exists = state
+                    }
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_nature_bounty = yes
+                        omni_can_afford_spell = { BASE = 50 }
+                    }
+                }
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 50 }
+                }
+                scope:player = { add_stability = 2 }
+                scope:target.state = { add_state_food = 500 }
             }
         }
     }
@@ -1375,15 +1407,23 @@ omni_spellbook_cast.93 = { # plant_growth
     immediate = {
         if = {
             limit = { omni_sb_can_cast_plant_growth = yes omni_sb_can_target_plant_growth = yes }
-            scope:selected_mage = {
-                remove_variable = omni_pending_plant_growth_spell
-                omni_spell_mana_cost_effect = { BASE = 25 }
-            }
-            scope:target = {
-                add_province_modifier = {
-                    name = amten_druid_spell_t1_mod
-                    duration = 180
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_plant_growth = yes
+                    }
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_plant_growth = yes
+                        omni_can_afford_spell = { BASE = 25 }
+                    }
                 }
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 25 }
+                }
+                scope:target = { add_province_modifier = { name = amten_druid_spell_t1_mod duration = 180 } }
             }
         }
     }
@@ -1394,16 +1434,24 @@ omni_spellbook_cast.94 = { # plant_growth_ii
     hidden = yes
     immediate = {
         if = {
-            limit = { omni_sb_can_cast_plant_growth_ii = yes }
-            random_owned_province = { limit = { has_food_trade_good_trigger = yes NOT = { has_province_modifier = amten_druid_spell_t2_mod } } save_scope_as = food_target }
-            scope:target = {
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            scope:food_target = {
-                add_province_modifier = {
-                    name = amten_druid_spell_t2_mod
-                    duration = 180
+            limit = { omni_sb_can_cast_plant_growth_ii = yes omni_sb_can_target_plant_growth_ii = yes }
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_food = yes
+                    }
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_plant_growth_ii = yes
+                        omni_can_afford_spell = { BASE = 50 }
+                    }
                 }
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 50 }
+                }
+                scope:target = { add_province_modifier = { name = amten_druid_spell_t2_mod duration = 180 } }
             }
         }
     }
@@ -1454,22 +1502,26 @@ omni_spellbook_cast.97 = { # raise_workers
     hidden = yes
     immediate = {
         if = {
-            limit = { omni_sb_can_cast_raise_workers = yes }
-            scope:target = {
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            scope:target.country = {
-                capital_scope = {
-                    define_pop = {
-                        type = slaves
-                        culture = undead
-                        religion = blood_tainted_pantheon
+            limit = { omni_sb_can_cast_raise_workers = yes omni_sb_can_target_raise_workers = yes }
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_land = yes
                     }
-                    define_pop = {
-                        type = slaves
-                        culture = undead
-                        religion = blood_tainted_pantheon
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_raise_workers = yes
+                        omni_can_afford_spell = { BASE = 50 }
                     }
+                }
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 50 }
+                }
+                scope:target = {
+                    define_pop = { type = slaves culture = undead religion = blood_tainted_pantheon }
+                    define_pop = { type = slaves culture = undead religion = blood_tainted_pantheon }
                 }
             }
         }
@@ -1817,31 +1869,35 @@ omni_spellbook_cast.116 = { # summon_dryads
     immediate = {
         if = {
             limit = { omni_sb_can_cast_summon_dryads = yes omni_sb_can_target_summon_dryads = yes }
-            scope:selected_mage = {
-                remove_variable = omni_pending_summon_dryads_spell
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            # create_unit is a COUNTRY effect; the interaction root is a character.
-            scope:player = {
-                create_unit = {
-                    navy = no
-                    name = "Dryad Auxiliaries"
-                    location = scope:target
-                    hidden_effect = {
-                        while = {
-                            count = omni_dryad_cohort_count
-                            add_subunit = heavy_infantry
-                        }
-                        add_food = 800
-                        add_morale = 5
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_forest = yes
+                    }
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_summon_dryads = yes
+                        omni_can_afford_spell = { BASE = 50 }
                     }
                 }
-            }
-            scope:target = {
-                add_province_modifier = {
-                    name = summon_dryads_mod
-                    duration = 365
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 50 }
                 }
+                scope:player = {
+                    create_unit = {
+                        navy = no
+                        name = "Dryad Auxiliaries"
+                        location = scope:target
+                        hidden_effect = {
+                            while = { count = omni_dryad_cohort_count add_subunit = heavy_infantry }
+                            add_food = 800
+                            add_morale = 5
+                        }
+                    }
+                }
+                scope:target = { add_province_modifier = { name = summon_dryads_mod duration = 365 } }
             }
         }
     }
@@ -2121,16 +2177,23 @@ omni_spellbook_cast.132 = { # weathercall_growth
     immediate = {
         if = {
             limit = { omni_sb_can_cast_weathercall_growth = yes omni_sb_can_target_weathercall_growth = yes }
-            scope:selected_mage = {
-                omni_spell_mana_cost_effect = { BASE = 50 }
-            }
-            scope:target.country = {
-                capital_scope = {
-                    add_province_modifier = {
-                        name = omni_weathercall_growth_mod
-                        duration = 365
+            if = {
+                limit = {
+                    exists = scope:target
+                    scope:target = {
+                        owner = scope:player
+                        omni_spell_target_weathercall_growth = yes
+                    }
+                    scope:selected_mage = {
+                        OR = { employer = scope:player country = scope:player }
+                        omni_can_select_territory_weathercall_growth = yes
+                        omni_can_afford_spell = { BASE = 50 }
                     }
                 }
+                scope:selected_mage = {
+                    omni_spell_mana_cost_effect = { BASE = 50 }
+                }
+                scope:target = { add_province_modifier = { name = omni_weathercall_growth_mod duration = 365 } }
             }
         }
     }

@@ -218,7 +218,13 @@ omni_items.7 = {
 	}
 	option = {
 		name = omni_items.7.magic_academy
-		trigger = { OR = { omni_character_has_local_magic_academy = yes AND = { exists = scope:omni_city_visitor scope:omni_city_visitor = { omni_character_has_local_magic_academy = yes } } } }
+		trigger = {
+			OR = {
+				omni_character_has_local_magic_academy = yes
+				scope:omni_city_visitor = { omni_character_has_local_magic_academy = yes }
+				scope:omni_city_visitor = { has_variable = omni_repeating_spell_study }
+			}
+		}
 		trigger_event = { id = omni_items.13 }
 	}
 	option = {
@@ -319,7 +325,10 @@ omni_items.13 = {
 
 	option = {
 		name = omni_items.13.study_magic
-		trigger = { OR = { omni_character_has_local_magic_academy = yes AND = { exists = scope:omni_city_visitor scope:omni_city_visitor = { omni_character_has_local_magic_academy = yes } } } }
+		trigger = {
+			scope:omni_city_visitor = { employer = root.employer omni_can_learn_academy_magic = yes }
+			OR = { omni_character_has_local_magic_academy = yes scope:omni_city_visitor = { omni_character_has_local_magic_academy = yes } }
+		}
 		hidden_effect = {
 			scope:omni_city_visitor = {
 				save_scope_as = target
@@ -328,9 +337,31 @@ omni_items.13 = {
 		}
 	}
 	option = {
-		name = omni_items.13.buy_spells
-		trigger = { OR = { omni_character_has_local_magic_academy = yes AND = { exists = scope:omni_city_visitor scope:omni_city_visitor = { omni_character_has_local_magic_academy = yes } } } }
-		trigger_event = { id = omni_items.21 }
+		name = omni_items.13.study_spells
+		trigger = {
+			scope:omni_city_visitor = {
+				employer = root.employer
+				omni_can_learn_academy_magic = yes
+				NOT = { has_variable = omni_repeating_spell_study }
+			}
+			OR = { omni_character_has_local_magic_academy = yes scope:omni_city_visitor = { omni_character_has_local_magic_academy = yes } }
+		}
+		custom_tooltip = omni_items.13.study_spells_tt
+		hidden_effect = {
+			scope:omni_city_visitor = {
+				set_variable = omni_repeating_spell_study
+				omni_queue_spell_study = yes
+			}
+			trigger_event = { id = omni_items.13 }
+		}
+	}
+	option = {
+		name = omni_items.13.stop_spell_study
+		trigger = { scope:omni_city_visitor = { has_variable = omni_repeating_spell_study } }
+		hidden_effect = {
+			scope:omni_city_visitor = { remove_variable = omni_repeating_spell_study }
+			trigger_event = { id = omni_items.7 }
+		}
 	}
 	option = {
 		name = omni_items.back
@@ -348,354 +379,23 @@ omni_items.16 = {
 	title = omni_items.16.t
 	desc = omni_items.16.desc
 	left_portrait = scope:omni_city_visitor
-	immediate = {
-		scope:omni_city_visitor = {
-			if = {
-				limit = { NOT = { has_variable = omni_mage_tower_stock_timer } }
-				omni_build_mage_tower_spell_stock = yes
-			}
-		}
-	}
 
+	immediate = { omni_find_visited_mage_tower = yes }
+
+	option = {
+		name = omni_tower.browse
+		trigger = {
+			omni_mage_tower_visit_is_current = yes
+			scope:omni_city_visitor = { omni_can_learn_academy_magic = yes }
+		}
+		trigger_event = { id = omni_tower.1 }
+	}
 	option = {
 		name = omni_folk_discovery.tower
 		trigger = { scope:omni_city_visitor = { omni_character_has_folk_teacher = yes } }
 		trigger_event = { id = omni_folk_discovery.1 }
 	}
-	option = {
-		name = omni_items.16.omnic
-		trigger = {
-			scope:omni_city_visitor = { has_trait = omnic_master_trait }
-		}
-		trigger_event = { id = omni_items.17 }
-	}
-	option = {
-		name = omni_items.16.aldic
-		trigger = {
-			scope:omni_city_visitor = { has_trait = aldic_master_trait }
-		}
-		trigger_event = { id = omni_items.18 }
-	}
-	option = {
-		name = omni_items.16.amten
-		trigger = {
-			scope:omni_city_visitor = { has_trait = amten_master_trait }
-		}
-		trigger_event = { id = omni_items.19 }
-	}
-	option = {
-		name = omni_items.16.melodian
-		trigger = {
-			scope:omni_city_visitor = { has_trait = melodian_master_trait }
-		}
-		trigger_event = { id = omni_items.20 }
-	}
-	option = {
-		name = omni_items.back
-		trigger_event = { id = omni_items.7 }
-	}
-	option = {
-		name = omni_items.1.close
-	}
-}
-
-### omni_items.17
-omni_items.17 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.17.t
-	desc = omni_items.17.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.buy_t3_spell
-		trigger = {
-			scope:omni_city_visitor = { is_target_in_variable_list = { name = omni_mage_tower_spell_stock target = flag:omni_mage_tower_t3 } }
-			scope:omni_city_visitor = { omni_missing_omnic_t3_spell = yes }
-			omni_city_actor_has_wealth = { PRICE = 120 }
-		}
-		omni_city_actor_pay_magic_store_cost = { PRICE = 120 }
-		scope:omni_city_visitor = { omni_grant_random_omnic_t3 = yes }
-		trigger_event = { id = omni_items.17 }
-	}
-	option = {
-		name = omni_items.buy_t4_spell
-		trigger = {
-			scope:omni_city_visitor = { is_target_in_variable_list = { name = omni_mage_tower_spell_stock target = flag:omni_mage_tower_t4 } }
-			scope:omni_city_visitor = { omni_missing_omnic_t4_spell = yes }
-			omni_city_actor_has_wealth = { PRICE = 250 }
-		}
-		omni_city_actor_pay_magic_store_cost = { PRICE = 250 }
-		scope:omni_city_visitor = { omni_grant_random_omnic_t4 = yes }
-		trigger_event = { id = omni_items.17 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.16 } }
-	option = { name = omni_items.1.close }
-}
-
-### omni_items.18
-omni_items.18 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.18.t
-	desc = omni_items.18.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.buy_t3_spell
-		trigger = { scope:omni_city_visitor = { is_target_in_variable_list = { name = omni_mage_tower_spell_stock target = flag:omni_mage_tower_t3 } omni_missing_aldic_t3_spell = yes } omni_city_actor_has_wealth = { PRICE = 120 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 120 }
-		scope:omni_city_visitor = { omni_grant_random_aldic_t3 = yes }
-		trigger_event = { id = omni_items.18 }
-	}
-	option = {
-		name = omni_items.buy_t4_spell
-		trigger = { scope:omni_city_visitor = { is_target_in_variable_list = { name = omni_mage_tower_spell_stock target = flag:omni_mage_tower_t4 } omni_missing_aldic_t4_spell = yes } omni_city_actor_has_wealth = { PRICE = 250 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 250 }
-		scope:omni_city_visitor = { omni_grant_random_aldic_t4 = yes }
-		trigger_event = { id = omni_items.18 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.16 } }
-	option = { name = omni_items.1.close }
-}
-
-### omni_items.19
-omni_items.19 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.19.t
-	desc = omni_items.19.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.buy_t3_spell
-		trigger = { scope:omni_city_visitor = { is_target_in_variable_list = { name = omni_mage_tower_spell_stock target = flag:omni_mage_tower_t3 } omni_missing_amten_t3_spell = yes } omni_city_actor_has_wealth = { PRICE = 120 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 120 }
-		scope:omni_city_visitor = { omni_grant_random_amten_t3 = yes }
-		trigger_event = { id = omni_items.19 }
-	}
-	option = {
-		name = omni_items.buy_t4_spell
-		trigger = { scope:omni_city_visitor = { is_target_in_variable_list = { name = omni_mage_tower_spell_stock target = flag:omni_mage_tower_t4 } omni_missing_amten_t4_spell = yes } omni_city_actor_has_wealth = { PRICE = 250 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 250 }
-		scope:omni_city_visitor = { omni_grant_random_amten_t4 = yes }
-		trigger_event = { id = omni_items.19 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.16 } }
-	option = { name = omni_items.1.close }
-}
-
-### omni_items.20
-omni_items.20 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.20.t
-	desc = omni_items.20.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.buy_t3_spell
-		trigger = { scope:omni_city_visitor = { is_target_in_variable_list = { name = omni_mage_tower_spell_stock target = flag:omni_mage_tower_t3 } omni_missing_melodian_t3_spell = yes } omni_city_actor_has_wealth = { PRICE = 120 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 120 }
-		scope:omni_city_visitor = { omni_grant_random_melodian_t3 = yes }
-		trigger_event = { id = omni_items.20 }
-	}
-	option = {
-		name = omni_items.buy_t4_spell
-		trigger = { scope:omni_city_visitor = { is_target_in_variable_list = { name = omni_mage_tower_spell_stock target = flag:omni_mage_tower_t4 } omni_missing_melodian_t4_spell = yes } omni_city_actor_has_wealth = { PRICE = 250 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 250 }
-		scope:omni_city_visitor = { omni_grant_random_melodian_t4 = yes }
-		trigger_event = { id = omni_items.20 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.16 } }
-	option = { name = omni_items.1.close }
-}
-
-### omni_items.21
-omni_items.21 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.21.t
-	desc = omni_items.21.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.16.omnic
-		trigger = {
-			scope:omni_city_visitor = {
-				OR = {
-					has_variable = omni_studying_diviner_var
-					has_variable = omni_studying_hierophant_var
-					has_variable = diviner_t2_unlocked_var
-					has_variable = diviner_t3_unlocked_var
-					has_variable = diviner_t4_unlocked_var
-					has_variable = hierophant_t2_unlocked_var
-					has_variable = hierophant_t3_unlocked_var
-					has_variable = hierophant_t4_unlocked_var
-				}
-			}
-		}
-		trigger_event = { id = omni_items.22 }
-	}
-	option = {
-		name = omni_items.16.aldic
-		trigger = {
-			scope:omni_city_visitor = {
-				OR = {
-					has_variable = omni_studying_illusionist_var
-					has_variable = omni_studying_cleric_var
-					has_variable = illusionist_t2_unlocked_var
-					has_variable = illusionist_t3_unlocked_var
-					has_variable = illusionist_t4_unlocked_var
-					has_variable = cleric_t2_unlocked_var
-					has_variable = cleric_t3_unlocked_var
-					has_variable = cleric_t4_unlocked_var
-				}
-			}
-		}
-		trigger_event = { id = omni_items.23 }
-	}
-	option = {
-		name = omni_items.16.amten
-		trigger = {
-			scope:omni_city_visitor = {
-				OR = {
-					has_variable = omni_studying_elementalist_var
-					has_variable = omni_studying_druid_var
-					has_variable = elementalist_t2_unlocked_var
-					has_variable = elementalist_t3_unlocked_var
-					has_variable = elementalist_t4_unlocked_var
-					has_variable = druid_t2_unlocked_var
-					has_variable = druid_t3_unlocked_var
-					has_variable = druid_t4_unlocked_var
-				}
-			}
-		}
-		trigger_event = { id = omni_items.24 }
-	}
-	option = {
-		name = omni_items.16.melodian
-		trigger = {
-			scope:omni_city_visitor = {
-				OR = {
-					has_variable = omni_studying_necromancer_var
-					has_variable = omni_studying_warlock_var
-					has_variable = necromancer_t2_unlocked_var
-					has_variable = necromancer_t3_unlocked_var
-					has_variable = necromancer_t4_unlocked_var
-					has_variable = warlock_t2_unlocked_var
-					has_variable = warlock_t3_unlocked_var
-					has_variable = warlock_t4_unlocked_var
-				}
-			}
-		}
-		trigger_event = { id = omni_items.25 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.13 } }
-	option = { name = omni_items.1.close }
-}
-
-### omni_items.22
-omni_items.22 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.17.t
-	desc = omni_items.22.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.buy_t1_spell
-		trigger = { scope:omni_city_visitor = { omni_missing_omnic_t1_spell = yes } omni_city_actor_has_wealth = { PRICE = 25 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 25 }
-		scope:omni_city_visitor = { omni_grant_random_omnic_t1 = yes }
-		trigger_event = { id = omni_items.22 }
-	}
-	option = {
-		name = omni_items.buy_t2_spell
-		trigger = { scope:omni_city_visitor = { omni_missing_omnic_t2_spell = yes } omni_city_actor_has_wealth = { PRICE = 60 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 60 }
-		scope:omni_city_visitor = { omni_grant_random_omnic_t2 = yes }
-		trigger_event = { id = omni_items.22 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.21 } }
-	option = { name = omni_items.1.close }
-}
-
-### omni_items.23
-omni_items.23 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.18.t
-	desc = omni_items.22.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.buy_t1_spell
-		trigger = { scope:omni_city_visitor = { omni_missing_aldic_t1_spell = yes } omni_city_actor_has_wealth = { PRICE = 25 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 25 }
-		scope:omni_city_visitor = { omni_grant_random_aldic_t1 = yes }
-		trigger_event = { id = omni_items.23 }
-	}
-	option = {
-		name = omni_items.buy_t2_spell
-		trigger = { scope:omni_city_visitor = { omni_missing_aldic_t2_spell = yes } omni_city_actor_has_wealth = { PRICE = 60 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 60 }
-		scope:omni_city_visitor = { omni_grant_random_aldic_t2 = yes }
-		trigger_event = { id = omni_items.23 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.21 } }
-	option = { name = omni_items.1.close }
-}
-
-### omni_items.24
-omni_items.24 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.19.t
-	desc = omni_items.22.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.buy_t1_spell
-		trigger = { scope:omni_city_visitor = { omni_missing_amten_t1_spell = yes } omni_city_actor_has_wealth = { PRICE = 25 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 25 }
-		scope:omni_city_visitor = { omni_grant_random_amten_t1 = yes }
-		trigger_event = { id = omni_items.24 }
-	}
-	option = {
-		name = omni_items.buy_t2_spell
-		trigger = { scope:omni_city_visitor = { omni_missing_amten_t2_spell = yes } omni_city_actor_has_wealth = { PRICE = 60 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 60 }
-		scope:omni_city_visitor = { omni_grant_random_amten_t2 = yes }
-		trigger_event = { id = omni_items.24 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.21 } }
-	option = { name = omni_items.1.close }
-}
-
-### omni_items.25
-omni_items.25 = {
-	type = character_event
-	picture = ascetic
-	title = omni_items.20.t
-	desc = omni_items.22.desc
-	left_portrait = scope:omni_city_visitor
-
-	option = {
-		name = omni_items.buy_t1_spell
-		trigger = { scope:omni_city_visitor = { omni_missing_melodian_t1_spell = yes } omni_city_actor_has_wealth = { PRICE = 25 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 25 }
-		scope:omni_city_visitor = { omni_grant_random_melodian_t1 = yes }
-		trigger_event = { id = omni_items.25 }
-	}
-	option = {
-		name = omni_items.buy_t2_spell
-		trigger = { scope:omni_city_visitor = { omni_missing_melodian_t2_spell = yes } omni_city_actor_has_wealth = { PRICE = 60 } }
-		omni_city_actor_pay_magic_store_cost = { PRICE = 60 }
-		scope:omni_city_visitor = { omni_grant_random_melodian_t2 = yes }
-		trigger_event = { id = omni_items.25 }
-	}
-	option = { name = omni_items.back trigger_event = { id = omni_items.21 } }
+	option = { name = omni_items.back trigger_event = { id = omni_items.7 } }
 	option = { name = omni_items.1.close }
 }
 
@@ -4780,5 +4480,31 @@ omni_items.5 = {
 	}
 	option = {
 		name = omni_items.1.close
+	}
+}
+
+
+# Recurring academical study. A queued tick owns the timer, even if study is
+# toggled off and back on before it fires.
+omni_items.90 = {
+	type = character_event
+	hidden = yes
+
+	immediate = {
+		remove_variable = omni_spell_study_queued
+		if = {
+			limit = {
+				is_alive = yes
+				has_variable = omni_repeating_spell_study
+				omni_sb_belongs_to_player = yes
+				omni_can_learn_academy_magic = yes
+			}
+			omni_sb_grant_spell_points = { FAMILY = omnic AMOUNT = 1 }
+			omni_queue_spell_study = yes
+		}
+		else_if = {
+			limit = { has_variable = omni_repeating_spell_study }
+			remove_variable = omni_repeating_spell_study
+		}
 	}
 }

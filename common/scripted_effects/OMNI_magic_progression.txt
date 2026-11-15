@@ -21,7 +21,7 @@ omni_add_study_progress = {
 
 # Converts accumulated study progress into one tier unlock. A course must never
 # award more than one tier: omni_advance_school_tier finishes the course as soon
-# as this check succeeds, and the two-year study cooldown gates the next course.
+# as this check succeeds, and the post-course cooldown gates the next course.
 #
 # PERF: pure variable arithmetic on the character already in scope. No iteration.
 omni_check_study_rank_up = {
@@ -32,11 +32,16 @@ omni_check_study_rank_up = {
 	}
 }
 
-# Ends one course and starts the full interval before this character can enrol
-# again. Graduation events use this too, so neither the deterministic route nor
-# the narrative route can bypass the cooldown. Treasury consequences in the
-# study events are deliberately untouched.
+# Character scope. Start the cooldown when the course ends.
 omni_finish_magic_study_course = {
+	omni_close_academy_course = { DAYS = 183 }
+}
+
+omni_finish_magic_mastery_course = {
+	omni_close_academy_course = { DAYS = 365 }
+}
+
+omni_close_academy_course = {
 	remove_variable = omni_studying_diviner_var
 	remove_variable = omni_studying_hierophant_var
 	remove_variable = omni_studying_cleric_var
@@ -55,7 +60,7 @@ omni_finish_magic_study_course = {
 	remove_variable = omni_studying_soul_magic_var
 	set_variable = {
 		name = omni_studying_magic_cooldown
-		days = 730
+		days = $DAYS$
 	}
 }
 
@@ -135,13 +140,12 @@ omni_advance_school_tier = {
 		limit = { NOT = { has_variable = $SCHOOL$_t4_unlocked_var } }
 		set_variable = $SCHOOL$_t4_unlocked_var
 		set_variable = $SCHOOL$_mastered_var
-		# Mastery pays 2 points: enough for a Tier III spell plus the family's
-		# Tier IV capstone (which requires a known Tier III of that family).
+		# Mastery awards two points and starts the longer cooldown.
 		omni_sb_grant_spell_points = { FAMILY = $FAMILY$ AMOUNT = 2 }
 		# A single mastered school is not Archmage rank. The central prestige
 		# ladder grants that trait only after any two schools are mastered.
 		omni_check_magic_prestige = yes
-		omni_finish_magic_study_course = yes
+		omni_finish_magic_mastery_course = yes
 	}
 	else = {
 		# A legacy or already-capped course has nothing left to teach. Clean it up
@@ -293,7 +297,6 @@ omni_check_magic_prestige = {
 		# Defensive fallback: normal rank grants are reconciled above.
 		remove_trait = archmage_trait
 	}
-	if = { limit = { var:omni_mastered_school_count_var >= 4 } add_trait = grand_archmage_trait }
 	if = {
 		limit = {
 			has_variable = diviner_mastered_var
@@ -308,8 +311,26 @@ omni_check_magic_prestige = {
 		add_trait = magus_supreme_trait
 	}
 	if = {
-		limit = { has_trait = magus_supreme_trait NOT = { has_variable = omni_all_spells_granted } }
-		omni_learn_all_spells = yes
-		set_variable = omni_all_spells_granted
+		limit = { has_trait = magus_supreme_trait }
+		if = {
+			limit = { has_trait = grand_archmage_trait }
+			remove_trait = grand_archmage_trait
+		}
+		if = {
+			limit = { NOT = { has_variable = omni_supreme_master_spell_awarded } }
+			set_variable = omni_supreme_master_spell_awarded
+			set_variable = omni_supreme_master_spell_available
+		}
+		if = {
+			limit = {
+				has_variable = omni_supreme_master_spell_available
+				omni_sb_belongs_to_player = no
+			}
+			omni_sb_ai_claim_supreme_spell = yes
+		}
+	}
+	else_if = {
+		limit = { var:omni_mastered_school_count_var >= 4 }
+		add_trait = grand_archmage_trait
 	}
 }
