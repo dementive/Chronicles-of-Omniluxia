@@ -1,7 +1,7 @@
 ﻿namespace = omni_siege_supply
 
 # Siege supplies market. Shown on the ruler; the buyer is scope:omni_city_visitor.
-# Availability depends on buildings in the accessible settlement. Attacker kits
+# Availability depends on the buyer realm's inventions and local buildings. Attacker kits
 # are paid from the visitor's purse; defender stores are paid from the treasury.
 omni_siege_supply.1 = {
 	type = character_event
@@ -54,97 +54,97 @@ omni_siege_supply.1 = {
 	}
 	option = {
 		name = omni_siege_supply.1.sapper
-		trigger = {
-			scope:omni_city_visitor = {
-				omni_character_has_siege_supply_market = yes
-				omni_kit_below_cap = { KIT = sapper }
-			}
-			omni_city_actor_has_wealth = { PRICE = 180 }
-		}
+		trigger = { scope:omni_city_visitor = { omni_character_can_buy_siege_kit = { KIT = sapper PRICE = 180 MARKET = omni_character_has_siege_supply_market INVENTION = siege_engineers_inv_1 } } }
 		custom_tooltip = omni_kit_sapper_use_tt
 		custom_tooltip = omni_siege_supply_carried_tt
-		omni_city_actor_change_gold = { VALUE = 180 MULTIPLY = -1 }
-		scope:omni_city_visitor = { omni_kit_gain = { KIT = sapper } }
+		hidden_effect = {
+			if = {
+				limit = { scope:omni_city_visitor = { omni_character_can_buy_siege_kit = { KIT = sapper PRICE = 180 MARKET = omni_character_has_siege_supply_market INVENTION = siege_engineers_inv_1 } } }
+				scope:omni_city_visitor = {
+					add_gold = -180
+					omni_kit_gain = { KIT = sapper }
+				}
+			}
+		}
 		trigger_event = { id = omni_siege_supply.1 }
 	}
 	option = {
 		name = omni_siege_supply.1.fire
-		trigger = {
-			scope:omni_city_visitor = {
-				omni_character_has_siege_basic_market = yes
-				omni_kit_below_cap = { KIT = fire }
-			}
-			omni_city_actor_has_wealth = { PRICE = 160 }
-		}
+		trigger = { scope:omni_city_visitor = { omni_character_can_buy_siege_kit = { KIT = fire PRICE = 160 MARKET = omni_character_has_siege_supply_market INVENTION = centralised_production_inv } } }
 		custom_tooltip = omni_kit_fire_use_tt
 		custom_tooltip = omni_siege_supply_carried_tt
-		omni_city_actor_change_gold = { VALUE = 160 MULTIPLY = -1 }
-		scope:omni_city_visitor = { omni_kit_gain = { KIT = fire } }
+		hidden_effect = {
+			if = {
+				limit = { scope:omni_city_visitor = { omni_character_can_buy_siege_kit = { KIT = fire PRICE = 160 MARKET = omni_character_has_siege_supply_market INVENTION = centralised_production_inv } } }
+				scope:omni_city_visitor = {
+					add_gold = -160
+					omni_kit_gain = { KIT = fire }
+				}
+			}
+		}
 		trigger_event = { id = omni_siege_supply.1 }
 	}
 	option = {
 		name = omni_siege_supply.1.plague
-		trigger = {
-			scope:omni_city_visitor = {
-				omni_character_has_siege_basic_market = yes
-				omni_kit_below_cap = { KIT = plague }
-			}
-			omni_city_actor_has_wealth = { PRICE = 225 }
-		}
+		trigger = { scope:omni_city_visitor = { omni_character_can_buy_siege_kit = { KIT = plague PRICE = 225 MARKET = omni_character_has_siege_basic_market INVENTION = technology_cost_inv_1 } } }
 		custom_tooltip = omni_kit_plague_use_tt
 		custom_tooltip = omni_siege_supply_carried_tt
-		omni_city_actor_change_gold = { VALUE = 225 MULTIPLY = -1 }
-		scope:omni_city_visitor = { omni_kit_gain = { KIT = plague } }
+		hidden_effect = {
+			if = {
+				limit = { scope:omni_city_visitor = { omni_character_can_buy_siege_kit = { KIT = plague PRICE = 225 MARKET = omni_character_has_siege_basic_market INVENTION = technology_cost_inv_1 } } }
+				scope:omni_city_visitor = {
+					add_gold = -225
+					omni_kit_gain = { KIT = plague }
+				}
+			}
+		}
 		trigger_event = { id = omni_siege_supply.1 }
 	}
 	option = {
 		name = omni_siege_supply.1.stores
-		trigger = {
-			scope:omni_city_visitor = { omni_character_has_siege_basic_market = yes }
-			scope:omni_gear_country = {
-				omni_def_below_cap = { KIT = stores }
-				treasury >= 150
-			}
-		}
+		trigger = { scope:omni_city_visitor = { omni_character_can_buy_siege_defense = { KIT = stores PRICE = 150 MARKET = omni_character_has_siege_basic_market INVENTION = global_supply_limit_modifier_inv_3 } } }
 		custom_tooltip = omni_def_stores_use_tt
 		custom_tooltip = omni_siege_supply_stored_tt
-		scope:omni_gear_country = {
-			add_treasury = -150
-			omni_def_gain = { KIT = stores }
+		hidden_effect = {
+			if = {
+				limit = { scope:omni_city_visitor = { omni_character_can_buy_siege_defense = { KIT = stores PRICE = 150 MARKET = omni_character_has_siege_basic_market INVENTION = global_supply_limit_modifier_inv_3 } } }
+				scope:omni_gear_country = {
+					add_treasury = -150
+					omni_def_gain = { KIT = stores }
+				}
+			}
 		}
 		trigger_event = { id = omni_siege_supply.1 }
 	}
 	option = {
 		name = omni_siege_supply.1.gates
-		trigger = {
-			scope:omni_city_visitor = { omni_character_has_siege_supply_market = yes }
-			scope:omni_gear_country = {
-				omni_def_below_cap = { KIT = gates }
-				treasury >= 220
-			}
-		}
+		trigger = { scope:omni_city_visitor = { omni_character_can_buy_siege_defense = { KIT = gates PRICE = 220 MARKET = omni_character_has_siege_supply_market INVENTION = global_defensive_inv_2 } } }
 		custom_tooltip = omni_def_gates_use_tt
 		custom_tooltip = omni_siege_supply_stored_tt
-		scope:omni_gear_country = {
-			add_treasury = -220
-			omni_def_gain = { KIT = gates }
+		hidden_effect = {
+			if = {
+				limit = { scope:omni_city_visitor = { omni_character_can_buy_siege_defense = { KIT = gates PRICE = 220 MARKET = omni_character_has_siege_supply_market INVENTION = global_defensive_inv_2 } } }
+				scope:omni_gear_country = {
+					add_treasury = -220
+					omni_def_gain = { KIT = gates }
+				}
+			}
 		}
 		trigger_event = { id = omni_siege_supply.1 }
 	}
 	option = {
 		name = omni_siege_supply.1.wards
-		trigger = {
-			scope:omni_city_visitor = { omni_character_has_siege_magic_market = yes }
-			scope:omni_gear_country = {
-				omni_def_below_cap = { KIT = wards }
-				treasury >= 300
-			}
-		}
+		trigger = { scope:omni_city_visitor = { omni_character_can_buy_siege_defense = { KIT = wards PRICE = 300 MARKET = omni_character_has_siege_magic_market INVENTION = organized_mage_guilds_inv } } }
 		custom_tooltip = omni_def_wards_use_tt
 		custom_tooltip = omni_siege_supply_stored_tt
-		scope:omni_gear_country = {
-			add_treasury = -300
-			omni_def_gain = { KIT = wards }
+		hidden_effect = {
+			if = {
+				limit = { scope:omni_city_visitor = { omni_character_can_buy_siege_defense = { KIT = wards PRICE = 300 MARKET = omni_character_has_siege_magic_market INVENTION = organized_mage_guilds_inv } } }
+				scope:omni_gear_country = {
+					add_treasury = -300
+					omni_def_gain = { KIT = wards }
+				}
+			}
 		}
 		trigger_event = { id = omni_siege_supply.1 }
 	}
