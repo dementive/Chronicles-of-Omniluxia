@@ -2832,7 +2832,7 @@ me_zorgoomni.64 = { # Fai Attack a Village
     desc = me_zorgoomni.64_desc
     picture = event_deep_forest
     left_portrait = current_ruler
-    right_portrait = scope:houdini_village.governor_or_ruler
+    right_portrait = scope:houdini_village.state.governor_or_ruler
     goto_location = scope:houdini_village
 
     immediate = {
@@ -2925,6 +2925,7 @@ me_zorgoomni.65 = {
             limit = {
                 terrain = eldritch_forest
                 is_capital = no
+                exists = governor
             }
             save_scope_as = new_houdini_village
         }
@@ -2935,10 +2936,10 @@ me_zorgoomni.65 = {
                 scope:new_houdini_village = { exists = governor }
             }
             scope:new_houdini_village.governor = {
+                save_scope_as = rip_governor
                 death = {
                     death_reason = death_fai
                 }
-                save_scope_as = rip_governor
             }
         }
         if = {
@@ -2952,6 +2953,8 @@ me_zorgoomni.65 = {
     trigger = {
         any_owned_province = {
             terrain = eldritch_forest
+            is_capital = no
+            exists = governor
         }
         NOR = {
             country_culture_group = forest_elves
@@ -2984,6 +2987,8 @@ me_zorgoomni.66 = { # Fai Make Man Insane
     trigger = {
         any_owned_province = {
             terrain = eldritch_forest
+            is_capital = no
+            exists = governor
         }
         NOR = {
             country_culture_group = forest_elves
@@ -2997,6 +3002,7 @@ me_zorgoomni.66 = { # Fai Make Man Insane
             limit = {
                 terrain = eldritch_forest
                 is_capital = no
+                exists = governor
             }
             save_scope_as = schizo_village
         }
@@ -4279,6 +4285,22 @@ me_zorgoomni.84 = { # Rise of a Witch-King
     picture = event_snake_lodge
     left_portrait = current_ruler
 
+    # Fired from omni_monthly_flavor_pulse once a reigning monarch carries the Melodian Pact.
+    trigger = {
+        is_monarchy = yes
+        NOR = {
+            religion = yedidyhan
+            religion = the_old_pantheon
+            religion = blood_tainted_pantheon
+            religion = dragkhan_pantheon
+        }
+        current_ruler = {
+            has_trait = melodian_pact_trait
+            NOT = { has_trait = witch_king_trait }
+            NOT = { has_variable = omni_witch_king_hidden_var }
+        }
+    }
+
 
     option = {
         trigger = {
@@ -4300,7 +4322,8 @@ me_zorgoomni.84 = { # Rise of a Witch-King
             force_add_trait = witch_king_trait
         }
         every_country = {
-            limit = { 
+            limit = {
+                NOT = { this = root }
                 NOR = {
                     religion = yedidyhan
                     religion = the_old_pantheon
@@ -4315,23 +4338,21 @@ me_zorgoomni.84 = { # Rise of a Witch-King
         }
     }
     option = {
-        trigger = {
-            OR = {
-                is_monarchy = no
-                OR = {
-                    religion = yedidyhan
-                    religion = the_old_pantheon
-                    religion = blood_tainted_pantheon
-                    religion = dragkhan_pantheon
-                }
-                current_ruler = {
-                    has_trait = witch_king_trait
-                }
-            }
-        }
         name = "me_zorgoomni.84.b"
         custom_tooltip = me_zorgoomni.84_tooltip.b
-        add_stability = -7
+        current_ruler = {
+            set_variable = omni_witch_king_hidden_var
+        }
+        add_stability = -3
+        add_legitimacy = subtract_legitimacy_medium
+        add_treasury = {
+            subtract = root.has_monthly_income
+            multiply = 4
+            floor = yes
+            max = -20
+            min = -2000
+        }
+        ai_chance = { base = 70 }
     }
 }
 
@@ -9572,7 +9593,6 @@ me_zorgoomni.306 = { # Invictus Zorgo 106
 	title = "me_zorgoomni.306_title"
 	desc = "me_zorgoomni.306_desc"
 	left_portrait = current_ruler
-	right_portrait = scope:friendly_neighbor.current_ruler
 
 	picture = event_royal_court
 
