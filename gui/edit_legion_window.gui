@@ -1,4 +1,4 @@
-template OmniLegionCohortButton {
+﻿template OmniLegionCohortButton {
 	size = { 100% 100% }
 	using = flat_background_white
 	using = border_slightly_torn_alpha
@@ -60,21 +60,22 @@ template ConstructionCardTemplate {
 			margin_widget = {
 				size = { 100% 100% }
 				margin = { 3 3 }
-				datacontext = "[GetScriptedGui( Select_CString( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), 'omni_legion_imperial_mages', 'omni_legion_folk_mages' ) )]"
+				datacontext = "[GetScriptedGui( Select_CString( EqualTo_string( SubUnitType.GetName, Localize('omni_dryad') ), 'omni_legion_omni_dryad', Select_CString( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), 'omni_legion_imperial_mages', 'omni_legion_folk_mages' ) ) )]"
 
 				button = {
 					using = OmniLegionCohortButton
-					visible = "[Or( Not( Or( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), EqualTo_string( SubUnitType.GetName, Localize('folk_mages') ) ) ), ScriptedGui.IsValid( GuiScope.SetRoot( State.MakeScope ).AddScope('player', Player.MakeScope).End ) )]"
+					visible = "[Or( Not( Or( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), Or( EqualTo_string( SubUnitType.GetName, Localize('folk_mages') ), EqualTo_string( SubUnitType.GetName, Localize('omni_dryad') ) ) ) ), ScriptedGui.IsValid( GuiScope.SetRoot( State.MakeScope ).AddScope('player', Player.MakeScope).End ) )]"
 					onclick = "[SubUnitConstruction.Increment]"
 					tooltip = "EDIT_COMPOSITION_SUBUNIT_DESC"
 				}
 
 				# Right-click stays available to remove a queued cohort after eligibility changes.
+				# Dryads join legions only for Wood Elf realms holding the Grove Compact.
 				button = {
 					using = OmniLegionCohortButton
-					visible = "[And( Or( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), EqualTo_string( SubUnitType.GetName, Localize('folk_mages') ) ), Not( ScriptedGui.IsValid( GuiScope.SetRoot( State.MakeScope ).AddScope('player', Player.MakeScope).End ) ) )]"
+					visible = "[And( Or( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), Or( EqualTo_string( SubUnitType.GetName, Localize('folk_mages') ), EqualTo_string( SubUnitType.GetName, Localize('omni_dryad') ) ) ), Not( ScriptedGui.IsValid( GuiScope.SetRoot( State.MakeScope ).AddScope('player', Player.MakeScope).End ) ) )]"
 					alpha = 0.55
-					tooltip = "[SelectLocalization( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), 'omni_legion_imperial_mages_locked', 'omni_legion_folk_mages_locked' )]"
+					tooltip = "[SelectLocalization( EqualTo_string( SubUnitType.GetName, Localize('omni_dryad') ), 'omni_legion_omni_dryad_locked', SelectLocalization( EqualTo_string( SubUnitType.GetName, Localize('imperial_mages') ), 'omni_legion_imperial_mages_locked', 'omni_legion_folk_mages_locked' ) )]"
 				}
 			}	
 		}
@@ -267,22 +268,24 @@ base_sub_window = {
 			using = Black_FontColor
 		}
 
-		fixedgridbox = {
+		dynamicgridbox = {
 			name = "unit_types_grid"
+			ignoreinvisible = yes
 			datacontext = "[EditLegionWindow.GetGovernorship.GetCapital.GetState]"
 			alwaystransparent = no
 			parentanchor = hcenter
 			position = { 0 30 }
 			flipdirection = yes
-			addcolumn = 62
-			addrow = 82
 			datamodel = "[EditLegionWindow.GetConstructions]"
 			datamodel_wrap = 8
 			size = { 100% 84 }
 			item = {
-				container = {
-					using = ConstructionCardTemplate
+				widget = {
+					size = { 62 82 }
 					datacontext = "[SubUnitConstruction.GetDefinition]"
+					container = {
+						using = ConstructionCardTemplate
+					}
 				}
 			}
 		}

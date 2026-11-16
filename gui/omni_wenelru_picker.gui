@@ -1,0 +1,97 @@
+﻿# Settlement picker for the Wenelru covenant decisions. Modeled on the spellbook territory picker.
+# Opened by the omni_wenelru_open_picker effect; visible while the country holds a pick flag.
+types OmniWenelruPicker {
+	type omni_wenelru_picker_window = base_window {
+		name = "omni_wenelru_picker_window"
+		size = { 620 640 }
+		movable = yes
+		visible = "[GetScriptedGui('omni_wenelru_picker_open').IsShown( GuiScope.SetRoot( Player.MakeScope ).End )]"
+
+		top_window_header_for_layout = {
+			position = { 0 0 } size = { 100% 40 }
+			parentanchor = top|left widgetanchor = top|left
+			blockoverride "Title_text" { text = "omni_wenelru_picker_title" }
+			blockoverride "White_buttons" {
+				button_close = {
+					tooltip = "CLOSE"
+					onclick = "[ClearHighlightColors]"
+					onclick = "[GetScriptedGui('omni_wenelru_picker_close').Execute( GuiScope.SetRoot( Player.MakeScope ).End )]"
+				}
+			}
+		}
+
+		textbox = {
+			position = { 20 50 } size = { 580 90 }
+			using = BaseFontM multiline = yes
+			visible = "[GetScriptedGui('omni_wenelru_picker_is_leaf').IsShown( GuiScope.SetRoot( Player.MakeScope ).End )]"
+			text = "omni_wenelru_picker_leaf_desc"
+		}
+		textbox = {
+			position = { 20 50 } size = { 580 90 }
+			using = BaseFontM multiline = yes
+			visible = "[GetScriptedGui('omni_wenelru_picker_is_restore').IsShown( GuiScope.SetRoot( Player.MakeScope ).End )]"
+			text = "omni_wenelru_picker_restore_desc"
+		}
+		textbox = {
+			position = { 20 150 } size = { 580 40 }
+			using = BaseFontM multiline = yes
+			visible = "[IsDataModelEmpty( Player.MakeScope.GetList('omni_wenelru_hearth_choices') )]"
+			text = "omni_wenelru_picker_empty"
+		}
+
+		scrollarea = {
+			position = { 20 148 } size = { 580 470 }
+			scrollbarpolicy_horizontal = always_off
+			using = VerticalScrollAreaCutOff
+			scrollbar_vertical = { using = VerticalScrollBar }
+			scrollwidget = {
+				fixedgridbox = {
+					addcolumn = 560
+					addrow = 48
+					maxhorizontalslots = 1
+					datamodel = "[Player.MakeScope.GetList('omni_wenelru_hearth_choices')]"
+					item = {
+						widget = {
+							size = { 556 44 }
+							list_button = {
+								size = { 100% 100% }
+								datacontext = "[GetScriptedGui('omni_wenelru_pick_hearth')]"
+								enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('target', Scope.GetProvince.MakeScope ).End )]"
+								onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('target', Scope.GetProvince.MakeScope ).End )]"
+								onclick = "[ClearHighlightColors]"
+								onmousehierarchyenter = "[SetHighlightProvince( Scope.GetProvince.GetId )]"
+								onmousehierarchyleave = "[ClearHighlightColors]"
+								tooltip = "omni_wenelru_picker_row_tt"
+								clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+							}
+							textbox = {
+								position = { 18 0 } size = { 250 44 }
+								using = BaseFontM align = left|vcenter
+								elide = right alwaystransparent = yes
+								text = "omni_wenelru_picker_row_name"
+							}
+							icon_and_text_dark = {
+								position = { 280 5 } size = { 86 0 }
+								blockoverride "Icon" { using = icon_population }
+								blockoverride "Text" { text = "[Scope.GetProvince.GetPopulation('total')]" }
+								tooltip = "[Scope.GetProvince.GetPopulationInfo]"
+							}
+							icon_and_text_dark = {
+								position = { 372 5 } size = { 86 0 }
+								blockoverride "Icon" { using = icon_pop_freemen }
+								blockoverride "Text" { text = "[Scope.GetProvince.GetPopulation('freemen')]" }
+								tooltip = "[Scope.GetProvince.GetPopulationTooltip('freemen')]"
+							}
+							icon_and_text_dark = {
+								position = { 464 5 } size = { 86 0 }
+								blockoverride "Icon" { using = icon_pop_tribal }
+								blockoverride "Text" { text = "[Scope.GetProvince.GetPopulation('tribesmen')]" }
+								tooltip = "[Scope.GetProvince.GetPopulationTooltip('tribesmen')]"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

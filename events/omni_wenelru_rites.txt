@@ -1,0 +1,234 @@
+﻿namespace = omni_wenelru
+
+# The soil reaches Venerurich. Fired by the settlement picker (omni_wenelru_pick_hearth).
+omni_wenelru.1 = {
+	type = country_event
+	title = omni_wenelru.1.t
+	desc = omni_wenelru.1.desc
+	picture = event_deep_forest
+	left_portrait = current_ruler
+	right_portrait = scope:wenelru_delegate
+
+	immediate = { omni_wenelru_load_rite_scopes = yes }
+
+	option = {
+		name = omni_wenelru.1.a
+		custom_tooltip = omni_wenelru_first_leaf_wait_tt
+	}
+
+	option = {
+		name = omni_wenelru.1.b
+		trigger = { treasury >= 25 }
+		add_treasury = -25
+		current_ruler = { add_popularity = 5 }
+		custom_tooltip = omni_wenelru_first_leaf_wait_tt
+	}
+}
+
+# Resolve the rite even if the envoy died or the village changed hands.
+omni_wenelru.2 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		remove_variable = omni_wenelru_leaf_pending
+		omni_wenelru_load_rite_scopes = yes
+		if = {
+			limit = {
+				omni_wenelru_covenant = yes
+				exists = scope:wenelru_hearth
+				scope:wenelru_hearth = {
+					owner = root
+					omni_wenelru_first_leaf_site = yes
+				}
+			}
+			scope:wenelru_hearth = {
+				add_province_modifier = { name = omni_wenelru_covenant_hearth duration = -1 }
+			}
+			if = {
+				limit = {
+					OR = {
+						NOT = { exists = scope:wenelru_delegate }
+						NOT = { scope:wenelru_delegate = { omni_wenelru_delegate = yes } }
+					}
+					any_character = { omni_wenelru_delegate = yes }
+				}
+				random_character = {
+					limit = { omni_wenelru_delegate = yes }
+					root = { set_variable = { name = omni_wenelru_delegate_target value = prev } }
+				}
+			}
+			if = {
+				limit = { var:omni_wenelru_delegate_target = { omni_wenelru_delegate = yes } }
+				trigger_event = { id = omni_wenelru.3 }
+			}
+			else = {
+				remove_variable = omni_wenelru_hearth_target
+				remove_variable = omni_wenelru_delegate_target
+			}
+		}
+		else_if = {
+			limit = { exists = scope:wenelru_hearth }
+			trigger_event = { id = omni_wenelru.9 }
+		}
+	}
+}
+
+omni_wenelru.3 = {
+	type = country_event
+	title = omni_wenelru.3.t
+	desc = omni_wenelru.3.desc
+	picture = event_deep_forest
+	left_portrait = current_ruler
+	right_portrait = scope:wenelru_delegate
+
+	immediate = { omni_wenelru_load_rite_scopes = yes }
+
+	option = {
+		name = omni_wenelru.3.a
+		custom_tooltip = omni_wenelru_first_leaf_done_tt
+		hidden_effect = {
+			remove_variable = omni_wenelru_hearth_target
+			remove_variable = omni_wenelru_delegate_target
+		}
+	}
+}
+
+omni_wenelru.4 = {
+	type = country_event
+	title = omni_wenelru.4.t
+	desc = omni_wenelru.4.desc
+	picture = event_deep_forest
+	left_portrait = scope:wenelru_successor
+	right_portrait = scope:wenelru_delegate
+
+	option = {
+		name = omni_wenelru.4.a
+		if = {
+			limit = { omni_wenelru_covenant = yes current_ruler = scope:wenelru_successor }
+			every_owned_province = {
+				limit = { has_province_modifier = omni_wenelru_covenant_hearth }
+				add_province_modifier = { name = omni_wenelru_grove_rights duration = 1095 }
+			}
+		}
+	}
+
+	option = {
+		name = omni_wenelru.4.b
+		if = {
+			limit = { omni_wenelru_covenant = yes current_ruler = scope:wenelru_successor }
+			p:2356 = {
+				add_province_modifier = { name = omni_wenelru_household_labor duration = 1095 }
+			}
+		}
+	}
+}
+
+omni_wenelru.5 = {
+	type = country_event
+	title = omni_wenelru.5.t
+	desc = omni_wenelru.5.desc
+	picture = event_deep_forest
+	left_portrait = current_ruler
+	right_portrait = scope:wenelru_shrine_ruler
+
+	option = {
+		name = omni_wenelru.5.a
+		trigger = {
+			omni_wenelru_covenant = yes
+			treasury >= 50
+			NOT = { has_variable = omni_wenelru_seed_exchange }
+			NOT = { has_variable = omni_wenelru_exchange_pending }
+			omni_wenelru_shrine_partner = yes
+			p:4233 = { owner = scope:wenelru_shrine_host }
+		}
+		add_treasury = -50
+		set_variable = { name = omni_wenelru_exchange_pending }
+		custom_tooltip = omni_wenelru_seed_exchange_tt
+		hidden_effect = { trigger_event = { id = omni_wenelru.7 days = 90 } }
+	}
+
+	option = { name = omni_wenelru.5.b }
+}
+
+# A restoration village has been chosen in the picker; costs were paid there.
+omni_wenelru.6 = {
+	type = country_event
+	title = omni_wenelru.6.t
+	desc = omni_wenelru.6.desc
+	picture = event_deep_forest
+	left_portrait = current_ruler
+	right_portrait = scope:wenelru_delegate
+
+	immediate = { omni_wenelru_load_rite_scopes = yes }
+
+	option = {
+		name = omni_wenelru.6.a
+		scope:wenelru_hearth = {
+			define_pop = {
+				type = freemen
+				culture = root.culture
+				religion = root.religion
+			}
+			add_province_modifier = { name = omni_wenelru_covenant_hearth duration = -1 }
+		}
+		hidden_effect = {
+			remove_variable = omni_wenelru_hearth_target
+			remove_variable = omni_wenelru_delegate_target
+		}
+	}
+}
+
+omni_wenelru.7 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		remove_variable = omni_wenelru_exchange_pending
+		if = {
+			limit = {
+				omni_wenelru_covenant = yes
+				omni_wenelru_shrine_partner = yes
+				p:4233 = { owner = scope:wenelru_shrine_host }
+			}
+			p:4233.owner.current_ruler = { save_scope_as = wenelru_shrine_ruler }
+			set_variable = { name = omni_wenelru_seed_exchange }
+			trigger_event = { id = omni_wenelru.8 }
+		}
+		else = { add_treasury = 50 }
+	}
+}
+
+omni_wenelru.8 = {
+	type = country_event
+	title = omni_wenelru.8.t
+	desc = omni_wenelru.8.desc
+	picture = event_deep_forest
+	left_portrait = current_ruler
+	right_portrait = scope:wenelru_shrine_ruler
+
+	option = {
+		name = omni_wenelru.8.a
+		custom_tooltip = omni_wenelru_seeds_arrived_tt
+	}
+}
+
+# The chosen settlement was lost or no longer qualifies when the year ran out.
+omni_wenelru.9 = {
+	type = country_event
+	title = omni_wenelru.9.t
+	desc = omni_wenelru.9.desc
+	picture = event_deep_forest
+	left_portrait = current_ruler
+
+	immediate = { omni_wenelru_load_rite_scopes = yes }
+
+	option = {
+		name = omni_wenelru.9.a
+		custom_tooltip = omni_wenelru_first_leaf_failed_tt
+		hidden_effect = {
+			remove_variable = omni_wenelru_hearth_target
+			remove_variable = omni_wenelru_delegate_target
+		}
+	}
+}

@@ -1,0 +1,46 @@
+﻿monthly_country_pulse = { on_actions = { omni_zaraken_gurhak_monthly } }
+
+omni_zaraken_gurhak_monthly = {
+    trigger = { tag = YMH }
+    effect = {
+        if = {
+            limit = {
+                is_subject = no
+                any_current_war = { zaraken_gurhak_defensive_war_trigger = yes }
+            }
+            if = {
+                limit = { NOT = { has_variable = zaraken_steppe_war_seen } }
+                set_variable = zaraken_steppe_war_seen
+                if = {
+                    limit = {
+                        NOR = {
+                            has_variable = zaraken_steppe_contract
+                            has_variable = zaraken_steppe_offer_pending
+                        }
+                    }
+                    remove_variable = zaraken_steppe_offer_count
+                    remove_variable = zaraken_steppe_first_contact
+                }
+            }
+            if = {
+                limit = {
+                    exists = var:zaraken_steppe_contract
+                    NOT = { var:zaraken_steppe_contract = { zaraken_steppe_contact_trigger = yes } }
+                }
+                remove_variable = zaraken_steppe_contract
+            }
+            zaraken_call_steppe_riders_effect = yes
+            zaraken_send_steppe_offer_effect = yes
+        }
+        else_if = {
+            limit = { has_variable = zaraken_steppe_war_seen }
+            remove_variable = zaraken_steppe_war_seen
+            remove_variable = zaraken_steppe_war_paid
+            remove_variable = zaraken_steppe_contract
+            remove_variable = zaraken_steppe_offer_pending
+            remove_variable = zaraken_steppe_offer_recipient
+            remove_variable = zaraken_steppe_offer_count
+            remove_variable = zaraken_steppe_first_contact
+        }
+    }
+}

@@ -1,4 +1,9 @@
 ﻿zaraken_empire_formation_eligible_trigger = {
+    trigger_if = {
+        limit = { has_variable = zaraken_keeper_faction }
+        has_variable = zaraken_keeper_victory
+        has_civil_war = no
+    }
     num_of_cities >= 1
     this.culture.culture_group = culture_group:zarakens
     NOT = {
@@ -40,8 +45,13 @@ zaraken_yamhad_terms_available_trigger = {
         is_subject = no
         war = no
         owns = 4358
-        num_of_cities >= 2
     }
+}
+
+zaraken_gurhak_treaty_honored_trigger = {
+    has_variable = zaraken_gurhak_protection_treaty
+    exists = c:YMH
+    c:YMH = { owns = 4358 is_subject_of = root }
 }
 
 zaraken_empire_heartland_trigger = {
@@ -83,5 +93,66 @@ zaraken_hajar_crossings_supplied_trigger = {
     p:4794 = {
         owned_or_subject_owned = root
         has_province_modifier = zaraken_zakaria_caravan_posts_mod
+    }
+}
+
+zaraken_pilgrim_host_town_trigger = {
+    is_in_region = golden_foothills_eteradica
+    dominant_province_religion = zainuddian
+    has_building = temple_building
+}
+
+zaraken_grain_buyer_trigger = {
+    generic_trade_expedition_valid_partner_trigger = yes
+    opinion = { target = root value >= 50 }
+    treasury >= 75
+}
+
+zaraken_gurhak_defensive_war_trigger = {
+    is_war_leader = c:YMH
+    any_war_defender = { this = c:YMH }
+    any_war_attacker = { OR = { tag = ZAK tag = ZAE } }
+}
+
+zaraken_steppe_contact_trigger = {
+    has_land = yes
+    exists = current_ruler
+    is_subject = no
+    has_civil_war = no
+    war = no
+    OR = { country_culture_group = hazalars country_culture_group = selaskusian }
+    trigger_if = {
+        limit = { exists = c:ZAK }
+        NOT = { alliance_with = c:ZAK }
+    }
+    trigger_if = {
+        limit = { exists = c:ZAE }
+        NOT = { alliance_with = c:ZAE }
+    }
+    any_owned_province = {
+        OR = {
+            is_in_region = zainddian_sttepes
+            is_in_region = westland_sttepes
+            is_in_region = central_sttepes
+        }
+        any_neighbor_province = {
+            exists = owner
+            owner = {
+                OR = {
+                    tag = ZAK
+                    tag = ZAE
+                    AND = { exists = c:ZAK is_subject_of = c:ZAK }
+                    AND = { exists = c:ZAE is_subject_of = c:ZAE }
+                }
+            }
+        }
+    }
+}
+
+zaraken_fresh_steppe_contact_trigger = {
+    zaraken_steppe_contact_trigger = yes
+    trigger_if = {
+        limit = { exists = c:YMH.var:zaraken_steppe_first_contact }
+        NOT = { this = c:YMH.var:zaraken_steppe_first_contact }
     }
 }

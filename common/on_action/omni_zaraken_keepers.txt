@@ -1,0 +1,44 @@
+﻿on_ruler_change = { on_actions = { omni_zaraken_keeper_on_ruler_change } }
+on_civil_war_won = { on_actions = { omni_zaraken_keeper_on_civil_war_won } }
+monthly_country_pulse = { on_actions = { omni_zaraken_keeper_flag_migration } }
+
+omni_zaraken_keeper_on_ruler_change = {
+    trigger = { zaraken_keeper_office_trigger = yes }
+    effect = {
+        if = {
+            limit = {
+                exists = scope:former_ruler
+                scope:former_ruler = {
+                    is_alive = yes
+                    has_trait = elder_keeper_trait
+                }
+            }
+            scope:former_ruler = { remove_trait = elder_keeper_trait }
+        }
+        zaraken_ensure_elder_keeper_trait_effect = yes
+    }
+}
+
+omni_zaraken_keeper_on_civil_war_won = {
+    trigger = {
+        has_variable = zaraken_keeper_faction
+        scope:losing_side = {
+            exists = var:zaraken_rebel_country
+            var:zaraken_rebel_country = root
+        }
+    }
+    effect = {
+        set_variable = zaraken_keeper_victory
+        zaraken_establish_keeper_government_effect = yes
+        zaraken_apply_keeper_flag_effect = yes
+    }
+}
+
+# Existing Keeper campaigns pick up their banner once on the next monthly pulse.
+omni_zaraken_keeper_flag_migration = {
+    trigger = {
+        has_variable = zaraken_keeper_faction
+        NOT = { has_variable = zaraken_keeper_flag_applied }
+    }
+    effect = { zaraken_apply_keeper_flag_effect = yes }
+}

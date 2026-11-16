@@ -257,20 +257,15 @@ ob_grant_veteran_holdings = {
         clear_saved_scope = ob_veteran_holding
     }
 }
-ob_renew_agreements = {
-    ob_roads_effect = yes
-    save_scope_as = ob_order
-    every_owned_province = {
-        save_scope_as = ob_chapter_land
-        every_country = {
-            limit = { ob_member = yes NOT = { this = scope:ob_order } }
-            save_scope_as = ob_claim_holder
-            scope:ob_chapter_land = { remove_claim = scope:ob_claim_holder }
-        }
-    }
-}
 
 ob_maintenance = {
+
+    # Saves from before the harbor and grain tasks were merged: the old harbor task set no grain flag.
+    if = {
+        limit = { has_variable = ob_task_done_7 NOT = { has_variable = ob_grain } NOT = { has_variable = ob_task_done_8 } }
+        set_variable = { name = ob_grain }
+        capital_scope = { add_province_modifier = { name = ob_northern_grain_trade duration = -1 } }
+    }
 
     if = {
         limit = { has_variable = ob_expedition NOT = { has_variable = ob_early_launched }

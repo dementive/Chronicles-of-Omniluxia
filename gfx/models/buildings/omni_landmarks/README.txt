@@ -1,0 +1,1 @@
+Landmark models and custom textures sourced from Imperator: Invictus. See its gfx/map/map_object_data/map_objects.txt and model assets for the original placements and definitions. The acropolis material textures referenced by the two island fortresses are from Imperator: Rome.

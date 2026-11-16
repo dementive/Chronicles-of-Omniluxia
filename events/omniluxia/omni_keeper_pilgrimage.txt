@@ -1,0 +1,83 @@
+﻿namespace = omni_keeper_pilgrimage
+
+omni_keeper_pilgrimage.1 = {
+    type = country_event
+    title = omni_open_pilgrims_book
+    desc = omni_keeper_pilgrimage.1.desc
+    picture = council_country
+    left_portrait = current_ruler
+
+    immediate = {
+        hidden_effect = {
+            ordered_owned_province = {
+                limit = { state_loyalty < 100 }
+                order_by = province_unrest
+                position = 0
+                save_scope_as = omni_keeper_hospice_site
+            }
+            if = {
+                limit = { NOT = { exists = scope:omni_keeper_hospice_site } }
+                p:4662 = { save_scope_as = omni_keeper_hospice_site }
+            }
+        }
+    }
+
+    option = {
+        name = omni_keeper_pilgrimage.1.a
+        trigger = { treasury >= 100 owns = 4662 }
+        custom_tooltip = omni_keeper_pilgrimage.1.a_tt
+        add_treasury = -100
+        hidden_effect = {
+            create_unit = {
+                name = "Watch of the Pilgrim Roads"
+                location = 4662
+                add_subunit = light_cavalry
+                add_subunit = light_cavalry
+            }
+            every_owned_province = {
+                limit = {
+                    is_in_region = golden_foothills_eteradica
+                    num_of_fortress_building >= 1
+                }
+                add_province_modifier = { name = omni_keeper_road_watch_mod duration = 1095 }
+            }
+        }
+    }
+
+    option = {
+        name = omni_keeper_pilgrimage.1.b
+        trigger = {
+            treasury >= 75
+            exists = scope:omni_keeper_hospice_site
+            scope:omni_keeper_hospice_site = { owner = root }
+        }
+        custom_tooltip = omni_keeper_pilgrimage.1.b_tt
+        add_treasury = -75
+        hidden_effect = {
+            scope:omni_keeper_hospice_site = {
+                add_state_loyalty = 15
+                add_province_modifier = { name = omni_keeper_hospice_mod duration = 1095 }
+            }
+        }
+    }
+
+    option = {
+        name = omni_keeper_pilgrimage.1.c
+        trigger = { treasury >= 50 }
+        custom_tooltip = omni_keeper_pilgrimage.1.c_tt
+        add_treasury = -50
+        add_country_modifier = { name = omni_keeper_toll_remission_mod duration = 1095 }
+        hidden_effect = {
+            every_owned_province = {
+                limit = { is_in_region = golden_foothills_eteradica }
+                add_province_modifier = { name = omni_keeper_open_gates_mod duration = 1095 }
+            }
+        }
+    }
+
+    option = {
+        name = omni_keeper_pilgrimage.1.d
+        trigger = { treasury < 50 }
+        remove_variable = omni_keeper_pilgrimage_cooldown
+    }
+}

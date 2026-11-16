@@ -1,0 +1,73 @@
+﻿omni_wenelru_picker_open = {
+	scope = country
+	is_shown = {
+		OR = {
+			has_variable = omni_wenelru_pick_leaf
+			has_variable = omni_wenelru_pick_restore
+		}
+	}
+}
+
+omni_wenelru_picker_is_leaf = {
+	scope = country
+	is_shown = { has_variable = omni_wenelru_pick_leaf }
+}
+
+omni_wenelru_picker_is_restore = {
+	scope = country
+	is_shown = { has_variable = omni_wenelru_pick_restore }
+}
+
+omni_wenelru_picker_close = {
+	scope = country
+	effect = { hidden_effect = { omni_wenelru_close_picker = yes } }
+}
+
+omni_wenelru_pick_hearth = {
+	scope = country
+	saved_scopes = { target }
+	ai_is_valid = { always = no }
+	is_valid = {
+		omni_wenelru_covenant = yes
+		any_character = { omni_wenelru_delegate = yes }
+		OR = {
+			AND = {
+				has_variable = omni_wenelru_pick_leaf
+				political_influence >= 30
+				NOT = { has_variable = omni_wenelru_leaf_pending }
+				NOT = { has_variable = omni_wenelru_leaf_cooldown }
+				scope:target = { owner = root omni_wenelru_first_leaf_site = yes }
+			}
+			AND = {
+				has_variable = omni_wenelru_pick_restore
+				political_influence >= 20
+				NOT = { has_variable = omni_wenelru_leaf_pending }
+				NOT = { has_variable = omni_wenelru_hearth_restored }
+				scope:target = { owner = root omni_wenelru_restoration_site = yes }
+			}
+		}
+	}
+	effect = {
+		if = {
+			limit = { has_variable = omni_wenelru_pick_leaf }
+			add_political_influence = -30
+			hidden_effect = {
+				omni_wenelru_store_rite_actors = yes
+				set_variable = { name = omni_wenelru_leaf_pending }
+				set_variable = { name = omni_wenelru_leaf_cooldown days = 1825 }
+				omni_wenelru_close_picker = yes
+				trigger_event = { id = omni_wenelru.1 }
+				trigger_event = { id = omni_wenelru.2 days = 365 }
+			}
+		}
+		else = {
+			add_political_influence = -20
+			hidden_effect = {
+				omni_wenelru_store_rite_actors = yes
+				set_variable = { name = omni_wenelru_hearth_restored }
+				omni_wenelru_close_picker = yes
+				trigger_event = { id = omni_wenelru.6 }
+			}
+		}
+	}
+}

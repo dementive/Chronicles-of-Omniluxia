@@ -1,0 +1,453 @@
+﻿namespace = goblin_invasion
+
+# The Goblin Invasion of the World's Lungs. Script: common/scripted_effects/omni_goblin_invasion.txt
+#   .1  keeper of the Root warned (60 days before the march)
+#   .2  hidden: the march begins, or is called off
+#   .3/.4/.5/.6  launch: attacker / defender (and overlord) / Aneic onlookers / other onlookers
+#   .10 hidden monitor (30 days)  .11 hidden reinforcements  .12 hidden: the host goes home
+#   .20/.21/.22/.23  the Root falls: burner / keeper / Aneic realms / other onlookers
+#   .30/.31/.32  the Root stands: keeper / goblins / onlookers
+# Portraits: scopes gi_leader, gi_keeper, gi_target, gi_burner, gi_mourner are saved by the
+# effects and carried into the triggered events.
+
+# DEBUG/CONSOLE ONLY: `event goblin_invasion.999` forces the strongest eligible goblin realm to
+# march now (the warning still runs 60 days ahead of the war).
+goblin_invasion.999 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		ordered_country = {
+			order_by = goblin_invasion_leader_score_svalue
+			position = 0
+			limit = { goblin_invasion_eligible_trigger = yes }
+			goblin_invasion_formation_effect = yes
+		}
+	}
+}
+
+# Keeper of the Root: the goblins are gathering.
+goblin_invasion.1 = {
+	type = country_event
+	title = goblin_invasion.1.t
+	desc = goblin_invasion.1.desc
+	picture = event_forest_rangers
+	left_portrait = current_ruler
+	right_portrait = scope:gi_leader.current_ruler
+
+	option = {
+		name = goblin_invasion.1.a
+		add_manpower = {
+			value = max_manpower
+			multiply = 0.25
+		}
+		add_stability = -3
+		ai_chance = { factor = 40 }
+	}
+	option = {
+		name = goblin_invasion.1.b
+		trigger = {
+			treasury >= 100
+			owns = 2356
+		}
+		add_treasury = -100
+		p:2356 = {
+			add_province_modifier = { name = goblin_invasion_venerurich_braced duration = 1825 }
+		}
+		ai_chance = { factor = 50 }
+	}
+	option = {
+		name = goblin_invasion.1.c
+		ai_chance = { factor = 10 }
+	}
+}
+
+# Leader: 60 days on, march or stand down.
+goblin_invasion.2 = {
+	type = country_event
+	hidden = yes
+	trigger = { has_variable = is_goblin_invasion_leader }
+	immediate = {
+		save_scope_as = gi_self
+		if = {
+			limit = {
+				goblin_invasion_root_stands_trigger = yes
+				NOT = { owns = 2356 }
+				p:2356 = {
+					owner = {
+						NOT = {
+							AND = {
+								is_subject = yes
+								overlord = { this = scope:gi_self }
+							}
+						}
+					}
+				}
+			}
+			goblin_invasion_launch_effect = yes
+		}
+		else = {
+			goblin_invasion_abort_effect = yes
+		}
+	}
+}
+
+# Launch: the goblins.
+goblin_invasion.3 = {
+	type = country_event
+	title = goblin_invasion.3.t
+	desc = goblin_invasion.3.desc
+	picture = event_marching_army
+	left_portrait = current_ruler
+	right_portrait = scope:gi_keeper.current_ruler
+
+	option = {
+		name = goblin_invasion.3.a
+		custom_tooltip = goblin_invasion.3.a.tt
+		ai_chance = { factor = 70 }
+	}
+	option = {
+		name = goblin_invasion.3.b
+		trigger = { treasury >= 100 }
+		add_treasury = -100
+		add_country_modifier = { name = goblin_invasion_rallied_levies duration = 1825 }
+		ai_chance = { factor = 30 }
+	}
+}
+
+# Launch: the realm holding Venerurich, or its overlord.
+goblin_invasion.4 = {
+	type = country_event
+	title = goblin_invasion.4.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { owns = 2356 }
+				desc = goblin_invasion.4.desc_keeper
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = goblin_invasion.4.desc_overlord
+			}
+		}
+	}
+	picture = city_siege
+	left_portrait = current_ruler
+	right_portrait = scope:gi_leader.current_ruler
+
+	option = {
+		name = goblin_invasion.4.a
+		add_country_modifier = { name = goblin_invasion_rallied_levies duration = 1825 }
+		add_stability = -5
+		ai_chance = { factor = 50 }
+	}
+	option = {
+		name = goblin_invasion.4.b
+		trigger = { treasury >= 150 }
+		add_treasury = -150
+		add_manpower = {
+			value = max_manpower
+			multiply = 0.3
+		}
+		ai_chance = { factor = 40 }
+	}
+	option = {
+		name = goblin_invasion.4.c
+		ai_chance = { factor = 10 }
+	}
+}
+
+# Launch: Aneic onlookers.
+goblin_invasion.5 = {
+	type = country_event
+	title = goblin_invasion.5.t
+	desc = goblin_invasion.5.desc
+	picture = event_deep_forest
+	left_portrait = scope:gi_leader.current_ruler
+	right_portrait = scope:gi_keeper.current_ruler
+
+	option = {
+		name = goblin_invasion.5.a
+		trigger = { treasury >= 100 }
+		add_treasury = -100
+		scope:gi_keeper = {
+			add_country_modifier = { name = goblin_invasion_aneic_relief duration = 1825 }
+			add_opinion = { target = root modifier = goblin_invasion_silver_for_the_root }
+		}
+	}
+	option = {
+		name = goblin_invasion.5.b
+	}
+}
+
+# Launch: everyone else watching.
+goblin_invasion.6 = {
+	type = country_event
+	title = goblin_invasion.6.t
+	desc = goblin_invasion.6.desc
+	picture = war_council
+	left_portrait = scope:gi_leader.current_ruler
+	right_portrait = scope:gi_keeper.current_ruler
+
+	option = {
+		name = goblin_invasion.6.a
+	}
+	option = {
+		name = goblin_invasion.6.b
+		scope:gi_leader = {
+			add_opinion = { target = root modifier = goblin_invasion_open_passes }
+		}
+		every_country = {
+			limit = { religion = mother_earth_pantheon }
+			add_opinion = { target = root modifier = goblin_invasion_opened_passes_to_goblins }
+		}
+	}
+}
+
+# Monitor (leader, every 30 days).
+goblin_invasion.10 = {
+	type = country_event
+	hidden = yes
+	trigger = { has_variable = is_goblin_invasion_leader }
+	immediate = {
+		save_scope_as = gi_leader
+		if = {
+			limit = { exists = var:gi_keeper }
+			var:gi_keeper = { save_scope_as = gi_keeper }
+		}
+		if = {
+			limit = { has_global_variable = root_of_first_spring_felled }
+			# Burned by us through the decision, or by somebody else. Either way the host goes home.
+			trigger_event = { id = goblin_invasion.12 days = 90 }
+		}
+		else_if = {
+			limit = { p:2356 = { controller = root } }
+			if = {
+				limit = { is_ai = yes }
+				root_of_first_spring_fell_effect = yes
+				trigger_event = { id = goblin_invasion.12 days = 90 }
+			}
+			else = {
+				# A player leader decides with omni_fell_root_of_first_spring.
+				trigger_event = { id = goblin_invasion.10 days = 30 }
+			}
+		}
+		else_if = {
+			limit = {
+				exists = var:gi_target
+				war_with = var:gi_target
+			}
+			trigger_event = { id = goblin_invasion.10 days = 30 }
+		}
+		else = {
+			# The war is over and the Root still stands.
+			trigger_event = { id = goblin_invasion.31 days = 1 }
+			if = {
+				limit = { exists = scope:gi_keeper }
+				scope:gi_keeper = {
+					trigger_event = { id = goblin_invasion.30 days = 1 }
+				}
+			}
+			every_country = {
+				limit = {
+					is_ai = no
+					NOT = { this = scope:gi_leader }
+					NOT = { this = scope:gi_keeper }
+				}
+				trigger_event = { id = goblin_invasion.32 days = 2 }
+			}
+		}
+	}
+}
+
+# Reinforcements (leader).
+goblin_invasion.11 = {
+	type = country_event
+	hidden = yes
+	trigger = { has_variable = is_goblin_invasion_leader }
+	immediate = {
+		if = {
+			limit = {
+				goblin_invasion_root_stands_trigger = yes
+				exists = var:gi_target
+				war_with = var:gi_target
+			}
+			goblin_invasion_reinforcement_effect = yes
+			trigger_event = { id = goblin_invasion.11 days = { 300 400 } }
+		}
+	}
+}
+
+# The Root has fallen: the host goes home (leader).
+goblin_invasion.12 = {
+	type = country_event
+	hidden = yes
+	trigger = { has_variable = is_goblin_invasion_leader }
+	immediate = {
+		if = {
+			limit = { has_variable = gi_root_burned }
+			add_country_modifier = { name = goblin_root_felled_pride duration = 7300 }
+		}
+		goblin_invasion_cleanup_effect = yes
+	}
+}
+
+# The Root falls: the burner.
+goblin_invasion.20 = {
+	type = country_event
+	title = goblin_invasion.20.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { country_culture_group = goblin }
+				desc = goblin_invasion.20.desc_goblin
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = goblin_invasion.20.desc_other
+			}
+		}
+	}
+	picture = omni_burning_settlement_night
+	left_portrait = current_ruler
+	right_portrait = scope:gi_mourner.current_ruler
+
+	option = {
+		name = goblin_invasion.20.a
+		custom_tooltip = goblin_invasion.20.a.tt
+	}
+}
+
+# The Root falls: the realm that held Venerurich.
+goblin_invasion.21 = {
+	type = country_event
+	title = goblin_invasion.21.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { religion = mother_earth_pantheon }
+				desc = goblin_invasion.21.desc_aneic
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = goblin_invasion.21.desc_other
+			}
+		}
+	}
+	picture = omni_city_fire_arson
+	left_portrait = current_ruler
+	right_portrait = scope:gi_burner.current_ruler
+
+	immediate = {
+		if = {
+			limit = { religion = mother_earth_pantheon }
+			root_of_first_spring_aneic_crisis_effect = yes
+		}
+	}
+
+	option = {
+		name = goblin_invasion.21.a
+	}
+}
+
+# The Root falls: every other Aneic realm.
+goblin_invasion.22 = {
+	type = country_event
+	title = goblin_invasion.22.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:gi_burner = { country_culture_group = goblin } }
+				desc = goblin_invasion.22.desc_goblin
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = goblin_invasion.22.desc_other
+			}
+		}
+	}
+	picture = omni_forest_night_moonlight
+	left_portrait = scope:gi_burner.current_ruler
+	right_portrait = scope:gi_mourner.current_ruler
+
+	immediate = {
+		root_of_first_spring_aneic_crisis_effect = yes
+	}
+
+	option = {
+		name = goblin_invasion.22.a
+	}
+}
+
+# The Root falls: everyone else watching.
+goblin_invasion.23 = {
+	type = country_event
+	title = goblin_invasion.23.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:gi_burner = { country_culture_group = goblin } }
+				desc = goblin_invasion.23.desc_goblin
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = goblin_invasion.23.desc_other
+			}
+		}
+	}
+	picture = omni_army_marching_burning_fields
+	left_portrait = scope:gi_burner.current_ruler
+	right_portrait = scope:gi_mourner.current_ruler
+
+	option = {
+		name = goblin_invasion.23.a
+	}
+}
+
+# The Root stands: the realm that held it.
+goblin_invasion.30 = {
+	type = country_event
+	title = goblin_invasion.30.t
+	desc = goblin_invasion.30.desc
+	picture = event_forest_city
+	left_portrait = current_ruler
+	right_portrait = scope:gi_leader.current_ruler
+
+	option = {
+		name = goblin_invasion.30.a
+		add_stability = 5
+		add_country_modifier = { name = goblin_invasion_root_held duration = 3650 }
+	}
+}
+
+# The Root stands: the goblins.
+goblin_invasion.31 = {
+	type = country_event
+	title = goblin_invasion.31.t
+	desc = goblin_invasion.31.desc
+	picture = event_marching_army
+	left_portrait = current_ruler
+	right_portrait = scope:gi_keeper.current_ruler
+
+	immediate = {
+		goblin_invasion_cleanup_effect = yes
+	}
+
+	option = {
+		name = goblin_invasion.31.a
+		add_country_modifier = { name = goblin_invasion_broken_host duration = 3650 }
+	}
+}
+
+# The Root stands: everyone else watching.
+goblin_invasion.32 = {
+	type = country_event
+	title = goblin_invasion.32.t
+	desc = goblin_invasion.32.desc
+	picture = event_forest_rangers
+	left_portrait = scope:gi_keeper.current_ruler
+	right_portrait = scope:gi_leader.current_ruler
+
+	option = {
+		name = goblin_invasion.32.a
+	}
+}

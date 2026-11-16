@@ -1,0 +1,37 @@
+﻿# Fills the settlement picker (gui/omni_wenelru_picker.gui). MODE = leaf | restore.
+omni_wenelru_open_picker = {
+	remove_variable = omni_wenelru_pick_leaf
+	remove_variable = omni_wenelru_pick_restore
+	clear_variable_list = omni_wenelru_hearth_choices
+	set_variable = { name = omni_wenelru_pick_$MODE$ days = 30 }
+	every_owned_province = {
+		limit = { omni_wenelru_$MODE$_pick_site = yes }
+		root = { add_to_variable_list = { name = omni_wenelru_hearth_choices target = prev } }
+	}
+}
+
+omni_wenelru_close_picker = {
+	remove_variable = omni_wenelru_pick_leaf
+	remove_variable = omni_wenelru_pick_restore
+	clear_variable_list = omni_wenelru_hearth_choices
+}
+
+# Picks a delegate and stores both actors as variables so delayed events can find them.
+omni_wenelru_store_rite_actors = {
+	set_variable = { name = omni_wenelru_hearth_target value = scope:target }
+	random_character = {
+		limit = { omni_wenelru_delegate = yes }
+		root = { set_variable = { name = omni_wenelru_delegate_target value = prev } }
+	}
+}
+
+omni_wenelru_load_rite_scopes = {
+	if = {
+		limit = { has_variable = omni_wenelru_hearth_target }
+		var:omni_wenelru_hearth_target = { save_scope_as = wenelru_hearth }
+	}
+	if = {
+		limit = { has_variable = omni_wenelru_delegate_target }
+		var:omni_wenelru_delegate_target = { save_scope_as = wenelru_delegate }
+	}
+}

@@ -1,0 +1,345 @@
+﻿# The Goblin Invasion of the World's Lungs (events/omniluxia/goblin_invasion_events.txt).
+# Modelled on the drow invasion (spawned host, refill, rehydration flag) and the Balthazarian
+# Deep Host (host spawns inside the defender's land, army kept in a variable, province monitor).
+#
+# Leader variables: is_goblin_invasion_leader, gi_keeper, gi_target, gi_army, gi_root_burned
+# Globals: goblin_invasion_fired, root_of_first_spring_felled
+
+# Leader scope. Names the keeper of the Root, warns them, and sets the march for 60 days on.
+goblin_invasion_formation_effect = {
+	save_scope_as = gi_leader
+	set_global_variable = { name = goblin_invasion_fired }
+	set_variable = { name = is_goblin_invasion_leader }
+	p:2356 = { owner = { save_scope_as = gi_keeper } }
+	set_variable = { name = gi_keeper value = scope:gi_keeper }
+	scope:gi_keeper = {
+		trigger_event = { id = goblin_invasion.1 days = 1 }
+	}
+	trigger_event = { id = goblin_invasion.2 days = 60 }
+}
+
+# Leader scope. The march was called off before it began (the Root fell or changed hands to us).
+# Clears goblin_invasion_fired so an eligible realm can try again on a later yearly pulse.
+goblin_invasion_abort_effect = {
+	remove_variable = is_goblin_invasion_leader
+	remove_variable = gi_keeper
+	remove_variable = gi_target
+	remove_global_variable = goblin_invasion_fired
+}
+
+# Leader scope. Declares the war and raises the host inside the forest.
+goblin_invasion_launch_effect = {
+	save_scope_as = gi_leader
+	p:2356 = { owner = { save_scope_as = gi_keeper } }
+	# A subject cannot be a war target; march on its overlord instead.
+	if = {
+		limit = { scope:gi_keeper = { is_subject = yes } }
+		scope:gi_keeper.overlord = { save_scope_as = gi_target }
+	}
+	else = {
+		scope:gi_keeper = { save_scope_as = gi_target }
+	}
+	set_variable = { name = gi_keeper value = scope:gi_keeper }
+	set_variable = { name = gi_target value = scope:gi_target }
+
+	# Keeps the leader solvent while the spawned host is in the field
+	# (common/on_action/omni_invader_rehydration.txt).
+	set_variable = { name = is_not_allowed_to_go_broke days = 3650 }
+	add_country_modifier = { name = goblin_invasion_on_the_march duration = 3650 }
+	add_treasury = 200
+
+	if = {
+		limit = { has_truce_with = scope:gi_target }
+		end_truce = scope:gi_target
+	}
+	if = {
+		limit = { NOT = { war_with = scope:gi_target } }
+		set_variable = { name = gi_declaring }
+		declare_war_with_wargoal = {
+			war_goal = goblin_root_conquest
+			target = scope:gi_target
+		}
+		remove_variable = gi_declaring
+	}
+	scope:gi_target = {
+		add_country_modifier = { name = goblin_invasion_under_invasion duration = 3650 }
+	}
+	if = {
+		limit = { scope:gi_keeper = { NOT = { this = scope:gi_target } } }
+		scope:gi_keeper = {
+			add_country_modifier = { name = goblin_invasion_under_invasion duration = 3650 }
+		}
+	}
+
+	# The host comes down out of the western foothills: the keeper's forest province on that
+	# border, then any of its provinces in the Root's own forest, then Venerurich itself.
+	scope:gi_keeper = {
+		random_owned_province = {
+			limit = {
+				is_in_area = world_lungs_forests_4
+				any_neighbor_province = { is_in_region = western_skyreach_foothils }
+			}
+			save_scope_as = gi_exit
+		}
+		if = {
+			limit = { NOT = { exists = scope:gi_exit } }
+			random_owned_province = {
+				limit = {
+					is_in_area = world_lungs_forests_4
+					NOT = { this = p:2356 }
+				}
+				save_scope_as = gi_exit
+			}
+		}
+	}
+	if = {
+		limit = { NOT = { exists = scope:gi_exit } }
+		p:2356 = { save_scope_as = gi_exit }
+	}
+
+	# Host size scales with the defender: 1.5x its cohorts + 12, between 30 and 60.
+	scope:gi_target = {
+		set_variable = { name = gi_host_size value = goblin_invasion_host_strength }
+	}
+	set_variable = { name = gi_cohorts value = scope:gi_target.var:gi_host_size }
+	scope:gi_target = { remove_variable = gi_host_size }
+
+	create_character = {
+		culture = scope:gi_leader.culture
+		religion = scope:gi_leader.religion
+		female = no
+		age = 38
+		add_martial = 10
+		save_scope_as = gi_commander
+	}
+	create_unit = {
+		name = goblin_invasion_host_name
+		location = scope:gi_exit
+		set_as_commander = scope:gi_commander
+		save_scope_as = gi_army
+		# Venerurich has walls. Without engineers the AI gives up before the siege ends.
+		add_subunit = engineer_cohort
+		add_subunit = engineer_cohort
+		add_subunit = engineer_cohort
+		while = {
+			limit = { scope:gi_leader.var:gi_cohorts > 0 }
+			random_list = {
+				35 = { add_subunit = light_infantry }
+				20 = { add_subunit = axemen }
+				25 = { add_subunit = archers }
+				20 = { add_subunit = heavy_infantry }
+			}
+			scope:gi_leader = { change_variable = { name = gi_cohorts subtract = 1 } }
+		}
+		add_food = 2000
+		add_morale = 3
+	}
+	remove_variable = gi_cohorts
+	set_variable = { name = gi_army value = scope:gi_army }
+
+	# Launch events: attacker, defender (and overlord), and player onlookers.
+	trigger_event = { id = goblin_invasion.3 days = 1 }
+	scope:gi_keeper = {
+		trigger_event = { id = goblin_invasion.4 days = 1 }
+	}
+	if = {
+		limit = { scope:gi_keeper = { NOT = { this = scope:gi_target } } }
+		scope:gi_target = {
+			trigger_event = { id = goblin_invasion.4 days = 1 }
+		}
+	}
+	every_country = {
+		limit = {
+			is_ai = no
+			NOT = { this = scope:gi_leader }
+			NOT = { this = scope:gi_keeper }
+			NOT = { this = scope:gi_target }
+		}
+		if = {
+			limit = { religion = mother_earth_pantheon }
+			trigger_event = { id = goblin_invasion.5 days = 2 }
+		}
+		else = {
+			trigger_event = { id = goblin_invasion.6 days = 2 }
+		}
+	}
+
+	trigger_event = { id = goblin_invasion.10 days = 30 }
+	trigger_event = { id = goblin_invasion.11 days = { 300 400 } }
+}
+
+# Leader scope. More goblins come down the passes every year the war lasts.
+goblin_invasion_reinforcement_effect = {
+	save_scope_as = gi_leader
+	add_manpower = {
+		value = max_manpower
+		multiply = 0.3
+	}
+	add_treasury = {
+		value = treasury
+		multiply = 0.1
+		min = 75
+	}
+	if = {
+		limit = { exists = var:gi_army }
+		var:gi_army = {
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = axemen
+			add_subunit = archers
+			add_subunit = archers
+		}
+	}
+	else = {
+		create_character = {
+			culture = scope:gi_leader.culture
+			religion = scope:gi_leader.religion
+			female = no
+			age = 29
+			add_martial = 7
+			save_scope_as = gi_commander
+		}
+		create_unit = {
+			name = goblin_invasion_host_name
+			location = scope:gi_leader.capital_scope
+			set_as_commander = scope:gi_commander
+			save_scope_as = gi_army
+			add_subunit = engineer_cohort
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = light_infantry
+			add_subunit = axemen
+			add_subunit = axemen
+			add_subunit = archers
+			add_subunit = archers
+			add_subunit = heavy_infantry
+			add_subunit = heavy_infantry
+			add_food = 1500
+			add_morale = 3
+		}
+		set_variable = { name = gi_army value = scope:gi_army }
+	}
+}
+
+# Leader scope. Ends the campaign however it went.
+goblin_invasion_cleanup_effect = {
+	remove_country_modifier = goblin_invasion_on_the_march
+	remove_variable = is_not_allowed_to_go_broke
+	if = {
+		limit = { exists = var:gi_target }
+		var:gi_target = { remove_country_modifier = goblin_invasion_under_invasion }
+	}
+	if = {
+		limit = { exists = var:gi_keeper }
+		var:gi_keeper = { remove_country_modifier = goblin_invasion_under_invasion }
+	}
+	if = {
+		limit = { exists = var:gi_army }
+		var:gi_army = { destroy_unit = yes }
+	}
+	remove_variable = gi_army
+	remove_variable = gi_target
+	remove_variable = gi_keeper
+	remove_variable = gi_root_burned
+	remove_variable = is_goblin_invasion_leader
+}
+
+# Burner country scope. Called by the goblin monitor (AI leader holding Venerurich) and by the
+# decision omni_fell_root_of_first_spring. The great work itself cannot be removed by script
+# (no such effect in effects.log), so the Root is felled by stripping everything it grants.
+root_of_first_spring_fell_effect = {
+	save_scope_as = gi_burner
+	p:2356 = {
+		owner = { save_scope_as = gi_keeper }
+		remove_province_modifier = root_of_first_spring_mod
+		add_province_modifier = { name = root_of_first_spring_ashes_mod duration = -1 }
+	}
+	set_global_variable = { name = root_of_first_spring_felled }
+	if = {
+		limit = { has_variable = is_goblin_invasion_leader }
+		set_variable = { name = gi_root_burned }
+	}
+
+	# The mourner (right portrait): the realm that lost the Root, or the greatest Aneic realm
+	# when the burner held Venerurich itself.
+	if = {
+		limit = { scope:gi_keeper = { NOT = { this = scope:gi_burner } } }
+		scope:gi_keeper = { save_scope_as = gi_mourner }
+	}
+	else = {
+		ordered_country = {
+			limit = {
+				religion = mother_earth_pantheon
+				num_of_cities >= 1
+			}
+			order_by = zerywani_horde_power_score_svalue
+			position = 0
+			save_scope_as = gi_mourner
+		}
+	}
+
+	# Whoever holds the stump stops collecting the Covenant at once.
+	p:2356 = {
+		owner = { root_of_first_spring_ashes_upkeep_effect = yes }
+	}
+
+	trigger_event = { id = goblin_invasion.20 days = 1 }
+	if = {
+		limit = { scope:gi_keeper = { NOT = { this = scope:gi_burner } } }
+		scope:gi_keeper = {
+			trigger_event = { id = goblin_invasion.21 days = 1 }
+		}
+	}
+	every_country = {
+		limit = {
+			religion = mother_earth_pantheon
+			NOT = { this = scope:gi_burner }
+			NOT = { this = scope:gi_keeper }
+		}
+		trigger_event = { id = goblin_invasion.22 days = 2 }
+	}
+	every_country = {
+		limit = {
+			is_ai = no
+			NOT = { religion = mother_earth_pantheon }
+			NOT = { this = scope:gi_burner }
+			NOT = { this = scope:gi_keeper }
+		}
+		trigger_event = { id = goblin_invasion.23 days = 2 }
+	}
+}
+
+# Country scope. Every Aneic realm when the Root falls.
+root_of_first_spring_aneic_crisis_effect = {
+	add_stability = -20
+	add_country_modifier = { name = root_of_first_spring_mourning duration = 3650 }
+}
+
+# Country scope, monthly after the burning. The great work still grants
+# gw_effect_first_spring_covenant to whoever owns Venerurich, so the owner carries the
+# cancelling modifiers and a former owner has them taken away.
+root_of_first_spring_ashes_upkeep_effect = {
+	if = {
+		limit = { owns = 2356 }
+		if = {
+			limit = { NOT = { has_country_modifier = root_of_first_spring_ashes_country } }
+			add_country_modifier = { name = root_of_first_spring_ashes_country duration = -1 }
+		}
+		p:2356 = {
+			state = {
+				if = {
+					limit = { NOT = { has_state_modifier = root_of_first_spring_ashes_state } }
+					add_state_modifier = { name = root_of_first_spring_ashes_state duration = -1 }
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = { has_country_modifier = root_of_first_spring_ashes_country }
+		remove_country_modifier = root_of_first_spring_ashes_country
+		every_country_state = {
+			limit = { has_state_modifier = root_of_first_spring_ashes_state }
+			remove_state_modifier = root_of_first_spring_ashes_state
+		}
+	}
+}

@@ -22,14 +22,14 @@
 
         bypass = { has_variable = ob_task_done_1 }
         allow = {
-            treasury >= 50
+            treasury >= omni_rank_gold_cost_50_svalue
             political_influence >= 25
         }
         on_completion = {
             if = {
                 limit = { NOT = { has_variable = ob_task_done_1 } }
                 set_variable = { name = ob_task_done_1 }
-                add_treasury = -50
+                add_treasury = { value = omni_rank_gold_cost_50_svalue multiply = -1 }
                 add_political_influence = -25
                 capital_scope = {
                     capital_formable_large_effect = yes
@@ -194,7 +194,7 @@
         allow = {
             war = no
             stability >= 50
-            treasury >= 50
+            treasury >= omni_rank_gold_cost_50_svalue
             trigger_if = {
                 limit = { has_variable = ob_war_started }
                 has_war_exhaustion <= 5
@@ -219,7 +219,7 @@
             if = {
                 limit = { NOT = { has_variable = ob_task_done_15 } }
                 set_variable = { name = ob_task_done_15 }
-                add_treasury = -50
+                add_treasury = { value = omni_rank_gold_cost_50_svalue multiply = -1 }
                 trigger_event = { id = ob_order.15 }
             }
         }
@@ -286,7 +286,7 @@
                     custom_tooltip = { text = ob_shannah_favor_requirement_tt
                         omni_sf_favor_value >= 40
                     }
-                    treasury >= 25
+                    treasury >= omni_rank_gold_cost_25_svalue
                 }
             }
         }
@@ -355,46 +355,47 @@
 
         highlight = { scope:province = { owner = root is_capital = yes } }
     }
-
     ob_task_7 = {
         icon = "task_expansion" requires = { ob_task_3 }
 
         bypass = { OR = { has_variable = ob_task_done_7 is_ai = yes } }
         allow = {
             hidden:p:870 = { has_building = port_building }
-        }
-        on_completion = {
-            if = {
-                limit = { NOT = { has_variable = ob_task_done_7 } }
-                set_variable = { name = ob_task_done_7 }
-                trigger_event = { id = ob_order.7 }
-                show_as_tooltip = {
-                    add_country_modifier = { name = ob_open_harbors duration = 3650 }
-                }
-            }
-        }
-
-        highlight = { scope:province = { province_id = 870 } }
-    }
-
-    ob_task_8 = {
-        icon = "task_economical" requires = { ob_task_7 }
-        bypass = { OR = { has_variable = ob_task_done_8 is_ai = yes } }
-        allow = {
             capital_scope = { is_importing_trade_good = grain }
             country_trade_good_imports = { target = grain value >= 2 }
         }
         on_completion = {
             if = {
-                limit = { NOT = { has_variable = ob_task_done_8 } }
-                set_variable = { name = ob_task_done_8 }
+                limit = { NOT = { has_variable = ob_task_done_7 } }
+                set_variable = { name = ob_task_done_7 }
                 hidden_effect = { set_variable = { name = ob_grain } }
                 capital_scope = {
                     add_province_modifier = { name = ob_northern_grain_trade duration = -1 }
                 }
+                trigger_event = { id = ob_order.7 }
+            }
+        }
+
+        highlight = { scope:province = { province_id = 870 } }
+    }
+    ob_task_8 = {
+        duration = 60
+        icon = "task_political" requires = { ob_task_7 }
+
+        bypass = { OR = { has_variable = ob_task_done_8 is_ai = yes } }
+        allow = {
+            hidden:capital_scope = { has_building = commerce_building }
+            political_influence >= 20
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_8 } }
+                set_variable = { name = ob_task_done_8 }
+                add_political_influence = -20
                 trigger_event = { id = ob_order.8 }
             }
         }
+
         highlight = { scope:province = { owner = root is_capital = yes } }
     }
 
@@ -416,7 +417,7 @@
             }
         }
         allow = {
-            treasury >= 25
+            treasury >= omni_rank_gold_cost_25_svalue
             political_influence >= 15
             custom_tooltip = { text = ob_requirements_5_tt ob_requirement_5 = yes }
         }
@@ -424,7 +425,7 @@
             if = {
                 limit = { NOT = { has_variable = ob_task_done_5 } }
                 set_variable = { name = ob_task_done_5 }
-                add_treasury = -25
+                add_treasury = { value = omni_rank_gold_cost_25_svalue multiply = -1 }
                 add_political_influence = -15
                 trigger_event = { id = ob_order.5 }
             }
@@ -457,10 +458,10 @@
 
         bypass = { has_variable = ob_task_done_18 }
         allow = {
-            treasury >= 100
+            treasury >= omni_rank_gold_cost_100_svalue
             war = no
             owns = 870
-            custom_tooltip = { text = ob_convoy_port_tt p:870 = { num_of_port_building = 2 } }
+            custom_tooltip = { text = ob_convoy_port_tt p:870 = { num_of_port_building >= 2 } }
             trigger_if = {
                 limit = { is_ai = no }
                 custom_tooltip = {
@@ -485,7 +486,7 @@
             if = {
                 limit = { NOT = { has_variable = ob_task_done_18 } }
                 set_variable = { name = ob_task_done_18 }
-                add_treasury = -100
+                add_treasury = { value = omni_rank_gold_cost_100_svalue multiply = -1 }
                 trigger_event = { id = ob_order.18 }
             }
         }
@@ -549,7 +550,7 @@
         }
         allow = {
             war = no
-            treasury >= 100
+            treasury >= omni_rank_gold_cost_100_svalue
             manpower >= 6
             owns = 870
             owns = 1036
@@ -573,7 +574,7 @@
             if = {
                 limit = { NOT = { has_variable = ob_task_done_28 } }
                 set_variable = { name = ob_task_done_28 }
-                add_treasury = -100
+                add_treasury = { value = omni_rank_gold_cost_100_svalue multiply = -1 }
                 p:870 = { add_province_modifier = { name = ob_beacon_fort duration = 1825 } }
                 p:1036 = { add_province_modifier = { name = ob_beacon_fort duration = 1825 } }
                 trigger_event = { id = ob_order.640 }
@@ -623,7 +624,7 @@
         bypass = { has_variable = ob_task_done_31 }
         allow = {
             war = no
-            treasury >= 75
+            treasury >= omni_rank_gold_cost_75_svalue
             custom_tooltip = { text = ob_iron_supply_tt
                 OR = {
                     country_trade_good_imports = { target = iron value >= 1 }
@@ -639,7 +640,7 @@
             if = {
                 limit = { NOT = { has_variable = ob_task_done_31 } }
                 set_variable = { name = ob_task_done_31 }
-                add_treasury = -75
+                add_treasury = { value = omni_rank_gold_cost_75_svalue multiply = -1 }
                 trigger_event = { id = ob_order.760 }
             }
         }
@@ -698,7 +699,7 @@
             custom_tooltip = { text = ob_herue_settlement_requirement_tt
                 ob_has_herue_settlement = yes
             }
-            treasury >= 250
+            treasury >= omni_rank_gold_cost_250_svalue
             war = no custom_tooltip = { text = ob_owned_all_loyal_tt
                 NOT = {
                     any_owned_province = {
@@ -716,7 +717,7 @@
             if = {
                 limit = { NOT = { has_variable = ob_task_done_22 } }
                 set_variable = { name = ob_task_done_22 }
-                add_treasury = -250
+                add_treasury = { value = omni_rank_gold_cost_250_svalue multiply = -1 }
                 trigger_event = { id = ob_order.22 }
                 if = {
                     limit = { has_variable = ob_towns_sworn NOT = { has_variable = ob_deep_host_launched } }
@@ -737,15 +738,26 @@
             NOT = { has_variable = ob_rimebound_pending }
             OR = { has_variable = ob_deep_road_known is_ai = yes }
             custom_tooltip = {
-                text = ob_owned_fortress_building_3_tt
-                any_owned_province = { count >= 3 is_in_region = norrfalian_borderland has_building = fortress_building }
+                text = ob_owned_fortress_building_2_tt
+                any_owned_province = {
+                    count >= 2
+                    is_in_region = norrfalian_borderland
+                    has_building = fortress_building
+                    state_loyalty >= 50
+                }
             }
-            treasury >= 100
+            treasury >= omni_rank_gold_cost_100_svalue
             manpower >= 4
             military_experience >= 20
             custom_tooltip = {
-                text = ob_owned_training_camp_tt
-                any_owned_province = { has_building = military_building }
+                text = ob_watch_relief_ready_tt
+                OR = {
+                    has_variable = ob_armories
+                    any_owned_province = {
+                        OR = { is_in_region = norrfalian_borderland province_id = 870 }
+                        has_building = military_building
+                    }
+                }
             }
             capital_scope = { state = { has_state_food >= 300 } }
         }
@@ -753,7 +765,7 @@
             if = {
                 limit = { NOT = { has_variable = ob_task_done_23 } }
                 set_variable = { name = ob_task_done_23 }
-                add_treasury = -100
+                add_treasury = { value = omni_rank_gold_cost_100_svalue multiply = -1 }
                 add_manpower = -2
                 trigger_event = { id = ob_order.23 }
                 custom_tooltip = ob_deep_host_warning_tt
@@ -764,7 +776,12 @@
             }
         }
 
-        highlight = { scope:province = { owner = root has_building = fortress_building } }
+        highlight = {
+            scope:province = {
+                owner = root
+                OR = { is_in_region = norrfalian_borderland province_id = 870 }
+            }
+        }
     }
 
     ob_task_29 = {
@@ -798,7 +815,7 @@
             owns = 870
             trigger_if = {
                 limit = { NOT = { has_variable = ob_cairn_journey } }
-                treasury >= 50
+                treasury >= omni_rank_gold_cost_50_svalue
             }
         }
         on_completion = {
@@ -808,7 +825,7 @@
                 # The receipt also covers journeys paid for at the start in older saves.
                 if = {
                     limit = { NOT = { has_variable = ob_cairn_journey } }
-                    add_treasury = -50
+                    add_treasury = { value = omni_rank_gold_cost_50_svalue multiply = -1 }
                     hidden_effect = { set_variable = { name = ob_cairn_journey } }
                 }
                 if = {
