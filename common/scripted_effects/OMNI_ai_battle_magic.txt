@@ -184,6 +184,236 @@ omni_ai_cast_offensive_debuff_effect = {
 	}
 }
 
+# DAMAGE cast: the Melodian battle-damage and enemy-commander spells.
+#
+# Before this, Igniting Spark, Fireball, Plague Miasma, Cataclysmic Eruption,
+# Death Ray, Hex and Curse had no AI code at all - an AI warlock/necromancer
+# (the Revant included) knew them and never cast one. Costs, tier gates, damage,
+# health loss, modifiers and cooldowns mirror the player options in
+# events/zorgo_magic_events.txt (me_zorgo_magic_focus.13 and .new.melodian1-4).
+#
+# Death Hex and Curse II were added after the first pass (see below).
+#
+# Ladder order is strongest first. Every branch is gated on a cooldown or on the
+# enemy stack not already carrying the spell's modifier, so repeated in_land_battle
+# firings walk DOWN the ladder instead of re-buying the same spell every day.
+#
+# PERF: one random_character_unit -> random_unit_in_province walk to pick the
+# target, only reached when the caller already confirmed we are in combat with a
+# co-located hostile stack. Nothing here runs outside a live battle.
+omni_ai_cast_battle_damage_effect = {
+	clear_saved_scope = omni_ai_dmg_enemy_unit
+	clear_saved_scope = omni_ai_dmg_enemy_cmdr
+	random_character_unit = {
+		limit = {
+			in_combat = yes
+			OR = {
+				is_army = yes
+				is_navy = yes
+			}
+		}
+		unit_location = {
+			random_unit_in_province = {
+				limit = {
+					in_combat = yes
+					OR = {
+						is_army = yes
+						is_navy = yes
+					}
+					unit_owner = { war_with = scope:caster_country }
+				}
+				save_scope_as = omni_ai_dmg_enemy_unit
+				if = {
+					limit = {
+						exists = commander
+						commander = {
+							is_alive = yes
+							NOT = { has_variable = is_the_revant }
+						}
+					}
+					commander = { save_scope_as = omni_ai_dmg_enemy_cmdr }
+				}
+			}
+		}
+	}
+	if = {
+		limit = { exists = scope:omni_ai_dmg_enemy_unit }
+		if = {
+			# Death Hex - archmage only, 50% chance to kill the enemy commander.
+			# Same 175 mana, odds and 1-year cooldown as the player's battle option.
+			# No spell knowledge needed, matching the player version.
+			limit = {
+				exists = scope:omni_ai_dmg_enemy_cmdr
+				has_trait = archmage_trait
+				NOT = { has_variable = omni_cd_death_hex }
+				omni_can_afford_spell = { BASE = 175 }
+			}
+			omni_spell_mana_cost_effect = { BASE = 175 }
+			save_scope_as = omni_ai_death_hex_caster
+			scope:omni_ai_dmg_enemy_cmdr = {
+				random_list = {
+					50 = {
+						death = {
+							killer = scope:omni_ai_death_hex_caster
+							death_reason = death_magic
+						}
+					}
+					50 = {}
+				}
+			}
+			set_variable = { name = omni_cd_death_hex days = 365 }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+		else_if = {
+			# Cataclysmic Eruption - archmage capstone. 30% damage, -4 health, -30% morale.
+			limit = {
+				has_trait = archmage_trait
+				omni_knows_spell = { SPELL = cataclysmic_eruption }
+				NOT = { has_variable = omni_cd_cataclysmic_eruption }
+				omni_caster_melodian_t3 = yes
+				omni_can_afford_spell = { BASE = 165 }
+			}
+			omni_spell_mana_cost_effect = { BASE = 165 }
+			scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.30 }
+			if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -4 } }
+			omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_army }
+			omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_navy }
+			set_variable = { name = omni_cd_cataclysmic_eruption days = 180 }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+		else_if = {
+			# Death Ray - 25% damage to the commander's stack.
+			limit = {
+				exists = scope:omni_ai_dmg_enemy_cmdr
+				omni_knows_spell = { SPELL = death_ray }
+				NOT = { has_variable = omni_cd_death_ray }
+				has_variable = warlock_t3_unlocked_var
+				omni_can_afford_spell = { BASE = 75 }
+			}
+			omni_spell_mana_cost_effect = { BASE = 75 }
+			scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.25 }
+			set_variable = { name = omni_cd_death_ray days = 90 }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+		else_if = {
+			# Plague Miasma - -2 health to the commander, -25% morale.
+			limit = {
+				omni_knows_spell = { SPELL = plague_miasma }
+				NOT = { has_variable = omni_cd_plague_miasma }
+				omni_caster_melodian_t3 = yes
+				omni_can_afford_spell = { BASE = 75 }
+			}
+			omni_spell_mana_cost_effect = { BASE = 75 }
+			if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -2 } }
+			omni_apply_enemy_debuff_effect = { MOD = omni_plague_miasma_mod DAYS = 30 UNITTYPE = is_army }
+			omni_apply_enemy_debuff_effect = { MOD = omni_plague_miasma_mod DAYS = 30 UNITTYPE = is_navy }
+			set_variable = { name = omni_cd_plague_miasma days = 90 }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+		else_if = {
+			# Hex - drain 3 health from the enemy commander, heal 2.
+			limit = {
+				exists = scope:omni_ai_dmg_enemy_cmdr
+				omni_knows_spell = { SPELL = hex }
+				NOT = { has_variable = omni_cd_hex }
+				has_variable = necromancer_t3_unlocked_var
+				omni_can_afford_spell = { BASE = 75 }
+			}
+			omni_spell_mana_cost_effect = { BASE = 75 }
+			scope:omni_ai_dmg_enemy_cmdr = { add_health = -3 }
+			add_health = 2
+			set_variable = { name = omni_cd_hex days = 90 }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+		else_if = {
+			# Curse II - the Skull Curse. Mirrors omni_apply_skull_curse (which needs a
+			# country scope plus scope:target from the player menu): the victim records
+			# the caster's country, so if the curse kills them the wraith rises for it
+			# (omni_raise_skull_curse_wraith -> me_zorgo_magic_focus.24).
+			limit = {
+				exists = scope:omni_ai_dmg_enemy_cmdr
+				omni_knows_spell = { SPELL = curse_ii }
+				NOT = { has_variable = omni_cd_curse_ii }
+				has_variable = necromancer_t3_unlocked_var
+				omni_can_afford_spell = { BASE = 100 }
+				scope:omni_ai_dmg_enemy_cmdr = {
+					NOT = { has_trait = skull_curse_trait }
+					employer = {
+						NOR = {
+							tag = MER
+							tag = BAR
+							tag = REB
+							tag = PIR
+						}
+					}
+				}
+			}
+			omni_spell_mana_cost_effect = { BASE = 100 }
+			scope:omni_ai_dmg_enemy_cmdr = {
+				set_variable = { name = omni_skull_curse_country value = scope:caster_country }
+				force_add_trait = skull_curse_trait
+			}
+			set_variable = { name = omni_cd_curse_ii days = 180 }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+		else_if = {
+			# Curse - afflict the enemy commander with a disease.
+			limit = {
+				exists = scope:omni_ai_dmg_enemy_cmdr
+				omni_knows_spell = { SPELL = curse }
+				NOT = { has_variable = omni_cd_curse }
+				has_variable = necromancer_t2_unlocked_var
+				omni_can_afford_spell = { BASE = 75 }
+			}
+			omni_spell_mana_cost_effect = { BASE = 75 }
+			scope:omni_ai_dmg_enemy_cmdr = {
+				random_list = {
+					1 = { force_add_trait = leper }
+					1 = { force_add_trait = cancer }
+					1 = { force_add_trait = depressed }
+					1 = { force_add_trait = plague }
+					1 = { force_add_trait = pox }
+					1 = { force_add_trait = vampiric_fever }
+					1 = { force_add_trait = paralysis }
+				}
+			}
+			set_variable = { name = omni_cd_curse days = 180 }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+		else_if = {
+			# Fireball - 5% damage, -1 health, -15% morale. No cooldown, so gate on the mod.
+			limit = {
+				omni_knows_spell = { SPELL = fireball }
+				omni_caster_melodian_t2 = yes
+				omni_can_afford_spell = { BASE = 30 }
+				scope:omni_ai_dmg_enemy_unit = { NOT = { has_unit_modifier = omni_fireball_mod } }
+			}
+			omni_spell_mana_cost_effect = { BASE = 30 }
+			scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.05 }
+			if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -1 } }
+			omni_apply_enemy_debuff_effect = { MOD = omni_fireball_mod DAYS = 30 UNITTYPE = is_army }
+			omni_apply_enemy_debuff_effect = { MOD = omni_fireball_mod DAYS = 30 UNITTYPE = is_navy }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+		else_if = {
+			# Igniting Spark - cheap opener, -0.5 health, -5% morale. Gated on the mod.
+			limit = {
+				omni_knows_spell = { SPELL = igniting_spark }
+				omni_caster_melodian_t1 = yes
+				omni_can_afford_spell = { BASE = 10 }
+				scope:omni_ai_dmg_enemy_unit = { NOT = { has_unit_modifier = omni_igniting_spark_mod } }
+			}
+			omni_spell_mana_cost_effect = { BASE = 10 }
+			if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -0.5 } }
+			omni_apply_enemy_debuff_effect = { MOD = omni_igniting_spark_mod DAYS = 30 UNITTYPE = is_army }
+			omni_apply_enemy_debuff_effect = { MOD = omni_igniting_spark_mod DAYS = 30 UNITTYPE = is_navy }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
+	}
+	clear_saved_scope = omni_ai_dmg_enemy_unit
+	clear_saved_scope = omni_ai_dmg_enemy_cmdr
+}
+
 # MORALE cast: best affordable positive battle morale spell on the general's own
 # force. Used when danger is near but battle has not yet started or as a fallback
 # in combat if stronger support options are unavailable.
@@ -426,8 +656,13 @@ omni_ai_battlecast_effect = {
 			omni_ai_enemy_stack_colocated_trigger = yes
 		}
 		omni_ai_cast_offensive_debuff_effect = yes
-		# Debuff ladder may find nothing affordable / unlocked - in that case
-		# no success marker was set, so fall through to buffing ourselves instead.
+		# Nothing to debuff (already hexed / not unlocked) - hurt them instead.
+		if = {
+			limit = { NOT = { has_variable = omni_ai_battle_cast_succeeded } }
+			omni_ai_cast_battle_damage_effect = yes
+		}
+		# Debuff and damage ladders may find nothing affordable / unlocked - in that
+		# case no success marker was set, so fall through to buffing ourselves instead.
 		if = {
 			limit = { NOT = { has_variable = omni_ai_battle_cast_succeeded } }
 			omni_ai_cast_combat_buff_effect = yes
@@ -449,7 +684,7 @@ omni_ai_battlecast_effect = {
 		limit = { omni_ai_enemy_stack_adjacent_trigger = yes }
 		omni_ai_cast_mobility_buff_effect = yes
 	}
-	else_if = {
+	else = {
 		omni_ai_cast_support_buff_effect = yes
 	}
 	}

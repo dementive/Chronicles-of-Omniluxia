@@ -1,0 +1,77 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# Omniluxia - AI mana overflow
+#
+# Mana accrues monthly, but almost every AI cast path is situational (live battle,
+# siege, a sick ruler, a specific civic need) or yearly. Court mages, rulers who do
+# not command troops and folk practitioners therefore sat at their mana cap.
+#
+# This pass runs QUARTERLY from omni_perf.8 (AI-only, already scheduled - no new
+# pulse). It walks only the country's own characters, filters on cheap checks
+# (has_variable / eligible caster / mana >= 85% of cap) and then hands each idle
+# caster to the EXISTING need-gated cast ladders. Those ladders keep their own
+# modifier and cooldown gates, so a mage with nothing useful to do spends nothing,
+# and nothing here can cast more often than a player could.
+#
+# Order: field magic for commanders at war, then civic need, then folk utility,
+# then a country blessing. Mana is re-checked before each step so a caster only
+# spends the surplus above the threshold and keeps a reserve for battle.
+# ----------------------------------------------------------------------------------------------------------------------
+
+# COUNTRY scope.
+omni_ai_mana_overflow_effect = {
+	save_scope_as = caster_country
+	every_character = {
+		limit = {
+			is_alive = yes
+			has_variable = magic
+			var:magic >= 50
+			var:magic >= omni_ai_mana_overflow_threshold_value
+			omni_character_is_eligible_caster = yes
+		}
+		# 1) Commanders at war: support / mobility / combat ladder in the field.
+		if = {
+			limit = {
+				scope:caster_country = { war = yes }
+				OR = {
+					is_general = yes
+					is_admiral = yes
+				}
+				any_character_unit = {
+					OR = {
+						is_army = yes
+						is_navy = yes
+					}
+				}
+			}
+			omni_ai_battlecast_effect = yes
+		}
+		# 2) Civic spells (unrest, food, harbor, growth) - need-gated.
+		if = {
+			limit = { var:magic >= omni_ai_mana_overflow_threshold_value }
+			omni_ai_cast_civic_spell_effect = yes
+		}
+		# 3) Folk utility spells (Golden Hands, Serpentine Scrying, Channeled Stars).
+		if = {
+			limit = {
+				var:magic >= omni_ai_mana_overflow_threshold_value
+				has_variable = folk_unlocked_var
+			}
+			omni_ai_folk_cast_utility_effect = yes
+		}
+		# 4) Country blessing - each blessing is skipped while its modifier is active.
+		if = {
+			limit = {
+				var:magic >= omni_ai_mana_overflow_threshold_value
+				scope:caster_country = { war = no }
+			}
+			omni_ai_cast_peace_country_blessing_effect = yes
+		}
+		else_if = {
+			limit = {
+				var:magic >= omni_ai_mana_overflow_threshold_value
+				scope:caster_country = { war = yes }
+			}
+			omni_ai_cast_war_country_blessing_effect = yes
+		}
+	}
+}

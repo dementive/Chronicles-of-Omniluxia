@@ -4614,9 +4614,10 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         custom_tooltip = 100_mana_tt
         name = "me_zorgo_magic_focus.29.g"
     }
-    option = { # Death Hex - 75% chance to kill the enemy commander in live combat
+    option = { # Death Hex - 50% chance to kill the enemy commander in live combat (1-year cooldown)
         trigger = {
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:selected_mage = { NOT = { has_variable = omni_cd_death_hex } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 175 } }
             scope:selected_mage = {
                 has_trait = archmage_trait
@@ -4633,16 +4634,18 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         }
         scope:battle_enemy_target = {
             random_list = {
-                75 = {
+                50 = {
                     death = {
                         killer = scope:selected_mage
                         death_reason = death_magic
                     }
                 }
-                25 = {
+                50 = {
                 }
             }
         }
+        scope:selected_mage = { set_variable = { name = omni_cd_death_hex days = 365 } }
+        custom_tooltip = omni_spell_cooldown_365_tt
         custom_tooltip = tier_four_spell_tt
         custom_tooltip = omni_battle_death_hex_tt
         custom_tooltip = 175_mana_tt
@@ -6357,7 +6360,7 @@ me_zorgo_magic_focus.37 = { # AI: battle mages auto-cast from live combat
             is_general = yes
             is_admiral = yes
         }
-        NOT = { has_variable = is_the_revant }
+        # The Revant may cast; he is only shielded from being targeted.
 
         omni_character_is_eligible_caster = yes
         any_character_unit = {

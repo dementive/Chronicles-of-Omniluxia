@@ -1,0 +1,37 @@
+﻿# War of Contested Accession: helpers for settling a contest by arms.
+
+# Shahanat scope. True while the Shannah and the contesting realm face each other in a war
+# that one of them leads, which covers the Contested Accession casus belli in either direction.
+omni_cacc_direct_war_trigger = {
+    any_current_war = {
+        OR = {
+            is_war_leader = $SHANNAH$
+            is_war_leader = $CONTESTER$
+        }
+        OR = {
+            AND = {
+                any_war_attacker = { this = $SHANNAH$ }
+                any_war_defender = { this = $CONTESTER$ }
+            }
+            AND = {
+                any_war_defender = { this = $SHANNAH$ }
+                any_war_attacker = { this = $CONTESTER$ }
+            }
+        }
+    }
+}
+
+# Contesting-realm scope. True when the monthly tracker has recorded a direct war against this Shannah.
+omni_cacc_foe_of_trigger = {
+    trigger_if = { limit = { has_variable = omni_cacc_foe } var:omni_cacc_foe = $SHANNAH$ }
+    trigger_else = { always = no }
+}
+
+# Both scopes are saved before this is checked. The settled flag stops the winner's and
+# the loser's on_actions from applying the same result twice.
+omni_cacc_unsettled_trigger = {
+    scope:omni_cacc_contester = {
+        omni_hc_contests_shannah_trigger = { SHAHANAT = scope:omni_cacc_shannah }
+        NOT = { has_variable = omni_cacc_settled }
+    }
+}

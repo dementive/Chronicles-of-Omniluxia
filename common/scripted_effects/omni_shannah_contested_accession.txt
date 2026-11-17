@@ -1,0 +1,116 @@
+﻿# War of Contested Accession: a direct war between the Shannah and a realm that contested
+# the accession settles the contest when it ends in victory or defeat. Script cannot read a
+# war's goal, so the result follows the war between the two realms rather than the casus belli.
+# A white peace leaves the contest standing.
+
+# Shahanat scope, monthly. Records each contesting realm currently in a direct war with the
+# Shannah and forgets realms whose war has ended without a result.
+omni_cacc_track_effect = {
+    save_scope_as = omni_cacc_shannah
+    every_country = {
+        limit = { omni_cacc_foe_of_trigger = { SHANNAH = scope:omni_cacc_shannah } }
+        save_scope_as = omni_cacc_contester
+        if = {
+            limit = { NOT = { scope:omni_cacc_shannah = { omni_cacc_direct_war_trigger = { SHANNAH = scope:omni_cacc_shannah CONTESTER = scope:omni_cacc_contester } } } }
+            remove_variable = omni_cacc_foe
+        }
+    }
+    every_country = {
+        limit = {
+            war_with = scope:omni_cacc_shannah
+            omni_hc_contests_shannah_trigger = { SHAHANAT = scope:omni_cacc_shannah }
+        }
+        save_scope_as = omni_cacc_contester
+        if = {
+            limit = { scope:omni_cacc_shannah = { omni_cacc_direct_war_trigger = { SHANNAH = scope:omni_cacc_shannah CONTESTER = scope:omni_cacc_contester } } }
+            set_variable = { name = omni_cacc_foe value = scope:omni_cacc_shannah }
+        }
+    }
+}
+
+# Country scope, from on_winning_war (RESULT = 1) or on_losing_war (RESULT = 2).
+# Lists the opposing realms now, then checks one day later which wars have actually ended.
+omni_cacc_report_war_result_effect = {
+    save_scope_as = omni_cacc_reporter
+    if = {
+        limit = { omni_hc_shannah_trigger = yes }
+        every_country = {
+            limit = { omni_hc_contests_shannah_trigger = { SHAHANAT = scope:omni_cacc_reporter } }
+            save_scope_as = omni_cacc_candidate
+            if = {
+                limit = {
+                    OR = {
+                        omni_cacc_foe_of_trigger = { SHANNAH = scope:omni_cacc_reporter }
+                        scope:omni_cacc_reporter = { omni_cacc_direct_war_trigger = { SHANNAH = scope:omni_cacc_reporter CONTESTER = scope:omni_cacc_candidate } }
+                    }
+                }
+                scope:omni_cacc_reporter = {
+                    add_to_variable_list = { name = omni_cacc_check target = scope:omni_cacc_candidate }
+                    set_variable = { name = omni_cacc_pending days = 5 }
+                }
+            }
+        }
+    }
+    else_if = {
+        limit = {
+            trigger_if = { limit = { exists = var:omni_hc_see } var:omni_hc_see = { omni_hc_shannah_trigger = yes } }
+            trigger_else = { always = no }
+        }
+        var:omni_hc_see = { save_scope_as = omni_cacc_candidate }
+        if = {
+            limit = {
+                omni_hc_contests_shannah_trigger = { SHAHANAT = scope:omni_cacc_candidate }
+                OR = {
+                    omni_cacc_foe_of_trigger = { SHANNAH = scope:omni_cacc_candidate }
+                    scope:omni_cacc_candidate = { omni_cacc_direct_war_trigger = { SHANNAH = scope:omni_cacc_candidate CONTESTER = scope:omni_cacc_reporter } }
+                }
+            }
+            add_to_variable_list = { name = omni_cacc_check target = scope:omni_cacc_candidate }
+            set_variable = { name = omni_cacc_pending days = 5 }
+        }
+    }
+    if = {
+        limit = { has_variable = omni_cacc_pending }
+        set_variable = { name = omni_cacc_result value = $RESULT$ days = 5 }
+        trigger_event = { id = omni_cacc.1 days = 1 }
+    }
+}
+
+# scope:omni_cacc_shannah and scope:omni_cacc_contester are saved by omni_cacc.1.
+omni_cacc_shannah_victory_effect = {
+    if = {
+        limit = { omni_cacc_unsettled_trigger = yes }
+        scope:omni_cacc_contester = {
+            set_variable = { name = omni_cacc_settled days = 30 }
+            remove_variable = omni_cacc_foe
+            # The defeated realm enters the register; this ends the casus belli in both directions.
+            set_variable = { name = omni_hc_recognition value = 1 }
+            current_ruler = { save_scope_as = omni_cacc_contester_ruler }
+        }
+        scope:omni_cacc_shannah = {
+            omni_hc_change_authority_effect = { AMOUNT = 5 }
+            current_ruler = { save_scope_as = omni_cacc_shannah_ruler }
+            debug_log = "OMNI_AUTHORITY: Contested Accession won +5."
+        }
+        scope:omni_cacc_shannah = { trigger_event = { id = omni_cacc.10 } }
+        scope:omni_cacc_contester = { trigger_event = { id = omni_cacc.11 } }
+    }
+}
+
+omni_cacc_shannah_defeat_effect = {
+    if = {
+        limit = { omni_cacc_unsettled_trigger = yes }
+        scope:omni_cacc_contester = {
+            set_variable = { name = omni_cacc_settled days = 30 }
+            remove_variable = omni_cacc_foe
+            current_ruler = { save_scope_as = omni_cacc_contester_ruler }
+        }
+        scope:omni_cacc_shannah = {
+            omni_hc_change_authority_effect = { AMOUNT = -5 }
+            current_ruler = { save_scope_as = omni_cacc_shannah_ruler }
+            debug_log = "OMNI_AUTHORITY: Contested Accession lost -5."
+        }
+        scope:omni_cacc_shannah = { trigger_event = { id = omni_cacc.12 } }
+        scope:omni_cacc_contester = { trigger_event = { id = omni_cacc.13 } }
+    }
+}

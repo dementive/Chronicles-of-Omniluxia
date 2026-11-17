@@ -1,10 +1,12 @@
-﻿# One bounded court selection per AI country per yearly pulse. Characters pay
+﻿# Yearly AI folk pass over the country's important characters. Characters pay
 # the same 50 personal gold as a hut lesson; distance is deliberately ignored.
 # Only spells with implemented AI casting are offered.
 omni_ai_folk_yearly = {
     if = {
         limit = { is_ai = yes }
-        random_character = {
+        # Every qualifying ruler/general/admiral/governor, not one random pick per
+        # country. Bounded by the limit below (important offices only), yearly.
+        every_character = {
             limit = {
                 employer = root
                 is_alive = yes
@@ -54,33 +56,44 @@ omni_ai_folk_yearly = {
                     1 = { trigger = { OR = { is_general = yes is_admiral = yes } NOT = { omni_knows_spell = { SPELL = explosion } } } add_gold = -50 omni_folk_initiate_practitioner = yes omni_learn_spell = { SPELL = explosion } }
                 }
             }
-            if = {
-                limit = { omni_character_is_eligible_caster = yes omni_can_afford_spell = { BASE = 15 } }
-                random_list = {
-                    1 = {
-                        trigger = { omni_knows_spell = { SPELL = golden_hands } omni_can_afford_spell = { BASE = 50 } }
-                        omni_spell_mana_cost_effect = { BASE = 50 }
-                        employer = { random = { chance = 10 add_1_free_province_investments = yes } }
-                    }
-                    1 = {
-                        trigger = { omni_knows_spell = { SPELL = serpentine_scrying } omni_can_afford_spell = { BASE = 15 } }
-                        omni_spell_mana_cost_effect = { BASE = 15 }
-                        employer = { random = { chance = 10 add_military_experience = 8 } }
-                    }
-                    1 = {
-                        trigger = { omni_knows_spell = { SPELL = channeled_stars } omni_can_afford_spell = { BASE = 50 } }
-                        omni_spell_mana_cost_effect = { BASE = 50 }
-                        random = {
-                            chance = 10
-                            random_list = {
-                                1 = { add_martial = 1 }
-                                1 = { add_charisma = 1 }
-                                1 = { add_finesse = 1 }
-                                1 = { add_zeal = 1 }
-                            }
-                        }
+            omni_ai_folk_cast_utility_effect = yes
+        }
+    }
+}
+
+# CHARACTER scope. One out-of-combat folk utility cast, player-equivalent: same
+# costs, same 10% payoff rolls and the same per-spell cooldowns as the options in
+# events/zorgo_magic_events.txt (me_zorgo_magic_focus.7). The cooldowns are what
+# stop the quarterly mana-overflow pass from out-casting a player.
+omni_ai_folk_cast_utility_effect = {
+    if = {
+        limit = { omni_character_is_eligible_caster = yes omni_can_afford_spell = { BASE = 15 } }
+        random_list = {
+            1 = {
+                trigger = { omni_knows_spell = { SPELL = golden_hands } NOT = { has_variable = omni_cd_golden_hands } omni_can_afford_spell = { BASE = 50 } }
+                omni_spell_mana_cost_effect = { BASE = 50 }
+                employer = { random = { chance = 10 add_1_free_province_investments = yes } }
+                set_variable = { name = omni_cd_golden_hands days = 90 }
+            }
+            1 = {
+                trigger = { omni_knows_spell = { SPELL = serpentine_scrying } NOT = { has_variable = omni_cd_serpentine_scrying } omni_can_afford_spell = { BASE = 15 } }
+                omni_spell_mana_cost_effect = { BASE = 15 }
+                employer = { random = { chance = 10 add_military_experience = 8 } }
+                set_variable = { name = omni_cd_serpentine_scrying days = 30 }
+            }
+            1 = {
+                trigger = { omni_knows_spell = { SPELL = channeled_stars } NOT = { has_variable = omni_cd_channeled_stars } omni_can_afford_spell = { BASE = 50 } }
+                omni_spell_mana_cost_effect = { BASE = 50 }
+                random = {
+                    chance = 10
+                    random_list = {
+                        1 = { add_martial = 1 }
+                        1 = { add_charisma = 1 }
+                        1 = { add_finesse = 1 }
+                        1 = { add_zeal = 1 }
                     }
                 }
+                set_variable = { name = omni_cd_channeled_stars days = 90 }
             }
         }
     }

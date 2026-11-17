@@ -1,0 +1,82 @@
+﻿namespace = omni_cacc
+
+# Hidden. Root reported a won (1) or lost (2) war yesterday; settle each contest whose war has ended.
+omni_cacc.1 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = omni_cacc_pending }
+    immediate = {
+        save_scope_as = omni_cacc_reporter
+        every_in_list = {
+            variable = omni_cacc_check
+            save_scope_as = omni_cacc_other
+            if = {
+                limit = { NOT = { war_with = scope:omni_cacc_reporter } }
+                if = {
+                    limit = { scope:omni_cacc_reporter = { omni_hc_shannah_trigger = yes } }
+                    scope:omni_cacc_reporter = { save_scope_as = omni_cacc_shannah }
+                    scope:omni_cacc_other = { save_scope_as = omni_cacc_contester }
+                    if = {
+                        limit = { scope:omni_cacc_reporter = { var:omni_cacc_result = 1 } }
+                        omni_cacc_shannah_victory_effect = yes
+                    }
+                    else = { omni_cacc_shannah_defeat_effect = yes }
+                }
+                else_if = {
+                    limit = { scope:omni_cacc_other = { omni_hc_shannah_trigger = yes } }
+                    scope:omni_cacc_other = { save_scope_as = omni_cacc_shannah }
+                    scope:omni_cacc_reporter = { save_scope_as = omni_cacc_contester }
+                    if = {
+                        limit = { scope:omni_cacc_reporter = { var:omni_cacc_result = 2 } }
+                        omni_cacc_shannah_victory_effect = yes
+                    }
+                    else = { omni_cacc_shannah_defeat_effect = yes }
+                }
+            }
+        }
+        clear_variable_list = omni_cacc_check
+        remove_variable = omni_cacc_pending
+        remove_variable = omni_cacc_result
+    }
+}
+
+# Announcements only: gameplay is applied by the resolution effects.
+omni_cacc.10 = {
+    type = country_event
+    title = omni_cacc.10.t
+    desc = omni_cacc.10.desc
+    picture = omni_shannah_recognition
+    left_portrait = scope:omni_cacc_shannah_ruler
+    right_portrait = scope:omni_cacc_contester_ruler
+    option = { name = omni_cacc.10.a custom_tooltip = omni_cacc.10.effects_tt }
+}
+
+omni_cacc.11 = {
+    type = country_event
+    title = omni_cacc.11.t
+    desc = omni_cacc.11.desc
+    picture = omni_shannah_recognition
+    left_portrait = scope:omni_cacc_contester_ruler
+    right_portrait = scope:omni_cacc_shannah_ruler
+    option = { name = omni_cacc.11.a custom_tooltip = omni_cacc.11.effects_tt }
+}
+
+omni_cacc.12 = {
+    type = country_event
+    title = omni_cacc.12.t
+    desc = omni_cacc.12.desc
+    picture = omni_shannah_judgment
+    left_portrait = scope:omni_cacc_shannah_ruler
+    right_portrait = scope:omni_cacc_contester_ruler
+    option = { name = omni_cacc.12.a custom_tooltip = omni_cacc.12.effects_tt }
+}
+
+omni_cacc.13 = {
+    type = country_event
+    title = omni_cacc.13.t
+    desc = omni_cacc.13.desc
+    picture = omni_shannah_judgment
+    left_portrait = scope:omni_cacc_contester_ruler
+    right_portrait = scope:omni_cacc_shannah_ruler
+    option = { name = omni_cacc.13.a custom_tooltip = omni_cacc.13.effects_tt }
+}
