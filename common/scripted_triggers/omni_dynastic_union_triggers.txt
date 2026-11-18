@@ -4,18 +4,20 @@
 	is_subject = no
 	exists = current_ruler
 	NOT = { has_variable = dynastic_marriage_proposal_ongoing }
+	NOT = { has_variable = dynastic_marriage_refused_cooldown }
 	omni_ruler_available_for_court_action_trigger = yes
 	current_ruler = {
 		is_adult = yes
 		is_married = no
 		prisoner = no
 		is_mercenary = no
+		NOT = { has_variable = is_the_revant }
 	}
 	any_country = {
 		is_monarchy = yes
 		is_subject = no
 		has_land = yes
-		in_diplomatic_range = yes
+		in_diplomatic_range = root
 		NOR = {
 			this = root
 			tag = REB
@@ -23,11 +25,8 @@
 		}
 		NOT = { has_variable = dynastic_marriage_proposal_ongoing }
 		NOT = { is_subject_of = root }
-		NOT = {
-			any_subject = {
-				is_subject_type = dynastic_union_subject
-			}
-		}
+		# A crown that already has subjects of its own cannot become a junior crown.
+		NOT = { any_subject = { always = yes } }
 		num_of_cities <= root.num_of_cities
 		rank <= root.rank
 		opinion = {
@@ -40,7 +39,83 @@
 			is_married = no
 			prisoner = no
 			is_mercenary = no
+			NOT = { has_variable = is_the_revant }
 			NOT = { is_same_gender = root.current_ruler }
+			NOT = { is_close_relative = root.current_ruler }
 		}
+	}
+}
+
+# Saved-scope check that a dynastic marriage proposal can still go ahead.
+# Uses only the scopes saved by propose_dynastic_marriage, so it can be checked
+# from either court (.8 on the senior, .1 and its options on the junior).
+# Event options do not re-check the event trigger, so .1.a gates on this again.
+omni_dynastic_union_proposal_valid_trigger = {
+	exists = scope:dynastic_senior_country
+	exists = scope:dynastic_junior_country
+	exists = scope:dynastic_senior_ruler
+	exists = scope:dynastic_junior_ruler
+	scope:dynastic_senior_country = {
+		has_land = yes
+		is_monarchy = yes
+		is_subject = no
+		war = no
+		has_civil_war = no
+		exists = current_ruler
+		current_ruler = scope:dynastic_senior_ruler
+	}
+	scope:dynastic_junior_country = {
+		has_land = yes
+		is_monarchy = yes
+		is_subject = no
+		war = no
+		has_civil_war = no
+		NOT = { any_subject = { always = yes } }
+	}
+	scope:dynastic_senior_ruler = {
+		is_alive = yes
+		is_adult = yes
+		is_married = no
+		prisoner = no
+		NOT = { has_variable = is_the_revant }
+		NOT = { is_same_gender = scope:dynastic_junior_ruler }
+		NOT = { is_close_relative = scope:dynastic_junior_ruler }
+	}
+	scope:dynastic_junior_ruler = {
+		is_alive = yes
+		is_ruler = yes
+		is_adult = yes
+		is_married = no
+		prisoner = no
+		employer = scope:dynastic_junior_country
+		NOT = { has_variable = is_the_revant }
+	}
+}
+
+# Country scope (the junior crown). The conditions under which a junior crown may
+# go to war for its independence. Independence wars must be declared WHILE the
+# country is still a subject - independence_wargoal requires is_subject = yes.
+omni_dynastic_union_can_fight_overlord_trigger = {
+	is_subject_type = dynastic_union_subject
+	war = no
+	has_civil_war = no
+	overlord = {
+		war = no
+		has_civil_war = no
+	}
+	NOT = { has_truce_with = overlord }
+}
+
+# Country scope (the senior crown), with scope:dynastic_union_subject set.
+# Full integration is only possible in peace, with a settled senior court.
+omni_dynastic_union_can_integrate_trigger = {
+	war = no
+	has_civil_war = no
+	stability >= 45
+	scope:dynastic_union_subject = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		war = no
+		has_civil_war = no
 	}
 }

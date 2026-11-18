@@ -1,0 +1,900 @@
+﻿# Stellarix Voyage to World's End: scripted effects. All run in the voyage country's scope (ROOT).
+
+# ---------------------------------------------------------------- meters
+wv_spend_stores = {
+	change_variable = { name = wv_stores subtract = $AMOUNT$ }
+	while = {
+		limit = { var:wv_stores < 0 }
+		change_variable = { name = wv_stores add = 1 }
+		if = {
+			limit = { var:wv_shortages < 1 }
+			change_variable = { name = wv_company subtract = 8 }
+		}
+		else = {
+			change_variable = { name = wv_company subtract = 10 }
+		}
+		change_variable = { name = wv_shortages add = 1 }
+	}
+	if = { limit = { var:wv_company < 0 } set_variable = { name = wv_company value = 0 } }
+}
+
+wv_passage = {
+	wv_spend_stores = { AMOUNT = $AMOUNT$ }
+	if = {
+		limit = { var:wv_company < 50 }
+		wv_spend_stores = { AMOUNT = 1 }
+	}
+}
+
+wv_add_stores = {
+	change_variable = { name = wv_stores add = $AMOUNT$ }
+	if = { limit = { var:wv_stores > 18 } set_variable = { name = wv_stores value = 18 } }
+}
+
+wv_buy_stores = {
+	change_variable = { name = wv_purse subtract = $COST$ }
+	wv_add_stores = { AMOUNT = $AMOUNT$ }
+}
+
+wv_add_company = {
+	change_variable = { name = wv_company add = $AMOUNT$ }
+	if = { limit = { var:wv_company > 100 } set_variable = { name = wv_company value = 100 } }
+}
+
+wv_lose_company = {
+	change_variable = { name = wv_company subtract = $AMOUNT$ }
+	if = { limit = { var:wv_company < 0 } set_variable = { name = wv_company value = 0 } }
+}
+
+wv_add_hull = {
+	change_variable = { name = wv_hull add = $AMOUNT$ }
+	if = { limit = { var:wv_hull > 100 } set_variable = { name = wv_hull value = 100 } }
+}
+
+# Laden ships (full chest) take half again as much. The pilot's soundings take 15 off the first big blow.
+wv_hull_damage = {
+	set_variable = { name = wv_tmp value = $AMOUNT$ }
+	if = {
+		limit = { var:wv_chest = 2 }
+		change_variable = { name = wv_tmp multiply = 1.5 }
+	}
+	if = {
+		limit = {
+			has_variable = wv_envoy_pilot
+			NOT = { has_variable = wv_soundings_used }
+			var:wv_tmp >= 12
+		}
+		change_variable = { name = wv_tmp subtract = 15 }
+		set_variable = wv_soundings_used
+		if = { limit = { var:wv_tmp < 0 } set_variable = { name = wv_tmp value = 0 } }
+	}
+	change_variable = { name = wv_hull subtract = var:wv_tmp }
+	round_variable = { name = wv_hull nearest = 1 }
+	if = { limit = { var:wv_hull < 0 } set_variable = { name = wv_hull value = 0 } }
+}
+
+wv_pay = {
+	change_variable = { name = wv_purse subtract = $AMOUNT$ }
+	if = { limit = { var:wv_purse < 0 } set_variable = { name = wv_purse value = 0 } }
+}
+
+wv_earn = {
+	change_variable = { name = wv_purse add = $AMOUNT$ }
+}
+
+# Paid district and audience options. Charias halves them; a Gellazani charm (one use) pays for one of 40 or more.
+wv_pay_district = {
+	if = {
+		limit = { has_variable = wv_charm }
+		remove_variable = wv_charm
+	}
+	else_if = {
+		limit = { has_variable = wv_c_appr }
+		wv_pay = { AMOUNT = $HALF$ }
+	}
+	else = {
+		wv_pay = { AMOUNT = $AMOUNT$ }
+	}
+}
+wv_pay_district_small = {
+	if = {
+		limit = { has_variable = wv_c_appr }
+		wv_pay = { AMOUNT = $HALF$ }
+	}
+	else = {
+		wv_pay = { AMOUNT = $AMOUNT$ }
+	}
+}
+
+# ---------------------------------------------------------------- ports
+wv_arrive_grand_port = {
+	set_variable = { name = wv_districts_here value = 0 }
+	if = { limit = { has_variable = wv_c_vet } change_variable = { name = wv_ports_vet add = 1 } }
+	if = { limit = { has_variable = wv_c_diver } change_variable = { name = wv_ports_diver add = 1 } }
+	if = { limit = { has_variable = wv_c_pupil } change_variable = { name = wv_ports_pupil add = 1 } }
+	if = { limit = { has_variable = wv_c_appr } change_variable = { name = wv_ports_appr add = 1 } }
+	if = { limit = { has_variable = wv_c_gamb } change_variable = { name = wv_ports_gamb add = 1 } }
+	if = { limit = { has_variable = wv_c_mage } change_variable = { name = wv_ports_mage add = 1 } }
+	if = { limit = { has_variable = wv_c_hunter } change_variable = { name = wv_ports_hunter add = 1 } }
+	if = { limit = { has_variable = wv_c_prize } change_variable = { name = wv_ports_prize add = 1 } }
+	wv_check_sworn = yes
+}
+
+wv_district_visit = {
+	if = {
+		limit = { var:wv_districts_here >= 2 }
+		wv_spend_stores = { AMOUNT = 1 }
+	}
+	change_variable = { name = wv_districts_here add = 1 }
+	change_variable = { name = wv_wonders add = 1 }
+}
+
+wv_check_sworn = {
+	if = {
+		limit = {
+			has_variable = wv_c_vet
+			has_variable = wv_moment_vet
+			NOT = { has_variable = wv_sworn_vet }
+			var:wv_ports_vet >= 2
+		}
+		set_variable = wv_sworn_vet
+	}
+	if = {
+		limit = {
+			has_variable = wv_c_diver
+			has_variable = wv_moment_diver
+			NOT = { has_variable = wv_sworn_diver }
+			var:wv_ports_diver >= 2
+		}
+		set_variable = wv_sworn_diver
+	}
+	if = {
+		limit = {
+			has_variable = wv_c_pupil
+			has_variable = wv_moment_pupil
+			NOT = { has_variable = wv_sworn_pupil }
+			var:wv_ports_pupil >= 2
+		}
+		set_variable = wv_sworn_pupil
+	}
+	if = {
+		limit = {
+			has_variable = wv_c_appr
+			has_variable = wv_moment_appr
+			NOT = { has_variable = wv_sworn_appr }
+			var:wv_ports_appr >= 2
+		}
+		set_variable = wv_sworn_appr
+	}
+	if = {
+		limit = {
+			has_variable = wv_c_gamb
+			has_variable = wv_moment_gamb
+			NOT = { has_variable = wv_sworn_gamb }
+			var:wv_ports_gamb >= 2
+		}
+		set_variable = wv_sworn_gamb
+	}
+	if = {
+		limit = {
+			has_variable = wv_c_mage
+			has_variable = wv_moment_mage
+			NOT = { has_variable = wv_sworn_mage }
+			var:wv_ports_mage >= 2
+		}
+		set_variable = wv_sworn_mage
+	}
+	if = {
+		limit = {
+			has_variable = wv_c_hunter
+			has_variable = wv_moment_hunter
+			NOT = { has_variable = wv_sworn_hunter }
+			var:wv_ports_hunter >= 2
+		}
+		set_variable = wv_sworn_hunter
+	}
+	if = {
+		limit = {
+			has_variable = wv_c_prize
+			has_variable = wv_moment_prize
+			NOT = { has_variable = wv_sworn_prize }
+			var:wv_ports_prize >= 2
+		}
+		set_variable = wv_sworn_prize
+	}
+}
+
+# Called before every leg. Sends the fleet to $EVENT$, or to the wreck and the abandonment endings.
+wv_next = {
+	if = {
+		limit = { has_variable = wv_c_diver var:wv_hull < 40 NOT = { has_variable = wv_diver_paid } }
+		if = {
+			limit = { var:wv_purse >= 20 }
+			wv_pay = { AMOUNT = 20 }
+			set_variable = wv_diver_paid
+		}
+		else = {
+			wv_lose_diver = yes
+		}
+	}
+	if = {
+		limit = { var:wv_company <= 0 has_variable = wv_c_vet NOT = { has_variable = wv_vet_save_used } }
+		set_variable = { name = wv_company value = 10 }
+		set_variable = wv_vet_save_used
+	}
+	if = {
+		limit = { var:wv_hull <= 0 }
+		trigger_event = { id = wv.840 days = 3 }
+	}
+	else_if = {
+		limit = { var:wv_company <= 0 }
+		trigger_event = { id = wv.841 days = 3 }
+	}
+	else = {
+		trigger_event = { id = $EVENT$ days = { $MIN$ $MAX$ } }
+	}
+}
+
+# ---------------------------------------------------------------- rolls
+# A d20 in steps of five: wv_roll is one of 5, 10 ... 100.
+wv_roll_d20 = {
+	random_list = {
+		1 = { set_variable = { name = wv_roll value = 5 } }
+		1 = { set_variable = { name = wv_roll value = 10 } }
+		1 = { set_variable = { name = wv_roll value = 15 } }
+		1 = { set_variable = { name = wv_roll value = 20 } }
+		1 = { set_variable = { name = wv_roll value = 25 } }
+		1 = { set_variable = { name = wv_roll value = 30 } }
+		1 = { set_variable = { name = wv_roll value = 35 } }
+		1 = { set_variable = { name = wv_roll value = 40 } }
+		1 = { set_variable = { name = wv_roll value = 45 } }
+		1 = { set_variable = { name = wv_roll value = 50 } }
+		1 = { set_variable = { name = wv_roll value = 55 } }
+		1 = { set_variable = { name = wv_roll value = 60 } }
+		1 = { set_variable = { name = wv_roll value = 65 } }
+		1 = { set_variable = { name = wv_roll value = 70 } }
+		1 = { set_variable = { name = wv_roll value = 75 } }
+		1 = { set_variable = { name = wv_roll value = 80 } }
+		1 = { set_variable = { name = wv_roll value = 85 } }
+		1 = { set_variable = { name = wv_roll value = 90 } }
+		1 = { set_variable = { name = wv_roll value = 95 } }
+		1 = { set_variable = { name = wv_roll value = 100 } }
+	}
+}
+
+# Sets wv_roll_hit if wv_roll is at or under the variable $TARGET$ (the engine cannot compare two variables directly).
+wv_roll_against = {
+	set_variable = { name = wv_tmp value = var:wv_roll }
+	change_variable = { name = wv_tmp subtract = var:$TARGET$ }
+	if = {
+		limit = { var:wv_tmp <= 0 }
+		set_variable = wv_roll_hit
+	}
+	else = {
+		remove_variable = wv_roll_hit
+	}
+}
+
+# Chance, in percent, that the ship fails at the last passage.
+wv_compute_risk = {
+	set_variable = { name = wv_risk value = 100 }
+	change_variable = { name = wv_risk subtract = var:wv_hull }
+	if = { limit = { var:wv_risk < 10 } set_variable = { name = wv_risk value = 10 } }
+	if = { limit = { var:wv_risk > 65 } set_variable = { name = wv_risk value = 65 } }
+	set_variable = { name = wv_tmp value = var:wv_bulky }
+	change_variable = { name = wv_tmp multiply = 5 }
+	change_variable = { name = wv_risk add = var:wv_tmp }
+	if = { limit = { var:wv_risk > 80 } set_variable = { name = wv_risk value = 80 } }
+	if = {
+		limit = { has_variable = wv_towline }
+		change_variable = { name = wv_risk multiply = 0.6 }
+	}
+	if = {
+		limit = { NOT = { var:wv_chest = 2 } }
+		change_variable = { name = wv_risk multiply = 0.25 }
+	}
+	round_variable = { name = wv_risk nearest = 1 }
+}
+
+# Chance, in percent, that the boats save the reduced chest.
+wv_compute_rescue = {
+	set_variable = { name = wv_rescue value = var:wv_company }
+	change_variable = { name = wv_rescue multiply = 0.55 }
+	if = { limit = { has_variable = wv_c_vet } change_variable = { name = wv_rescue add = 20 } }
+	if = { limit = { var:wv_rescue > 95 } set_variable = { name = wv_rescue value = 95 } }
+	round_variable = { name = wv_rescue nearest = 1 }
+}
+
+# ---------------------------------------------------------------- the hold
+wv_add_bulky = {
+	change_variable = { name = wv_slots add = 1 }
+	change_variable = { name = wv_bulky add = 1 }
+	set_variable = wv_souv_$KEY$
+}
+wv_jettison_bulky = {
+	change_variable = { name = wv_slots subtract = 1 }
+	change_variable = { name = wv_bulky subtract = 1 }
+	remove_variable = wv_souv_$KEY$
+	set_variable = wv_lost_$KEY$
+}
+
+# ---------------------------------------------------------------- scopes for portraits and text
+wv_save_scopes = {
+	if = { limit = { has_variable = wv_envoy_char } var:wv_envoy_char = { save_scope_as = wv_envoy } }
+	if = { limit = { has_variable = wv_char_vet } var:wv_char_vet = { save_scope_as = wv_vet } }
+	if = { limit = { has_variable = wv_char_diver } var:wv_char_diver = { save_scope_as = wv_diver } }
+	if = { limit = { has_variable = wv_char_pupil } var:wv_char_pupil = { save_scope_as = wv_pupil } }
+	if = { limit = { has_variable = wv_char_appr } var:wv_char_appr = { save_scope_as = wv_appr } }
+	if = { limit = { has_variable = wv_char_gamb } var:wv_char_gamb = { save_scope_as = wv_gamb } }
+	if = { limit = { has_variable = wv_char_mage } var:wv_char_mage = { save_scope_as = wv_mage } }
+	if = { limit = { has_variable = wv_char_hunter } var:wv_char_hunter = { save_scope_as = wv_hunter } }
+	if = { limit = { has_variable = wv_char_prize } var:wv_char_prize = { save_scope_as = wv_prize } }
+}
+
+# ---------------------------------------------------------------- companions
+wv_hire_vet = {
+	create_character = {
+		first_name = "Actmund"
+		age = 48
+		female = no
+		culture = north_werhen
+		religion = helluvian
+		add_trait = stubborn
+		add_trait = plain_speaking
+		save_scope_as = wv_new_hire
+	}
+	set_variable = { name = wv_char_vet value = scope:wv_new_hire }
+	set_variable = wv_c_vet
+	set_variable = { name = wv_ports_vet value = 0 }
+	change_variable = { name = wv_berths add = 1 }
+	scope:wv_new_hire = { save_scope_as = wv_vet }
+}
+wv_lose_vet = {
+	if = {
+		limit = { has_variable = wv_c_vet }
+		remove_variable = wv_c_vet
+		set_variable = wv_left_vet
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_sworn_vet }
+			wv_lose_company = { AMOUNT = 10 }
+		}
+		if = {
+			limit = { has_variable = wv_char_vet }
+			var:wv_char_vet = { death = { death_reason = death_obscurity } }
+		}
+	}
+}
+wv_kill_vet = {
+	if = {
+		limit = { has_variable = wv_c_vet }
+		remove_variable = wv_c_vet
+		set_variable = wv_dead_vet
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_char_vet }
+			var:wv_char_vet = { death = { death_reason = death_battle } }
+		}
+	}
+}
+wv_hire_diver = {
+	create_character = {
+		first_name = "Ilurrushe"
+		age = 29
+		female = no
+		culture = mazonian
+		religion = helluvian
+		add_trait = easygoing
+		save_scope_as = wv_new_hire
+	}
+	set_variable = { name = wv_char_diver value = scope:wv_new_hire }
+	set_variable = wv_c_diver
+	set_variable = { name = wv_ports_diver value = 0 }
+	change_variable = { name = wv_berths add = 1 }
+	scope:wv_new_hire = { save_scope_as = wv_diver }
+}
+wv_lose_diver = {
+	if = {
+		limit = { has_variable = wv_c_diver }
+		remove_variable = wv_c_diver
+		set_variable = wv_left_diver
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_sworn_diver }
+			wv_lose_company = { AMOUNT = 10 }
+		}
+		if = {
+			limit = { has_variable = wv_char_diver }
+			var:wv_char_diver = { death = { death_reason = death_obscurity } }
+		}
+	}
+}
+wv_hire_pupil = {
+	create_character = {
+		first_name = "Anpu"
+		age = 19
+		female = yes
+		culture = eagelian
+		religion = the_first_emperor
+		add_trait = sarcastic
+		add_trait = mage_trait
+		save_scope_as = wv_new_hire
+	}
+	set_variable = { name = wv_char_pupil value = scope:wv_new_hire }
+	set_variable = wv_c_pupil
+	set_variable = { name = wv_ports_pupil value = 0 }
+	change_variable = { name = wv_berths add = 1 }
+	scope:wv_new_hire = { save_scope_as = wv_pupil }
+}
+wv_lose_pupil = {
+	if = {
+		limit = { has_variable = wv_c_pupil }
+		remove_variable = wv_c_pupil
+		set_variable = wv_left_pupil
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_sworn_pupil }
+			wv_lose_company = { AMOUNT = 10 }
+		}
+		if = {
+			limit = { has_variable = wv_char_pupil }
+			var:wv_char_pupil = { death = { death_reason = death_obscurity } }
+		}
+	}
+}
+wv_hire_appr = {
+	create_character = {
+		first_name = "Charias"
+		age = 24
+		female = no
+		culture = gellazanian
+		religion = the_first_emperor
+		add_trait = charming
+		add_trait = two_faced
+		save_scope_as = wv_new_hire
+	}
+	set_variable = { name = wv_char_appr value = scope:wv_new_hire }
+	set_variable = wv_c_appr
+	set_variable = { name = wv_ports_appr value = 0 }
+	change_variable = { name = wv_berths add = 1 }
+	scope:wv_new_hire = { save_scope_as = wv_appr }
+}
+wv_lose_appr = {
+	if = {
+		limit = { has_variable = wv_c_appr }
+		remove_variable = wv_c_appr
+		set_variable = wv_left_appr
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_sworn_appr }
+			wv_lose_company = { AMOUNT = 10 }
+		}
+		if = {
+			limit = { has_variable = wv_char_appr }
+			var:wv_char_appr = { death = { death_reason = death_obscurity } }
+		}
+	}
+}
+wv_hire_gamb = {
+	create_character = {
+		first_name = "Ampsicora"
+		age = 37
+		female = no
+		culture = turisi
+		religion = orcish_colony_faith
+		add_trait = reckless
+		save_scope_as = wv_new_hire
+	}
+	set_variable = { name = wv_char_gamb value = scope:wv_new_hire }
+	set_variable = wv_c_gamb
+	set_variable = { name = wv_ports_gamb value = 0 }
+	change_variable = { name = wv_berths add = 1 }
+	scope:wv_new_hire = { save_scope_as = wv_gamb }
+}
+wv_lose_gamb = {
+	if = {
+		limit = { has_variable = wv_c_gamb }
+		remove_variable = wv_c_gamb
+		set_variable = wv_left_gamb
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_sworn_gamb }
+			wv_lose_company = { AMOUNT = 10 }
+		}
+		if = {
+			limit = { has_variable = wv_char_gamb }
+			var:wv_char_gamb = { death = { death_reason = death_obscurity } }
+		}
+	}
+}
+wv_hire_mage = {
+	create_character = {
+		first_name = "Brenwen"
+		age = 31
+		female = yes
+		culture = lelaichandi
+		religion = victory_pantheon
+		add_trait = impatient
+		add_trait = mage_trait
+		save_scope_as = wv_new_hire
+	}
+	set_variable = { name = wv_char_mage value = scope:wv_new_hire }
+	set_variable = wv_c_mage
+	set_variable = { name = wv_ports_mage value = 0 }
+	change_variable = { name = wv_berths add = 1 }
+	scope:wv_new_hire = { save_scope_as = wv_mage }
+}
+wv_lose_mage = {
+	if = {
+		limit = { has_variable = wv_c_mage }
+		remove_variable = wv_c_mage
+		set_variable = wv_left_mage
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_sworn_mage }
+			wv_lose_company = { AMOUNT = 10 }
+		}
+		if = {
+			limit = { has_variable = wv_char_mage }
+			var:wv_char_mage = { death = { death_reason = death_obscurity } }
+		}
+	}
+}
+wv_hire_hunter = {
+	create_character = {
+		first_name = "Ancasta"
+		age = 26
+		female = yes
+		culture = chruchi
+		religion = the_first_emperor
+		add_trait = obsessive
+		save_scope_as = wv_new_hire
+	}
+	set_variable = { name = wv_char_hunter value = scope:wv_new_hire }
+	set_variable = wv_c_hunter
+	set_variable = { name = wv_ports_hunter value = 0 }
+	change_variable = { name = wv_berths add = 1 }
+	scope:wv_new_hire = { save_scope_as = wv_hunter }
+}
+wv_lose_hunter = {
+	if = {
+		limit = { has_variable = wv_c_hunter }
+		remove_variable = wv_c_hunter
+		set_variable = wv_left_hunter
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_sworn_hunter }
+			wv_lose_company = { AMOUNT = 10 }
+		}
+		if = {
+			limit = { has_variable = wv_char_hunter }
+			var:wv_char_hunter = { death = { death_reason = death_obscurity } }
+		}
+	}
+}
+wv_hire_prize = {
+	create_character = {
+		first_name = "Aeronwen"
+		age = 42
+		female = yes
+		culture = lindute
+		religion = helluvian
+		add_trait = proud
+		save_scope_as = wv_new_hire
+	}
+	set_variable = { name = wv_char_prize value = scope:wv_new_hire }
+	set_variable = wv_c_prize
+	set_variable = { name = wv_ports_prize value = 0 }
+	change_variable = { name = wv_berths add = 1 }
+	scope:wv_new_hire = { save_scope_as = wv_prize }
+}
+wv_lose_prize = {
+	if = {
+		limit = { has_variable = wv_c_prize }
+		remove_variable = wv_c_prize
+		set_variable = wv_left_prize
+		change_variable = { name = wv_berths subtract = 1 }
+		if = {
+			limit = { has_variable = wv_sworn_prize }
+			wv_lose_company = { AMOUNT = 10 }
+		}
+		if = {
+			limit = { has_variable = wv_char_prize }
+			var:wv_char_prize = { death = { death_reason = death_obscurity } }
+		}
+	}
+}
+
+# Clears every voyage variable except the permanent ones.
+wv_cleanup = {
+	remove_variable = wv_at_gv
+	remove_variable = wv_d131
+	remove_variable = wv_d132
+	remove_variable = wv_d133
+	remove_variable = wv_oratory
+	remove_variable = wv_v_gv_1
+	remove_variable = wv_v_gv_2
+	remove_variable = wv_v_gv_3
+	remove_variable = wv_souv_tales
+	remove_variable = wv_brandy_noted
+	remove_variable = wv_freight_noted
+	remove_variable = wv_roll_hit
+	remove_variable = wv_ret_111
+	remove_variable = wv_ret_141
+	remove_variable = wv_ret_221
+	remove_variable = wv_ret_313
+	remove_variable = wv_ret_330
+	remove_variable = wv_ret_402
+	remove_variable = wv_ret_500
+	remove_variable = wv_advance_repaid
+	remove_variable = wv_appr_fed
+	remove_variable = wv_astrolabe
+	remove_variable = wv_at_db
+	remove_variable = wv_at_dn
+	remove_variable = wv_at_gz
+	remove_variable = wv_at_kx
+	remove_variable = wv_at_lp
+	remove_variable = wv_at_mz
+	remove_variable = wv_at_pn
+	remove_variable = wv_at_tk
+	remove_variable = wv_at_zj
+	remove_variable = wv_at_zw
+	remove_variable = wv_balth_casks
+	remove_variable = wv_balth_watch
+	remove_variable = wv_bout
+	remove_variable = wv_cape_done
+	remove_variable = wv_charm_bought
+	remove_variable = wv_claim_honored
+	remove_variable = wv_crossing_done
+	remove_variable = wv_d101
+	remove_variable = wv_d103
+	remove_variable = wv_d111
+	remove_variable = wv_d112
+	remove_variable = wv_d141
+	remove_variable = wv_d142
+	remove_variable = wv_d143
+	remove_variable = wv_d222
+	remove_variable = wv_d223
+	remove_variable = wv_d232
+	remove_variable = wv_d233
+	remove_variable = wv_d311
+	remove_variable = wv_d312
+	remove_variable = wv_d401
+	remove_variable = wv_d523
+	remove_variable = wv_d531
+	remove_variable = wv_d533
+	remove_variable = wv_debt_book_left
+	remove_variable = wv_door_lindute
+	remove_variable = wv_door_szing
+	remove_variable = wv_equal_terms
+	remove_variable = wv_freight_done
+	remove_variable = wv_freight_paid_here
+	remove_variable = wv_gamb_gear
+	remove_variable = wv_gamble_won
+	remove_variable = wv_gev_road
+	remove_variable = wv_glass_sold
+	remove_variable = wv_headland_pilot
+	remove_variable = wv_inn_food
+	remove_variable = wv_inn_meals
+	remove_variable = wv_mage_braced
+	remove_variable = wv_master_appr
+	remove_variable = wv_master_chosen
+	remove_variable = wv_master_diver
+	remove_variable = wv_master_gamb
+	remove_variable = wv_master_mage
+	remove_variable = wv_master_pupil
+	remove_variable = wv_master_vet
+	remove_variable = wv_ph_fishers
+	remove_variable = wv_ph_watch
+	remove_variable = wv_poem_letters
+	remove_variable = wv_quay_favor
+	remove_variable = wv_refit
+	remove_variable = wv_repaired
+	remove_variable = wv_ret_111
+	remove_variable = wv_ret_141
+	remove_variable = wv_ret_221
+	remove_variable = wv_ret_313
+	remove_variable = wv_ret_330
+	remove_variable = wv_ret_402
+	remove_variable = wv_ret_500
+	remove_variable = wv_rh_rubbing
+	remove_variable = wv_settled
+	remove_variable = wv_stood_off
+	remove_variable = wv_storm_done
+	remove_variable = wv_sz_read
+	remove_variable = wv_sz_watch
+	remove_variable = wv_tmp2
+	remove_variable = wv_v_db_1
+	remove_variable = wv_v_db_2
+	remove_variable = wv_v_db_3
+	remove_variable = wv_v_dn_1
+	remove_variable = wv_v_dn_2
+	remove_variable = wv_v_dn_3
+	remove_variable = wv_v_gz_1
+	remove_variable = wv_v_gz_2
+	remove_variable = wv_v_gz_3
+	remove_variable = wv_v_kx_1
+	remove_variable = wv_v_kx_2
+	remove_variable = wv_v_kx_3
+	remove_variable = wv_v_lp_1
+	remove_variable = wv_v_lp_2
+	remove_variable = wv_v_lp_3
+	remove_variable = wv_v_mz_1
+	remove_variable = wv_v_mz_2
+	remove_variable = wv_v_mz_3
+	remove_variable = wv_v_pn_1
+	remove_variable = wv_v_pn_2
+	remove_variable = wv_v_pn_3
+	remove_variable = wv_v_tk_1
+	remove_variable = wv_v_tk_2
+	remove_variable = wv_v_tk_3
+	remove_variable = wv_v_zj_1
+	remove_variable = wv_v_zj_2
+	remove_variable = wv_v_zj_3
+	remove_variable = wv_v_zw_1
+	remove_variable = wv_v_zw_2
+	remove_variable = wv_v_zw_3
+	remove_variable = wv_vet_ladder
+	remove_variable = wv_vet_ran
+	remove_variable = wv_victualled
+	remove_variable = wv_voyage_chart
+	remove_variable = wv_ying_pin
+	remove_variable = wv_purse
+	remove_variable = wv_escrow
+	remove_variable = wv_stores
+	remove_variable = wv_hull
+	remove_variable = wv_company
+	remove_variable = wv_slots
+	remove_variable = wv_bulky
+	remove_variable = wv_shortages
+	remove_variable = wv_wonders
+	remove_variable = wv_fragments
+	remove_variable = wv_districts_here
+	remove_variable = wv_chest
+	remove_variable = wv_risk
+	remove_variable = wv_roll
+	remove_variable = wv_rescue
+	remove_variable = wv_tmp
+	remove_variable = wv_berths
+	remove_variable = wv_storm
+	remove_variable = wv_squall
+	remove_variable = wv_cape
+	remove_variable = wv_sound2
+	remove_variable = wv_payout
+	remove_variable = wv_waits
+	remove_variable = wv_gain_influence
+	remove_variable = wv_gain_innovation
+	remove_variable = wv_gain_milexp
+	remove_variable = wv_gain_popularity
+	remove_variable = wv_envoy_char
+	remove_variable = wv_envoy_pilot
+	remove_variable = wv_envoy_factor
+	remove_variable = wv_envoy_interpreter
+	remove_variable = wv_cand_pilot
+	remove_variable = wv_cand_factor
+	remove_variable = wv_cand_interpreter
+	remove_variable = wv_storm_known
+	remove_variable = wv_squall_known
+	remove_variable = wv_cape_known
+	remove_variable = wv_sound_known
+	remove_variable = wv_summons
+	remove_variable = wv_star_rites
+	remove_variable = wv_first_voyage_papers
+	remove_variable = wv_debt_book
+	remove_variable = wv_share_sold
+	remove_variable = wv_advance
+	remove_variable = wv_charm
+	remove_variable = wv_towline
+	remove_variable = wv_seam_fixed
+	remove_variable = wv_letter
+	remove_variable = wv_intro
+	remove_variable = wv_relief_receipt
+	remove_variable = wv_boatman_witness
+	remove_variable = wv_tariku_witness
+	remove_variable = wv_lantern_code
+	remove_variable = wv_vetalian_bearing
+	remove_variable = wv_son_found
+	remove_variable = wv_guide
+	remove_variable = wv_last_water_known
+	remove_variable = wv_soundings_used
+	remove_variable = wv_vet_save_used
+	remove_variable = wv_diver_paid
+	remove_variable = wv_freight
+	remove_variable = wv_glass_cargo
+	remove_variable = wv_fleet_lost
+	remove_variable = wv_envoy_dead
+	remove_variable = wv_crossing_pilot
+	remove_variable = wv_escort
+	remove_variable = wv_wardens_escort
+	remove_variable = wv_dead_read
+	remove_variable = wv_brandy
+	remove_variable = wv_tempuchur
+	remove_variable = wv_drilled
+	remove_variable = wv_armored
+	remove_variable = wv_feast
+	remove_variable = wv_double_used
+	remove_variable = wv_lightened
+	remove_variable = wv_households
+	remove_variable = wv_zaindaxan
+	remove_variable = wv_zaindaxan_bearing
+	remove_variable = wv_warrant
+	remove_variable = wv_court_favor
+	remove_variable = wv_djedhid_favor
+	remove_variable = wv_papyrus
+	remove_variable = wv_bounty_done
+	remove_variable = wv_appr_hidden
+	remove_variable = wv_c_vet
+	remove_variable = wv_sworn_vet
+	remove_variable = wv_moment_vet
+	remove_variable = wv_ports_vet
+	remove_variable = wv_left_vet
+	remove_variable = wv_dead_vet
+	remove_variable = wv_char_vet
+	remove_variable = wv_c_diver
+	remove_variable = wv_sworn_diver
+	remove_variable = wv_moment_diver
+	remove_variable = wv_ports_diver
+	remove_variable = wv_left_diver
+	remove_variable = wv_char_diver
+	remove_variable = wv_c_pupil
+	remove_variable = wv_sworn_pupil
+	remove_variable = wv_moment_pupil
+	remove_variable = wv_ports_pupil
+	remove_variable = wv_left_pupil
+	remove_variable = wv_char_pupil
+	remove_variable = wv_c_appr
+	remove_variable = wv_sworn_appr
+	remove_variable = wv_moment_appr
+	remove_variable = wv_ports_appr
+	remove_variable = wv_left_appr
+	remove_variable = wv_char_appr
+	remove_variable = wv_c_gamb
+	remove_variable = wv_sworn_gamb
+	remove_variable = wv_moment_gamb
+	remove_variable = wv_ports_gamb
+	remove_variable = wv_left_gamb
+	remove_variable = wv_char_gamb
+	remove_variable = wv_c_mage
+	remove_variable = wv_sworn_mage
+	remove_variable = wv_moment_mage
+	remove_variable = wv_ports_mage
+	remove_variable = wv_left_mage
+	remove_variable = wv_char_mage
+	remove_variable = wv_c_hunter
+	remove_variable = wv_sworn_hunter
+	remove_variable = wv_moment_hunter
+	remove_variable = wv_ports_hunter
+	remove_variable = wv_left_hunter
+	remove_variable = wv_char_hunter
+	remove_variable = wv_c_prize
+	remove_variable = wv_sworn_prize
+	remove_variable = wv_moment_prize
+	remove_variable = wv_ports_prize
+	remove_variable = wv_left_prize
+	remove_variable = wv_char_prize
+	remove_variable = wv_souv_pyre_ash
+	remove_variable = wv_souv_lexicon
+	remove_variable = wv_souv_cycle
+	remove_variable = wv_souv_armillary
+	remove_variable = wv_lost_armillary
+	remove_variable = wv_souv_rubbing
+	remove_variable = wv_souv_seal_ring
+	remove_variable = wv_souv_nail
+	remove_variable = wv_souv_glass
+	remove_variable = wv_lost_glass
+	remove_variable = wv_souv_rider_panel
+	remove_variable = wv_lost_rider_panel
+}
+
+# The companion who stands in the right-hand portrait of general voyage events: the most recent to join.
+wv_pick_aside = {
+	if = { limit = { has_variable = wv_c_prize } var:wv_char_prize = { save_scope_as = wv_aside } }
+	else_if = { limit = { has_variable = wv_c_hunter } var:wv_char_hunter = { save_scope_as = wv_aside } }
+	else_if = { limit = { has_variable = wv_c_mage } var:wv_char_mage = { save_scope_as = wv_aside } }
+	else_if = { limit = { has_variable = wv_c_gamb } var:wv_char_gamb = { save_scope_as = wv_aside } }
+	else_if = { limit = { has_variable = wv_c_appr } var:wv_char_appr = { save_scope_as = wv_aside } }
+	else_if = { limit = { has_variable = wv_c_pupil } var:wv_char_pupil = { save_scope_as = wv_aside } }
+	else_if = { limit = { has_variable = wv_c_diver } var:wv_char_diver = { save_scope_as = wv_aside } }
+	else_if = { limit = { has_variable = wv_c_vet } var:wv_char_vet = { save_scope_as = wv_aside } }
+	else_if = { limit = { exists = current_ruler } current_ruler = { save_scope_as = wv_aside } }
+}

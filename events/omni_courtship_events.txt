@@ -1,0 +1,140 @@
+﻿namespace = omni_courtship
+
+omni_courtship.1 = {
+    type = country_event
+    title = omni_courtship.1.t
+    desc = omni_courtship.1.desc
+    picture = throneroom
+    left_portrait = scope:target
+    right_portrait = scope:omni_courtship_suitor
+
+    trigger = {
+        omni_courtship_proposal_current = yes
+        omni_courtship_eligible = yes
+    }
+    immediate = {
+        scope:target = {
+            set_variable = { name = omni_courtship_proposal_delivered days = 90 }
+        }
+    }
+
+    option = {
+        name = omni_courtship.1.a
+        ai_chance = {
+            factor = 45
+            modifier = {
+                factor = 2
+                scope:target = { is_friend = scope:omni_courtship_suitor }
+            }
+            modifier = {
+                factor = 1.5
+                opinion = { target = scope:actor value >= 50 }
+            }
+            modifier = {
+                factor = 0.5
+                scope:target = { loyalty >= 70 }
+            }
+            modifier = {
+                factor = 1.5
+                scope:omni_courtship_suitor = { has_trait = omni_beautiful }
+            }
+            modifier = {
+                factor = 1.25
+                scope:omni_courtship_suitor = { has_trait = fair }
+            }
+            modifier = {
+                factor = 0.8
+                scope:omni_courtship_suitor = { has_trait = ugly }
+            }
+            modifier = {
+                factor = 0.65
+                scope:omni_courtship_suitor = { has_trait = omni_hideous }
+            }
+            modifier = {
+                factor = 0.8
+                scope:target = { has_trait = omni_beautiful has_trait = proud }
+                scope:omni_courtship_suitor = { has_trait = omni_hideous }
+            }
+            modifier = {
+                factor = 0.9
+                scope:omni_courtship_suitor = { has_trait = maimed }
+            }
+            modifier = {
+                factor = 0.7
+                scope:omni_courtship_suitor = {
+                    OR = { has_trait = leper has_trait = plague }
+                }
+            }
+        }
+        if = {
+            limit = {
+                omni_courtship_proposal_current = yes
+                omni_courtship_eligible = yes
+            }
+            omni_courtship_clear_proposal = yes
+            scope:target = {
+                move_country = scope:actor
+                set_home_country = employer
+                remove_character_modifier = foreign_citizen
+                set_as_minor_character = THIS
+            }
+            scope:omni_courtship_suitor = { marry_character = scope:target }
+            scope:actor = { trigger_event = { id = omni_courtship.2 } }
+        }
+        else = {
+            omni_courtship_clear_proposal = yes
+            scope:actor = { trigger_event = { id = omni_courtship.4 } }
+        }
+    }
+
+    option = {
+        name = omni_courtship.1.b
+        ai_chance = { factor = 55 }
+        omni_courtship_clear_proposal = yes
+        scope:actor = { trigger_event = { id = omni_courtship.3 } }
+    }
+}
+
+omni_courtship.2 = {
+    type = country_event
+    title = omni_courtship.2.t
+    desc = omni_courtship.2.desc
+    picture = throneroom
+    left_portrait = scope:omni_courtship_suitor
+    right_portrait = scope:target
+    option = { name = omni_courtship.acknowledge }
+}
+
+omni_courtship.3 = {
+    type = country_event
+    title = omni_courtship.3.t
+    desc = omni_courtship.3.desc
+    picture = throneroom
+    right_portrait = scope:target
+    option = { name = omni_courtship.acknowledge }
+}
+
+omni_courtship.4 = {
+    type = country_event
+    title = omni_courtship.4.t
+    desc = omni_courtship.4.desc
+    picture = throneroom
+    option = { name = omni_courtship.acknowledge }
+}
+
+# If the receiving event never opened, report the lapse and release the proposal.
+omni_courtship.5 = {
+    type = country_event
+    hidden = yes
+    trigger = {
+        scope:actor = {
+            has_variable = omni_courtship_proposal
+            var:omni_courtship_proposal = scope:target
+        }
+        scope:target = { NOT = { has_variable = omni_courtship_proposal_delivered } }
+    }
+    immediate = {
+        omni_courtship_clear_proposal = yes
+        trigger_event = { id = omni_courtship.4 }
+    }
+}

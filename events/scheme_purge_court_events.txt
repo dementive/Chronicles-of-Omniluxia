@@ -32,157 +32,232 @@ scheme_purge_court.1 = {
 			triggered_desc = { trigger = { scope:purge_target = { has_trait = cruel } } desc = scheme_purge_court.desc.cruel.1 }
 			triggered_desc = { trigger = { scope:purge_target = { has_trait = cruel } } desc = scheme_purge_court.desc.cruel.2 }
 			triggered_desc = { trigger = { scope:purge_target = { has_trait = cruel } } desc = scheme_purge_court.desc.cruel.3 }
-			triggered_desc = { desc = scheme_purge_court.desc.generic.1 }
-			triggered_desc = { desc = scheme_purge_court.desc.generic.2 }
-			triggered_desc = { desc = scheme_purge_court.desc.generic.3 }
+			triggered_desc = { trigger = { scope:purge_target = { NOT = { purge_court_charge_trigger = yes } } } desc = scheme_purge_court.desc.generic.1 }
+			triggered_desc = { trigger = { scope:purge_target = { NOT = { purge_court_charge_trigger = yes } } } desc = scheme_purge_court.desc.generic.2 }
+			triggered_desc = { trigger = { scope:purge_target = { NOT = { purge_court_charge_trigger = yes } } } desc = scheme_purge_court.desc.generic.3 }
 		}
 	}
 	picture = assassination
 	left_portrait = root
 	right_portrait = scope:purge_target
+
 	trigger = {
-		is_ruler = yes
-		has_ambition = scheme_purge_court
-		employer = {
-			any_character = {
-				employer = root.employer
-				is_alive = yes
-				is_ruler = no
-				is_co_ruler = no
-				prisoner = no
-				OR = {
-					has_trait = vampire_trait
-					has_trait = corrupt
-					loyalty < 33
-					has_trait = lunatic
-					has_trait = reckless
-					has_trait = arrogant
-					has_trait = gluttonous
-					has_trait = deceitful
-					has_trait = cruel
-				}
-			}
+		purge_court_active_trigger = yes
+		NOT = { has_variable = purge_court_pending_target }
+		exists = scope:purge_country
+		employer = scope:purge_country
+		exists = scope:purge_target
+		scope:purge_target = {
+			purge_court_candidate_trigger = { RULER = root }
 		}
 	}
+
 	immediate = {
-		root = {
-			save_scope_as = purge_actor
+		if = {
+			limit = { NOT = { has_variable = purge_court_hearing_serial } }
+			set_variable = { name = purge_court_hearing_serial value = 0 }
 		}
-		root.employer = {
-			random_character = {
-				limit = {
-					employer = root.employer
-					is_alive = yes
-					is_ruler = no
-					is_co_ruler = no
-					prisoner = no
-					OR = {
-						has_trait = vampire_trait
-						has_trait = corrupt
-						loyalty < 33
-						has_trait = lunatic
-						has_trait = reckless
-						has_trait = arrogant
-						has_trait = gluttonous
-						has_trait = deceitful
-						has_trait = cruel
-					}
-				}
-				save_scope_as = purge_target
+		change_variable = { name = purge_court_hearing_serial add = 1 }
+		var:purge_court_hearing_serial = { save_scope_as = purge_hearing_serial }
+		set_variable = { name = purge_court_pending_target value = scope:purge_target }
+		set_variable = purge_court_opened_hearing
+
+		random_country = {
+			limit = {
+				purge_court_exile_country_trigger = yes
+				in_diplomatic_range = scope:purge_country
 			}
-			random_country = {
-				limit = {
-					in_diplomatic_range = root.employer
-					NOT = { this = root.employer }
-				}
-				save_scope_as = purge_destination
-			}
+			save_scope_as = purge_destination
 		}
-		# The pick above finds nothing for an isolated court with no one in
-		# diplomatic range, and the banish/finesse options then used an unset
-		# scope:purge_destination - "Undefined event target 'purge_destination'"
-		# followed by "set_home_country (target) was null". Fall back to any
-		# other country so every option stays valid rather than gating the
-		# options away and risking an event with nothing to click.
 		if = {
 			limit = { NOT = { exists = scope:purge_destination } }
 			random_country = {
-				limit = {
-					NOT = { this = root.employer }
-				}
+				limit = { purge_court_exile_country_trigger = yes }
 				save_scope_as = purge_destination
 			}
 		}
 	}
+
 	option = {
-		name = scheme_purge_court.banish
-		scope:purge_target = {
-			banish = scope:purge_destination
-			set_home_country = scope:purge_destination
-		}
-		root = {
-			employer = { add_tyranny = 2 }
-			add_corruption = 1
+		name = scheme_purge_court.dismiss
+		ai_chance = { factor = 1 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+			}
+			purge_court_record_hearing_effect = yes
 		}
 	}
+
+	option = {
+		name = scheme_purge_court.restitution
+		trigger = {
+			scope:purge_target = { has_trait = corrupt wealth >= 10 }
+		}
+		custom_tooltip = scheme_purge_court.restitution_tt
+		ai_chance = { factor = 2 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+				scope:purge_target = { has_trait = corrupt wealth >= 10 }
+			}
+			purge_court_record_hearing_effect = yes
+			scope:purge_target = { add_gold = -10 }
+			scope:purge_country = { add_treasury = 10 }
+		}
+	}
+
+	option = {
+		name = scheme_purge_court.banish
+		trigger = {
+			purge_court_destination_trigger = yes
+		}
+		ai_chance = { factor = 2 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+				purge_court_destination_trigger = yes
+			}
+			purge_court_record_hearing_effect = yes
+			scope:purge_target = {
+				banish = scope:purge_destination
+				set_home_country = scope:purge_destination
+			}
+			scope:purge_country = { add_tyranny = 2 }
+			add_corruption = 1
+			purge_court_record_removal_effect = yes
+		}
+	}
+
+	option = {
+		name = scheme_purge_court.imprison
+		ai_chance = { factor = 3 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+			}
+			purge_court_record_hearing_effect = yes
+			scope:purge_country = { imprison = { target = scope:purge_target } }
+			scope:purge_country = { add_tyranny = 2 }
+			add_corruption = 1
+			purge_court_record_removal_effect = yes
+		}
+	}
+
+	option = {
+		name = scheme_purge_court.execute
+		ai_chance = { factor = 1 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+			}
+			purge_court_record_hearing_effect = yes
+			scope:purge_target = {
+				death = { death_reason = death_execution killer = root }
+			}
+			scope:purge_country = { add_tyranny = 5 }
+			add_corruption = 2
+			purge_court_record_removal_effect = yes
+		}
+	}
+
+	option = {
+		name = scheme_purge_court.torture
+		ai_chance = { factor = 0 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+			}
+			purge_court_record_hearing_effect = yes
+			scope:purge_country = { imprison = { target = scope:purge_target } }
+			scope:purge_target = { add_health = -10 }
+			scope:purge_country = { add_tyranny = 4 }
+			add_corruption = 2
+			purge_court_record_removal_effect = yes
+		}
+	}
+
 	option = {
 		name = scheme_purge_court.martial
 		trigger = {
 			martial >= 10
 		}
 		highlight = yes
-		custom_tooltip = high_martial_character_tt
 		custom_tooltip = scheme_purge_court.martial_tt
-		scope:purge_target = {
-			death = {
-				death_reason = death_execution
-				killer = root
+		ai_chance = { factor = 1 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+				martial >= 10
 			}
-		}
-		root = {
+			purge_court_record_hearing_effect = yes
+			scope:purge_target = {
+				if = {
+					limit = { is_minor_character = no exists = family }
+					family = { add_prestige = -25 }
+				}
+				death = { death_reason = death_execution killer = root }
+			}
+			scope:purge_country = { add_tyranny = 4 }
+			add_corruption = 2
 			add_popularity = 5
-			employer = { add_tyranny = 4 }
-			add_corruption = 1
+			purge_court_record_removal_effect = yes
 		}
 	}
+
 	option = {
 		name = scheme_purge_court.finesse
 		trigger = {
 			finesse >= 10
+			purge_court_destination_trigger = yes
 		}
 		highlight = yes
-		custom_tooltip = high_finesse_character_tt
 		custom_tooltip = scheme_purge_court.finesse_tt
-		scope:purge_target = {
-			banish = scope:purge_destination
-			set_home_country = scope:purge_destination
-		}
-		root = {
-			employer = { add_tyranny = 1 }
+		ai_chance = { factor = 2 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+				finesse >= 10
+				purge_court_destination_trigger = yes
+			}
+			purge_court_record_hearing_effect = yes
+			scope:purge_target = {
+				banish = scope:purge_destination
+				set_home_country = scope:purge_destination
+			}
+			scope:purge_country = { add_tyranny = 1 }
 			add_corruption = 2
+			purge_court_record_removal_effect = yes
 		}
 	}
+
 	option = {
 		name = scheme_purge_court.charisma
 		trigger = {
 			charisma >= 10
 		}
 		highlight = yes
-		custom_tooltip = high_charisma_character_tt
 		custom_tooltip = scheme_purge_court.charisma_tt
-		root.employer = {
-			imprison = { target = scope:purge_target }
-		}
-		root = {
+		ai_chance = { factor = 2 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+				charisma >= 10
+			}
+			purge_court_record_hearing_effect = yes
+			scope:purge_country = { imprison = { target = scope:purge_target } }
+			scope:purge_country = { add_tyranny = 2 }
+			add_corruption = 2
 			add_popularity = 5
-			employer = { add_tyranny = 1 }
-			add_corruption = 1
+			purge_court_record_removal_effect = yes
 		}
 	}
+
 	option = {
 		name = scheme_purge_court.zeal
 		trigger = {
 			zeal >= 10
+			scope:purge_country = { political_influence >= 5 }
 			scope:purge_target = {
 				OR = {
 					has_trait = vampire_trait
@@ -193,50 +268,73 @@ scheme_purge_court.1 = {
 			}
 		}
 		highlight = yes
-		custom_tooltip = high_zeal_character_tt
 		custom_tooltip = scheme_purge_court.zeal_tt
-		scope:purge_target = {
-			death = {
-				death_reason = death_execution
-				killer = root
+		ai_chance = { factor = 1 }
+		if = {
+			limit = {
+				purge_court_live_hearing_trigger = yes
+				zeal >= 10
+				scope:purge_country = { political_influence >= 5 }
+				scope:purge_target = {
+					OR = {
+						has_trait = vampire_trait
+						has_trait = corrupt
+						has_trait = cruel
+						has_trait = deceitful
+					}
+				}
 			}
-		}
-		root = {
+			purge_court_record_hearing_effect = yes
+			scope:purge_target = {
+				death = { death_reason = death_execution killer = root }
+			}
+			scope:purge_country = { add_political_influence = -5 }
+			scope:purge_country = { add_tyranny = 3 }
 			add_popularity = 5
-			employer = { add_tyranny = 3 }
+			purge_court_record_removal_effect = yes
 		}
 	}
-	option = {
-		name = scheme_purge_court.imprison
-		root.employer = {
-			imprison = { target = scope:purge_target }
-		}
-		root = {
-			employer = { add_tyranny = 2 }
-			add_corruption = 1
+
+	after = {
+		if = {
+			limit = { purge_court_pending_hearing_trigger = yes }
+			remove_variable = purge_court_pending_target
 		}
 	}
+}
+
+scheme_purge_court.2 = {
+	type = character_event
+	title = scheme_purge_court.2_title
+	desc = scheme_purge_court.2_desc
+	picture = throneroom
+	left_portrait = root
+
 	option = {
-		name = scheme_purge_court.execute
-		scope:purge_target = {
-			death = {
-				death_reason = death_execution
-				killer = root
-			}
-		}
-		root = {
-			employer = { add_tyranny = 5 }
-			add_corruption = 2
-		}
+		name = scheme_purge_court.2_close
 	}
+}
+
+scheme_purge_court.3 = {
+	type = character_event
+	title = scheme_purge_court.3_title
+	desc = scheme_purge_court.3_desc
+	picture = throneroom
+	left_portrait = root
+
 	option = {
-		name = scheme_purge_court.torture
-		scope:purge_target = {
-			add_health = -10
-		}
-		root = {
-			employer = { add_tyranny = 1 }
-			add_corruption = 1
-		}
+		name = scheme_purge_court.3_close
+	}
+}
+
+scheme_purge_court.4 = {
+	type = character_event
+	title = scheme_purge_court.4_title
+	desc = scheme_purge_court.4_desc
+	picture = throneroom
+	left_portrait = root
+
+	option = {
+		name = scheme_purge_court.4_close
 	}
 }

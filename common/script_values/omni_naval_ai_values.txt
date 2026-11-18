@@ -1,0 +1,63 @@
+﻿# All constants are named so balance changes stay separate from logic.
+# Province scope unless marked country. Two slots remain for civilian growth.
+omni_naval_civilian_slot_reserve = 2
+# New shipyard sites remain below commercial coverage. Existing ports get
+# an additional weight multiplier so the AI can finish a yard in stages.
+omni_naval_medium_upgrade_weight = 70
+omni_naval_heavy_upgrade_weight = 85
+omni_naval_existing_port_upgrade_multiplier = {
+    value = 1
+    if = {
+        limit = { num_of_port_building >= 1 }
+        value = 2
+    }
+}
+omni_naval_slots_needed_mega = {
+    value = port_levels_to_mega_tier
+    # Reserve space when starting a new port. An existing harbor can use its
+    # remaining slots to reach the first shipyard tier.
+    if = { limit = { num_of_port_building < 1 } add = omni_naval_civilian_slot_reserve }
+}
+omni_naval_slots_needed_giga = {
+    value = port_levels_to_giga_tier
+    add = omni_naval_civilian_slot_reserve
+}
+omni_naval_site_preference = {
+    value = 0
+    if = { limit = { omni_province_is_notable_harbor = yes } add = 2 }
+    if = { limit = { is_capital = yes } add = 1 }
+}
+
+# Country scope: cumulative medium-or-better capacity, capped at four sites.
+# A small state with a supplied city harbor can develop its first shipyard.
+omni_naval_medium_shipyards_wanted = {
+    value = 0
+    if = {
+        limit = { num_of_ports > 0 }
+        every_owned_province = {
+            limit = { OR = { is_coastal = yes can_have_port = yes } }
+            add = 1
+        }
+        divide = 35
+        floor = yes
+        if = { limit = { rank_by_num_territories >= regional_power } add = 1 }
+        if = { limit = { rank_by_num_territories >= major_power } add = 1 }
+        if = { limit = { rank_by_num_territories >= great_power } add = 1 }
+        min = 1
+        max = 4
+    }
+}
+
+# Country scope. Unlock and feasibility both required; small naval states qualify.
+omni_naval_heavy_shipyards_wanted = {
+    value = 0
+    if = {
+        limit = {
+            num_of_ports > 0
+            omni_country_can_build_heavy_ships = yes
+            omni_country_has_feasible_heavy_shipyard = yes
+        }
+        add = 1
+        if = { limit = { rank_by_num_territories >= great_power } add = 1 }
+    }
+}

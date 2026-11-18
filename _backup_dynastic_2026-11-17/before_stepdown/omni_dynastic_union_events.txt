@@ -1,0 +1,1006 @@
+﻿namespace = omni_dynastic_union
+
+# ======================================================================================
+# PROPOSAL AND WEDDING
+#   propose_dynastic_marriage -> .8 (senior confirms) -> .1 (junior answers)
+#   .1.a -> wedding + union -> .2 (senior)   .1.b -> .9 (senior)
+#   .1 never delivered (conditions changed)  -> .15 (senior)
+# ======================================================================================
+
+omni_dynastic_union.1 = {
+	type = country_event
+	title = omni_dynastic_union.1.t
+	desc = omni_dynastic_union.1.desc
+	picture = throneroom
+	
+	left_portrait = scope:dynastic_junior_ruler
+	right_portrait = scope:dynastic_senior_ruler
+	goto_location = capital_scope
+	
+	trigger = {
+		this = scope:dynastic_junior_country
+		omni_dynastic_union_proposal_valid_trigger = yes
+	}
+
+	immediate = {
+		# Tells .15 that the proposal arrived; cleared by every option.
+		set_variable = {
+			name = omni_du_proposal_delivered
+			days = 120
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.1.a
+		# Options do not re-check the event trigger, and a player may leave this
+		# open for weeks. Re-validate: the senior ruler may have died, married or
+		# gone to war in the meantime.
+		trigger = {
+			omni_dynastic_union_proposal_valid_trigger = yes
+		}
+		ai_chance = {
+			factor = 40
+			# A clearly greater crown is worth kneeling to; an equal one is not.
+			modifier = {
+				factor = 2
+				scope:dynastic_senior_country = { rank > root.rank }
+			}
+			modifier = {
+				factor = 0.25
+				scope:dynastic_senior_country = { rank <= root.rank }
+			}
+			modifier = {
+				factor = 0.3
+				rank >= major_power
+			}
+			modifier = {
+				factor = 1.5
+				opinion = {
+					target = scope:dynastic_senior_country
+					value >= 140
+				}
+			}
+			modifier = {
+				factor = 1.5
+				OR = {
+					stability < 30
+					has_primary_heir = no
+				}
+			}
+			modifier = {
+				factor = 0.5
+				scope:dynastic_junior_ruler = {
+					OR = {
+						has_trait = ambitious
+						has_trait = proud
+					}
+				}
+			}
+		}
+		scope:dynastic_senior_ruler = {
+			marry_character = scope:dynastic_junior_ruler
+		}
+		add_opinion = {
+			target = scope:dynastic_senior_country
+			modifier = opinion_dynastic_marriage
+		}
+		scope:dynastic_senior_country = {
+			add_opinion = {
+				target = root
+				modifier = opinion_dynastic_marriage
+			}
+			set_variable = {
+				name = dynastic_union_senior_spouse
+				value = scope:dynastic_senior_ruler
+			}
+			make_subject = {
+				target = root
+				type = dynastic_union_subject
+			}
+		}
+		set_variable = {
+			name = dynastic_union_senior_country
+			value = scope:dynastic_senior_country
+		}
+		set_variable = {
+			name = dynastic_union_senior_spouse
+			value = scope:dynastic_senior_ruler
+		}
+		set_variable = {
+			name = dynastic_union_junior_spouse
+			value = scope:dynastic_junior_ruler
+		}
+		omni_dynastic_union_bind_spouses_effect = yes
+		omni_dynastic_union_new_colour_effect = yes
+		add_stability_effect = yes
+		# The two spouses, not "current_ruler": if the engine moves the junior
+		# spouse to the senior court, current_ruler is already someone else.
+		scope:dynastic_junior_ruler = {
+			add_popularity = popularity_medium
+		}
+		scope:dynastic_senior_ruler = {
+			add_popularity = popularity_medium
+		}
+		omni_dynastic_union_clear_proposal_effect = yes
+		scope:dynastic_senior_country = {
+			trigger_event = {
+				id = omni_dynastic_union.2
+				days = 3
+			}
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.1.b
+		ai_chance = {
+			factor = 60
+		}
+		add_opinion = {
+			target = scope:dynastic_senior_country
+			modifier = opinion_dynastic_marriage_refused
+		}
+		omni_dynastic_union_clear_proposal_effect = yes
+		scope:dynastic_senior_country = {
+			add_opinion = {
+				target = root
+				modifier = opinion_dynastic_marriage_refused
+			}
+			# A refused court does not propose again at once.
+			set_variable = {
+				name = dynastic_marriage_refused_cooldown
+				days = 365
+			}
+			trigger_event = { id = omni_dynastic_union.9 }
+		}
+	}
+
+	option = {
+		# Only when .1.a is no longer possible: the proposal lapses, no blame.
+		name = omni_dynastic_union.1.c
+		trigger = {
+			NOT = { omni_dynastic_union_proposal_valid_trigger = yes }
+		}
+		ai_chance = {
+			factor = 1000
+		}
+		# .15 clears both locks; it only fires while this marker is gone.
+		remove_variable = omni_du_proposal_delivered
+		scope:dynastic_senior_country = {
+			trigger_event = { id = omni_dynastic_union.15 }
+		}
+	}
+}
+
+omni_dynastic_union.8 = {
+	type = country_event
+	title = omni_dynastic_union.8.t
+	desc = omni_dynastic_union.8.desc
+	picture = throneroom
+
+	left_portrait = scope:dynastic_senior_ruler
+	right_portrait = scope:dynastic_junior_ruler
+	goto_location = scope:dynastic_junior_country.capital_scope
+
+	trigger = {
+		this = scope:dynastic_senior_country
+		omni_dynastic_union_proposal_valid_trigger = yes
+	}
+
+	option = {
+		name = omni_dynastic_union.8.a
+		ai_chance = {
+			factor = 100
+		}
+		scope:dynastic_junior_country = {
+			trigger_event = { id = omni_dynastic_union.1 days = 1 }
+		}
+		# If .1 cannot fire (circumstances changed in the meantime), .15 tells
+		# this court and clears the lock instead of leaving it silently stuck.
+		trigger_event = { id = omni_dynastic_union.15 days = 10 }
+	}
+
+	option = {
+		name = omni_dynastic_union.8.b
+		ai_chance = {
+			factor = 0
+		}
+		omni_dynastic_union_clear_proposal_effect = yes
+	}
+}
+
+omni_dynastic_union.9 = {
+	type = country_event
+	title = omni_dynastic_union.9.t
+	desc = omni_dynastic_union.9.desc
+	picture = throneroom
+
+	left_portrait = scope:dynastic_senior_ruler
+	right_portrait = scope:dynastic_junior_ruler
+	goto_location = scope:dynastic_junior_country.capital_scope
+
+	option = {
+		name = omni_dynastic_union.9.a
+	}
+}
+
+# Senior court: the proposal never reached an answer. Fires from .8.a (10 days
+# later, only if .1 was never delivered) and from .1.c (delivered, but the
+# marriage was no longer possible when answered).
+omni_dynastic_union.15 = {
+	type = country_event
+	title = omni_dynastic_union.15.t
+	desc = omni_dynastic_union.15.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_junior_ruler
+	goto_location = capital_scope
+
+	trigger = {
+		has_variable = dynastic_marriage_proposal_ongoing
+		OR = {
+			NOT = { exists = scope:dynastic_junior_country }
+			scope:dynastic_junior_country = {
+				NOT = { has_variable = omni_du_proposal_delivered }
+			}
+		}
+	}
+
+	immediate = {
+		omni_dynastic_union_clear_proposal_effect = yes
+	}
+
+	option = {
+		name = omni_dynastic_union.15.a
+	}
+}
+
+omni_dynastic_union.2 = {
+	type = country_event
+	title = omni_dynastic_union.2.t
+	desc = omni_dynastic_union.2.desc
+	picture = throneroom
+	left_portrait = scope:dynastic_senior_ruler
+	right_portrait = scope:dynastic_junior_ruler
+	goto_location = capital_scope
+	
+	option = {
+		name = omni_dynastic_union.2.a
+	}
+}
+
+# ======================================================================================
+# A SPOUSE DIES
+#   Fired by omni_dynastic_union_on_character_death (on_character_death), 3 days
+#   after the death, with scope:former_ruler = the dead spouse. Suppressed while a
+#   shared heir's .6 / .7 is pending for the same succession.
+# ======================================================================================
+
+# Junior court: the spouse whose marriage bound us has died.
+omni_dynastic_union.4 = {
+	type = country_event
+	title = omni_dynastic_union.4.t
+	desc = omni_dynastic_union.4.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:former_ruler
+	goto_location = capital_scope
+	
+	trigger = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		exists = scope:former_ruler
+		has_variable = dynastic_union_junior_spouse
+		var:dynastic_union_junior_spouse = scope:former_ruler
+		NOT = { has_variable = dynastic_union_shared_heir_pending }
+		overlord = {
+			has_land = yes
+			is_monarchy = yes
+		}
+	}
+	
+	immediate = {
+		overlord = { save_scope_as = dynastic_senior_country }
+		save_scope_as = dynastic_union_subject
+	}
+	
+	option = {
+		name = omni_dynastic_union.4.a
+		trigger = {
+			has_subject_loyalty >= 85
+			scope:dynastic_senior_country = {
+				stability >= 50
+				omni_dynastic_union_can_integrate_trigger = yes
+			}
+		}
+		ai_chance = {
+			factor = 20
+		}
+		scope:dynastic_senior_country = {
+			omni_dynastic_union_integrate_subject_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.4.b
+		ai_chance = {
+			factor = 70
+		}
+		omni_dynastic_union_renew_subject_effect = yes
+	}
+	
+	option = {
+		name = omni_dynastic_union.4.c
+		trigger = {
+			omni_dynastic_union_can_fight_overlord_trigger = yes
+			OR = {
+				has_subject_loyalty < 50
+				overlord = { stability < 35 }
+			}
+		}
+		ai_chance = {
+			factor = 10
+		}
+		omni_dynastic_union_independence_war_effect = yes
+	}
+	
+	# BALANCE: this used to dissolve the union outright for any player junior,
+	# at any loyalty, even at war - a free exit from a subject type with
+	# subject_can_cancel = no. It is now a request the senior court answers (.16).
+	option = {
+		name = omni_dynastic_union.4.d
+		trigger = {
+			is_ai = no
+			war = no
+			has_civil_war = no
+		}
+		ai_chance = {
+			factor = 0
+		}
+		omni_dynastic_union_renew_subject_effect = yes
+		scope:dynastic_senior_country = {
+			trigger_event = { id = omni_dynastic_union.16 }
+		}
+	}
+}
+
+# Senior court: the spouse whose marriage gave us seniority has died.
+omni_dynastic_union.5 = {
+	type = country_event
+	title = omni_dynastic_union.5.t
+	desc = omni_dynastic_union.5.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+	
+	trigger = {
+		is_monarchy = yes
+		has_land = yes
+		exists = scope:former_ruler
+		NOT = { has_variable = dynastic_union_shared_heir_pending }
+		any_subject = {
+			is_subject_type = dynastic_union_subject
+			has_land = yes
+			has_variable = dynastic_union_senior_spouse
+			var:dynastic_union_senior_spouse = scope:former_ruler
+		}
+	}
+	
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:former_ruler
+			}
+			save_scope_as = dynastic_union_subject
+		}
+		save_scope_as = dynastic_senior_country
+		current_ruler = { save_scope_as = dynastic_new_senior_ruler }
+		scope:former_ruler = { save_scope_as = dynastic_dead_senior_ruler }
+	}
+	
+	option = {
+		name = omni_dynastic_union.5.a
+		ai_chance = {
+			factor = 70
+		}
+		every_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:dynastic_dead_senior_ruler
+			}
+			omni_dynastic_union_renew_subject_effect = yes
+			trigger_event = { id = omni_dynastic_union.10 }
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.5.b
+		trigger = {
+			war = no
+			OR = {
+				stability < 35
+				any_subject = {
+					is_subject_type = dynastic_union_subject
+					has_land = yes
+					has_variable = dynastic_union_senior_spouse
+					var:dynastic_union_senior_spouse = scope:former_ruler
+					has_subject_loyalty < 50
+					war = no
+				}
+			}
+		}
+		ai_chance = {
+			factor = 20
+		}
+		every_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:dynastic_dead_senior_ruler
+			}
+			trigger_event = { id = omni_dynastic_union.11 }
+			omni_dynastic_union_dissolve_subject_effect = yes
+		}
+	}
+	
+	# "Let them test their claim." The senior court refuses to simply renew; a
+	# junior crown at least as strong as us DECIDES (.12) whether to fight.
+	# FIX: this used to force the junior into a war it had not chosen, using an
+	# independence war goal that could never be declared after release.
+	option = {
+		name = omni_dynastic_union.5.c
+		trigger = {
+			war = no
+			any_subject = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:former_ruler
+				war = no
+				num_of_cohorts >= root.num_of_cohorts
+			}
+		}
+		ai_chance = {
+			factor = 10
+		}
+		every_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_variable = dynastic_union_senior_spouse
+				var:dynastic_union_senior_spouse = scope:dynastic_dead_senior_ruler
+			}
+			if = {
+				limit = {
+					omni_dynastic_union_can_fight_overlord_trigger = yes
+					num_of_cohorts >= scope:dynastic_senior_country.num_of_cohorts
+				}
+				trigger_event = { id = omni_dynastic_union.12 }
+			}
+			else = {
+				omni_dynastic_union_renew_subject_effect = yes
+				trigger_event = { id = omni_dynastic_union.10 }
+			}
+		}
+	}
+}
+
+# The senior court chooses its succession policy in .5. These follow-up events
+# make that outcome visible to every junior crown and give a player junior a
+# measured opportunity to contest an otherwise routine renewal.
+omni_dynastic_union.10 = {
+	type = country_event
+	title = omni_dynastic_union.10.t
+	desc = omni_dynastic_union.10.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_new_senior_ruler
+	goto_location = capital_scope
+
+	trigger = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		exists = scope:dynastic_senior_country
+		scope:dynastic_senior_country = { has_land = yes }
+	}
+
+	option = {
+		name = omni_dynastic_union.10.a
+		ai_chance = { factor = 70 }
+	}
+
+	# BALANCE: concessions now benefit the junior crown (see the modifier) and
+	# only the senior court resents them - it is the one giving ground.
+	option = {
+		name = omni_dynastic_union.10.b
+		ai_chance = { factor = 25 }
+		add_country_modifier = {
+			name = dynastic_union_succession_concessions
+			duration = 1825
+		}
+		scope:dynastic_senior_country = {
+			add_legitimacy = -5
+			add_opinion = {
+				modifier = opinion_dynastic_union_concessions
+				target = root
+			}
+		}
+	}
+
+	option = {
+		name = omni_dynastic_union.10.c
+		trigger = {
+			omni_dynastic_union_can_fight_overlord_trigger = yes
+			OR = {
+				has_subject_loyalty < 50
+				scope:dynastic_senior_country = { stability < 35 }
+				num_of_cohorts >= scope:dynastic_senior_country.num_of_cohorts
+			}
+		}
+		ai_chance = { factor = 5 }
+		omni_dynastic_union_independence_war_effect = yes
+	}
+}
+
+omni_dynastic_union.11 = {
+	type = country_event
+	title = omni_dynastic_union.11.t
+	desc = omni_dynastic_union.11.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_new_senior_ruler
+	goto_location = capital_scope
+
+	option = { name = omni_dynastic_union.11.a }
+}
+
+# Junior court: the new senior court will not renew automatically and dares us
+# to press our own claim. Now our choice (was a notification of a war already
+# forced on us).
+omni_dynastic_union.12 = {
+	type = country_event
+	title = omni_dynastic_union.12.t
+	desc = omni_dynastic_union.12.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_new_senior_ruler
+	goto_location = capital_scope
+
+	trigger = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		exists = scope:dynastic_senior_country
+	}
+
+	option = {
+		name = omni_dynastic_union.12.a
+		trigger = {
+			omni_dynastic_union_can_fight_overlord_trigger = yes
+		}
+		ai_chance = { factor = 60 }
+		omni_dynastic_union_reverse_claim_war_effect = yes
+	}
+
+	option = {
+		name = omni_dynastic_union.12.b
+		ai_chance = { factor = 40 }
+		omni_dynastic_union_renew_subject_effect = yes
+	}
+}
+
+# Senior court: a player junior crown asks (.4.d) to end the compact in peace.
+omni_dynastic_union.16 = {
+	type = country_event
+	title = omni_dynastic_union.16.t
+	desc = omni_dynastic_union.16.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+
+	trigger = {
+		exists = scope:dynastic_union_subject
+		scope:dynastic_union_subject = {
+			is_subject_of = root
+			is_subject_type = dynastic_union_subject
+			has_land = yes
+		}
+	}
+
+	option = {
+		name = omni_dynastic_union.16.a
+		ai_chance = {
+			factor = 20
+			# An unhappy junior crown is more trouble than it is worth.
+			modifier = {
+				factor = 3
+				scope:dynastic_union_subject = { has_subject_loyalty < 50 }
+			}
+			modifier = {
+				factor = 3
+				opinion = {
+					target = scope:dynastic_union_subject
+					value >= 100
+				}
+			}
+			modifier = {
+				factor = 0.5
+				scope:dynastic_union_subject = { num_of_cities >= root.num_of_cities }
+			}
+		}
+		scope:dynastic_union_subject = {
+			omni_dynastic_union_dissolve_subject_effect = yes
+			trigger_event = { id = omni_dynastic_union.19 }
+		}
+	}
+
+	option = {
+		name = omni_dynastic_union.16.b
+		ai_chance = {
+			factor = 60
+		}
+		scope:dynastic_union_subject = {
+			add_opinion = {
+				modifier = opinion_dynastic_union_release_refused
+				target = root
+			}
+			trigger_event = { id = omni_dynastic_union.17 }
+		}
+	}
+}
+
+# Junior court: the senior court refused to release us (.16.b).
+omni_dynastic_union.17 = {
+	type = country_event
+	title = omni_dynastic_union.17.t
+	desc = omni_dynastic_union.17.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_senior_country.current_ruler
+	goto_location = capital_scope
+
+	option = { name = omni_dynastic_union.17.a }
+}
+
+# ======================================================================================
+# SHARED HEIRS (fired from on_ruler_change in omni_dynastic_union_pulse.txt)
+# ======================================================================================
+
+omni_dynastic_union.6 = {
+	type = country_event
+	title = omni_dynastic_union.6.t
+	desc = omni_dynastic_union.6.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = overlord.current_ruler
+	goto_location = capital_scope
+	
+	trigger = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		exists = scope:dynastic_shared_heir_ruler
+		current_ruler = scope:dynastic_shared_heir_ruler
+		overlord = {
+			has_land = yes
+			is_monarchy = yes
+		}
+	}
+	
+	immediate = {
+		save_scope_as = dynastic_union_subject
+		overlord = { save_scope_as = dynastic_senior_country }
+	}
+	
+	# The junior court's own choice. Kin of the senior house (the heir included)
+	# are moved to the senior court before annexation - see
+	# omni_dynastic_union_protect_kin_effect.
+	option = {
+		name = omni_dynastic_union.6.a
+		trigger = {
+			has_subject_loyalty >= 80
+			scope:dynastic_senior_country = { omni_dynastic_union_can_integrate_trigger = yes }
+		}
+		ai_chance = {
+			factor = 35
+		}
+		scope:dynastic_senior_country = {
+			omni_dynastic_union_integrate_subject_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.6.b
+		ai_chance = {
+			factor = 55
+		}
+		omni_dynastic_union_shared_heir_effect = yes
+	}
+	
+	option = {
+		name = omni_dynastic_union.6.c
+		trigger = {
+			any_successor = {
+				is_adult = yes
+				is_pretender = yes
+				NOT = { is_primary_heir = yes }
+			}
+		}
+		ai_chance = {
+			factor = 10
+		}
+		omni_dynastic_union_pretender_agitation_effect = yes
+		# Keep the union anchored to the new ruler whichever answer is given.
+		omni_dynastic_union_renew_subject_effect = yes
+	}
+}
+
+omni_dynastic_union.7 = {
+	type = country_event
+	title = omni_dynastic_union.7.t
+	desc = omni_dynastic_union.7.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+	
+	trigger = {
+		is_monarchy = yes
+		has_land = yes
+		exists = scope:dynastic_shared_heir_ruler
+		current_ruler = scope:dynastic_shared_heir_ruler
+		exists = scope:dynastic_union_subject
+		scope:dynastic_union_subject = {
+			is_subject_type = dynastic_union_subject
+			has_land = yes
+			overlord = root
+		}
+	}
+	
+	immediate = {
+		save_scope_as = dynastic_senior_country
+	}
+	
+	# FIX: a player junior crown is asked (.13) instead of being annexed by
+	# the senior court's decision.
+	option = {
+		name = omni_dynastic_union.7.a
+		trigger = {
+			omni_dynastic_union_can_integrate_trigger = yes
+			scope:dynastic_union_subject = {
+				has_subject_loyalty >= 80
+			}
+		}
+		ai_chance = {
+			factor = 35
+		}
+		omni_dynastic_union_request_or_integrate_effect = yes
+	}
+	
+	option = {
+		name = omni_dynastic_union.7.b
+		ai_chance = {
+			factor = 55
+		}
+		scope:dynastic_union_subject = {
+			omni_dynastic_union_shared_heir_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.7.c
+		trigger = {
+			any_successor = {
+				is_adult = yes
+				is_pretender = yes
+				NOT = { is_primary_heir = yes }
+			}
+		}
+		ai_chance = {
+			factor = 10
+		}
+		omni_dynastic_union_pretender_agitation_effect = yes
+		scope:dynastic_union_subject = {
+			add_country_modifier = {
+				name = dynastic_union_contested_heir
+				duration = 1825
+			}
+			omni_dynastic_union_renew_subject_effect = yes
+		}
+	}
+}
+
+# ======================================================================================
+# INTEGRATION
+# ======================================================================================
+
+# Senior court, yearly. FIX: now needs peace and a settled court on both sides
+# (as .4.a / .6.a / .7.a already did), and never annexes a player's junior crown
+# without asking it (.13).
+omni_dynastic_union.3 = {
+	type = country_event
+	title = omni_dynastic_union.3.t
+	desc = omni_dynastic_union.3.desc
+	picture = throneroom
+	
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+	
+	trigger = {
+		is_monarchy = yes
+		has_land = yes
+		war = no
+		has_civil_war = no
+		stability >= 45
+		NOT = { has_variable = dynastic_union_integration_offer_cooldown }
+		any_subject = {
+			is_subject_type = dynastic_union_subject
+			has_land = yes
+			has_subject_loyalty >= 90
+			war = no
+			has_civil_war = no
+			NOT = { has_variable = dynastic_union_integration_cooldown }
+		}
+	}
+	
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = dynastic_union_subject
+				has_land = yes
+				has_subject_loyalty >= 90
+				war = no
+				has_civil_war = no
+				NOT = { has_variable = dynastic_union_integration_cooldown }
+			}
+			save_scope_as = dynastic_union_subject
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.3.a
+		trigger = {
+			omni_dynastic_union_can_integrate_trigger = yes
+		}
+		ai_chance = {
+			factor = 40
+		}
+		custom_tooltip = omni_dynastic_union.3.a.tt
+		set_variable = {
+			name = dynastic_union_integration_offer_cooldown
+			days = 1825
+		}
+		hidden_effect = {
+			omni_dynastic_union_request_or_integrate_effect = yes
+		}
+	}
+	
+	option = {
+		name = omni_dynastic_union.3.b
+		ai_chance = {
+			factor = 60
+		}
+		set_variable = {
+			name = dynastic_union_integration_offer_cooldown
+			days = 1825
+		}
+		scope:dynastic_union_subject = {
+			set_variable = {
+				name = dynastic_union_integration_cooldown
+				days = 1825
+			}
+		}
+		add_stability_effect = yes
+	}
+}
+
+# Junior court (player): the senior court proposes full integration.
+omni_dynastic_union.13 = {
+	type = country_event
+	title = omni_dynastic_union.13.t
+	desc = omni_dynastic_union.13.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_senior_country.current_ruler
+	goto_location = capital_scope
+
+	trigger = {
+		is_subject_type = dynastic_union_subject
+		has_land = yes
+		exists = scope:dynastic_senior_country
+		is_subject_of = scope:dynastic_senior_country
+	}
+
+	immediate = {
+		save_scope_as = dynastic_union_subject
+	}
+
+	option = {
+		name = omni_dynastic_union.13.a
+		trigger = {
+			scope:dynastic_senior_country = { omni_dynastic_union_can_integrate_trigger = yes }
+		}
+		scope:dynastic_senior_country = {
+			omni_dynastic_union_integrate_subject_effect = yes
+		}
+	}
+
+	option = {
+		name = omni_dynastic_union.13.b
+		set_variable = {
+			name = dynastic_union_integration_cooldown
+			days = 1825
+		}
+		scope:dynastic_senior_country = {
+			add_opinion = {
+				modifier = opinion_dynastic_union_integration_refused
+				target = root
+			}
+			trigger_event = { id = omni_dynastic_union.14 }
+		}
+	}
+}
+
+# Senior court: the junior crown declined integration (.13.b).
+omni_dynastic_union.14 = {
+	type = country_event
+	title = omni_dynastic_union.14.t
+	desc = omni_dynastic_union.14.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+
+	option = { name = omni_dynastic_union.14.a }
+}
+
+# ======================================================================================
+# THE COMPACT ENDS
+# ======================================================================================
+
+# Both courts: the compact lapsed because one side is no longer a monarchy, or
+# the senior crown became a subject itself (monthly check in the pulse file).
+omni_dynastic_union.18 = {
+	type = country_event
+	title = omni_dynastic_union.18.t
+	desc = omni_dynastic_union.18.desc
+	picture = throneroom
+
+	left_portrait = scope:dynastic_senior_country.current_ruler
+	right_portrait = scope:dynastic_union_subject.current_ruler
+	goto_location = capital_scope
+
+	option = { name = omni_dynastic_union.18.a }
+}
+
+# Junior court: the senior court agreed to end the compact in peace (.16.a).
+omni_dynastic_union.19 = {
+	type = country_event
+	title = omni_dynastic_union.19.t
+	desc = omni_dynastic_union.19.desc
+	picture = throneroom
+
+	left_portrait = current_ruler
+	right_portrait = scope:dynastic_senior_country.current_ruler
+	goto_location = capital_scope
+
+	option = { name = omni_dynastic_union.19.a }
+}

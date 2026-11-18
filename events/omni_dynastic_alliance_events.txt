@@ -1,0 +1,75 @@
+﻿namespace = omni_dynastic_alliance
+
+omni_dynastic_alliance.1 = {
+    type = country_event
+    title = omni_dynastic_alliance.1.t
+    desc = omni_dynastic_alliance.1.desc
+    picture = throneroom
+    left_portrait = scope:target
+    right_portrait = scope:omni_alliance_suitor
+
+    option = {
+        name = omni_dynastic_alliance.1.a
+        ai_chance = {
+            factor = 45
+            modifier = {
+                factor = 2
+                opinion = { target = scope:actor value >= 50 }
+            }
+        }
+        if = {
+            limit = {
+                this = scope:omni_alliance_receiver
+                current_ruler = scope:target
+                has_variable = omni_dynastic_alliance_pending
+                scope:actor = {
+                    current_ruler = scope:omni_alliance_suitor
+                    has_variable = omni_dynastic_alliance_pending
+                }
+                omni_dynastic_alliance_match_trigger = yes
+            }
+            scope:omni_alliance_suitor = { marry_character = scope:target }
+            if = {
+                limit = { scope:omni_alliance_suitor = { is_spouse_of = scope:target } }
+                add_alliance = scope:actor
+                scope:actor = { trigger_event = { id = omni_dynastic_alliance.2 } }
+            }
+            else = {
+                scope:actor = { trigger_event = { id = omni_dynastic_alliance.4 } }
+            }
+        }
+        else = {
+            scope:actor = { trigger_event = { id = omni_dynastic_alliance.4 } }
+        }
+    }
+
+    option = {
+        name = omni_dynastic_alliance.1.b
+        ai_chance = { factor = 55 }
+        scope:actor = { trigger_event = { id = omni_dynastic_alliance.3 } }
+    }
+}
+
+omni_dynastic_alliance.2 = {
+    type = country_event
+    title = omni_dynastic_alliance.2.t
+    desc = omni_dynastic_alliance.2.desc
+    picture = throneroom
+    option = { name = omni_dynastic_alliance.ack }
+}
+
+omni_dynastic_alliance.3 = {
+    type = country_event
+    title = omni_dynastic_alliance.3.t
+    desc = omni_dynastic_alliance.3.desc
+    picture = throneroom
+    option = { name = omni_dynastic_alliance.ack }
+}
+
+omni_dynastic_alliance.4 = {
+    type = country_event
+    title = omni_dynastic_alliance.4.t
+    desc = omni_dynastic_alliance.4.desc
+    picture = throneroom
+    option = { name = omni_dynastic_alliance.ack }
+}

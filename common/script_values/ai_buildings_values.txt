@@ -44,39 +44,38 @@ brc_fortress_ramparts = {
 }
 
 brc_port = {
-    # Safeguard, destroy any port that somehow got build in a non-port province
-    if = {
-        limit = {
-            can_have_port = no
-        }
-        value = -1
-    }
-    # The native AI treats 0 as "do not build" rather than "destroy" (see
-    # DESTROY_THRESHOLD). Respect the construction budget before assigning a
-    # positive construction weight.
+    # Preserve the existing invalid-location cleanup and treasury safeguard.
+    if = { limit = { can_have_port = no } value = -1 }
     else_if = {
-        limit = {
-            owner = {
-                ai_treasury_is_enough_for_building = no
-            }
-        }
+        limit = { owner = { ai_treasury_is_enough_for_building = no } }
         value = 0
     }
-    # State coverage and the limited mega/giga port programme are the only
-    # reasons to add another port level. The old fallback made every eligible
-    # coastal city build one, consuming the civilian building landscape.
     else_if = {
-        limit = {
-            brc_needs_port = yes
+        limit = { brc_needs_new_port = yes }
+        if = { limit = { omni_naval_site_has_construction = yes } value = 0 }
+        else = { value = brc_territory_importance multiply = brc_100 }
+    }
+    else_if = {
+        limit = { brc_needs_heavy_shipyard = yes }
+        if = { limit = { omni_naval_site_has_construction = yes } value = 0 }
+        else = {
+            value = brc_territory_importance
+            multiply = omni_naval_heavy_upgrade_weight
+            multiply = omni_naval_existing_port_upgrade_multiplier
         }
-        value = brc_territory_importance
-        multiply = brc_100
     }
-    # Existing valid ports are retained, but without a state or high-tier need
-    # they no longer receive a weight that can upgrade them further.
-    else = {
-        value = 0
+    else_if = {
+        limit = { brc_needs_medium_shipyard = yes }
+        if = { limit = { omni_naval_site_has_construction = yes } value = 0 }
+        else = {
+            value = brc_territory_importance
+            multiply = omni_naval_medium_upgrade_weight
+            multiply = omni_naval_existing_port_upgrade_multiplier
+            if = { limit = { omni_province_has_naval_culture = yes } multiply = 1.15 }
+        }
     }
+    # Timber loss, quota changes and a zero coverage target never demolish ports.
+    else = { value = 0 }
 }
 
 brc_barracks = {
@@ -312,6 +311,7 @@ brc_magic_academy = {
             owner = {
                 NOT = {
                     any_owned_province = {
+                        exists = this
                         OR = {
                             has_building = magic_academy_building
                             has_specific_construction = magic_academy_building
@@ -1052,8 +1052,15 @@ brc_workshop = {
 }
 
 brc_latifundia = {
-    # Don't build and destroy if exists
+    # Skip building scoring if the AI has no owned territory to evaluate.
     if = {
+        limit = {
+            NOT = { exists = owner }
+        }
+        value = 0
+    }
+    # Don't build and destroy if exists
+    else_if = {
         limit = {
             # Don't destroy anything while at war
             owner = {
@@ -1090,8 +1097,8 @@ brc_latifundia = {
         if = {
             limit = {
                 OR = {
-                    has_building = slave_mine_building
-                    has_building = basic_settlement_infratructure_building
+                    num_of_slave_mine_building > 0
+                    num_of_basic_settlement_infratructure_building > 0
                 }
             }
             if = {
@@ -1470,88 +1477,11 @@ num_of_ports_wanted_in_territory_state = {
 
 level_of_giga_port_wanted = 5
 
-num_of_giga_ports_wanted = {
-    value = 0
-    if = {
-        limit = {
-            rank_by_num_territories >= regional_power
-
-            # Removed due to performance concerns, reintroduce if there's a cheap way to do so
-            # OR = {
-            #     num_of_unit_type = {
-            #         type = octere
-            #         value > 0
-            #     }
-            #     num_of_unit_type = {
-            #         type = mega_galley
-            #         value > 0
-            #     }
-            # }
-        }
-        add = 1
-        if = {
-            limit = {
-                rank_by_num_territories >= great_power
-            }
-            add = 1
-        }
-    }
-}
+num_of_giga_ports_wanted = { value = omni_naval_heavy_shipyards_wanted }
 
 level_of_mega_port_wanted = 3
 
-num_of_mega_ports_wanted = {
-    value = 0
-
-    # 1 per every 35 coastal territories
-    every_owned_province = {
-        limit = {
-            OR = {
-                is_coastal = yes
-                can_have_port = yes
-            }
-        }
-        add = 1
-    }
-    divide = 35
-    floor = yes
-
-    # Base value depending on rank so they always want at least some
-    if = {
-        limit = {
-            rank_by_num_territories >= regional_power
-
-            # Removed due to performance concerns, reintroduce if there's a cheap way to do so
-            # OR = {
-            #     num_of_unit_type = {
-            #         type = tetrere
-            #         value > 0
-            #     }
-            #     num_of_unit_type = {
-            #         type = hexere
-            #         value > 0
-            #     }
-            # }
-        }
-        add = 1
-        if = {
-            limit = {
-                rank_by_num_territories >= major_power
-            }
-            add = 1
-            if = {
-                limit = {
-                    rank_by_num_territories >= great_power
-                }
-                add = 1
-            }
-        }
-    }
-
-    # Num of high tier ports is shared with giga
-    subtract = num_of_giga_ports_wanted
-    min = 0
-}
+num_of_mega_ports_wanted = { value = omni_naval_medium_shipyards_wanted }
 
 port_levels_to_giga_tier = {
     value = owner.level_of_giga_port_wanted

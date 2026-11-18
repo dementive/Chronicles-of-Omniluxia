@@ -1,0 +1,129 @@
+﻿# Unit scope, called directly by unit abilities (root is the acting fleet).
+# Choose all participants before paying. Shared legality is checked again here.
+omni_naval_capture_effect = {
+    if = {
+        limit = {
+            omni_naval_operation_ready = yes
+            any_sub_unit = { count >= 5 ship_category = heavy subunit_strength_percentage >= 0.50 }
+        }
+        unit_location = {
+            random_neighbor_province = {
+                limit = { omni_naval_capture_target = { FLEET = root } }
+                save_scope_as = omni_naval_target
+                root = {
+                    random_sub_unit = {
+                        limit = { ship_category = heavy subunit_strength_percentage >= 0.50 }
+                        save_scope_as = omni_naval_ship_one
+                    }
+                    random_sub_unit = {
+                        limit = {
+                            ship_category = heavy
+                            subunit_strength_percentage >= 0.50
+                            NOT = { this = scope:omni_naval_ship_one }
+                        }
+                        save_scope_as = omni_naval_ship_two
+                    }
+                    # Two distinct ships pay; the same half-strength ship cannot
+                    # be randomly selected twice and accidentally sunk.
+                    scope:omni_naval_ship_one = { omni_naval_capture_ship_cost = yes }
+                    scope:omni_naval_ship_two = { omni_naval_capture_ship_cost = yes }
+                    set_variable = { name = omni_naval_operation_cooldown days = 30 }
+                }
+                set_controller = root.unit_owner
+                omni_naval_defender_notice = yes
+            }
+        }
+    }
+}
+
+# Subunit scope, root remains the ability's fleet. Preserve the local invention.
+omni_naval_capture_ship_cost = {
+    if = {
+        limit = { root.unit_owner = { invention = sambuca_siege_inv } }
+        add_subunit_strength = -0.40
+    }
+    else = { add_subunit_strength = -0.50 }
+}
+
+omni_naval_assault_effect = {
+    if = {
+        limit = {
+            omni_naval_operation_ready = yes
+            any_sub_unit = { sub_unit_type = mega_galley subunit_strength_percentage >= 0.95 }
+        }
+        unit_location = {
+            random_neighbor_province = {
+                limit = { omni_naval_assault_target = { FLEET = root } }
+                save_scope_as = omni_naval_target
+                root = {
+                    random_sub_unit = {
+                        limit = { sub_unit_type = mega_galley subunit_strength_percentage >= 0.95 }
+                        # Vanilla assault cost retained; correct owner scope.
+                        if = {
+                            limit = { root.unit_owner = { invention = sambuca_siege_inv } }
+                            add_subunit_strength = -0.60
+                        }
+                        else = { add_subunit_strength = -0.70 }
+                    }
+                    set_variable = { name = omni_naval_operation_cooldown days = 90 }
+                }
+                remove_building_level = fortress_building
+                omni_naval_defender_notice = yes
+            }
+        }
+    }
+}
+
+omni_naval_bombardment_effect = {
+    if = {
+        limit = {
+            omni_naval_operation_ready = yes
+            any_sub_unit = { ship_category = heavy subunit_strength_percentage >= 0.95 }
+        }
+        unit_location = {
+            random_neighbor_province = {
+                limit = { omni_naval_bombardment_target = { FLEET = root } }
+                save_scope_as = omni_naval_target
+                root = {
+                    random_sub_unit = {
+                        limit = { ship_category = heavy subunit_strength_percentage >= 0.95 }
+                        add_subunit_strength = -0.30
+                    }
+                    set_variable = { name = omni_naval_operation_cooldown days = 90 }
+                }
+                siege = { add_breach = 1 }
+                omni_naval_defender_notice = yes
+            }
+        }
+    }
+}
+
+omni_naval_arcane_effect = {
+    if = {
+        limit = { omni_naval_operation_ready = yes omni_naval_arcane_caster_ready = yes }
+        unit_location = {
+            random_neighbor_province = {
+                limit = { omni_naval_arcane_target = { FLEET = root } }
+                save_scope_as = omni_naval_target
+                root = {
+                    commander = {
+                        omni_spell_mana_cost_effect = { BASE = 50 }
+                        set_variable = { name = omni_naval_tremor_cooldown days = 90 }
+                    }
+                    set_variable = { name = omni_naval_operation_cooldown days = 90 }
+                }
+                siege = { add_breach = 1 }
+                omni_naval_defender_notice = yes
+            }
+        }
+    }
+}
+
+# Province scope, root remains the fleet. Event scopes are saved only on success.
+omni_naval_defender_notice = {
+    root.unit_owner = { save_scope_as = omni_naval_attacker }
+    if = {
+        limit = { owner = { is_ai = no NOT = { this = root.unit_owner } } }
+        owner = { trigger_event = { id = omni_naval.1 } }
+    }
+}

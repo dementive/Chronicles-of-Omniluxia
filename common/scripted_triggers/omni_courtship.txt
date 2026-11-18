@@ -1,0 +1,58 @@
+﻿# Shared by the proposal button and the wedding event.
+omni_courtship_eligible = {
+    exists = scope:actor
+    exists = scope:target
+    exists = scope:actor.current_ruler
+    exists = scope:target.employer
+    scope:actor = {
+        omni_ruler_available_for_court_action_trigger = yes
+        current_ruler = {
+            is_alive = yes
+            is_adult = yes
+            is_married = no
+            prisoner = no
+            NOR = { has_variable = betrothed_flag has_variable = is_the_revant }
+            NOT = { is_same_gender = scope:target }
+            NOT = { is_close_relative = scope:target }
+        }
+    }
+    scope:target = {
+        is_alive = yes
+        is_adult = yes
+        is_married = no
+        prisoner = no
+        is_pregnant = no
+        is_mercenary = no
+        is_ruler = no
+        is_primary_heir = no
+        is_general = no
+        is_admiral = no
+        is_governor = no
+        NOR = {
+            has_variable = betrothed_flag
+            has_variable = attempted_marriage
+            has_variable = is_the_revant
+            has_character_modifier = disloyal_successor_cmod
+            is_rival = scope:actor.current_ruler
+        }
+        employer = {
+            in_diplomatic_range = scope:actor
+            NOR = { this = scope:actor tag = REB tag = BAR tag = MER tag = REV }
+        }
+    }
+}
+
+omni_courtship_proposal_current = {
+    exists = scope:omni_courtship_suitor
+    exists = scope:omni_courtship_host
+    scope:actor = {
+        current_ruler = scope:omni_courtship_suitor
+        has_variable = omni_courtship_proposal
+        var:omni_courtship_proposal = scope:target
+    }
+    scope:target = {
+        employer = scope:omni_courtship_host
+        has_variable = omni_courtship_suitor
+        var:omni_courtship_suitor = scope:omni_courtship_suitor
+    }
+}

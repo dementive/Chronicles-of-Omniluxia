@@ -640,6 +640,25 @@ template toolbar2
 
 vbox = {
 	name = "ingame_topbar"
+
+	# Pick the currently open native sidebar view so toggling it closes it.
+	state = {
+		name = omni_bl_route_open
+		on_start = "[PdxGuiWidget.TriggerAnimation(Select_CString(Or(Or(Or(IsGameViewOpen('overview'), Or(IsGameViewOpen('government'), IsGameViewOpen('economy'))), Or(IsGameViewOpen('religion'), Or(IsGameViewOpen('culture'), IsGameViewOpen('trade')))), Or(Or(IsGameViewOpen('military'), Or(IsGameViewOpen('mercenary'), IsGameViewOpen('diplomacy'))), Or(Or(IsGameViewOpen('technology'), IsGameViewOpen('characters')), Or(IsGameViewOpen('mission'), IsGameViewOpen('macro_builder'))))), 'omni_bl_leave_sidebar', 'omni_bl_show_panel'))]"
+	}
+	state = {
+		name = omni_bl_leave_sidebar
+		on_start = "[ToggleGameView(Select_CString(IsGameViewOpen('overview'), 'overview', Select_CString(IsGameViewOpen('government'), 'government', Select_CString(IsGameViewOpen('economy'), 'economy', Select_CString(IsGameViewOpen('religion'), 'religion', Select_CString(IsGameViewOpen('culture'), 'culture', Select_CString(IsGameViewOpen('trade'), 'trade', Select_CString(IsGameViewOpen('military'), 'military', Select_CString(IsGameViewOpen('mercenary'), 'mercenary', Select_CString(IsGameViewOpen('diplomacy'), 'diplomacy', Select_CString(IsGameViewOpen('technology'), 'technology', Select_CString(IsGameViewOpen('characters'), 'characters', Select_CString(IsGameViewOpen('mission'), 'mission', 'macro_builder')))))))))))))]"
+		duration = 0
+		next = omni_bl_show_panel
+	}
+	state = {
+		name = omni_bl_show_panel
+		on_start = "[GetScriptedGui('omni_bl_open').Execute( GuiScope.SetRoot( Player.MakeScope ).End )]"
+		on_start = "[GetVariableSystem.Set('omni_bl_living_only', 'yes')]"
+		on_start = "[GetVariableSystem.Set('omni_bloodline_browser', 'yes')]"
+		on_start = "[ExecuteConsoleCommand('gui.createwidget gui/omni_bloodline_browser.gui omni_bloodline_browser')]"
+	}
 	layer = middle
 	window = {
 		layer = top
@@ -824,6 +843,7 @@ vbox = {
 					blockoverride "Details"
 					{
 						visible = "[Not(IsGameViewOpen('macro_builder'))]"
+						onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 						onclick = "[InGameTopbar.OpenView('macro_builder')]"
 						tooltip = "MACRO_BUILDER_MENU"
 						shortcut = macro_builder
@@ -864,6 +884,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('overview'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('overview')]"
 							tooltip = "NATION_OVERVIEW_MENU"
 							shortcut = "top_bar_1"
@@ -893,6 +914,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('government'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('government')]"
 							tooltip = "GOVERNMENT_MENU"
 							shortcut = "top_bar_2"
@@ -922,6 +944,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('economy'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('economy')]"
 							tooltip = "ECONOMY_MENU"
 							shortcut = "top_bar_3"
@@ -958,6 +981,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('religion'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('religion')]"
 							tooltip = "RELIGION_MENU"
 							shortcut = "top_bar_4"
@@ -987,6 +1011,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('culture'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('culture')]"
 							tooltip = "CULTURE_MENU"
 							shortcut = "top_bar_5"
@@ -1016,6 +1041,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('trade'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('trade')]"
 							tooltip = "TRADE_MENU"
 							shortcut = "top_bar_6"
@@ -1045,6 +1071,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('military'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('military')]"
 							tooltip = "MILITARY_MENU"
 							shortcut = "top_bar_7"
@@ -1074,6 +1101,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('mercenary'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('mercenary')]"
 							tooltip = "MERCENARY_MENU"
 							shortcut = "top_bar_8"
@@ -1109,6 +1137,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('diplomacy'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('diplomacy')]"
 							tooltip = "DIPLOMACY_MENU"
 							shortcut = "top_bar_9"
@@ -1138,6 +1167,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('technology'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('technology')]"
 							tooltip = "TECHNOLOGY_MENU"
 							shortcut = "top_bar_10"
@@ -1167,6 +1197,7 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('characters'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('characters')]"
 							tooltip = "CHARACTERS_MENU"
 							shortcut = "top_bar_11"
@@ -1188,6 +1219,43 @@ vbox = {
 					}
 				}
 
+				# OMNI: Bloodlines of Omniluxia (gui/omni_bloodline_browser.gui). A world overview,
+				# so it sits with the other overview screens, under Characters. Pale drop icon is an
+				# alpha mask like the vanilla menu icons, made from Terra Indomita's blood drop.
+				widget = {
+					size = { 70 @SideBarButtonSize }
+					visible = "[Player.Exists]"
+					
+					TopBarWindowButton = {
+						position = { 4 0 }
+						blockoverride "Details"
+						{
+							visible = "[Not(GetVariableSystem.Exists('omni_bloodline_browser'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_route_open')]"
+							tooltip = "omni_bl_open_tt"
+							shortcut = "top_bar_12"
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+						
+						# Pressed while the browser is open; clicking it again closes the browser.
+						blockoverride "Details_toggled"
+						{
+							visible = "[GetVariableSystem.Exists('omni_bloodline_browser')]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
+							tooltip = "omni_bl_open_tt"
+							shortcut = "top_bar_12"
+							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
+							oversound = "event:/SFX/UI/Generic/sfx_ui_generic_mouse_over"
+						}
+						
+						blockoverride "Icon"
+						{
+							texture = "gfx/interface/icons/menu_buttons/menu_bloodlines.dds"
+						}
+					}
+				}
+
 				widget = {
 					size = { 70 @SideBarButtonSize }
 					
@@ -1199,9 +1267,10 @@ vbox = {
 						blockoverride "Details"
 						{
 							visible = "[Not(IsGameViewOpen('mission'))]"
+							onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
 							onclick = "[ToggleGameView('mission')]"
 							tooltip = "[SelectLocalization( InGameTopbar.IsTutorialActive, 'TUTORIAL_MISSION_MENU', 'MISSION_MENU' )]"
-							shortcut = "top_bar_12"
+							shortcut = "top_bar_13"
 							enabled = "[Not( InGameTopbar.IsTutorialActive )]"
 							# ToDo: Add Sound.
 							clicksound = "event:/SFX/UI/Generic/sfx_ui_generic_click"
@@ -1650,6 +1719,7 @@ vbox = {
             framesize = { 155 355 }
             position = { -14 -118 }
             onrightclick = "[ExecuteConsoleCommand('shader_debug FLAG_WAVES_DISABLED')]"
+            onclick = "[PdxGuiTriggerAllAnimations('omni_bl_close_panel')]"
             onclick = "[ToggleGameView('overview')]"
             #tooltip = "NATION_OVERVIEW_MENU"
             tooltip = "[InGameTopbar.GetFlagDesc]"
@@ -1685,7 +1755,7 @@ vbox = {
 		# OMNI: Wenelru covenant settlement picker (type in gui/omni_wenelru_picker.gui).
 		widget = {
 			size = { 100% 100% }
-			visible = "[Player.IsValid]"
+			visible = "[Player.Exists]"
 			omni_wenelru_picker_window = {
 				position = { 0 0 }
 				parentanchor = center

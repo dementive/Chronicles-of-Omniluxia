@@ -1,0 +1,27 @@
+﻿# One-time save catch-up for bloodlines added to bloodline_game_start_effects
+# after a campaign had already started. Called from omni_monthly_magic_pulse
+# (common/on_action/00_monthly_country.txt); the global flag makes the first
+# country to reach it do the work, and every later call a single flag check.
+#
+# Sertem (added 2026-11-17): new games give it to the Baetep ruler's family at
+# start. Saves begun before that have no holder at all, because Sertem is only
+# ever granted by that start line and then inherited. So: if nobody alive holds
+# Sertem, run the same setup the new-game start uses. In a new game the start
+# line already ran, holders exist, and this only sets the flag.
+omni_bloodline_catchup_once = {
+	if = {
+		limit = { NOT = { has_global_variable = omni_bloodline_catchup_v1_done } }
+		set_global_variable = omni_bloodline_catchup_v1_done
+		if = {
+			limit = {
+				NOT = { any_living_character = { has_trait = sertem } }
+				exists = c:EGY
+				c:EGY = {
+					has_land = yes
+					exists = current_ruler
+				}
+			}
+			add_bloodline_setup_effect = { BLOODLINE = sertem CHAR = c:EGY.current_ruler }
+		}
+	}
+}

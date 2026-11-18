@@ -1,0 +1,211 @@
+﻿# Omniluxia naval policy. Scope contracts are part of the interface.
+# State scope, including imported surplus. Matches the four local ship definitions.
+omni_state_has_ship_timber = {
+    OR = {
+        trade_good_surplus = { target = wood value > 0 }
+        trade_good_surplus = { target = cedar value > 0 }
+        trade_good_surplus = { target = hardwood value > 0 }
+    }
+}
+
+# Country scope. Central mapping of every local heavy-ship unlock.
+omni_country_can_build_heavy_ships = {
+    OR = {
+        has_military_bonus = nouveau_aralan_path_3
+        has_military_bonus = norrfallian_seafarers_path_1
+        has_military_bonus = orcish_seafaring_path_1
+        has_military_bonus = levantine_arabian_path_5
+        has_military_bonus = levantine_egyptian_path_2
+        has_military_bonus = werhen_states_path_5
+        has_military_bonus = werhen_luxterreich_path_2
+        has_military_bonus = zarakens_imperial_path_3
+        has_military_bonus = zinduidian_pirate_path_1
+        has_military_bonus = zinduidian_pirate_path_2
+    }
+}
+
+# Province scope. Authored commercial centers, not automatic building grants.
+# IDs verified against local setup and ports.csv. Ownership may change.
+omni_province_is_notable_harbor = {
+    OR = {
+        province_id = 3212 # Phrytheria
+        province_id = 2769 # Gellazani
+        province_id = 5143 # Wiaalda Garda
+    }
+}
+
+# Province scope. Culture remains in AI preferences, not recruitment restrictions.
+omni_province_has_naval_culture = {
+    OR = {
+        dominant_province_culture = pomeran
+        owner = {
+            OR = {
+                is_tradition_tree_allowed = levantine_philosophy
+                is_tradition_tree_allowed = northerner_philosophy
+                is_tradition_tree_allowed = orcish_philosophy
+                is_tradition_tree_allowed = zinduidian_philosophy
+                is_tradition_tree_allowed = snakefolk_philosophy
+                is_tradition_tree_allowed = arteonian_philosophy
+            }
+        }
+    }
+}
+
+# Province/cache scope. Query construction only after entering a real province
+# through owner.any_owned_province; never put it in the cached level value.
+omni_naval_site_has_construction = {
+    save_temporary_scope_as = omni_naval_queue_site
+    owner = {
+        any_owned_province = {
+            this = scope:omni_naval_queue_site
+            has_construction = yes
+        }
+    }
+}
+
+# Province scope; TIER = mega (3) or giga (5). No scope saves inside this helper.
+omni_province_can_expand_shipyard = {
+    can_have_port = yes
+    has_city_status = yes
+    state = { omni_state_has_ship_timber = yes }
+    port_level_including_construction < owner.level_of_$TIER$_port_wanted
+    free_building_slots >= omni_naval_slots_needed_$TIER$
+}
+
+# Province scope; scope:omni_naval_site is the incumbent.
+# Lexicographic order gives exactly one winner, including complete numeric ties.
+omni_naval_candidate_beats_site = {
+    OR = {
+        port_level_including_construction > scope:omni_naval_site.port_level_including_construction
+        AND = {
+            port_level_including_construction = scope:omni_naval_site.port_level_including_construction
+            free_building_slots > scope:omni_naval_site.free_building_slots
+        }
+        AND = {
+            port_level_including_construction = scope:omni_naval_site.port_level_including_construction
+            free_building_slots = scope:omni_naval_site.free_building_slots
+            omni_naval_site_preference > scope:omni_naval_site.omni_naval_site_preference
+        }
+        AND = {
+            port_level_including_construction = scope:omni_naval_site.port_level_including_construction
+            free_building_slots = scope:omni_naval_site.free_building_slots
+            omni_naval_site_preference = scope:omni_naval_site.omni_naval_site_preference
+            province_id < scope:omni_naval_site.province_id
+        }
+    }
+}
+
+# Country scope. Traditions may precede construction, provided it is feasible.
+omni_country_has_feasible_heavy_shipyard = {
+    any_owned_province = {
+        can_have_port = yes
+        state = { omni_state_has_ship_timber = yes }
+        OR = {
+            num_of_port_building >= 5
+            omni_province_can_expand_shipyard = { TIER = giga }
+        }
+    }
+}
+
+# Province scope, CHARACTER is the scheme owner. Shared by all lifecycle stages.
+omni_port_investment_target = {
+    can_have_port = yes
+    has_city_status = yes
+    has_construction = no
+    num_of_port_building >= 1
+    num_of_port_building < 5
+    free_building_slots > 0
+    NOT = { has_province_modifier = urban_development_in_progress }
+    exists = holding_owner
+    holding_owner = { this = $CHARACTER$ }
+    exists = $CHARACTER$.employer
+    owner = { this = $CHARACTER$.employer }
+}
+
+# Unit scope. Shared readiness; targets supply their own legal predicates.
+omni_naval_operation_ready = {
+    is_navy = yes
+    in_combat = no
+    is_moving = no
+    is_exiled = no
+    NOT = { has_variable = omni_naval_operation_cooldown }
+    trigger_if = {
+        limit = { exists = commander }
+        commander = { loyalty > 33 }
+    }
+}
+
+# Province scope; FLEET = the acting unit. Shared availability/execution rules.
+omni_naval_hostile_port = {
+    is_sea = no
+    has_owner = yes
+    is_port = yes
+    NOT = { controller = $FLEET$.unit_owner }
+    controller = { war_with = $FLEET$.unit_owner }
+}
+
+omni_naval_capture_target = {
+    omni_naval_hostile_port = { FLEET = $FLEET$ }
+    owner = {
+        OR = {
+            war_with = $FLEET$.unit_owner
+            this = $FLEET$.unit_owner
+        }
+    }
+    NOT = {
+        owner = {
+            war_with = $FLEET$.unit_owner
+            invention = archimedes_death_ray_inv
+        }
+    }
+    fort_level < 1
+    NOT = { has_enemy_army = $FLEET$.unit_owner }
+}
+
+omni_naval_assault_target = {
+    omni_naval_hostile_port = { FLEET = $FLEET$ }
+    fort_level >= 1
+    NOT = { has_enemy_army = $FLEET$.unit_owner }
+    # AI target selection must use the same strategic restriction as its
+    # willingness: do not choose a different isolated fort after finding a siege.
+    trigger_if = {
+        limit = { $FLEET$.unit_owner = { is_ai = yes } }
+        has_siege = yes
+        siege = { siege_controller = { this = $FLEET$.unit_owner } }
+    }
+}
+
+omni_naval_bombardment_target = {
+    omni_naval_hostile_port = { FLEET = $FLEET$ }
+    fort_level >= 1
+    has_siege = yes
+    siege = {
+        has_breach = no
+        siege_controller = { this = $FLEET$.unit_owner }
+    }
+}
+
+omni_naval_arcane_target = {
+    omni_naval_bombardment_target = { FLEET = $FLEET$ }
+    NOT = { omni_province_is_warded = yes }
+}
+
+# Unit scope. Avoid spending a weakened fleet or acting under immediate threat.
+omni_naval_ai_operation_safe = {
+    omni_naval_operation_ready = yes
+    strength_percentage >= 0.85
+    unit_location = { NOT = { has_enemy_navy = root.unit_owner } }
+}
+
+
+# Unit scope. Reuse the learned Amten siege spell, not a free spell unlock.
+omni_naval_arcane_caster_ready = {
+    exists = commander
+    commander = {
+        omni_character_is_eligible_caster = yes
+        omni_caster_amten_t2 = yes
+        omni_knows_spell = { SPELL = breaching_tremor }
+        omni_can_afford_spell = { BASE = 50 }
+        NOT = { has_variable = omni_naval_tremor_cooldown }
+    }
+}

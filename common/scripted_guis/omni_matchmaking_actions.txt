@@ -1,0 +1,163 @@
+﻿# Bloodlines holder-row actions. Native interaction scripts supply the rules.
+omni_matchmaking_select_marriage_target = {
+    scope = character
+    saved_scopes = { actor target }
+    ai_is_valid = { always = no }
+    is_valid = { omni_matchmaking_has_context = yes }
+    effect = {
+        scope:actor = {
+            clear_variable_list = omni_bl_marriage_target
+            add_to_variable_list = { name = omni_bl_marriage_target target = scope:target }
+        }
+    }
+}
+
+omni_matchmaking_propose = {
+    scope = character
+    saved_scopes = { actor target }
+    ai_is_valid = { always = no }
+    is_valid = {
+        trigger_if = {
+            limit = { omni_matchmaking_has_context = yes }
+            omni_courtship_eligible = yes
+            scope:actor = { NOT = { has_variable = omni_courtship_proposal } }
+            scope:target = {
+                NOR = {
+                    has_variable = omni_courtship_suitor
+                    has_variable = omni_courtship_recent_proposal
+                }
+            }
+        }
+        trigger_else = { always = no }
+    }
+    effect = {
+        scope:actor = {
+            current_ruler = { save_scope_as = omni_courtship_suitor }
+            set_variable = { name = omni_courtship_proposal value = scope:target days = 90 }
+        }
+        scope:target = {
+            set_variable = { name = omni_courtship_suitor value = scope:omni_courtship_suitor days = 90 }
+            set_variable = { name = omni_courtship_recent_proposal days = 365 }
+            employer = {
+                save_scope_as = omni_courtship_host
+                trigger_event = { id = omni_courtship.1 days = { 7 14 } }
+            }
+        }
+        scope:actor = { trigger_event = { id = omni_courtship.5 days = 15 } }
+    }
+}
+
+omni_matchmaking_befriend = {
+    scope = character
+    saved_scopes = { actor target }
+    ai_is_valid = { always = no }
+    is_valid = {
+        trigger_if = {
+            limit = { omni_matchmaking_has_context = yes }
+            exists = scope:target.employer.current_ruler
+            befriend_potential_trigger = yes
+            scope:actor = { omni_ruler_available_for_court_action_trigger = yes }
+            befriend_allowed_trigger = yes
+        }
+        trigger_else = { always = no }
+    }
+    effect = { befriend_effect = yes }
+}
+
+omni_matchmaking_already_friends = {
+    scope = character
+    saved_scopes = { actor target }
+    is_shown = {
+        trigger_if = {
+            limit = { omni_matchmaking_has_context = yes }
+            scope:target = { is_friend = scope:actor.current_ruler }
+        }
+        trigger_else = { always = no }
+    }
+}
+
+omni_matchmaking_recruit = {
+    scope = character
+    saved_scopes = { actor target }
+    ai_is_valid = { always = no }
+    is_valid = {
+        trigger_if = {
+            limit = { omni_matchmaking_has_context = yes }
+            omni_recruit_potential_trigger = yes
+            omni_recruit_can_leave_trigger = yes
+            omni_recruit_offer_affordable_trigger = yes
+            scope:target = {
+                is_adult = yes
+                NOT = { has_variable = omni_recruit_offer_cooldown }
+            }
+        }
+        trigger_else = { always = no }
+    }
+    effect = {
+        if = {
+            limit = { omni_recruit_offer_friend_trigger = yes }
+            scope:actor = { add_treasury = -10 add_political_influence = -5 }
+        }
+        else = {
+            scope:actor = { add_treasury = -20 add_political_influence = -10 }
+        }
+        scope:target = { set_variable = { name = omni_recruit_offer_cooldown days = 90 } }
+        random_list = {
+            10 = {
+                modifier = {
+                    factor = 9
+                    omni_recruit_offer_friend_trigger = yes
+                }
+                omni_recruit_character_effect = yes
+                scope:actor = { trigger_event = { id = omni_recruit_offer.1 } }
+            }
+            20 = {
+                modifier = {
+                    factor = 0.5
+                    omni_recruit_offer_friend_trigger = yes
+                }
+                scope:actor = { trigger_event = { id = omni_recruit_offer.2 } }
+            }
+        }
+    }
+}
+
+omni_matchmaking_marriage = {
+    scope = character
+    saved_scopes = { actor target }
+    ai_is_valid = { always = no }
+    is_valid = {
+        trigger_if = {
+            limit = { omni_matchmaking_has_context = yes }
+            trigger_if = {
+                limit = { scope:target.employer = scope:actor }
+                OR = {
+                    AND = {
+                        omni_arrange_marriage_potential_trigger = yes
+                        omni_arrange_marriage_allowed_trigger = yes
+                    }
+                    AND = {
+                        omni_arrange_marriage_snakefolk_potential_trigger = yes
+                        omni_arrange_marriage_snakefolk_allowed_trigger = yes
+                    }
+                }
+            }
+            trigger_else_if = {
+                limit = { scope:target = { is_ruler = yes } }
+                OR = {
+                    omni_dynastic_alliance_allowed_trigger = yes
+                    AND = {
+                        omni_propose_dynastic_marriage_potential_trigger = yes
+                        omni_propose_dynastic_marriage_allowed_trigger = yes
+                    }
+                }
+            }
+            trigger_else = {
+                scope:target.employer = { in_diplomatic_range = scope:actor }
+                omni_propose_marriage_potential_trigger = yes
+                omni_propose_marriage_allowed_trigger = yes
+            }
+        }
+        trigger_else = { always = no }
+    }
+}

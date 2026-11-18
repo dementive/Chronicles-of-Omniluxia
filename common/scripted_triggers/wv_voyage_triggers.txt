@@ -1,0 +1,50 @@
+﻿# Stellarix Voyage to World's End: scripted triggers (country scope).
+
+wv_can_afford = {
+	var:wv_purse >= $AMOUNT$
+}
+
+# Paid district options of 40 gold or more: Charias halves them, a Gellazani charm pays for one.
+wv_can_afford_district = {
+	OR = {
+		var:wv_purse >= $AMOUNT$
+		has_variable = wv_charm
+		AND = {
+			has_variable = wv_c_appr
+			var:wv_purse >= $HALF$
+		}
+	}
+}
+
+# Paid district options under 40 gold: the charm does not apply.
+wv_can_afford_district_small = {
+	OR = {
+		var:wv_purse >= $AMOUNT$
+		AND = {
+			has_variable = wv_c_appr
+			var:wv_purse >= $HALF$
+		}
+	}
+}
+
+wv_berths_free = {
+	var:wv_berths < 3
+}
+
+wv_has_room = {
+	var:wv_slots <= $FREE$
+}
+
+wv_laden = {
+	var:wv_chest = 2
+}
+
+# The port's owner is at war with us, or the city is occupied.
+wv_port_closed = {
+	p:$PROV$ = {
+		OR = {
+			owner = { war_with = root }
+			has_siege = yes
+		}
+	}
+}

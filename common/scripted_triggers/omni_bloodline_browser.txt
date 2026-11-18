@@ -1,0 +1,34 @@
+﻿# Character scope; root is the player country for cached-list filtering.
+omni_bl_marriage_prospect_trigger = {
+    is_alive = yes
+    OR = {
+        is_adult = yes
+        AND = {
+            age >= 10
+            is_ruler = no
+            from_ruler_family = yes
+            employer = { is_monarchy = yes }
+        }
+    }
+    is_married = no
+    prisoner = no
+    is_mercenary = no
+    exists = employer
+    NOR = {
+        has_variable = betrothed_flag
+        has_variable = attempted_marriage
+        has_variable = is_the_revant
+        has_character_modifier = disloyal_successor_cmod
+    }
+    employer = { NOR = { tag = REB tag = BAR tag = REV } }
+}
+
+omni_bl_matches_filter_trigger = {
+    OR = {
+        root = { var:omni_bl_filter = 0 }
+        AND = { root = { var:omni_bl_filter = 1 } employer = root }
+        AND = { root = { var:omni_bl_filter = 2 } NOT = { employer = root } }
+        AND = { root = { var:omni_bl_filter = 3 } is_ruler = yes }
+        AND = { root = { var:omni_bl_filter = 4 } omni_bl_marriage_prospect_trigger = yes }
+    }
+}

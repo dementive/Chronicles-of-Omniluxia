@@ -1,0 +1,390 @@
+﻿# Shared by native interactions and Bloodlines row actions.
+# Holder-row bindings can run while the UI is creating or clearing its scopes.
+omni_matchmaking_has_context = {
+    trigger_if = {
+        limit = {
+            exists = scope:actor
+            exists = scope:target
+        }
+        exists = scope:actor.current_ruler
+        exists = scope:target.employer
+    }
+    trigger_else = { always = no }
+}
+
+omni_recruit_potential_trigger = {
+	# scope:actor is referenced below and again in allowed_trigger, but was
+	# never checked for existence - the UI evaluates these blocks in contexts
+	# where it is unset, logging "scope:actor trigger [ Failed context switch ]".
+	exists = scope:actor
+	exists = scope:target
+	hidden:scope:target = {
+		is_alive = yes
+		NOT = { employer = scope:actor }
+		NOT = { employer = { tag = REB } }
+		NOT = { employer = { tag = BAR } }
+		is_mercenary = no
+	}
+}
+
+omni_recruit_allowed_trigger = {
+	exists = scope:actor
+	scope:actor = { can_pay_price = recruit_character }
+	omni_recruit_can_leave_trigger = yes
+	scope:target = {
+		is_friend = scope:actor.current_ruler
+		omni_recruit_loyalty_trigger = yes
+	}
+}
+
+omni_recruit_can_leave_trigger = {
+	exists = scope:actor
+	scope:target = {
+		is_ruler = no
+		is_primary_heir = no
+		is_banished = no
+		is_governor = no
+		is_general = no
+		is_admiral = no
+		is_pregnant = no
+		is_mercenary = no
+		prisoner = no
+		employer = { in_diplomatic_range = scope:actor }
+		trigger_if = {
+			limit = {
+				is_married = yes
+				spouse = {
+					employer = scope:target.employer
+					is_alive = yes
+					is_ruler = yes
+				}
+			}
+			NOT = { is_friend = spouse }
+			OR = {
+				loyalty < 20
+				is_rival = spouse
+			}
+		}
+		trigger_if = {
+			limit = {
+				AND = {
+					is_married = yes
+					spouse = {
+						is_alive = yes
+						employer = scope:target.employer
+						OR = {
+							from_ruler_family = yes
+							has_any_office = yes
+							is_head_of_family = yes
+							is_party_leader = yes
+							is_friend = employer.current_ruler
+							is_general = yes
+							is_admiral = yes
+							is_governor = yes
+							is_primary_heir = yes
+						}
+					}
+				}
+			}
+			NOT = { is_friend = spouse }
+			OR = {
+				loyalty < 40
+				is_rival = spouse
+			}
+		}
+	}
+}
+
+omni_recruit_offer_friend_trigger = {
+    exists = scope:actor.current_ruler
+    scope:target = { is_friend = scope:actor.current_ruler }
+}
+
+omni_recruit_offer_affordable_trigger = {
+    trigger_if = {
+        limit = { omni_recruit_offer_friend_trigger = yes }
+        scope:actor = { treasury >= 10 political_influence >= 5 }
+    }
+    trigger_else = {
+        scope:actor = { treasury >= 20 political_influence >= 10 }
+    }
+}
+
+omni_propose_marriage_potential_trigger = {
+	exists = scope:actor
+	exists = scope:target
+	scope:actor = {
+		is_monarchy = yes
+		NOT = { tag = REV }
+	}
+	hidden:scope:target.employer = {
+		NOR = {
+			this = scope:actor
+			tag = REB
+			tag = BAR
+			tag = REV
+		}
+	}
+	hidden:scope:target = {
+		prisoner_valid_for_country_events_trigger = yes
+		is_mercenary = no
+	}
+}
+
+omni_propose_marriage_allowed_trigger = {
+	scope:actor = { omni_ruler_available_for_court_action_trigger = yes }
+	exists = scope:actor
+	exists = scope:target
+	hidden:scope:actor = {
+		is_monarchy = yes
+	}
+	hidden:scope:target.employer = {
+		is_monarchy = yes
+	}
+	scope:target = {
+		is_ruler = no
+		from_ruler_family = yes
+		is_married = no
+		prisoner = no
+		is_mercenary = no
+		age >= 10
+		NOT = {
+			has_character_modifier = disloyal_successor_cmod
+		}
+		NAND = {
+			has_variable = betrothed_flag
+			OR = {
+				scope:actor = { is_ai = yes }
+				custom_tooltip = {
+					text = betrothed_no_tt
+					NOT = { var:betrothed_flag.employer = scope:actor }
+				}
+			}
+		}
+	}
+	trigger_if = {
+		limit = {
+			scope:target = {
+				is_male = yes
+			}
+		}
+		scope:actor = {
+			custom_tooltip = {
+				text = has_valid_marriage_candidate_female
+				OR = {
+					current_ruler = {
+						is_female = yes
+						is_married = no
+						prisoner = no
+					}
+					any_character = {
+						from_ruler_family = yes
+						is_female = yes
+						is_married = no
+						prisoner = no
+						is_mercenary = no
+						age >= 12
+					}
+				}
+			}
+		}
+	}
+	trigger_else = {
+		scope:actor = {
+			custom_tooltip = {
+				text = has_valid_marriage_candidate_male
+				OR = {
+					current_ruler = {
+						is_male = yes
+						is_married = no
+						prisoner = no
+					}
+					any_character = {
+						from_ruler_family = yes
+						is_male = yes
+						is_married = no
+						prisoner = no
+						is_mercenary = no
+						age >= 12
+					}
+				}
+			}
+		}
+	}
+	scope:target.employer = {
+		opinion = {
+			target = scope:actor
+			value >= royal_marriage_acceptance_theirs_vs_ours_cities
+		}
+	}
+	custom_tooltip = royal_marriage_acceptance_tooltip_base
+	custom_tooltip = royal_marriage_acceptance_tooltip_legitimacy
+	trigger_if = {
+		limit = {
+			scope:actor.num_of_cities > scope:target.employer.num_of_cities
+		}
+		custom_tooltip = royal_marriage_acceptance_tooltip_larger
+	}
+	custom_tooltip = {
+		text = "current_marriage_proposal"
+		scope:actor = {
+			NOT = {
+				has_variable = marriage_proposal_ongoing
+			}
+		}
+	}
+}
+
+omni_propose_dynastic_marriage_potential_trigger = {
+	exists = scope:actor
+	exists = scope:target
+	scope:actor = {
+		is_monarchy = yes
+		is_subject = no
+		exists = current_ruler
+		current_ruler = {
+			is_adult = yes
+			is_married = no
+			prisoner = no
+			is_mercenary = no
+			# The Revant cannot marry: 00_biyearly_country.txt executes any spouse.
+			NOT = { has_variable = is_the_revant }
+		}
+	}
+	scope:target = {
+		NOT = { has_variable = is_the_revant }
+		is_ruler = yes
+		is_adult = yes
+		is_married = no
+		prisoner = no
+		is_mercenary = no
+		employer = {
+			is_monarchy = yes
+			is_subject = no
+			has_land = yes
+			NOR = {
+				this = scope:actor
+				tag = REB
+				tag = BAR
+			}
+		}
+	}
+}
+
+omni_propose_dynastic_marriage_allowed_trigger = {
+	scope:actor = {
+		omni_ruler_available_for_court_action_trigger = yes
+		war = no
+		has_civil_war = no
+		NOT = { has_variable = dynastic_marriage_proposal_ongoing }
+		NOT = { has_variable = dynastic_marriage_refused_cooldown }
+		current_ruler = {
+			NOT = { is_same_gender = scope:target }
+			NOT = { is_close_relative = scope:target }
+		}
+	}
+	scope:target = {
+		employer = {
+			war = no
+			has_civil_war = no
+			NOT = { has_variable = dynastic_marriage_proposal_ongoing }
+			NOT = { is_subject_of = scope:actor }
+			in_diplomatic_range = scope:actor
+			# A crown with subjects of its own cannot become a junior crown -
+			# nested subjects are not supported. (Was: only dynastic subjects.)
+			NOT = { any_subject = { always = yes } }
+			opinion = {
+				target = scope:actor
+				value >= 80
+			}
+			num_of_cities <= scope:actor.num_of_cities
+			rank <= scope:actor.rank
+		}
+	}
+}
+
+omni_arrange_marriage_snakefolk_potential_trigger = {
+	exists = scope:actor
+	exists = scope:target
+	scope:actor = {
+		OR = {
+			is_monarchy = yes
+			is_tribal = yes
+			is_republic = yes
+			has_trait = snakefolk_trait
+		}
+	}
+	hidden:scope:target = {
+		is_alive = yes
+		employer = scope:actor
+		has_trait = snakefolk_trait
+		NOT = { employer = { tag = REB } }
+		NOT = { employer = { tag = BAR } }
+		NOT = { has_variable = is_the_revant }
+		OR = {
+			has_same_family = scope:actor.current_ruler
+			is_ruler = yes
+		}
+	}
+}
+
+omni_arrange_marriage_snakefolk_allowed_trigger = {
+	scope:actor = { omni_ruler_available_for_court_action_trigger = yes }
+	exists = scope:target
+	scope:target = {
+		is_married = no
+		is_adult = yes
+		prisoner = no
+	}
+}
+
+omni_arrange_marriage_potential_trigger = {
+	exists = scope:actor
+	exists = scope:target
+	scope:actor = {
+		OR = {
+			is_monarchy = yes
+			is_tribal = yes
+			is_republic = yes
+			NOT = { has_trait  = snakefolk_trait }
+		}
+	}
+	hidden:scope:target = {
+		is_alive = yes
+		employer = scope:actor
+		NOT = { employer = { tag = REB } }
+		NOT = { employer = { tag = BAR } }
+		NOT = { has_variable = is_the_revant }
+		NOT = { has_trait  = snakefolk_trait }
+		OR = {
+			has_same_family = scope:actor.current_ruler
+			is_ruler = yes
+		}
+	}
+}
+
+omni_arrange_marriage_allowed_trigger = {
+	scope:actor = { omni_ruler_available_for_court_action_trigger = yes }
+	exists = scope:target
+	scope:target = {
+		is_married = no
+		is_adult = yes
+		prisoner = no
+	}
+}
+
+omni_recruit_loyalty_trigger = {
+	NOT = { loyalty > 70 }
+	trigger_if = {
+		limit = {
+			OR = {
+				from_ruler_family = yes
+				has_any_office = yes
+				is_head_of_family = yes
+				is_party_leader = yes
+				is_friend = employer.current_ruler
+			}
+		}
+		NOT = { loyalty > 40 }
+	}
+}

@@ -1,0 +1,64 @@
+﻿omni_dynastic_alliance_court_trigger = {
+    has_land = yes
+    is_subject = no
+    OR = { is_monarchy = yes is_tribal = yes }
+    exists = current_ruler
+}
+
+omni_dynastic_alliance_potential_trigger = {
+    exists = scope:actor
+    exists = scope:target
+    scope:actor = { omni_dynastic_alliance_court_trigger = yes }
+    scope:target = {
+        is_ruler = yes
+        employer = {
+            NOT = { this = scope:actor }
+            omni_dynastic_alliance_court_trigger = yes
+        }
+    }
+}
+
+omni_dynastic_alliance_match_trigger = {
+    omni_dynastic_alliance_potential_trigger = yes
+    scope:actor = {
+        war = no
+        has_civil_war = no
+        omni_ruler_available_for_court_action_trigger = yes
+        current_ruler = {
+            is_alive = yes
+            is_adult = yes
+            is_married = no
+            prisoner = no
+            is_mercenary = no
+            NOR = {
+                has_variable = is_the_revant
+                has_variable = betrothed_flag
+                is_same_gender = scope:target
+                is_close_relative = scope:target
+            }
+        }
+    }
+    scope:target = {
+        is_alive = yes
+        is_adult = yes
+        is_married = no
+        prisoner = no
+        is_mercenary = no
+        NOR = { has_variable = is_the_revant has_variable = betrothed_flag }
+        employer = {
+            war = no
+            has_civil_war = no
+            in_diplomatic_range = scope:actor
+        }
+    }
+}
+
+omni_dynastic_alliance_allowed_trigger = {
+    omni_dynastic_alliance_match_trigger = yes
+    scope:actor = {
+        NOT = { has_variable = omni_dynastic_alliance_pending }
+    }
+    scope:target.employer = {
+        NOT = { has_variable = omni_dynastic_alliance_pending }
+    }
+}

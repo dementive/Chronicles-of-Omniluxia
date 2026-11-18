@@ -1,0 +1,128 @@
+﻿# Shared by native Recruit and the Bloodlines action.
+omni_recruit_character_effect = {
+	scope:target = {
+		employer = { # employer upset
+			save_scope_as = recruit_employer_scope
+			add_opinion = { modifier = recruited_character target = scope:actor }
+		}
+		if = { # var for employer event desc
+			limit = {
+				exists = scope:recruit_employer_scope
+			}
+			if = {
+				limit = {
+					is_married = yes
+					spouse = { is_ruler = yes }
+				}
+				set_variable = {
+					name = notable_recruit
+					value = 1
+				}
+			}
+			else_if = {
+				limit = { from_ruler_family = yes }
+				set_variable = {
+					name = notable_recruit
+					value = 2
+				}
+			}
+			else_if = {
+				limit = {
+					OR = {
+						from_ruler_family = yes
+						has_any_office = yes
+						is_head_of_family = yes
+						is_party_leader = yes
+						is_friend = employer.current_ruler
+					}
+				}
+				set_variable = {
+					name = notable_recruit
+					value = 3
+				}
+			}
+			else_if = {
+				limit = {
+					is_married = yes
+					spouse = {
+						employer = PREV.employer
+						OR = {
+							will_defect_unnotable_trigger = yes
+							will_defect_notable_trigger = yes
+						}
+					}
+				}
+				set_variable = {
+					name = notable_recruit
+					value = 4
+				}
+			}
+			else = {
+				set_variable = {
+					name = notable_recruit
+					value = 0
+				}
+			}
+		}
+		if = { # spouse effects, notable or unnotable
+			limit = { is_married = yes }
+			if = {
+				limit = {
+					spouse = {
+						is_alive = yes
+						employer = scope:recruit_employer_scope
+						OR = {
+							will_defect_unnotable_trigger = yes
+							will_defect_notable_trigger = yes
+						}
+					}
+				}
+				move_country = scope:actor
+				spouse = { defect_effect = yes }
+			}
+			else = {
+				divorce_character = spouse
+				move_country = scope:actor
+			}
+		}
+		else = { move_country = scope:actor } # for tooltip
+		if = { # children effects, only unnotable
+			limit = {
+				num_of_children > 0
+				any_child = {
+					is_alive = yes
+					is_married = no
+					employer = scope:recruit_employer_scope
+					will_defect_unnotable_trigger = yes
+				}
+			}
+			every_child = {
+				limit = {
+					is_alive = yes
+					is_married = no
+					employer = scope:recruit_employer_scope
+					will_defect_unnotable_trigger = yes
+				}
+				defect_effect = yes
+			}
+		}
+		hidden_effect = { # personal effects
+			remove_character_modifier = foreign_citizen
+			add_loyalty = granted_citizenship
+			set_as_minor_character = THIS
+			set_home_country = employer
+			if = {
+				limit = { has_variable = came_from }
+				remove_variable = came_from
+			}
+		}
+		if = { # event for old employer
+			limit = {
+				scope:target = { has_variable = notable_recruit }
+			}
+			scope:recruit_employer_scope = {
+				trigger_event = { id = scheme.16 }
+			}
+		}
+	}
+}

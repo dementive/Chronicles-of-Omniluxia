@@ -1,0 +1,104 @@
+﻿# Character scope. RULER is the character running the scheme.
+purge_court_candidate_trigger = {
+	employer = $RULER$.employer
+	is_alive = yes
+	is_adult = yes
+	is_ruler = no
+	is_co_ruler = no
+	is_primary_heir = no
+	is_mercenary = no
+	prisoner = no
+	NOR = {
+		has_variable = on_omni_adventure
+		has_character_modifier = disloyal_successor_cmod
+	}
+	employer = {
+		trigger_if = {
+			limit = { is_monarchy = yes exists = consort }
+			NOT = { consort = prev }
+		}
+	}
+	purge_court_charge_trigger = yes
+	$RULER$ = {
+		NOT = { is_target_in_variable_list = { name = purge_court_heard target = prev } }
+	}
+}
+
+purge_court_charge_trigger = {
+	OR = {
+		has_trait = vampire_trait
+		has_trait = corrupt
+		loyalty < 33
+		has_trait = lunatic
+		has_trait = reckless
+		has_trait = arrogant
+		has_trait = gluttonous
+		has_trait = deceitful
+		has_trait = cruel
+	}
+}
+
+purge_court_start_trigger = {
+	is_ruler = yes
+	is_alive = yes
+	omni_char_available_for_court_action_trigger = yes
+	scheme_preconditions_ruler = yes
+	NOT = { has_character_modifier = indisposed_charmod }
+	custom_tooltip = {
+		text = purge_court_ambition_wealth_tt
+		wealth >= 100
+	}
+	custom_tooltip = {
+		text = purge_court_ambition_no_scheme_tt
+		NOT = { has_variable = ongoing_scheme_target }
+	}
+	custom_tooltip = {
+		text = purge_court_ambition_cooldown_tt
+		NOT = { has_variable = purge_court_cooldown }
+	}
+	custom_tooltip = {
+		text = purge_court_ambition_candidate_tt
+		employer = {
+			any_character = {
+				purge_court_candidate_trigger = { RULER = $RULER$ }
+			}
+		}
+	}
+}
+
+purge_court_active_trigger = {
+	is_alive = yes
+	is_ruler = yes
+	has_ambition = scheme_purge_court
+	wealth > 0
+	scheme_preconditions_ruler = yes
+	NOT = { has_character_modifier = indisposed_charmod }
+}
+
+purge_court_pending_hearing_trigger = {
+	has_variable = purge_court_pending_target
+	has_variable = purge_court_hearing_serial
+	exists = scope:purge_hearing_serial
+	var:purge_court_hearing_serial = scope:purge_hearing_serial
+}
+
+purge_court_live_hearing_trigger = {
+	purge_court_active_trigger = yes
+	purge_court_pending_hearing_trigger = yes
+	exists = scope:purge_country
+	employer = scope:purge_country
+	exists = scope:purge_target
+	scope:purge_target = {
+		purge_court_candidate_trigger = { RULER = root }
+	}
+}
+
+purge_court_destination_trigger = {
+	exists = scope:purge_destination
+	scope:purge_destination = { purge_court_exile_country_trigger = yes }
+}
+
+purge_court_exile_country_trigger = {
+	num_of_cities > 0
+	NOT = { this = scope:purge_country }
+}

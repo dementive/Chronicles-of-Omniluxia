@@ -310,47 +310,42 @@ scheme_assimilate_pops_in_holding_finish = {
 }
 
 scheme_invest_in_ports_start = {
-	effect = {
-		save_scope_as = ongoing_scheme_target
-		set_variable = {
-			name = ongoing_scheme_target
-			value = scope:ongoing_scheme_target
-			days = 400
-		}
-		add_character_modifier = {
-			name = "encroaching_on_public_land_modifier"
-			duration = 365
-		}
-		set_variable = {
-			name = expanded_ports
-			days = 1825
-		}
-		random_holdings = {
-			limit = {
-				can_have_port = yes
-				has_city_status = yes
-				has_construction = no
-				num_of_port_building >= 1
-				num_of_port_building < 5
-				NOT = {
-					has_province_modifier = urban_development_in_progress
-				}
-			}
-			save_scope_as = ports_holding
-		}
-	}	
+    effect = {
+        save_scope_as = ongoing_scheme_target
+        set_variable = { name = ongoing_scheme_target value = scope:ongoing_scheme_target days = 400 }
+        add_character_modifier = { name = encroaching_on_public_land_modifier duration = 365 }
+        set_variable = { name = expanded_ports days = 1825 }
+        random_holdings = {
+            limit = { omni_port_investment_target = { CHARACTER = root } }
+            save_scope_as = ports_holding
+        }
+    }
 }
 
 scheme_invest_in_ports_finish = {
-	effect = {
-		custom_tooltip = scheme_ambition_invest_in_ports
-		hidden_effect = {
-			scope:ports_holding = {
-				add_building_level = port_building
-			}
-			remove_scheme_variables_effect = yes
-		}
-	}
+    effect = {
+        # Recheck the exact saved holding: never silently switch to a new one.
+        if = {
+            limit = {
+                has_variable = ongoing_scheme_target
+                exists = scope:ports_holding
+                scope:ports_holding = { omni_port_investment_target = { CHARACTER = root } }
+            }
+            custom_tooltip = scheme_ambition_invest_in_ports
+            hidden_effect = { scope:ports_holding = { add_building_level = port_building } }
+        }
+        hidden_effect = {
+            remove_character_modifier = encroaching_on_public_land_modifier
+            remove_scheme_variables_effect = yes
+        }
+    }
+}
+
+omni_port_investment_abort = {
+    effect = {
+        remove_character_modifier = encroaching_on_public_land_modifier
+        remove_scheme_variables_effect = yes
+    }
 }
 
 scheme_exploit_populous_start = {

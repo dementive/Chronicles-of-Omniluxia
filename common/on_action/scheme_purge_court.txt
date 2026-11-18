@@ -8,27 +8,68 @@
 }
 
 scheme_purge_court_monthly = {
-	random_events = {
-		2 = 0
-		1 = scheme_purge_court.1
+	effect = {
+		# A queued hearing can outlive its accused when the game continues.
+		if = {
+			limit = {
+				has_variable = purge_court_pending_target
+				trigger_if = {
+					limit = { exists = var:purge_court_pending_target }
+					var:purge_court_pending_target = {
+						NOT = { purge_court_candidate_trigger = { RULER = root } }
+					}
+				}
+				trigger_else = { always = yes }
+			}
+			remove_variable = purge_court_pending_target
+		}
+		if = {
+			limit = {
+				purge_court_active_trigger = yes
+				NOT = { has_variable = purge_court_pending_target }
+				employer = {
+					any_character = { purge_court_candidate_trigger = { RULER = root } }
+				}
+			}
+			if = {
+				limit = { NOT = { has_variable = purge_court_opened_hearing } }
+				purge_court_open_hearing_effect = yes
+			}
+			else = {
+				random_list = {
+					2 = { }
+					1 = { purge_court_open_hearing_effect = yes }
+				}
+			}
+		}
 	}
 }
 
 scheme_purge_court_finish = {
 	effect = {
-		custom_tooltip = purge_court_finish_tt
-		employer = { add_tyranny = 3 }
-		add_corruption = 3
-		remove_scheme_variables_effect = yes
-		set_variable = { name = purge_court_cooldown days = 1095 }
+		if = {
+			limit = { has_variable = purge_court_resolved_hearing }
+			custom_tooltip = purge_court_finish_tt
+			employer = { add_tyranny = 3 }
+			add_corruption = 3
+			set_variable = { name = purge_court_cooldown days = 1095 }
+			if = {
+				limit = { has_variable = purge_court_removed_courtier }
+				trigger_event = scheme_purge_court.3
+			}
+			else = {
+				trigger_event = scheme_purge_court.4
+			}
+		}
+		else = {
+			trigger_event = scheme_purge_court.2
+		}
+		purge_court_cleanup_effect = yes
 	}
 }
 
 scheme_purge_court_abort = {
 	effect = {
-		# Used by the character-window "Persuade to Drop Scheme" button.
-		# Stopping early removes the purge's target marker and ongoing cost modifier,
-		# but does not apply the completion costs or cooldown.
-		remove_scheme_variables_effect = yes
+		purge_court_abort_effect = yes
 	}
 }

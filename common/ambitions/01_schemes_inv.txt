@@ -296,29 +296,8 @@ scheme_invest_in_port = {
 		employer = { is_tribal = no }
 		wealth >= 300
 		num_holdings_owned > 0
-		any_holdings = {
-			can_have_port = yes
-			has_city_status = yes
-			has_construction = no
-			num_of_port_building >= 1
-			num_of_port_building < 5
-			NOT = {
-				has_province_modifier = urban_development_in_progress
-			}
-			NOT = {
-				any_neighbor_province = {
-					num_of_port_building >= 1
-				}
-			}
-			THIS.AREA = {
-				NOT = {
-					any_area_province = {
-						num_of_port_building < 1
-						num_of_port_building >= 5
-					}
-				}
-			}
-		}
+		any_holdings = { omni_port_investment_target = { CHARACTER = root } }
+
 		OR = {
 			title_importance_svalue > 1.25
 			power_base >= 1
@@ -341,13 +320,13 @@ scheme_invest_in_port = {
 			is_alive = no
 			prisoner = yes
 			has_character_modifier = indisposed_charmod
-			scope:ports_holding = {
-				OR = {
-					has_construction = yes
-					num_of_port_building >= 1
-					has_province_modifier = urban_development_in_progress
-				}
-			}
+            NOT = { exists = scope:ports_holding }
+            AND = {
+                exists = scope:ports_holding
+                scope:ports_holding = {
+                    NOT = { omni_port_investment_target = { CHARACTER = root } }
+                }
+            }
 		}
 	}
 	
@@ -378,7 +357,7 @@ scheme_invest_in_port = {
 	#on_monthly = xyz
 	on_start = scheme_invest_in_ports_start
 	on_finish = scheme_invest_in_ports_finish
-	on_abort = scheme_abort
+	on_abort = omni_port_investment_abort
 
 	modifier = {
 		monthly_character_wealth = -10

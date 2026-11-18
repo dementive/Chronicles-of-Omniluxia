@@ -123,6 +123,7 @@ territory_priority_for_state_capital = {
         }
         if = {
             limit = {
+                exists = this
                 has_province_rank = city_metropolis
             }
             add = 2000000
@@ -277,6 +278,7 @@ province_capital_price_territory_scope = {
 	value = 30
 	if = {
 		limit = {
+			exists = this
 			has_province_rank = city_metropolis
 		}
 		subtract = 10
@@ -610,7 +612,15 @@ territory_priority_for_having_fort = {
             # Higher priority if metropolis
             if = {
                 limit = {
-                    has_province_rank = city_metropolis
+                    # The cached score can lack a live province. Resolve the
+                    # candidate through its state's province iterator.
+                    save_temporary_scope_as = omni_fort_rank_candidate
+                    state = {
+                        any_state_province = {
+                            this = scope:omni_fort_rank_candidate
+                            has_province_rank = city_metropolis
+                        }
+                    }
                 }
                 add = 100000
             }
