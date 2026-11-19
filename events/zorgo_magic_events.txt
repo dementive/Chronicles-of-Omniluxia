@@ -1941,7 +1941,13 @@ me_zorgo_magic_focus.10 = { # Omnic School
             omni_spell_mana_cost_effect = { BASE = 25 }
         }
         scope:target = {
-            add_health = -2
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                add_health = -2
+            }
         }
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = 25_mana_tt
@@ -1963,7 +1969,13 @@ me_zorgo_magic_focus.10 = { # Omnic School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.08
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.08
+                }
             }
         }
         # Balance 2026-11-18: 15% army damage had no cooldown (spam-able anywhere).
@@ -1988,20 +2000,26 @@ me_zorgo_magic_focus.10 = { # Omnic School
         }
         scope:target = {
             if = {
-                limit = {
-                    OR = {
-                        has_trait = vampire_trait
-                        has_trait = drow_trait
-                        has_trait = deep_gnome_trait
-                        has_trait = goblin_trait
-                        has_trait = wraith_trait
-                        has_trait = necromancer_trait
-                        has_trait = warlock_trait
-                        has_trait = lich_trait
+                limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                if = {
+                    limit = {
+                        OR = {
+                            has_trait = vampire_trait
+                            has_trait = drow_trait
+                            has_trait = deep_gnome_trait
+                            has_trait = goblin_trait
+                            has_trait = wraith_trait
+                            has_trait = necromancer_trait
+                            has_trait = warlock_trait
+                            has_trait = lich_trait
+                        }
                     }
-                }
-                death = {
-                    death_reason = death_magic
+                    death = {
+                        death_reason = death_magic
+                    }
                 }
             }
         }
@@ -2028,7 +2046,13 @@ me_zorgo_magic_focus.10 = { # Omnic School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.07
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.07
+                }
             }
         }
         custom_tooltip = lubes_spell_tt
@@ -2064,8 +2088,14 @@ me_zorgo_magic_focus.10 = { # Omnic School
         scope:target = {
             every_character_unit = {
                 limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_blinding_flash_mod } remove_unit_modifier = omni_blinding_flash_mod }
-                add_unit_modifier = { name = omni_blinding_flash_mod duration = 30 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = { limit = { has_unit_modifier = omni_blinding_flash_mod } remove_unit_modifier = omni_blinding_flash_mod }
+                    add_unit_modifier = { name = omni_blinding_flash_mod duration = 30 }
+                }
             }
         }
         custom_tooltip = tier_one_spell_tt
@@ -2095,8 +2125,14 @@ me_zorgo_magic_focus.10 = { # Omnic School
         scope:target = {
             every_character_unit = {
                 limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_chain_lightning_mod } remove_unit_modifier = omni_chain_lightning_mod }
-                add_unit_modifier = { name = omni_chain_lightning_mod duration = 30 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = { limit = { has_unit_modifier = omni_chain_lightning_mod } remove_unit_modifier = omni_chain_lightning_mod }
+                    add_unit_modifier = { name = omni_chain_lightning_mod duration = 30 }
+                }
             }
         }
         custom_tooltip = tier_two_spell_tt
@@ -2127,8 +2163,14 @@ me_zorgo_magic_focus.10 = { # Omnic School
         scope:target = {
             every_character_unit = {
                 limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_gravity_well_mod } remove_unit_modifier = omni_gravity_well_mod }
-                add_unit_modifier = { name = omni_gravity_well_mod duration = 30 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = { limit = { has_unit_modifier = omni_gravity_well_mod } remove_unit_modifier = omni_gravity_well_mod }
+                    add_unit_modifier = { name = omni_gravity_well_mod duration = 30 }
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_gravity_well days = 1 } }
@@ -2206,10 +2248,7 @@ me_zorgo_magic_focus.11 = { # Aldic School
             omni_spell_mana_cost_effect = { BASE = 150 }
         }
         scope:target.country = {
-            add_country_modifier = {
-                name = aldic_cleric_spell_t3_mod
-                duration = 365
-            }
+            omni_apply_hostile_country_spell_effect = { MOD = aldic_cleric_spell_t3_mod DAYS = 365 TIER = 3 }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_pestilence days = 365 } }
         custom_tooltip = omni_spell_cooldown_365_tt
@@ -2233,14 +2272,20 @@ me_zorgo_magic_focus.11 = { # Aldic School
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
         scope:target = {
-            random_list = {
-                1 = { force_add_trait = incapable }
-                1 = { force_add_trait = dumb }
-                1 = { force_add_trait = invalid }
-                1 = { force_add_trait = schizophrenic }
-                1 = { force_add_trait = epileptic }
-                1 = { force_add_trait = brain_damaged }
-                1 = { force_add_trait = dementia }
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                random_list = {
+                    1 = { force_add_trait = incapable }
+                    1 = { force_add_trait = dumb }
+                    1 = { force_add_trait = invalid }
+                    1 = { force_add_trait = schizophrenic }
+                    1 = { force_add_trait = epileptic }
+                    1 = { force_add_trait = brain_damaged }
+                    1 = { force_add_trait = dementia }
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_mind_break days = 180 } }
@@ -2269,7 +2314,13 @@ me_zorgo_magic_focus.11 = { # Aldic School
         # (the other Tier II 50-mana army strike).
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.08
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.08
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_warped_flesh days = 1 } }
@@ -2294,8 +2345,14 @@ me_zorgo_magic_focus.11 = { # Aldic School
             omni_spell_mana_cost_effect = { BASE = 150 }
         }
         scope:target = {
-            death = {
-                death_reason = death_magic
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                death = {
+                    death_reason = death_magic
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_warped_flesh_ii days = 180 } }
@@ -2333,8 +2390,14 @@ me_zorgo_magic_focus.11 = { # Aldic School
         scope:target = {
             every_character_unit = {
                 limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_arcane_volley_mod } remove_unit_modifier = omni_arcane_volley_mod }
-                add_unit_modifier = { name = omni_arcane_volley_mod duration = 30 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = { limit = { has_unit_modifier = omni_arcane_volley_mod } remove_unit_modifier = omni_arcane_volley_mod }
+                    add_unit_modifier = { name = omni_arcane_volley_mod duration = 30 }
+                }
             }
         }
         custom_tooltip = tier_one_spell_tt
@@ -2364,8 +2427,14 @@ me_zorgo_magic_focus.11 = { # Aldic School
         scope:target = {
             every_character_unit = {
                 limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_corrosive_rain_mod } remove_unit_modifier = omni_corrosive_rain_mod }
-                add_unit_modifier = { name = omni_corrosive_rain_mod duration = 30 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = { limit = { has_unit_modifier = omni_corrosive_rain_mod } remove_unit_modifier = omni_corrosive_rain_mod }
+                    add_unit_modifier = { name = omni_corrosive_rain_mod duration = 30 }
+                }
             }
         }
         custom_tooltip = tier_two_spell_tt
@@ -2395,7 +2464,13 @@ me_zorgo_magic_focus.11 = { # Aldic School
         scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 95 } }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.15
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.15
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_meteor_strike days = 1 } }
@@ -2472,7 +2547,13 @@ me_zorgo_magic_focus.12 = { # Amten School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.04
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.04
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_winds_strike days = 1 } }
@@ -2497,7 +2578,13 @@ me_zorgo_magic_focus.12 = { # Amten School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.02
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.02
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_fireball_strike days = 1 } }
@@ -2525,9 +2612,15 @@ me_zorgo_magic_focus.12 = { # Amten School
                 limit = {
                     is_army = yes
                 }
-                add_unit_modifier = {
-                    name = omni_blighted_ground_mod
-                    duration = 30
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    add_unit_modifier = {
+                        name = omni_blighted_ground_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -2555,9 +2648,15 @@ me_zorgo_magic_focus.12 = { # Amten School
                 limit = {
                     is_army = yes
                 }
-                add_unit_modifier = {
-                    name = omni_mudbind_spell_mod
-                    duration = 30
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    add_unit_modifier = {
+                        name = omni_mudbind_spell_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -2596,8 +2695,14 @@ me_zorgo_magic_focus.12 = { # Amten School
         scope:target = {
             every_character_unit = {
                 limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_frostbite_wind_mod } remove_unit_modifier = omni_frostbite_wind_mod }
-                add_unit_modifier = { name = omni_frostbite_wind_mod duration = 30 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = { limit = { has_unit_modifier = omni_frostbite_wind_mod } remove_unit_modifier = omni_frostbite_wind_mod }
+                    add_unit_modifier = { name = omni_frostbite_wind_mod duration = 30 }
+                }
             }
         }
         custom_tooltip = tier_one_spell_tt
@@ -2627,8 +2732,14 @@ me_zorgo_magic_focus.12 = { # Amten School
         scope:target = {
             every_character_unit = {
                 limit = { is_army = yes }
-                if = { limit = { has_unit_modifier = omni_seismic_tremor_mod } remove_unit_modifier = omni_seismic_tremor_mod }
-                add_unit_modifier = { name = omni_seismic_tremor_mod duration = 30 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = { limit = { has_unit_modifier = omni_seismic_tremor_mod } remove_unit_modifier = omni_seismic_tremor_mod }
+                    add_unit_modifier = { name = omni_seismic_tremor_mod duration = 30 }
+                }
             }
         }
         custom_tooltip = tier_two_spell_tt
@@ -2659,8 +2770,14 @@ me_zorgo_magic_focus.12 = { # Amten School
         scope:target = {
             every_character_unit = {
                 limit = { OR = { is_army = yes is_navy = yes } }
-                if = { limit = { has_unit_modifier = omni_glacial_tomb_mod } remove_unit_modifier = omni_glacial_tomb_mod }
-                add_unit_modifier = { name = omni_glacial_tomb_mod duration = 30 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = { limit = { has_unit_modifier = omni_glacial_tomb_mod } remove_unit_modifier = omni_glacial_tomb_mod }
+                    add_unit_modifier = { name = omni_glacial_tomb_mod duration = 30 }
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_glacial_tomb days = 1 } }
@@ -2712,14 +2829,20 @@ me_zorgo_magic_focus.13 = { # Melodian School
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
         scope:target = {
-            random_list = {
-                1 = { force_add_trait = leper }
-                1 = { force_add_trait = cancer }
-                1 = { force_add_trait = depressed }
-                1 = { force_add_trait = plague }
-                1 = { force_add_trait = pox }
-                1 = { force_add_trait = vampiric_fever }
-                1 = { force_add_trait = paralysis }
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                random_list = {
+                    1 = { force_add_trait = leper }
+                    1 = { force_add_trait = cancer }
+                    1 = { force_add_trait = depressed }
+                    1 = { force_add_trait = plague }
+                    1 = { force_add_trait = pox }
+                    1 = { force_add_trait = vampiric_fever }
+                    1 = { force_add_trait = paralysis }
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_curse days = 180 } }
@@ -2742,7 +2865,13 @@ me_zorgo_magic_focus.13 = { # Melodian School
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
         scope:target = {
-            add_health = -3
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                add_health = -3
+            }
         }
         scope:selected_mage = {
             add_health = 2
@@ -2766,7 +2895,11 @@ me_zorgo_magic_focus.13 = { # Melodian School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 100 }
         }
-        omni_apply_skull_curse = yes
+        if = {
+            limit = { scope:target = { omni_personal_ward_blocks = { TIER = 2 } } }
+            scope:target = { omni_spend_personal_ward = yes }
+        }
+        else = { omni_apply_skull_curse = yes }
         scope:selected_mage = { set_variable = { name = omni_cd_curse_ii days = 180 } }
         custom_tooltip = omni_spell_cooldown_180_tt
         custom_tooltip = tier_two_spell_tt
@@ -2789,7 +2922,13 @@ me_zorgo_magic_focus.13 = { # Melodian School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.12
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.12
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_death_ray days = 1 } }
@@ -2807,14 +2946,20 @@ me_zorgo_magic_focus.13 = { # Melodian School
                 has_variable = warlock_t3_unlocked_var
             }
         }
-        scope:target = {
-            force_add_trait = melodian_warlock_spell_t2_trait
-            set_variable = { name = omni_spell_active_melodian_warlock_spell_t2_trait days = 180 }
-            save_scope_as = remove_magic_target
+        if = {
+            limit = { scope:target = { omni_personal_ward_blocks = { TIER = 2 } } }
+            scope:target = { omni_spend_personal_ward = yes }
         }
-        trigger_event = {
-            id = me_zorgo_magic_focus.22
-            days = 180
+        else = {
+            scope:target = {
+                force_add_trait = melodian_warlock_spell_t2_trait
+                set_variable = { name = omni_spell_active_melodian_warlock_spell_t2_trait days = 180 }
+                save_scope_as = remove_magic_target
+            }
+            trigger_event = {
+                id = me_zorgo_magic_focus.22
+                days = 180
+            }
         }
         scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
         custom_tooltip = tier_two_spell_tt
@@ -2834,7 +2979,13 @@ me_zorgo_magic_focus.13 = { # Melodian School
             add_health = -0.5
         }
         scope:target = {
-            force_add_trait = blood_curse_trait
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                force_add_trait = blood_curse_trait
+            }
         }
         scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
         custom_tooltip = ponikar_spell_tt
@@ -2860,9 +3011,15 @@ me_zorgo_magic_focus.13 = { # Melodian School
                 limit = {
                     is_navy = yes
                 }
-                add_unit_modifier = {
-                    name = omni_cursed_rigging_spell_mod
-                    duration = 30
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    add_unit_modifier = {
+                        name = omni_cursed_rigging_spell_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -2893,9 +3050,15 @@ me_zorgo_magic_focus.13 = { # Melodian School
                         is_navy = yes
                     }
                 }
-                add_unit_modifier = {
-                    name = omni_fear_hex_spell_mod
-                    duration = 30
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    add_unit_modifier = {
+                        name = omni_fear_hex_spell_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -2927,9 +3090,15 @@ me_zorgo_magic_focus.13 = { # Melodian School
                         is_navy = yes
                     }
                 }
-                add_unit_modifier = {
-                    name = omni_storm_wrack_spell_mod
-                    duration = 30
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    add_unit_modifier = {
+                        name = omni_storm_wrack_spell_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -2952,7 +3121,13 @@ me_zorgo_magic_focus.13 = { # Melodian School
         scope:target = {
             every_character_unit = {
                 limit = { is_army = yes }
-                add_unit_modifier = { name = offensive_war_magic_spell_1_mod duration = 60 }
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    add_unit_modifier = { name = offensive_war_magic_spell_1_mod duration = 60 }
+                }
             }
         }
         custom_tooltip = offensive_war_magic_spell_1_tt
@@ -3008,7 +3183,13 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.30
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.30
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_great_flare days = 1 } }
@@ -3039,7 +3220,13 @@ me_zorgo_magic_focus.14 = { # Folk Magic
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
         scope:target = {
-            add_health = -2
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                add_health = -2
+            }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_blade_storm days = 90 } }
         custom_tooltip = omni_spell_cooldown_90_tt
@@ -3076,7 +3263,13 @@ me_zorgo_magic_focus.14 = { # Folk Magic
             omni_spell_mana_cost_effect = { BASE = 15 }
         }
         scope:target = {
-            add_gold = -25
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                add_gold = -25
+            }
         }
         add_treasury = 25
         scope:selected_mage = { set_variable = { name = omni_cd_steal days = 30 } }
@@ -3117,7 +3310,13 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.04
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.04
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_stinging_nettles days = 1 } }
@@ -3150,7 +3349,13 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.04
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.04
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_serpentine_swords days = 1 } }
@@ -3183,7 +3388,13 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.05
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.05
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_imperial_dragons_claw days = 1 } }
@@ -3214,14 +3425,20 @@ me_zorgo_magic_focus.14 = { # Folk Magic
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
         scope:target = {
-            if = { 
-                limit = { has_trait = maimed }
-                death = {
-                    death_reason = death_magic
-                }
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                omni_spend_personal_ward = yes
             }
             else = {
-                force_add_trait = maimed
+                if = {
+                    limit = { has_trait = maimed }
+                    death = {
+                        death_reason = death_magic
+                    }
+                }
+                else = {
+                    force_add_trait = maimed
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_sword_of_jaoz days = 90 } }
@@ -3252,14 +3469,20 @@ me_zorgo_magic_focus.14 = { # Folk Magic
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
         scope:target = {
-            if = { 
-                limit = { has_trait = blind }
-                death = {
-                    death_reason = death_magic
-                }
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                omni_spend_personal_ward = yes
             }
             else = {
-                force_add_trait = blind
+                if = {
+                    limit = { has_trait = blind }
+                    death = {
+                        death_reason = death_magic
+                    }
+                }
+                else = {
+                    force_add_trait = blind
+                }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_hellas_light days = 90 } }
@@ -3282,7 +3505,13 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.04
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.04
+                }
             }
         }
         custom_tooltip = folk_spell_tt
@@ -3304,7 +3533,13 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.05
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    damage_unit_percent = 0.05
+                }
             }
         }
         # Balance 2026-11-18: 25% damage for 25 mana had no cooldown; now matches Death Ray.
@@ -3626,6 +3861,44 @@ me_zorgo_magic_focus.17 = { # Omnic School
 
     immediate = { scope:selected_mage = { omni_migrate_spell_audit_knowledge = yes } }
 
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                is_alive = yes omni_character_is_eligible_caster = yes
+                omni_knows_spell = { SPELL = personal_ward_ii }
+                has_variable = diviner_t4_unlocked_var
+                omni_can_afford_spell = { BASE = 90 }
+            }
+            scope:target = {
+                is_alive = yes omni_character_is_eligible_caster = yes
+                employer = root
+                omni_personal_ward_available = yes
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 90 } }
+        scope:target = { omni_apply_personal_ward_effect = { RANK = iii } }
+        custom_tooltip = omni_personal_ward_ii_tt
+        name = "me_zorgo_magic_focus.17.personal_ward_ii"
+    }
+    option = {
+        trigger = {
+            scope:selected_mage = {
+                is_alive = yes omni_character_is_eligible_caster = yes
+                omni_knows_spell = { SPELL = personal_ward }
+                has_variable = diviner_t3_unlocked_var
+                omni_can_afford_spell = { BASE = 50 }
+            }
+            scope:target = {
+                is_alive = yes omni_character_is_eligible_caster = yes
+                employer = root
+                omni_personal_ward_available = yes
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
+        scope:target = { omni_apply_personal_ward_effect = { RANK = ii } }
+        custom_tooltip = omni_personal_ward_tt
+        name = "me_zorgo_magic_focus.17.personal_ward"
+    }
     option = { # Exorcism H1
         trigger = {
             scope:selected_mage = { omni_knows_spell = { SPELL = exorcism } }
@@ -3993,7 +4266,11 @@ me_zorgo_magic_focus.20 = { # Melodian School
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
         scope:target = {
-            add_health = -3
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                omni_spend_personal_ward = yes
+            }
+            else = { add_health = -3 }
         }
         custom_tooltip = omni_withering_touch_spell_tt
         custom_tooltip = tier_two_spell_tt
@@ -4480,6 +4757,32 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         in_combat = yes
                     }
                     if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        if = {
+                            limit = { has_unit_modifier = omni_battle_haste_2_spell_mod }
+                            remove_unit_modifier = omni_battle_haste_2_spell_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_battle_haste_2_spell_mod
+                            duration = 30
+                        }
+                        add_morale = -0.75
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = {
                         limit = { has_unit_modifier = omni_battle_haste_2_spell_mod }
                         remove_unit_modifier = omni_battle_haste_2_spell_mod
                     }
@@ -4489,20 +4792,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                     }
                     add_morale = -0.75
                 }
-            }
-        }
-        else_if = {
-            limit = { exists = scope:battle_enemy_force }
-            scope:battle_enemy_force = {
-                if = {
-                    limit = { has_unit_modifier = omni_battle_haste_2_spell_mod }
-                    remove_unit_modifier = omni_battle_haste_2_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_battle_haste_2_spell_mod
-                    duration = 30
-                }
-                add_morale = -0.75
             }
         }
         custom_tooltip = tier_two_spell_tt
@@ -4537,6 +4826,32 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         in_combat = yes
                     }
                     if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 4 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        if = {
+                            limit = { has_unit_modifier = omni_battle_haste_4_spell_mod }
+                            remove_unit_modifier = omni_battle_haste_4_spell_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_battle_haste_4_spell_mod
+                            duration = 30
+                        }
+                        add_morale = -1.5
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 4 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
+                    if = {
                         limit = { has_unit_modifier = omni_battle_haste_4_spell_mod }
                         remove_unit_modifier = omni_battle_haste_4_spell_mod
                     }
@@ -4548,26 +4863,12 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
             }
         }
-        else_if = {
-            limit = { exists = scope:battle_enemy_force }
-            scope:battle_enemy_force = {
-                if = {
-                    limit = { has_unit_modifier = omni_battle_haste_4_spell_mod }
-                    remove_unit_modifier = omni_battle_haste_4_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_battle_haste_4_spell_mod
-                    duration = 30
-                }
-                add_morale = -1.5
-            }
-        }
         custom_tooltip = tier_four_spell_tt
         custom_tooltip = omni_battle_haste_4_tt
         custom_tooltip = 100_mana_tt
         name = "me_zorgo_magic_focus.29.g"
     }
-    option = { # Death Hex - 50% chance to kill the enemy commander in live combat (1-year cooldown)
+    option = { # Death Hex - 50% chance to kill the enemy commander in live combat
         trigger = {
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:selected_mage = { NOT = { has_variable = omni_cd_death_hex } }
@@ -4586,20 +4887,26 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
             omni_spell_mana_cost_effect = { BASE = 175 }
         }
         scope:battle_enemy_target = {
-            random_list = {
-                50 = {
-                    death = {
-                        killer = scope:selected_mage
-                        death_reason = death_magic
+            if = {
+                limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                omni_spend_personal_ward = yes
+            }
+            else = {
+                random_list = {
+                    50 = {
+                        death = {
+                            killer = scope:selected_mage
+                            death_reason = death_magic
+                        }
                     }
-                }
-                50 = {
+                    50 = {
+                    }
                 }
             }
         }
         scope:selected_mage = { set_variable = { name = omni_cd_death_hex days = 90 } }
         custom_tooltip = omni_spell_cooldown_90_tt
-        custom_tooltip = tier_four_spell_tt
+        custom_tooltip = tier_three_spell_tt
         custom_tooltip = omni_battle_death_hex_tt
         custom_tooltip = 175_mana_tt
         name = "me_zorgo_magic_focus.29.l"
@@ -4624,7 +4931,11 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         if = {
             limit = { exists = scope:battle_enemy_target }
             scope:battle_enemy_target = {
-                add_health = -0.5
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = { add_health = -0.5 }
                 every_character_unit = {
                     limit = {
                         OR = {
@@ -4634,12 +4945,18 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         in_combat = yes
                     }
                     if = {
-                        limit = { has_unit_modifier = omni_igniting_spark_mod }
-                        remove_unit_modifier = omni_igniting_spark_mod
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
                     }
-                    add_unit_modifier = {
-                        name = omni_igniting_spark_mod
-                        duration = 30
+                    else = {
+                        if = {
+                            limit = { has_unit_modifier = omni_igniting_spark_mod }
+                            remove_unit_modifier = omni_igniting_spark_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_igniting_spark_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -4648,12 +4965,18 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
             limit = { exists = scope:battle_enemy_force }
             scope:battle_enemy_force = {
                 if = {
-                    limit = { has_unit_modifier = omni_igniting_spark_mod }
-                    remove_unit_modifier = omni_igniting_spark_mod
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
                 }
-                add_unit_modifier = {
-                    name = omni_igniting_spark_mod
-                    duration = 30
+                else = {
+                    if = {
+                        limit = { has_unit_modifier = omni_igniting_spark_mod }
+                        remove_unit_modifier = omni_igniting_spark_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_igniting_spark_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -4675,13 +4998,18 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 exists = scope:battle_enemy_force
             }
         }
+        clear_saved_scope = omni_ward_damage_unit
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 30 }
         }
         if = {
             limit = { exists = scope:battle_enemy_target }
             scope:battle_enemy_target = {
-                add_health = -1
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = { add_health = -1 }
                 random_character_unit = {
                     limit = {
                         OR = {
@@ -4690,7 +5018,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         }
                         in_combat = yes
                     }
-                    damage_unit_percent = 0.05
+                    save_scope_as = omni_ward_damage_unit
                 }
                 every_character_unit = {
                     limit = {
@@ -4701,12 +5029,22 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         in_combat = yes
                     }
                     if = {
-                        limit = { has_unit_modifier = omni_fireball_mod }
-                        remove_unit_modifier = omni_fireball_mod
+                        limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                        omni_spend_unit_ward = yes
                     }
-                    add_unit_modifier = {
-                        name = omni_fireball_mod
-                        duration = 30
+                    else = {
+                        if = {
+                            limit = { exists = scope:omni_ward_damage_unit this = scope:omni_ward_damage_unit }
+                            damage_unit_percent = 0.05
+                        }
+                        if = {
+                            limit = { has_unit_modifier = omni_fireball_mod }
+                            remove_unit_modifier = omni_fireball_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_fireball_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -4714,14 +5052,20 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         else_if = {
             limit = { exists = scope:battle_enemy_force }
             scope:battle_enemy_force = {
-                damage_unit_percent = 0.05
                 if = {
-                    limit = { has_unit_modifier = omni_fireball_mod }
-                    remove_unit_modifier = omni_fireball_mod
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
                 }
-                add_unit_modifier = {
-                    name = omni_fireball_mod
-                    duration = 30
+                else = {
+                    damage_unit_percent = 0.05
+                    if = {
+                        limit = { has_unit_modifier = omni_fireball_mod }
+                        remove_unit_modifier = omni_fireball_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_fireball_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -4750,7 +5094,11 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         if = {
             limit = { exists = scope:battle_enemy_target }
             scope:battle_enemy_target = {
-                add_health = -2
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = { add_health = -2 }
                 every_character_unit = {
                     limit = {
                         OR = {
@@ -4760,12 +5108,18 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         in_combat = yes
                     }
                     if = {
-                        limit = { has_unit_modifier = omni_plague_miasma_mod }
-                        remove_unit_modifier = omni_plague_miasma_mod
+                        limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                        omni_spend_unit_ward = yes
                     }
-                    add_unit_modifier = {
-                        name = omni_plague_miasma_mod
-                        duration = 30
+                    else = {
+                        if = {
+                            limit = { has_unit_modifier = omni_plague_miasma_mod }
+                            remove_unit_modifier = omni_plague_miasma_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_plague_miasma_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -4774,12 +5128,18 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
             limit = { exists = scope:battle_enemy_force }
             scope:battle_enemy_force = {
                 if = {
-                    limit = { has_unit_modifier = omni_plague_miasma_mod }
-                    remove_unit_modifier = omni_plague_miasma_mod
+                    limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                    omni_spend_unit_ward = yes
                 }
-                add_unit_modifier = {
-                    name = omni_plague_miasma_mod
-                    duration = 30
+                else = {
+                    if = {
+                        limit = { has_unit_modifier = omni_plague_miasma_mod }
+                        remove_unit_modifier = omni_plague_miasma_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_plague_miasma_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -4880,7 +5240,11 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         if = {
             limit = { exists = scope:battle_enemy_target }
             scope:battle_enemy_target = {
-                add_health = -0.5
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = { add_health = -0.5 }
                 every_character_unit = {
                     limit = {
                         OR = {
@@ -4889,6 +5253,32 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         }
                         in_combat = yes
                     }
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        add_morale = -10
+                        if = {
+                            limit = { has_unit_modifier = omni_panic_rout_spell_mod }
+                            remove_unit_modifier = omni_panic_rout_spell_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_panic_rout_spell_mod
+                            duration = 30
+                        }
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
                     add_morale = -10
                     if = {
                         limit = { has_unit_modifier = omni_panic_rout_spell_mod }
@@ -4898,20 +5288,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         name = omni_panic_rout_spell_mod
                         duration = 30
                     }
-                }
-            }
-        }
-        else_if = {
-            limit = { exists = scope:battle_enemy_force }
-            scope:battle_enemy_force = {
-                add_morale = -10
-                if = {
-                    limit = { has_unit_modifier = omni_panic_rout_spell_mod }
-                    remove_unit_modifier = omni_panic_rout_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_panic_rout_spell_mod
-                    duration = 30
                 }
             }
         }
@@ -4941,7 +5317,11 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         random_list = {
             55 = {
                 scope:battle_enemy_target = {
-                    add_health = -2
+                    if = {
+                        limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                        omni_spend_personal_ward = yes
+                    }
+                    else = { add_health = -2 }
                     every_character_unit = {
                         limit = {
                             OR = {
@@ -4950,13 +5330,23 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                             }
                             in_combat = yes
                         }
-                        add_morale = -1
+                        if = {
+                            limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                            omni_spend_unit_ward = yes
+                        }
+                        else = {
+                            add_morale = -1
+                        }
                     }
                 }
             }
             35 = {
                 scope:battle_enemy_target = {
-                    add_health = -1
+                    if = {
+                        limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                        omni_spend_personal_ward = yes
+                    }
+                    else = { add_health = -1 }
                     every_character_unit = {
                         limit = {
                             OR = {
@@ -4965,7 +5355,13 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                             }
                             in_combat = yes
                         }
-                        add_morale = -0.5
+                        if = {
+                            limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                            omni_spend_unit_ward = yes
+                        }
+                        else = {
+                            add_morale = -0.5
+                        }
                     }
                 }
                 scope:selected_mage = {
@@ -4973,9 +5369,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
             }
             10 = {
-                scope:selected_mage = {
-                    add_health = -1
-                }
+                scope:selected_mage = { add_health = -1 }
             }
         }
         custom_tooltip = tier_two_spell_tt
@@ -5003,7 +5397,11 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         if = {
             limit = { exists = scope:battle_enemy_target }
             scope:battle_enemy_target = {
-                add_health = -0.5
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = { add_health = -0.5 }
                 every_character_unit = {
                     limit = {
                         OR = {
@@ -5012,6 +5410,32 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         }
                         in_combat = yes
                     }
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        add_morale = -1
+                        if = {
+                            limit = { has_unit_modifier = omni_command_confusion_spell_mod }
+                            remove_unit_modifier = omni_command_confusion_spell_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_command_confusion_spell_mod
+                            duration = 60
+                        }
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
                     add_morale = -1
                     if = {
                         limit = { has_unit_modifier = omni_command_confusion_spell_mod }
@@ -5021,20 +5445,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         name = omni_command_confusion_spell_mod
                         duration = 60
                     }
-                }
-            }
-        }
-        else_if = {
-            limit = { exists = scope:battle_enemy_force }
-            scope:battle_enemy_force = {
-                add_morale = -1
-                if = {
-                    limit = { has_unit_modifier = omni_command_confusion_spell_mod }
-                    remove_unit_modifier = omni_command_confusion_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_command_confusion_spell_mod
-                    duration = 60
                 }
             }
         }
@@ -5056,6 +5466,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 exists = scope:battle_enemy_force
             }
         }
+        clear_saved_scope = omni_ward_damage_unit
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 90 }
             add_health = -1.5
@@ -5063,7 +5474,11 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         if = {
             limit = { exists = scope:battle_enemy_target }
             scope:battle_enemy_target = {
-                add_health = -3
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = { add_health = -3 }
                 random_character_unit = {
                     limit = {
                         OR = {
@@ -5072,7 +5487,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         }
                         in_combat = yes
                     }
-                    damage_unit_percent = 0.15
+                    save_scope_as = omni_ward_damage_unit
                 }
                 every_character_unit = {
                     limit = {
@@ -5083,12 +5498,22 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         in_combat = yes
                     }
                     if = {
-                        limit = { has_unit_modifier = omni_blood_price_spell_mod }
-                        remove_unit_modifier = omni_blood_price_spell_mod
+                        limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                        omni_spend_unit_ward = yes
                     }
-                    add_unit_modifier = {
-                        name = omni_blood_price_spell_mod
-                        duration = 30
+                    else = {
+                        if = {
+                            limit = { exists = scope:omni_ward_damage_unit this = scope:omni_ward_damage_unit }
+                            damage_unit_percent = 0.15
+                        }
+                        if = {
+                            limit = { has_unit_modifier = omni_blood_price_spell_mod }
+                            remove_unit_modifier = omni_blood_price_spell_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_blood_price_spell_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -5096,14 +5521,20 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         else_if = {
             limit = { exists = scope:battle_enemy_force }
             scope:battle_enemy_force = {
-                damage_unit_percent = 0.15
                 if = {
-                    limit = { has_unit_modifier = omni_blood_price_spell_mod }
-                    remove_unit_modifier = omni_blood_price_spell_mod
+                    limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                    omni_spend_unit_ward = yes
                 }
-                add_unit_modifier = {
-                    name = omni_blood_price_spell_mod
-                    duration = 30
+                else = {
+                    damage_unit_percent = 0.15
+                    if = {
+                        limit = { has_unit_modifier = omni_blood_price_spell_mod }
+                        remove_unit_modifier = omni_blood_price_spell_mod
+                    }
+                    add_unit_modifier = {
+                        name = omni_blood_price_spell_mod
+                        duration = 30
+                    }
                 }
             }
         }
@@ -5143,6 +5574,32 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         }
                         in_combat = yes
                     }
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        add_morale = -0.5
+                        if = {
+                            limit = { has_unit_modifier = omni_boots_to_soup_spell_mod }
+                            remove_unit_modifier = omni_boots_to_soup_spell_mod
+                        }
+                        add_unit_modifier = {
+                            name = omni_boots_to_soup_spell_mod
+                            duration = 60
+                        }
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = { exists = scope:battle_enemy_force }
+            scope:battle_enemy_force = {
+                if = {
+                    limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                    omni_spend_unit_ward = yes
+                }
+                else = {
                     add_morale = -0.5
                     if = {
                         limit = { has_unit_modifier = omni_boots_to_soup_spell_mod }
@@ -5152,20 +5609,6 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         name = omni_boots_to_soup_spell_mod
                         duration = 60
                     }
-                }
-            }
-        }
-        else_if = {
-            limit = { exists = scope:battle_enemy_force }
-            scope:battle_enemy_force = {
-                add_morale = -0.5
-                if = {
-                    limit = { has_unit_modifier = omni_boots_to_soup_spell_mod }
-                    remove_unit_modifier = omni_boots_to_soup_spell_mod
-                }
-                add_unit_modifier = {
-                    name = omni_boots_to_soup_spell_mod
-                    duration = 60
                 }
             }
         }
@@ -5419,38 +5862,74 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
     # this menu and they were not, so they were effectively AI-only spells.
     # Costs and tier gates match what the AI ladder uses for each.
     # ----------------------------------------------------------------------
+    option = { # Greater Arcane Aegis - a shield of layered wards
+        trigger = {
+            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
+            scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
+            scope:selected_mage = {
+				omni_knows_spell = { SPELL = arcane_aegis_ii }
+                omni_can_afford_spell = { BASE = 75 }
+                # Illusionist: layered wards and protective projections.
+                has_variable = illusionist_t4_unlocked_var
+            }
+            exists = scope:battle_spell_context
+            scope:target = {
+                any_character_unit = {
+                    omni_unit_ward_available = yes
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+            }
+        }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 75 } }
+        scope:target = {
+            random_character_unit = {
+                limit = {
+                    omni_unit_ward_available = yes
+                    OR = { is_army = yes is_navy = yes }
+                    in_combat = yes
+                }
+                omni_apply_arcane_aegis_effect = { RANK = iii }
+            }
+        }
+        custom_tooltip = tier_three_spell_tt
+        custom_tooltip = omni_arcane_aegis_ii_tt
+        custom_tooltip = 75_mana_tt
+        name = "me_zorgo_magic_focus.130.arcane_aegis_ii"
+    }
     option = { # Arcane Aegis - a shield of layered wards
         trigger = {
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = {
 				omni_knows_spell = { SPELL = arcane_aegis }
-                omni_can_afford_spell = { BASE = 25 }
+                omni_can_afford_spell = { BASE = 35 }
                 # Illusionist: layered wards and protective projections.
                 omni_caster_aldic_t1 = yes
             }
             exists = scope:battle_spell_context
             scope:target = {
                 any_character_unit = {
+                    omni_unit_ward_available = yes
                     OR = { is_army = yes is_navy = yes }
                     in_combat = yes
                 }
             }
         }
-        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 25 } }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 35 } }
         scope:target = {
-            every_character_unit = {
+            random_character_unit = {
                 limit = {
+                    omni_unit_ward_available = yes
                     OR = { is_army = yes is_navy = yes }
                     in_combat = yes
                 }
-                if = { limit = { has_unit_modifier = omni_arcane_aegis_spell_mod } remove_unit_modifier = omni_arcane_aegis_spell_mod }
-                add_unit_modifier = { name = omni_arcane_aegis_spell_mod duration = 30 }
+                omni_apply_arcane_aegis_effect = { RANK = i }
             }
         }
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = omni_arcane_aegis_tt
-        custom_tooltip = 25_mana_tt
+        custom_tooltip = 35_mana_tt
         name = "me_zorgo_magic_focus.130.f"
     }
     option = { # Battle Clarity - sharpen the line's discipline and recovery
@@ -6327,6 +6806,21 @@ me_zorgo_magic_focus.38 = { # Divine Blessings - country-wide boons from the god
 
     # scope:target = the casting mage (from the .1/.2 self-cast chain).
     # Each blessing is available again when its year-long modifier expires.
+    option = {
+        trigger = {
+            scope:target = {
+                is_alive = yes omni_character_is_eligible_caster = yes
+                omni_knows_spell = { SPELL = realm_ward }
+                has_variable = hierophant_t4_unlocked_var
+                omni_can_afford_spell = { BASE = 100 }
+            }
+            root = { NOT = { has_country_modifier = omni_country_ward_cooldown } }
+        }
+        scope:target = { omni_spell_mana_cost_effect = { BASE = 100 } }
+        root = { omni_cast_country_ward_effect = yes }
+        custom_tooltip = omni_realm_ward_tt
+        name = "me_zorgo_magic_focus.38.realm_ward"
+    }
     option = { # Sword of Zanis - bless the infantry's blades
         trigger = {
             root = { NOT = { has_country_modifier = sword_of_zanis_spell_mod } }

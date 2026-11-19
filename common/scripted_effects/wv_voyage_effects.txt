@@ -107,6 +107,30 @@ wv_pay_district_small = {
 }
 
 # ---------------------------------------------------------------- ports
+wv_build_guildhall = {
+	if = {
+		limit = { wv_can_build_guildhall = { PROV = $PROV$ } }
+		add_treasury = -150
+		p:$PROV$ = {
+			add_permanent_province_modifier = { name = stellaric_guildhouse_foreign_mod duration = -1 }
+		}
+	}
+}
+
+wv_open_linupom_guildhall = {
+	if = {
+		limit = { NOT = { has_variable = wv_house_opened } }
+		set_variable = wv_house_opened
+		set_variable = { name = wv_escrow value = 0 }
+		p:3808 = {
+			if = {
+				limit = { NOT = { has_province_modifier = stellaric_guildhouse_foreign_mod } }
+				add_permanent_province_modifier = { name = stellaric_guildhouse_foreign_mod duration = -1 }
+			}
+		}
+	}
+}
+
 wv_arrive_grand_port = {
 	set_variable = { name = wv_districts_here value = 0 }
 	if = { limit = { has_variable = wv_c_vet } change_variable = { name = wv_ports_vet add = 1 } }
@@ -235,6 +259,23 @@ wv_next = {
 	}
 }
 
+wv_leave_siznl = {
+	if = { limit = { NOT = { has_variable = wv_escort } } wv_hull_damage = { AMOUNT = 12 } }
+	if = { limit = { NOT = { has_variable = wv_seam_fixed } } wv_hull_damage = { AMOUNT = 12 } }
+}
+
+# Select one arrival at Zemmairthia, with the hearing taking place at the same port.
+wv_continue_to_zemmairthia = {
+	if = {
+		limit = { has_variable = wv_c_prize NOT = { has_variable = wv_bounty_done } }
+		random_list = {
+			50 = { wv_next = { EVENT = wv.525 MIN = 10 MAX = 16 } }
+			50 = { wv_next = { EVENT = wv.520 MIN = 10 MAX = 16 } }
+		}
+	}
+	else = { wv_next = { EVENT = wv.520 MIN = 10 MAX = 16 } }
+}
+
 # ---------------------------------------------------------------- rolls
 # A d20 in steps of five: wv_roll is one of 5, 10 ... 100.
 wv_roll_d20 = {
@@ -294,6 +335,16 @@ wv_compute_risk = {
 		change_variable = { name = wv_risk multiply = 0.25 }
 	}
 	round_variable = { name = wv_risk nearest = 1 }
+	wv_snap_to_d20 = { VAR = wv_risk }
+}
+
+# The d20 lands on multiples of 5, so a 39% target fails exactly as often as 35%. Snap down so the shown odds are the real odds.
+wv_snap_to_d20 = {
+	change_variable = { name = $VAR$ divide = 5 }
+	change_variable = { name = $VAR$ subtract = 0.48 }
+	round_variable = { name = $VAR$ nearest = 1 }
+	change_variable = { name = $VAR$ multiply = 5 }
+	if = { limit = { var:$VAR$ < 0 } set_variable = { name = $VAR$ value = 0 } }
 }
 
 # Chance, in percent, that the boats save the reduced chest.
@@ -303,6 +354,7 @@ wv_compute_rescue = {
 	if = { limit = { has_variable = wv_c_vet } change_variable = { name = wv_rescue add = 20 } }
 	if = { limit = { var:wv_rescue > 95 } set_variable = { name = wv_rescue value = 95 } }
 	round_variable = { name = wv_rescue nearest = 1 }
+	wv_snap_to_d20 = { VAR = wv_rescue }
 }
 
 # ---------------------------------------------------------------- the hold
@@ -332,7 +384,35 @@ wv_save_scopes = {
 }
 
 # ---------------------------------------------------------------- companions
-wv_hire_vet = {
+# Keep the same character through repeat visits and promote them when hired.
+wv_prepare_recruit = {
+	if = {
+		limit = {
+			has_variable = wv_candidate_$ROLE$
+			var:wv_candidate_$ROLE$ = { is_alive = yes }
+		}
+		var:wv_candidate_$ROLE$ = { save_scope_as = wv_recruit }
+	}
+	else = {
+		wv_create_recruit_$ROLE$ = yes
+		set_variable = { name = wv_candidate_$ROLE$ value = scope:wv_recruit }
+	}
+}
+
+wv_clear_recruit_candidate = {
+	if = {
+		limit = { has_variable = wv_candidate_$ROLE$ }
+		var:wv_candidate_$ROLE$ = {
+			if = {
+				limit = { is_alive = yes }
+				death = { death_reason = death_obscurity }
+			}
+		}
+		remove_variable = wv_candidate_$ROLE$
+	}
+}
+
+wv_create_recruit_vet = {
 	create_character = {
 		first_name = "Actmund"
 		age = 48
@@ -341,13 +421,18 @@ wv_hire_vet = {
 		religion = helluvian
 		add_trait = stubborn
 		add_trait = plain_speaking
-		save_scope_as = wv_new_hire
+		save_scope_as = wv_recruit
 	}
-	set_variable = { name = wv_char_vet value = scope:wv_new_hire }
+}
+
+wv_hire_vet = {
+	wv_prepare_recruit = { ROLE = vet }
+	set_variable = { name = wv_char_vet value = scope:wv_recruit }
+	remove_variable = wv_candidate_vet
 	set_variable = wv_c_vet
 	set_variable = { name = wv_ports_vet value = 0 }
 	change_variable = { name = wv_berths add = 1 }
-	scope:wv_new_hire = { save_scope_as = wv_vet }
+	scope:wv_recruit = { save_scope_as = wv_vet }
 }
 wv_lose_vet = {
 	if = {
@@ -377,7 +462,7 @@ wv_kill_vet = {
 		}
 	}
 }
-wv_hire_diver = {
+wv_create_recruit_diver = {
 	create_character = {
 		first_name = "Ilurrushe"
 		age = 29
@@ -385,13 +470,18 @@ wv_hire_diver = {
 		culture = mazonian
 		religion = helluvian
 		add_trait = easygoing
-		save_scope_as = wv_new_hire
+		save_scope_as = wv_recruit
 	}
-	set_variable = { name = wv_char_diver value = scope:wv_new_hire }
+}
+
+wv_hire_diver = {
+	wv_prepare_recruit = { ROLE = diver }
+	set_variable = { name = wv_char_diver value = scope:wv_recruit }
+	remove_variable = wv_candidate_diver
 	set_variable = wv_c_diver
 	set_variable = { name = wv_ports_diver value = 0 }
 	change_variable = { name = wv_berths add = 1 }
-	scope:wv_new_hire = { save_scope_as = wv_diver }
+	scope:wv_recruit = { save_scope_as = wv_diver }
 }
 wv_lose_diver = {
 	if = {
@@ -409,7 +499,7 @@ wv_lose_diver = {
 		}
 	}
 }
-wv_hire_pupil = {
+wv_create_recruit_pupil = {
 	create_character = {
 		first_name = "Anpu"
 		age = 19
@@ -418,13 +508,18 @@ wv_hire_pupil = {
 		religion = the_first_emperor
 		add_trait = sarcastic
 		add_trait = mage_trait
-		save_scope_as = wv_new_hire
+		save_scope_as = wv_recruit
 	}
-	set_variable = { name = wv_char_pupil value = scope:wv_new_hire }
+}
+
+wv_hire_pupil = {
+	wv_prepare_recruit = { ROLE = pupil }
+	set_variable = { name = wv_char_pupil value = scope:wv_recruit }
+	remove_variable = wv_candidate_pupil
 	set_variable = wv_c_pupil
 	set_variable = { name = wv_ports_pupil value = 0 }
 	change_variable = { name = wv_berths add = 1 }
-	scope:wv_new_hire = { save_scope_as = wv_pupil }
+	scope:wv_recruit = { save_scope_as = wv_pupil }
 }
 wv_lose_pupil = {
 	if = {
@@ -442,7 +537,7 @@ wv_lose_pupil = {
 		}
 	}
 }
-wv_hire_appr = {
+wv_create_recruit_appr = {
 	create_character = {
 		first_name = "Charias"
 		age = 24
@@ -451,13 +546,18 @@ wv_hire_appr = {
 		religion = the_first_emperor
 		add_trait = charming
 		add_trait = two_faced
-		save_scope_as = wv_new_hire
+		save_scope_as = wv_recruit
 	}
-	set_variable = { name = wv_char_appr value = scope:wv_new_hire }
+}
+
+wv_hire_appr = {
+	wv_prepare_recruit = { ROLE = appr }
+	set_variable = { name = wv_char_appr value = scope:wv_recruit }
+	remove_variable = wv_candidate_appr
 	set_variable = wv_c_appr
 	set_variable = { name = wv_ports_appr value = 0 }
 	change_variable = { name = wv_berths add = 1 }
-	scope:wv_new_hire = { save_scope_as = wv_appr }
+	scope:wv_recruit = { save_scope_as = wv_appr }
 }
 wv_lose_appr = {
 	if = {
@@ -475,7 +575,7 @@ wv_lose_appr = {
 		}
 	}
 }
-wv_hire_gamb = {
+wv_create_recruit_gamb = {
 	create_character = {
 		first_name = "Ampsicora"
 		age = 37
@@ -483,13 +583,18 @@ wv_hire_gamb = {
 		culture = turisi
 		religion = orcish_colony_faith
 		add_trait = reckless
-		save_scope_as = wv_new_hire
+		save_scope_as = wv_recruit
 	}
-	set_variable = { name = wv_char_gamb value = scope:wv_new_hire }
+}
+
+wv_hire_gamb = {
+	wv_prepare_recruit = { ROLE = gamb }
+	set_variable = { name = wv_char_gamb value = scope:wv_recruit }
+	remove_variable = wv_candidate_gamb
 	set_variable = wv_c_gamb
 	set_variable = { name = wv_ports_gamb value = 0 }
 	change_variable = { name = wv_berths add = 1 }
-	scope:wv_new_hire = { save_scope_as = wv_gamb }
+	scope:wv_recruit = { save_scope_as = wv_gamb }
 }
 wv_lose_gamb = {
 	if = {
@@ -507,7 +612,7 @@ wv_lose_gamb = {
 		}
 	}
 }
-wv_hire_mage = {
+wv_create_recruit_mage = {
 	create_character = {
 		first_name = "Brenwen"
 		age = 31
@@ -516,13 +621,18 @@ wv_hire_mage = {
 		religion = victory_pantheon
 		add_trait = impatient
 		add_trait = mage_trait
-		save_scope_as = wv_new_hire
+		save_scope_as = wv_recruit
 	}
-	set_variable = { name = wv_char_mage value = scope:wv_new_hire }
+}
+
+wv_hire_mage = {
+	wv_prepare_recruit = { ROLE = mage }
+	set_variable = { name = wv_char_mage value = scope:wv_recruit }
+	remove_variable = wv_candidate_mage
 	set_variable = wv_c_mage
 	set_variable = { name = wv_ports_mage value = 0 }
 	change_variable = { name = wv_berths add = 1 }
-	scope:wv_new_hire = { save_scope_as = wv_mage }
+	scope:wv_recruit = { save_scope_as = wv_mage }
 }
 wv_lose_mage = {
 	if = {
@@ -540,7 +650,7 @@ wv_lose_mage = {
 		}
 	}
 }
-wv_hire_hunter = {
+wv_create_recruit_hunter = {
 	create_character = {
 		first_name = "Ancasta"
 		age = 26
@@ -548,13 +658,18 @@ wv_hire_hunter = {
 		culture = chruchi
 		religion = the_first_emperor
 		add_trait = obsessive
-		save_scope_as = wv_new_hire
+		save_scope_as = wv_recruit
 	}
-	set_variable = { name = wv_char_hunter value = scope:wv_new_hire }
+}
+
+wv_hire_hunter = {
+	wv_prepare_recruit = { ROLE = hunter }
+	set_variable = { name = wv_char_hunter value = scope:wv_recruit }
+	remove_variable = wv_candidate_hunter
 	set_variable = wv_c_hunter
 	set_variable = { name = wv_ports_hunter value = 0 }
 	change_variable = { name = wv_berths add = 1 }
-	scope:wv_new_hire = { save_scope_as = wv_hunter }
+	scope:wv_recruit = { save_scope_as = wv_hunter }
 }
 wv_lose_hunter = {
 	if = {
@@ -572,7 +687,7 @@ wv_lose_hunter = {
 		}
 	}
 }
-wv_hire_prize = {
+wv_create_recruit_prize = {
 	create_character = {
 		first_name = "Aeronwen"
 		age = 42
@@ -580,13 +695,18 @@ wv_hire_prize = {
 		culture = lindute
 		religion = helluvian
 		add_trait = proud
-		save_scope_as = wv_new_hire
+		save_scope_as = wv_recruit
 	}
-	set_variable = { name = wv_char_prize value = scope:wv_new_hire }
+}
+
+wv_hire_prize = {
+	wv_prepare_recruit = { ROLE = prize }
+	set_variable = { name = wv_char_prize value = scope:wv_recruit }
+	remove_variable = wv_candidate_prize
 	set_variable = wv_c_prize
 	set_variable = { name = wv_ports_prize value = 0 }
 	change_variable = { name = wv_berths add = 1 }
-	scope:wv_new_hire = { save_scope_as = wv_prize }
+	scope:wv_recruit = { save_scope_as = wv_prize }
 }
 wv_lose_prize = {
 	if = {
@@ -607,6 +727,18 @@ wv_lose_prize = {
 
 # Clears every voyage variable except the permanent ones.
 wv_cleanup = {
+	remove_variable = wv_portrait_host
+	remove_variable = wv_jodok_visit
+	remove_variable = wv_nazani_audience
+	wv_clear_companion_portraits = yes
+	wv_clear_recruit_candidate = { ROLE = vet }
+	wv_clear_recruit_candidate = { ROLE = diver }
+	wv_clear_recruit_candidate = { ROLE = pupil }
+	wv_clear_recruit_candidate = { ROLE = appr }
+	wv_clear_recruit_candidate = { ROLE = gamb }
+	wv_clear_recruit_candidate = { ROLE = mage }
+	wv_clear_recruit_candidate = { ROLE = prize }
+	wv_clear_recruit_candidate = { ROLE = hunter }
 	remove_variable = wv_at_gv
 	remove_variable = wv_d131
 	remove_variable = wv_d132
@@ -873,6 +1005,10 @@ wv_cleanup = {
 	remove_variable = wv_left_prize
 	remove_variable = wv_char_prize
 	remove_variable = wv_souv_pyre_ash
+	remove_variable = wv_souv_tadm_rule
+	remove_variable = wv_souv_gozon_cup
+	remove_variable = wv_souv_racgerrac_cup
+	remove_variable = wv_souv_tiuban_tablet
 	remove_variable = wv_souv_lexicon
 	remove_variable = wv_souv_cycle
 	remove_variable = wv_souv_armillary
@@ -887,14 +1023,66 @@ wv_cleanup = {
 }
 
 # The companion who stands in the right-hand portrait of general voyage events: the most recent to join.
-wv_pick_aside = {
-	if = { limit = { has_variable = wv_c_prize } var:wv_char_prize = { save_scope_as = wv_aside } }
-	else_if = { limit = { has_variable = wv_c_hunter } var:wv_char_hunter = { save_scope_as = wv_aside } }
-	else_if = { limit = { has_variable = wv_c_mage } var:wv_char_mage = { save_scope_as = wv_aside } }
-	else_if = { limit = { has_variable = wv_c_gamb } var:wv_char_gamb = { save_scope_as = wv_aside } }
-	else_if = { limit = { has_variable = wv_c_appr } var:wv_char_appr = { save_scope_as = wv_aside } }
-	else_if = { limit = { has_variable = wv_c_pupil } var:wv_char_pupil = { save_scope_as = wv_aside } }
-	else_if = { limit = { has_variable = wv_c_diver } var:wv_char_diver = { save_scope_as = wv_aside } }
-	else_if = { limit = { has_variable = wv_c_vet } var:wv_char_vet = { save_scope_as = wv_aside } }
-	else_if = { limit = { exists = current_ruler } current_ruler = { save_scope_as = wv_aside } }
+wv_set_host_portrait = {
+	remove_variable = wv_portrait_host
+	if = {
+		limit = {
+			p:$PROV$ = {
+				has_owner = yes
+				owner = { exists = current_ruler }
+			}
+		}
+		set_variable = { name = wv_portrait_host value = p:$PROV$.owner.current_ruler }
+	}
+}
+
+# Clear the previous roster before reassigning the country variables used by the event window.
+wv_clear_companion_portraits = {
+	remove_variable = wv_portrait_right_1
+	remove_variable = wv_portrait_right_2
+	remove_variable = wv_portrait_right_3
+	remove_variable = wv_portrait_overflow
+}
+
+wv_fill_companion_portraits = {
+	wv_add_companion_portrait = { ROLE = vet }
+	wv_add_companion_portrait = { ROLE = diver }
+	wv_add_companion_portrait = { ROLE = pupil }
+	wv_add_companion_portrait = { ROLE = appr }
+	wv_add_companion_portrait = { ROLE = gamb }
+	wv_add_companion_portrait = { ROLE = mage }
+	wv_add_companion_portrait = { ROLE = hunter }
+	wv_add_companion_portrait = { ROLE = prize }
+}
+
+wv_fill_companion_portraits_or_ruler = {
+	wv_fill_companion_portraits = yes
+	if = {
+		limit = { NOT = { has_variable = wv_portrait_right_1 } exists = current_ruler }
+		set_variable = { name = wv_portrait_right_1 value = current_ruler }
+	}
+}
+
+wv_add_companion_portrait = {
+	if = {
+		limit = {
+			has_variable = wv_c_$ROLE$
+			has_variable = wv_char_$ROLE$
+		}
+		if = {
+			limit = { NOT = { has_variable = wv_portrait_right_1 } }
+			set_variable = { name = wv_portrait_right_1 value = var:wv_char_$ROLE$ }
+		}
+		else_if = {
+			limit = { NOT = { has_variable = wv_portrait_right_2 } }
+			set_variable = { name = wv_portrait_right_2 value = var:wv_char_$ROLE$ }
+		}
+		else_if = {
+			limit = { NOT = { has_variable = wv_portrait_right_3 } }
+			set_variable = { name = wv_portrait_right_3 value = var:wv_char_$ROLE$ }
+		}
+		else = {
+			set_variable = { name = wv_portrait_overflow value = var:wv_char_$ROLE$ }
+		}
+	}
 }

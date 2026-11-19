@@ -1,0 +1,47 @@
+﻿# Each charge is scoped to the character, unit, or country it protects.
+omni_spend_personal_ward = {
+    if = { limit = { has_character_modifier = omni_personal_ward_iii } remove_character_modifier = omni_personal_ward_iii }
+    else = { remove_character_modifier = omni_personal_ward_ii }
+    add_character_modifier = { name = omni_personal_ward_rearm duration = 30 }
+    custom_tooltip = omni_personal_ward_absorbed_tt
+}
+
+omni_spend_unit_ward = {
+    if = { limit = { has_unit_modifier = omni_unit_ward_iii } remove_unit_modifier = omni_unit_ward_iii }
+    else = { remove_unit_modifier = omni_unit_ward_i }
+    add_unit_modifier = { name = omni_unit_ward_rearm duration = 30 }
+    custom_tooltip = omni_unit_ward_absorbed_tt
+}
+
+omni_cast_country_ward_effect = {
+    add_country_modifier = { name = omni_country_ward_cooldown duration = 365 }
+    if = {
+        limit = { has_country_modifier = aldic_cleric_spell_t3_mod }
+        remove_country_modifier = aldic_cleric_spell_t3_mod
+    }
+    else = { add_country_modifier = { name = omni_country_ward_charge duration = 180 } }
+}
+
+omni_apply_hostile_country_spell_effect = {
+    if = {
+        limit = { has_country_modifier = omni_country_ward_charge omni_ward_power_$TIER$ <= 3 }
+        remove_country_modifier = omni_country_ward_charge
+        custom_tooltip = omni_country_ward_absorbed_tt
+    }
+    else = { add_country_modifier = { name = $MOD$ duration = $DAYS$ } }
+}
+
+# UNIT scope. The combat buff survives absorption and expires independently.
+omni_apply_arcane_aegis_effect = {
+    add_unit_modifier = { name = omni_unit_ward_$RANK$ duration = 30 }
+    if = {
+        limit = { has_unit_modifier = omni_arcane_aegis_spell_mod }
+        remove_unit_modifier = omni_arcane_aegis_spell_mod
+    }
+    add_unit_modifier = { name = omni_arcane_aegis_spell_mod duration = 30 }
+}
+
+# CHARACTER scope.
+omni_apply_personal_ward_effect = {
+    add_character_modifier = { name = omni_personal_ward_$RANK$ duration = 90 }
+}

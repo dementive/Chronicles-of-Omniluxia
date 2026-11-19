@@ -155,7 +155,13 @@ omni_spellbook_cast.13 = { # blade_storm
                 omni_spell_mana_cost_effect = { BASE = 50 }
             }
             scope:target = {
-                add_health = -2
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    add_health = -2
+                }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_blade_storm days = 90 } }
         }
@@ -198,9 +204,15 @@ omni_spellbook_cast.16 = { # blighted_ground
                     limit = {
                         is_army = yes
                     }
-                    add_unit_modifier = {
-                        name = omni_blighted_ground_mod
-                        duration = 30
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        add_unit_modifier = {
+                            name = omni_blighted_ground_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -390,14 +402,20 @@ omni_spellbook_cast.32 = { # curse
                 omni_spell_mana_cost_effect = { BASE = 75 }
             }
             scope:target = {
-                random_list = {
-                    1 = { force_add_trait = leper }
-                    1 = { force_add_trait = cancer }
-                    1 = { force_add_trait = depressed }
-                    1 = { force_add_trait = plague }
-                    1 = { force_add_trait = pox }
-                    1 = { force_add_trait = vampiric_fever }
-                    1 = { force_add_trait = paralysis }
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    random_list = {
+                        1 = { force_add_trait = leper }
+                        1 = { force_add_trait = cancer }
+                        1 = { force_add_trait = depressed }
+                        1 = { force_add_trait = plague }
+                        1 = { force_add_trait = pox }
+                        1 = { force_add_trait = vampiric_fever }
+                        1 = { force_add_trait = paralysis }
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_curse days = 180 } }
@@ -414,7 +432,11 @@ omni_spellbook_cast.33 = { # curse_ii
             scope:selected_mage = {
                 omni_spell_mana_cost_effect = { BASE = 100 }
             }
-            omni_apply_skull_curse = yes
+            if = {
+                limit = { scope:target = { omni_personal_ward_blocks = { TIER = 2 } } }
+                scope:target = { omni_spend_personal_ward = yes }
+            }
+            else = { omni_apply_skull_curse = yes }
             scope:selected_mage = { set_variable = { name = omni_cd_curse_ii days = 180 } }
         }
     }
@@ -434,9 +456,15 @@ omni_spellbook_cast.34 = { # cursed_rigging
                     limit = {
                         is_navy = yes
                     }
-                    add_unit_modifier = {
-                        name = omni_cursed_rigging_spell_mod
-                        duration = 30
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        add_unit_modifier = {
+                            name = omni_cursed_rigging_spell_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -491,14 +519,20 @@ omni_spellbook_cast.37 = { # dark_visions
     immediate = {
         if = {
             limit = { omni_sb_can_cast_dark_visions = yes omni_sb_can_target_dark_visions = yes }
-            scope:target = {
-                force_add_trait = melodian_warlock_spell_t2_trait
-                set_variable = { name = omni_spell_active_melodian_warlock_spell_t2_trait days = 180 }
-                save_scope_as = remove_magic_target
+            if = {
+                limit = { scope:target = { omni_personal_ward_blocks = { TIER = 2 } } }
+                scope:target = { omni_spend_personal_ward = yes }
             }
-            trigger_event = {
-                id = me_zorgo_magic_focus.22
-                days = 180
+            else = {
+                scope:target = {
+                    force_add_trait = melodian_warlock_spell_t2_trait
+                    set_variable = { name = omni_spell_active_melodian_warlock_spell_t2_trait days = 180 }
+                    save_scope_as = remove_magic_target
+                }
+                trigger_event = {
+                    id = me_zorgo_magic_focus.22
+                    days = 180
+                }
             }
             scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
         }
@@ -516,7 +550,13 @@ omni_spellbook_cast.38 = { # death_ray
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.12
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        damage_unit_percent = 0.12
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_death_ray days = 1 } }
@@ -691,20 +731,26 @@ omni_spellbook_cast.46 = { # exorcism_ii
             }
             scope:target = {
                 if = {
-                    limit = {
-                        OR = {
-                            has_trait = vampire_trait
-                            has_trait = drow_trait
-                            has_trait = deep_gnome_trait
-                            has_trait = goblin_trait
-                            has_trait = wraith_trait
-                            has_trait = necromancer_trait
-                            has_trait = warlock_trait
-                            has_trait = lich_trait
+                    limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    if = {
+                        limit = {
+                            OR = {
+                                has_trait = vampire_trait
+                                has_trait = drow_trait
+                                has_trait = deep_gnome_trait
+                                has_trait = goblin_trait
+                                has_trait = wraith_trait
+                                has_trait = necromancer_trait
+                                has_trait = warlock_trait
+                                has_trait = lich_trait
+                            }
                         }
-                    }
-                    death = {
-                        death_reason = death_magic
+                        death = {
+                            death_reason = death_magic
+                        }
                     }
                 }
             }
@@ -765,9 +811,15 @@ omni_spellbook_cast.48 = { # fear_hex
                             is_navy = yes
                         }
                     }
-                    add_unit_modifier = {
-                        name = omni_fear_hex_spell_mod
-                        duration = 30
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        add_unit_modifier = {
+                            name = omni_fear_hex_spell_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -861,7 +913,13 @@ omni_spellbook_cast.57 = { # great_flare
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.30
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        damage_unit_percent = 0.30
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_great_flare days = 1 } }
@@ -973,14 +1031,20 @@ omni_spellbook_cast.64 = { # hellas_light
                 omni_spell_mana_cost_effect = { BASE = 75 }
             }
             scope:target = {
-                if = { 
-                    limit = { has_trait = blind }
-                    death = {
-                        death_reason = death_magic
-                    }
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                    omni_spend_personal_ward = yes
                 }
                 else = {
-                    force_add_trait = blind
+                    if = {
+                        limit = { has_trait = blind }
+                        death = {
+                            death_reason = death_magic
+                        }
+                    }
+                    else = {
+                        force_add_trait = blind
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_hellas_light days = 90 } }
@@ -1026,7 +1090,13 @@ omni_spellbook_cast.68 = { # hex
                 omni_spell_mana_cost_effect = { BASE = 75 }
             }
             scope:target = {
-                add_health = -3
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    add_health = -3
+                }
             }
             scope:selected_mage = {
                 add_health = 2
@@ -1074,7 +1144,13 @@ omni_spellbook_cast.72 = { # imperial_dragons_claw
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.05
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        damage_unit_percent = 0.05
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_imperial_dragons_claw days = 1 } }
@@ -1160,7 +1236,13 @@ omni_spellbook_cast.77 = { # light_rays
                 omni_spell_mana_cost_effect = { BASE = 25 }
             }
             scope:target = {
-                add_health = -2
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    add_health = -2
+                }
             }
         }
     }
@@ -1177,9 +1259,16 @@ omni_spellbook_cast.78 = { # light_rays_ii
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.08
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        damage_unit_percent = 0.08
+                    }
                 }
             }
+            # Balance 2026-11-18: 15% army damage had no cooldown (spam-able anywhere).
             scope:selected_mage = { set_variable = { name = omni_cd_light_rays_ii days = 1 } }
         }
     }
@@ -1290,14 +1379,20 @@ omni_spellbook_cast.85 = { # mind_break
                 omni_spell_mana_cost_effect = { BASE = 75 }
             }
             scope:target = {
-                random_list = {
-                    1 = { force_add_trait = incapable }
-                    1 = { force_add_trait = dumb }
-                    1 = { force_add_trait = invalid }
-                    1 = { force_add_trait = schizophrenic }
-                    1 = { force_add_trait = epileptic }
-                    1 = { force_add_trait = brain_damaged }
-                    1 = { force_add_trait = dementia }
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    random_list = {
+                        1 = { force_add_trait = incapable }
+                        1 = { force_add_trait = dumb }
+                        1 = { force_add_trait = invalid }
+                        1 = { force_add_trait = schizophrenic }
+                        1 = { force_add_trait = epileptic }
+                        1 = { force_add_trait = brain_damaged }
+                        1 = { force_add_trait = dementia }
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_mind_break days = 180 } }
@@ -1319,9 +1414,15 @@ omni_spellbook_cast.86 = { # mudbind
                     limit = {
                         is_army = yes
                     }
-                    add_unit_modifier = {
-                        name = omni_mudbind_spell_mod
-                        duration = 30
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        add_unit_modifier = {
+                            name = omni_mudbind_spell_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -1402,7 +1503,13 @@ omni_spellbook_cast.90 = { # palpan
                 add_health = -0.5
             }
             scope:target = {
-                force_add_trait = blood_curse_trait
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 2 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    force_add_trait = blood_curse_trait
+                }
             }
             scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
         }
@@ -1419,10 +1526,7 @@ omni_spellbook_cast.91 = { # pestilence
                 omni_spell_mana_cost_effect = { BASE = 150 }
             }
             scope:target.country = {
-                add_country_modifier = {
-                    name = aldic_cleric_spell_t3_mod
-                    duration = 365
-                }
+                omni_apply_hostile_country_spell_effect = { MOD = aldic_cleric_spell_t3_mod DAYS = 365 TIER = 3 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_pestilence days = 365 } }
         }
@@ -1743,7 +1847,13 @@ omni_spellbook_cast.107 = { # serpentine_swords
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.04
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        damage_unit_percent = 0.04
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_serpentine_swords days = 1 } }
@@ -1817,7 +1927,13 @@ omni_spellbook_cast.111 = { # steal
                 omni_spell_mana_cost_effect = { BASE = 15 }
             }
             scope:target = {
-                add_gold = -25
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 1 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    add_gold = -25
+                }
             }
             add_treasury = 25
             scope:selected_mage = { set_variable = { name = omni_cd_steal days = 30 } }
@@ -1836,7 +1952,13 @@ omni_spellbook_cast.112 = { # stinging_nettles
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.04
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        damage_unit_percent = 0.04
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_stinging_nettles days = 1 } }
@@ -1861,9 +1983,15 @@ omni_spellbook_cast.114 = { # storm_wrack
                             is_navy = yes
                         }
                     }
-                    add_unit_modifier = {
-                        name = omni_storm_wrack_spell_mod
-                        duration = 30
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        add_unit_modifier = {
+                            name = omni_storm_wrack_spell_mod
+                            duration = 30
+                        }
                     }
                 }
             }
@@ -1958,7 +2086,13 @@ omni_spellbook_cast.117 = { # summon_eagle_of_zanis
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.07
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 1 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        damage_unit_percent = 0.07
+                    }
                 }
             }
         }
@@ -1976,6 +2110,27 @@ omni_spellbook_cast.118 = { # summon_earthworks
             }
             add_1_free_province_investments = yes
             set_variable = { name = omni_cd_summon_earthworks days = 365 }
+        }
+    }
+}
+
+omni_spellbook_cast.119 = { # summon_elemental_colossus
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_summon_elemental_colossus = yes omni_sb_can_target_summon_elemental_colossus = yes }
+            scope:selected_mage = { save_scope_as = colossus_caster }
+            scope:player = {
+                create_unit = {
+                    navy = no
+                    name = omni_elemental_colossus
+                    location = scope:target
+                    sub_unit = omni_elemental_colossus
+                    save_scope_as = colossus_new_army
+                }
+                omni_colossus_register_cohort = yes
+            }
         }
     }
 }
@@ -2031,14 +2186,20 @@ omni_spellbook_cast.121 = { # sword_of_jaoz
                 omni_spell_mana_cost_effect = { BASE = 75 }
             }
             scope:target = {
-                if = { 
-                    limit = { has_trait = maimed }
-                    death = {
-                        death_reason = death_magic
-                    }
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                    omni_spend_personal_ward = yes
                 }
                 else = {
-                    force_add_trait = maimed
+                    if = {
+                        limit = { has_trait = maimed }
+                        death = {
+                            death_reason = death_magic
+                        }
+                    }
+                    else = {
+                        force_add_trait = maimed
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_sword_of_jaoz days = 90 } }
@@ -2171,9 +2332,17 @@ omni_spellbook_cast.128 = { # warped_flesh
             scope:selected_mage = {
                 omni_spell_mana_cost_effect = { BASE = 50 }
             }
+            # Balance 2026-11-18: 10%/180 days -> 15%/30 days, matching Light Rays II
+            # (the other Tier II 50-mana army strike).
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.08
+                    if = {
+                        limit = { omni_unit_ward_blocks = { TIER = 2 } }
+                        omni_spend_unit_ward = yes
+                    }
+                    else = {
+                        damage_unit_percent = 0.08
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_warped_flesh days = 1 } }
@@ -2191,8 +2360,14 @@ omni_spellbook_cast.129 = { # warped_flesh_ii
                 omni_spell_mana_cost_effect = { BASE = 150 }
             }
             scope:target = {
-                death = {
-                    death_reason = death_magic
+                if = {
+                    limit = { omni_personal_ward_blocks = { TIER = 3 } }
+                    omni_spend_personal_ward = yes
+                }
+                else = {
+                    death = {
+                        death_reason = death_magic
+                    }
                 }
             }
             scope:selected_mage = { set_variable = { name = omni_cd_warped_flesh_ii days = 180 } }
@@ -2299,23 +2474,38 @@ omni_spellbook_cast.136 = { # beastly_transformation
     }
 }
 
-omni_spellbook_cast.119 = { # summon_elemental_colossus
+omni_spellbook_cast.138 = { # personal_ward
     type = country_event
     hidden = yes
     immediate = {
         if = {
-            limit = { omni_sb_can_cast_summon_elemental_colossus = yes omni_sb_can_target_summon_elemental_colossus = yes }
-            scope:selected_mage = { save_scope_as = colossus_caster }
-            scope:player = {
-                create_unit = {
-                    navy = no
-                    name = omni_elemental_colossus
-                    location = scope:target
-                    sub_unit = omni_elemental_colossus
-                    save_scope_as = colossus_new_army
-                }
-                omni_colossus_register_cohort = yes
-            }
+            limit = { omni_sb_can_cast_personal_ward = yes omni_sb_can_target_personal_ward = yes }
+            scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 50 } }
+            scope:target = { omni_apply_personal_ward_effect = { RANK = ii } }
+        }
+    }
+}
+
+omni_spellbook_cast.139 = { # personal_ward_ii
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_personal_ward_ii = yes omni_sb_can_target_personal_ward_ii = yes }
+            scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 90 } }
+            scope:target = { omni_apply_personal_ward_effect = { RANK = iii } }
+        }
+    }
+}
+
+omni_spellbook_cast.140 = { # realm_ward
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_realm_ward = yes }
+            scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 100 } }
+            root = { omni_cast_country_ward_effect = yes }
         }
     }
 }

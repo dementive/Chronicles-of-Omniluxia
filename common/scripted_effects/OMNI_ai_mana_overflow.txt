@@ -91,8 +91,36 @@ omni_ai_mana_overflow_effect = {
 # Strategic and personal spells the AI never cast before (round 6). Player costs and
 # cooldowns; Raise Workers gets an AI-only yearly limit to keep pop counts in check.
 omni_ai_cast_strategic_spell_effect = {
-	# Inspired Thoughts - +15 legitimacy when it is slipping.
+	# Cleanse an active curse, or ward preemptively against a known wartime threat.
 	if = {
+		limit = {
+			omni_knows_spell = { SPELL = realm_ward }
+			has_variable = hierophant_t4_unlocked_var
+			omni_can_afford_spell = { BASE = 100 }
+			scope:caster_country = {
+				NOT = { has_country_modifier = omni_country_ward_cooldown }
+				OR = {
+					has_country_modifier = aldic_cleric_spell_t3_mod
+					AND = {
+						war = yes
+						any_countries_at_war_with = {
+							any_character = {
+								is_alive = yes
+								omni_knows_spell = { SPELL = pestilence }
+								has_variable = cleric_t4_unlocked_var
+								NOT = { has_variable = omni_cd_pestilence }
+								omni_can_afford_spell = { BASE = 150 }
+							}
+						}
+					}
+				}
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 100 }
+		scope:caster_country = { omni_cast_country_ward_effect = yes }
+	}
+	# Inspired Thoughts - +15 legitimacy when it is slipping.
+	else_if = {
 		limit = {
 			omni_knows_spell = { SPELL = inspired_thoughts }
 			has_variable = illusionist_t2_unlocked_var
@@ -129,7 +157,7 @@ omni_ai_cast_strategic_spell_effect = {
 				}
 				order_by = num_of_territories_svalue
 				position = 0
-				add_country_modifier = { name = aldic_cleric_spell_t3_mod duration = 365 }
+				omni_apply_hostile_country_spell_effect = { MOD = aldic_cleric_spell_t3_mod DAYS = 365 TIER = 3 }
 			}
 		}
 		set_variable = { name = omni_cd_pestilence days = 365 }

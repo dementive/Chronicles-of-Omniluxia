@@ -61,15 +61,16 @@ omni_apply_unit_buff_with_morale_effect = {
 # the same province as one of this general's units.
 #   $MOD$  = the unit modifier to apply.
 #   $DAYS$ = how long it should last.
+#   $TIER$ = power checked against each recipient ward.
+#   $HIT_PRIMARY$ = whether Fireball also damages the primary target.
 #   $UNITTYPE$ = is_army or is_navy - which enemy stacks to hit. Naval modifiers on
 #            an army (and vice versa) do nothing, so the caller picks the right
 #            target set. Passed as the trigger KEY rather than as a yes/no value
 #            because "is_army = no" is not attested anywhere in the base game or
 #            Invictus, whereas both "is_army = yes" and "is_navy = yes" are.
 #
-# PERF: this is the only new scope walk in the AI magic code, and it only runs
-# after omni_ai_cast_offensive_debuff_effect has already confirmed - via triggers
-# the mobility branch was paying for anyway - that a hostile stack is co-located.
+# The event list prevents a unit from resolving the spell twice if two of our
+# stacks share its province. Fireball damage and its debuff resolve together.
 omni_apply_enemy_debuff_effect = {
 	every_character_unit = {
 		limit = {
@@ -84,13 +85,30 @@ omni_apply_enemy_debuff_effect = {
 					$UNITTYPE$ = yes
 					unit_owner = { war_with = scope:caster_country }
 					NOT = { has_unit_modifier = $MOD$ }
+					NOT = { is_in_list = omni_ward_resolved_units }
 				}
-				add_unit_modifier = {
-					name = $MOD$
-					duration = $DAYS$
+				add_to_list = omni_ward_resolved_units
+				if = {
+					limit = { omni_unit_ward_blocks = { TIER = $TIER$ } }
+					omni_spend_unit_ward = yes
+				}
+				else = {
+					if = {
+						limit = {
+							exists = scope:omni_ai_dmg_enemy_unit
+							this = scope:omni_ai_dmg_enemy_unit
+							always = $HIT_PRIMARY$
+						}
+						damage_unit_percent = 0.05
+					}
+					add_unit_modifier = { name = $MOD$ duration = $DAYS$ }
 				}
 			}
 		}
+	}
+	every_in_list = {
+		list = omni_ward_resolved_units
+		remove_from_list = omni_ward_resolved_units
 	}
 }
 
@@ -151,12 +169,18 @@ omni_ai_cast_battle_offense_effect = {
 			scope:omni_ai_dmg_enemy_cmdr = { NOT = { has_trait = melodian_warlock_spell_t2_trait } }
 		}
 		omni_spell_mana_cost_effect = { BASE = 50 }
-		scope:omni_ai_dmg_enemy_cmdr = {
-			force_add_trait = melodian_warlock_spell_t2_trait
-			set_variable = { name = omni_spell_active_melodian_warlock_spell_t2_trait days = 180 }
-			save_scope_as = remove_magic_target
+		if = {
+			limit = { scope:omni_ai_dmg_enemy_cmdr = { omni_personal_ward_blocks = { TIER = 2 } } }
+			scope:omni_ai_dmg_enemy_cmdr = { omni_spend_personal_ward = yes }
 		}
-		scope:caster_country = { trigger_event = { id = me_zorgo_magic_focus.22 days = 180 } }
+		else = {
+			scope:omni_ai_dmg_enemy_cmdr = {
+				force_add_trait = melodian_warlock_spell_t2_trait
+				set_variable = { name = omni_spell_active_melodian_warlock_spell_t2_trait days = 180 }
+				save_scope_as = remove_magic_target
+			}
+			scope:caster_country = { trigger_event = { id = me_zorgo_magic_focus.22 days = 180 } }
+		}
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	# Omnic IV capstone: -30% morale, -25% discipline/naval damage. 175 mana, 1-day cooldown.
@@ -173,8 +197,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 175 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_chronostasis_field_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_chronostasis_field_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_chronostasis_field_mod DAYS = 30 UNITTYPE = is_army TIER = 4 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_chronostasis_field_mod DAYS = 30 UNITTYPE = is_navy TIER = 4 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_chronostasis_field days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -189,14 +213,20 @@ omni_ai_cast_battle_offense_effect = {
 		omni_spell_mana_cost_effect = { BASE = 175 }
 		save_scope_as = omni_ai_death_hex_caster
 		scope:omni_ai_dmg_enemy_cmdr = {
-			random_list = {
-				50 = {
-					death = {
-						killer = scope:omni_ai_death_hex_caster
-						death_reason = death_magic
+			if = {
+				limit = { omni_personal_ward_blocks = { TIER = 3 } }
+				omni_spend_personal_ward = yes
+			}
+			else = {
+				random_list = {
+					50 = {
+						death = {
+							killer = scope:omni_ai_death_hex_caster
+							death_reason = death_magic
+						}
 					}
+					50 = {}
 				}
-				50 = {}
 			}
 		}
 		set_variable = { name = omni_cd_death_hex days = 90 }
@@ -215,8 +245,8 @@ omni_ai_cast_battle_offense_effect = {
 		omni_spell_mana_cost_effect = { BASE = 165 }
 		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.25 }
 		if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -4 } }
-		omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_army TIER = 4 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_navy TIER = 4 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_cataclysmic_eruption days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -234,8 +264,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 140 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_word_of_annihilation_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_word_of_annihilation_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_word_of_annihilation_mod DAYS = 30 UNITTYPE = is_army TIER = 4 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_word_of_annihilation_mod DAYS = 30 UNITTYPE = is_navy TIER = 4 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_word_of_annihilation days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -261,8 +291,14 @@ omni_ai_cast_battle_offense_effect = {
 		}
 		omni_spell_mana_cost_effect = { BASE = 100 }
 		scope:omni_ai_dmg_enemy_cmdr = {
-			set_variable = { name = omni_skull_curse_country value = scope:caster_country }
-			force_add_trait = skull_curse_trait
+			if = {
+				limit = { omni_personal_ward_blocks = { TIER = 2 } }
+				omni_spend_personal_ward = yes
+			}
+			else = {
+				set_variable = { name = omni_skull_curse_country value = scope:caster_country }
+				force_add_trait = skull_curse_trait
+			}
 		}
 		set_variable = { name = omni_cd_curse_ii days = 180 }
 		set_variable = omni_ai_battle_cast_succeeded
@@ -280,8 +316,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 100 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_gravity_well_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_gravity_well_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_gravity_well_mod DAYS = 30 UNITTYPE = is_army TIER = 3 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_gravity_well_mod DAYS = 30 UNITTYPE = is_navy TIER = 3 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_gravity_well days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -295,7 +331,15 @@ omni_ai_cast_battle_offense_effect = {
 			NOT = { has_variable = omni_cd_meteor_strike }
 		}
 		omni_spell_mana_cost_effect = { BASE = 95 }
-		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.15 }
+		scope:omni_ai_dmg_enemy_unit = {
+			if = {
+				limit = { omni_unit_ward_blocks = { TIER = 3 } }
+				omni_spend_unit_ward = yes
+			}
+			else = {
+				damage_unit_percent = 0.15
+			}
+		}
 		set_variable = { name = omni_cd_meteor_strike days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -312,8 +356,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 85 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_army TIER = 3 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_navy TIER = 3 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_storm_wrack days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -330,8 +374,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 85 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_glacial_tomb_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_glacial_tomb_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_glacial_tomb_mod DAYS = 30 UNITTYPE = is_army TIER = 3 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_glacial_tomb_mod DAYS = 30 UNITTYPE = is_navy TIER = 3 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_glacial_tomb days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -347,8 +391,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 75 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_navy TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	# Death Ray - 25% damage. 75 mana, 90-day cooldown.
@@ -362,7 +406,15 @@ omni_ai_cast_battle_offense_effect = {
 			NOT = { has_variable = omni_cd_death_ray }
 		}
 		omni_spell_mana_cost_effect = { BASE = 75 }
-		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.12 }
+		scope:omni_ai_dmg_enemy_unit = {
+			if = {
+				limit = { omni_unit_ward_blocks = { TIER = 2 } }
+				omni_spend_unit_ward = yes
+			}
+			else = {
+				damage_unit_percent = 0.12
+			}
+		}
 		set_variable = { name = omni_cd_death_ray days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -375,9 +427,18 @@ omni_ai_cast_battle_offense_effect = {
 			omni_can_afford_spell = { BASE = 75 }
 		}
 		omni_spell_mana_cost_effect = { BASE = 75 }
-		if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -2 } }
-		omni_apply_enemy_debuff_effect = { MOD = omni_plague_miasma_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_plague_miasma_mod DAYS = 30 UNITTYPE = is_navy }
+		if = {
+			limit = { exists = scope:omni_ai_dmg_enemy_cmdr }
+			scope:omni_ai_dmg_enemy_cmdr = {
+				if = {
+					limit = { omni_personal_ward_blocks = { TIER = 3 } }
+					omni_spend_personal_ward = yes
+				}
+				else = { add_health = -2 }
+			}
+		}
+		omni_apply_enemy_debuff_effect = { MOD = omni_plague_miasma_mod DAYS = 30 UNITTYPE = is_army TIER = 3 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_plague_miasma_mod DAYS = 30 UNITTYPE = is_navy TIER = 3 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_plague_miasma days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -391,7 +452,15 @@ omni_ai_cast_battle_offense_effect = {
 			omni_can_afford_spell = { BASE = 75 }
 		}
 		omni_spell_mana_cost_effect = { BASE = 75 }
-		scope:omni_ai_dmg_enemy_cmdr = { add_health = -3 }
+		scope:omni_ai_dmg_enemy_cmdr = {
+			if = {
+				limit = { omni_personal_ward_blocks = { TIER = 2 } }
+				omni_spend_personal_ward = yes
+			}
+			else = {
+				add_health = -3
+			}
+		}
 		add_health = 2
 		set_variable = { name = omni_cd_hex days = 90 }
 		set_variable = omni_ai_battle_cast_succeeded
@@ -407,14 +476,20 @@ omni_ai_cast_battle_offense_effect = {
 		}
 		omni_spell_mana_cost_effect = { BASE = 75 }
 		scope:omni_ai_dmg_enemy_cmdr = {
-			random_list = {
-				1 = { force_add_trait = leper }
-				1 = { force_add_trait = cancer }
-				1 = { force_add_trait = depressed }
-				1 = { force_add_trait = plague }
-				1 = { force_add_trait = pox }
-				1 = { force_add_trait = vampiric_fever }
-				1 = { force_add_trait = paralysis }
+			if = {
+				limit = { omni_personal_ward_blocks = { TIER = 1 } }
+				omni_spend_personal_ward = yes
+			}
+			else = {
+				random_list = {
+					1 = { force_add_trait = leper }
+					1 = { force_add_trait = cancer }
+					1 = { force_add_trait = depressed }
+					1 = { force_add_trait = plague }
+					1 = { force_add_trait = pox }
+					1 = { force_add_trait = vampiric_fever }
+					1 = { force_add_trait = paralysis }
+				}
 			}
 		}
 		set_variable = { name = omni_cd_curse days = 180 }
@@ -430,7 +505,15 @@ omni_ai_cast_battle_offense_effect = {
 			NOT = { has_variable = omni_cd_light_rays_ii }
 		}
 		omni_spell_mana_cost_effect = { BASE = 50 }
-		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.08 }
+		scope:omni_ai_dmg_enemy_unit = {
+			if = {
+				limit = { omni_unit_ward_blocks = { TIER = 2 } }
+				omni_spend_unit_ward = yes
+			}
+			else = {
+				damage_unit_percent = 0.08
+			}
+		}
 		set_variable = { name = omni_cd_light_rays_ii days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -444,7 +527,15 @@ omni_ai_cast_battle_offense_effect = {
 			NOT = { has_variable = omni_cd_warped_flesh }
 		}
 		omni_spell_mana_cost_effect = { BASE = 50 }
-		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.08 }
+		scope:omni_ai_dmg_enemy_unit = {
+			if = {
+				limit = { omni_unit_ward_blocks = { TIER = 2 } }
+				omni_spend_unit_ward = yes
+			}
+			else = {
+				damage_unit_percent = 0.08
+			}
+		}
 		set_variable = { name = omni_cd_warped_flesh days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -457,7 +548,7 @@ omni_ai_cast_battle_offense_effect = {
 			omni_ai_enemy_debuffable_trigger = { MOD = omni_seismic_tremor_mod UNITTYPE = is_army }
 		}
 		omni_spell_mana_cost_effect = { BASE = 50 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_seismic_tremor_mod DAYS = 30 UNITTYPE = is_army }
+		omni_apply_enemy_debuff_effect = { MOD = omni_seismic_tremor_mod DAYS = 30 UNITTYPE = is_army TIER = 2 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	# Cursed Rigging - naval only, same gate as the player.
@@ -469,7 +560,7 @@ omni_ai_cast_battle_offense_effect = {
 			omni_ai_enemy_debuffable_trigger = { MOD = omni_cursed_rigging_spell_mod UNITTYPE = is_navy }
 		}
 		omni_spell_mana_cost_effect = { BASE = 50 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_cursed_rigging_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_cursed_rigging_spell_mod DAYS = 30 UNITTYPE = is_navy TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -483,8 +574,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 40 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_chain_lightning_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_chain_lightning_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_chain_lightning_mod DAYS = 30 UNITTYPE = is_army TIER = 2 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_chain_lightning_mod DAYS = 30 UNITTYPE = is_navy TIER = 2 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -498,8 +589,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 40 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_corrosive_rain_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_corrosive_rain_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_corrosive_rain_mod DAYS = 30 UNITTYPE = is_army TIER = 2 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_corrosive_rain_mod DAYS = 30 UNITTYPE = is_navy TIER = 2 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	# Fireball (Melodian battle version) - 5% damage, -1 health, -15% morale. Gated on its modifier.
@@ -512,10 +603,18 @@ omni_ai_cast_battle_offense_effect = {
 			scope:omni_ai_dmg_enemy_unit = { NOT = { has_unit_modifier = omni_fireball_mod } }
 		}
 		omni_spell_mana_cost_effect = { BASE = 30 }
-		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.05 }
-		if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -1 } }
-		omni_apply_enemy_debuff_effect = { MOD = omni_fireball_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_fireball_mod DAYS = 30 UNITTYPE = is_navy }
+		if = {
+			limit = { exists = scope:omni_ai_dmg_enemy_cmdr }
+			scope:omni_ai_dmg_enemy_cmdr = {
+				if = {
+					limit = { omni_personal_ward_blocks = { TIER = 2 } }
+					omni_spend_personal_ward = yes
+				}
+				else = { add_health = -1 }
+			}
+		}
+		omni_apply_enemy_debuff_effect = { MOD = omni_fireball_mod DAYS = 30 UNITTYPE = is_army TIER = 2 HIT_PRIMARY = yes }
+		omni_apply_enemy_debuff_effect = { MOD = omni_fireball_mod DAYS = 30 UNITTYPE = is_navy TIER = 2 HIT_PRIMARY = yes }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	# Mudbind - same elementalist gate as the player.
@@ -527,7 +626,7 @@ omni_ai_cast_battle_offense_effect = {
 			omni_ai_enemy_debuffable_trigger = { MOD = omni_mudbind_spell_mod UNITTYPE = is_army }
 		}
 		omni_spell_mana_cost_effect = { BASE = 25 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_mudbind_spell_mod DAYS = 30 UNITTYPE = is_army }
+		omni_apply_enemy_debuff_effect = { MOD = omni_mudbind_spell_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -538,7 +637,7 @@ omni_ai_cast_battle_offense_effect = {
 			omni_ai_enemy_debuffable_trigger = { MOD = omni_blighted_ground_mod UNITTYPE = is_army }
 		}
 		omni_spell_mana_cost_effect = { BASE = 25 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_blighted_ground_mod DAYS = 30 UNITTYPE = is_army }
+		omni_apply_enemy_debuff_effect = { MOD = omni_blighted_ground_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	# Winds of Pedentrutzu (Amten strike) - 5% damage, 30-day cooldown like the player.
@@ -552,7 +651,15 @@ omni_ai_cast_battle_offense_effect = {
 		}
 		omni_spell_mana_cost_effect = { BASE = 25 }
 		set_variable = { name = omni_cd_winds_strike days = 1 }
-		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.04 }
+		scope:omni_ai_dmg_enemy_unit = {
+			if = {
+				limit = { omni_unit_ward_blocks = { TIER = 1 } }
+				omni_spend_unit_ward = yes
+			}
+			else = {
+				damage_unit_percent = 0.04
+			}
+		}
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -566,8 +673,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 15 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_blinding_flash_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_blinding_flash_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_blinding_flash_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_blinding_flash_mod DAYS = 30 UNITTYPE = is_navy TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -581,8 +688,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 15 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_arcane_volley_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_arcane_volley_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_arcane_volley_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_arcane_volley_mod DAYS = 30 UNITTYPE = is_navy TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -596,8 +703,8 @@ omni_ai_cast_battle_offense_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 15 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_frostbite_wind_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_frostbite_wind_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_frostbite_wind_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_frostbite_wind_mod DAYS = 30 UNITTYPE = is_navy TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	# Fireball (Amten/elementalist version) - 3% damage for 15 mana, 30-day cooldown like the player.
@@ -611,7 +718,15 @@ omni_ai_cast_battle_offense_effect = {
 		}
 		omni_spell_mana_cost_effect = { BASE = 15 }
 		set_variable = { name = omni_cd_fireball_strike days = 1 }
-		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.02 }
+		scope:omni_ai_dmg_enemy_unit = {
+			if = {
+				limit = { omni_unit_ward_blocks = { TIER = 1 } }
+				omni_spend_unit_ward = yes
+			}
+			else = {
+				damage_unit_percent = 0.02
+			}
+		}
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	# Igniting Spark - cheap opener. Gated on its modifier.
@@ -624,9 +739,18 @@ omni_ai_cast_battle_offense_effect = {
 			scope:omni_ai_dmg_enemy_unit = { NOT = { has_unit_modifier = omni_igniting_spark_mod } }
 		}
 		omni_spell_mana_cost_effect = { BASE = 10 }
-		if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -0.5 } }
-		omni_apply_enemy_debuff_effect = { MOD = omni_igniting_spark_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_igniting_spark_mod DAYS = 30 UNITTYPE = is_navy }
+		if = {
+			limit = { exists = scope:omni_ai_dmg_enemy_cmdr }
+			scope:omni_ai_dmg_enemy_cmdr = {
+				if = {
+					limit = { omni_personal_ward_blocks = { TIER = 1 } }
+					omni_spend_personal_ward = yes
+				}
+				else = { add_health = -0.5 }
+			}
+		}
+		omni_apply_enemy_debuff_effect = { MOD = omni_igniting_spark_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_igniting_spark_mod DAYS = 30 UNITTYPE = is_navy TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	clear_saved_scope = omni_ai_dmg_enemy_unit
@@ -648,8 +772,8 @@ omni_ai_cast_offensive_debuff_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 75 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_fear_hex_spell_mod DAYS = 30 UNITTYPE = is_navy TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -664,8 +788,8 @@ omni_ai_cast_offensive_debuff_effect = {
 			}
 		}
 		omni_spell_mana_cost_effect = { BASE = 85 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_army }
-		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_army TIER = 3 HIT_PRIMARY = no }
+		omni_apply_enemy_debuff_effect = { MOD = omni_storm_wrack_spell_mod DAYS = 30 UNITTYPE = is_navy TIER = 3 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_storm_wrack days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
@@ -677,7 +801,7 @@ omni_ai_cast_offensive_debuff_effect = {
 			omni_ai_enemy_debuffable_trigger = { MOD = omni_cursed_rigging_spell_mod UNITTYPE = is_navy }
 		}
 		omni_spell_mana_cost_effect = { BASE = 50 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_cursed_rigging_spell_mod DAYS = 30 UNITTYPE = is_navy }
+		omni_apply_enemy_debuff_effect = { MOD = omni_cursed_rigging_spell_mod DAYS = 30 UNITTYPE = is_navy TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -688,7 +812,7 @@ omni_ai_cast_offensive_debuff_effect = {
 			omni_ai_enemy_debuffable_trigger = { MOD = omni_mudbind_spell_mod UNITTYPE = is_army }
 		}
 		omni_spell_mana_cost_effect = { BASE = 25 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_mudbind_spell_mod DAYS = 30 UNITTYPE = is_army }
+		omni_apply_enemy_debuff_effect = { MOD = omni_mudbind_spell_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -699,7 +823,7 @@ omni_ai_cast_offensive_debuff_effect = {
 			omni_ai_enemy_debuffable_trigger = { MOD = omni_blighted_ground_mod UNITTYPE = is_army }
 		}
 		omni_spell_mana_cost_effect = { BASE = 25 }
-		omni_apply_enemy_debuff_effect = { MOD = omni_blighted_ground_mod DAYS = 30 UNITTYPE = is_army }
+		omni_apply_enemy_debuff_effect = { MOD = omni_blighted_ground_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 }
@@ -779,13 +903,30 @@ omni_ai_cast_combat_buff_effect = {
 	}
 	else_if = {
 		limit = {
-			omni_can_afford_spell = { BASE = 25 }
+			omni_can_afford_spell = { BASE = 75 }
+			omni_knows_spell = { SPELL = arcane_aegis_ii }
+			has_variable = illusionist_t4_unlocked_var
+			any_character_unit = { in_combat = yes omni_unit_ward_available = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 75 }
+		random_character_unit = {
+			limit = { in_combat = yes omni_unit_ward_available = yes }
+			omni_apply_arcane_aegis_effect = { RANK = iii }
+		}
+		set_variable = omni_ai_battle_cast_succeeded
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 35 }
 			omni_knows_spell = { SPELL = arcane_aegis }
 			omni_caster_aldic_t1 = yes
-			NOT = { any_character_unit = { has_unit_modifier = omni_arcane_aegis_spell_mod } }
+			any_character_unit = { in_combat = yes omni_unit_ward_available = yes }
 		}
-		omni_spell_mana_cost_effect = { BASE = 25 }
-		omni_apply_unit_buff_effect = { MOD = omni_arcane_aegis_spell_mod DAYS = 30 }
+		omni_spell_mana_cost_effect = { BASE = 35 }
+		random_character_unit = {
+			limit = { in_combat = yes omni_unit_ward_available = yes }
+			omni_apply_arcane_aegis_effect = { RANK = i }
+		}
 		set_variable = omni_ai_battle_cast_succeeded
 	}
 	else_if = {
@@ -940,6 +1081,52 @@ omni_ai_cast_summon_effect = {
 	}
 }
 
+# Defend against enemy spellcasters before spending mana on a strike.
+omni_ai_cast_personal_ward_effect = {
+	if = {
+		limit = {
+			omni_personal_ward_available = yes
+			OR = {
+				AND = {
+					omni_knows_spell = { SPELL = personal_ward_ii }
+					has_variable = diviner_t4_unlocked_var
+					omni_can_afford_spell = { BASE = 90 }
+				}
+				AND = {
+					omni_knows_spell = { SPELL = personal_ward }
+					has_variable = diviner_t3_unlocked_var
+					omni_can_afford_spell = { BASE = 50 }
+				}
+			}
+			any_character_unit = {
+				in_combat = yes
+				unit_location = {
+					any_unit_in_province = {
+						in_combat = yes
+						unit_owner = { war_with = scope:caster_country }
+						exists = commander
+						commander = { omni_character_is_eligible_caster = yes }
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				omni_knows_spell = { SPELL = personal_ward_ii }
+				has_variable = diviner_t4_unlocked_var
+				omni_can_afford_spell = { BASE = 90 }
+			}
+			omni_spell_mana_cost_effect = { BASE = 90 }
+			omni_apply_personal_ward_effect = { RANK = iii }
+		}
+		else = {
+			omni_spell_mana_cost_effect = { BASE = 50 }
+			omni_apply_personal_ward_effect = { RANK = ii }
+		}
+		set_variable = omni_ai_battle_cast_succeeded
+	}
+}
+
 # Top-level decision for one eligible mage-general. Expects scope:caster_country.
 #   In combat     -> folk battle magic, then the offense ladder (strongest
 #                    affordable enemy-targeted spell), then a combat buff.
@@ -953,6 +1140,10 @@ omni_ai_battlecast_effect = {
 		# Academy ladder first (strongest affordable spell), folk magic only if it cast
 		# nothing: folk-first spent mana on 25-35 cost spells and starved the big ones.
 		omni_ai_cast_summon_effect = yes
+		if = {
+			limit = { NOT = { has_variable = omni_ai_battle_cast_succeeded } }
+			omni_ai_cast_personal_ward_effect = yes
+		}
 		if = {
 			limit = { NOT = { has_variable = omni_ai_battle_cast_succeeded } }
 			omni_ai_cast_battle_offense_effect = yes
