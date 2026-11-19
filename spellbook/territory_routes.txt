@@ -330,6 +330,58 @@ omni_cast_summon_dryads = {
 	}
 }
 
+omni_cast_summon_warborn = {
+	sound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+	on_other_nation = no
+	on_own_nation = yes
+
+	potential_trigger = {
+		scope:actor = { is_ai = no }
+		scope:target = { omni_can_select_territory_summon_warborn = yes }
+	}
+
+	allowed_trigger = {
+		scope:actor = { NOT = { has_variable = omni_cd_summon_warborn } any_owned_province = { omni_spell_target_land = yes } }
+		scope:target = { omni_can_afford_spell = { BASE = 75 } }
+	}
+
+	province_actor_trigger = { omni_spell_target_land = yes }
+
+	effect = {
+		scope:target = { omni_spell_mana_cost_effect = { BASE = 75 } }
+		scope:actor = {
+			set_variable = { name = omni_cd_summon_warborn days = 365 }
+			create_character = {
+				first_name = "Lari"
+				age = 25
+				culture = warborn
+				religion = blood_tainted_pantheon
+				female = no
+				save_scope_as = skelebro
+			}
+			create_unit = {
+				navy = no
+				name = "Undead Auxiliaries"
+				location = scope:recipient
+				set_as_commander = scope:skelebro
+				hidden_effect = {
+					while = { count = 8 add_subunit = omni_warborn }
+					add_food = 300
+					add_morale = 5
+				}
+			}
+		}
+		set_global_variable = omni_warborn_summoned # Enables the Warborn maintenance event in 00_monthly_country.txt.
+		hidden_effect = {
+			scope:skelebro = {
+				add_martial = 15
+				force_add_trait = "tactician"
+				force_add_trait = "aggressive"
+			}
+		}
+	}
+}
+
 omni_cast_weathercall_growth = {
 	sound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
 	on_other_nation = no

@@ -1,0 +1,360 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# OMNILUXIA AI CENSUS (debug only) - BUILDING_AI_LATE_GAME_PLAN.md, Phase 0
+# Set omni_ai_census_enabled = 0 before a public release.
+# ----------------------------------------------------------------------------------------------------------------------
+
+omni_ai_census_enabled = 1
+
+# Only AIs at least this large are logged.
+omni_ai_census_min_territories = 40
+
+omni_census_income10 = {
+    value = has_monthly_income
+    multiply = 10
+}
+
+omni_census_manpower_pct = {
+    value = manpower_percentage
+    multiply = 100
+}
+
+omni_census_ports_l1 = {
+    value = 0
+    every_owned_province = { limit = { num_of_port_building >= 1 } add = 1 }
+}
+omni_census_ports_l3 = {
+    value = 0
+    every_owned_province = { limit = { num_of_port_building >= 3 } add = 1 }
+}
+omni_census_ports_l5 = {
+    value = 0
+    every_owned_province = { limit = { num_of_port_building >= 5 } add = 1 }
+}
+omni_census_forts_l1 = {
+    value = 0
+    every_owned_province = { limit = { fort_level >= 1 } add = 1 }
+}
+omni_census_forts_l3 = {
+    value = 0
+    every_owned_province = { limit = { fort_level >= 3 } add = 1 }
+}
+omni_census_forts_l5 = {
+    value = 0
+    every_owned_province = { limit = { fort_level >= 5 } add = 1 }
+}
+omni_census_cap_fort = {
+    value = 0
+    if = {
+        limit = { exists = capital_scope }
+        capital_scope = { add = fort_level }
+    }
+}
+omni_census_cap_free_slots = {
+    value = 0
+    if = {
+        limit = { exists = capital_scope }
+        capital_scope = { add = free_building_slots }
+    }
+}
+omni_census_cap_markets = {
+    value = 0
+    if = {
+        limit = { exists = capital_scope }
+        capital_scope = { add = num_of_commerce_building }
+    }
+}
+omni_census_shipyards_designated = {
+    value = 0
+    every_owned_province = { limit = { omni_shipyard_target_level > 0 } add = 1 }
+}
+omni_census_shipyards_stuck = {
+    value = 0
+    every_owned_province = {
+        limit = {
+            omni_shipyard_levels_remaining > 0
+            free_building_slots <= 0
+        }
+        add = 1
+    }
+}
+omni_census_states = {
+    value = 0
+    every_country_state = { add = 1 }
+}
+omni_census_timber_states = {
+    value = 0
+    every_country_state = {
+        limit = { omni_state_has_ship_timber = yes }
+        add = 1
+    }
+}
+
+omni_census_balance10 = {
+    value = has_monthly_balance
+    multiply = 10
+}
+omni_census_at_war = {
+    value = 0
+    if = { limit = { war = yes } value = 1 }
+}
+omni_census_build_ok = {
+    value = 0
+    if = { limit = { ai_treasury_is_enough_for_building = yes } value = 1 }
+}
+omni_census_new_port_wanted = {
+    value = 0
+    every_owned_province = { limit = { brc_needs_new_port = yes } add = 1 }
+}
+omni_census_desig_can_grow = {
+    value = 0
+    every_owned_province = { limit = { omni_shipyard_needs_next_level = yes } add = 1 }
+}
+omni_census_desig_busy = {
+    value = 0
+    every_owned_province = {
+        limit = {
+            omni_shipyard_levels_remaining > 0
+            has_construction = yes
+        }
+        add = 1
+    }
+}
+# Sum of brc_port at designated sites that could grow (what the picker sees).
+omni_census_desig_weight = {
+    value = 0
+    every_owned_province = {
+        limit = { omni_shipyard_needs_next_level = yes }
+        add = brc_port
+    }
+}
+omni_census_casters = {
+    value = 0
+    every_character = {
+        limit = { omni_character_is_eligible_caster = yes }
+        add = 1
+    }
+}
+omni_census_caster_commanders = {
+    value = 0
+    every_character = {
+        limit = {
+            omni_character_is_eligible_caster = yes
+            any_character_unit = { always = yes }
+        }
+        add = 1
+    }
+}
+omni_census_caster_mana = {
+    value = 0
+    every_character = {
+        limit = {
+            omni_character_is_eligible_caster = yes
+            has_variable = magic
+        }
+        add = var:magic
+    }
+}
+omni_census_var_casts = {
+    value = 0
+    if = { limit = { has_variable = omni_census_casts } value = var:omni_census_casts }
+}
+omni_census_var_casts_battle = {
+    value = 0
+    if = { limit = { has_variable = omni_census_casts_battle } value = var:omni_census_casts_battle }
+}
+omni_census_var_casts_field = {
+    value = 0
+    if = { limit = { has_variable = omni_census_casts_field } value = var:omni_census_casts_field }
+}
+omni_census_var_mana_spent = {
+    value = 0
+    if = { limit = { has_variable = omni_census_mana_spent } value = var:omni_census_mana_spent }
+}
+omni_census_var_spend_econ = {
+    value = 0
+    if = { limit = { has_variable = omni_census_spend_econ } value = var:omni_census_spend_econ }
+}
+omni_census_var_spend_build = {
+    value = 0
+    if = { limit = { has_variable = omni_census_spend_build } value = var:omni_census_spend_build }
+}
+omni_census_var_spend_court = {
+    value = 0
+    if = { limit = { has_variable = omni_census_spend_court } value = var:omni_census_spend_court }
+}
+omni_census_var_spend_quarterly = {
+    value = 0
+    if = { limit = { has_variable = omni_census_spend_quarterly } value = var:omni_census_spend_quarterly }
+}
+omni_census_var_spend_colonize = {
+    value = 0
+    if = { limit = { has_variable = omni_census_spend_colonize } value = var:omni_census_spend_colonize }
+}
+omni_census_var_spend_education = {
+    value = 0
+    if = { limit = { has_variable = omni_census_spend_education } value = var:omni_census_spend_education }
+}
+omni_census_fort_levels = {
+    value = 0
+    every_owned_province = { limit = { fort_level > 0 } add = fort_level }
+}
+omni_census_threatened = {
+    value = 0
+    if = { limit = { has_variable = omni_ai_war_threatened } value = 1 }
+}
+
+# Construction throughput (added after the 72-year run).
+omni_census_constructing = {
+    value = 0
+    every_owned_province = { limit = { has_construction = yes } add = 1 }
+}
+omni_census_key_buildings = {
+    value = 0
+    every_owned_province = {
+        limit = { has_city_status = yes }
+        add = num_of_commerce_building
+        add = num_of_library_building
+        add = num_of_academy_building
+        add = num_of_port_building
+    }
+}
+
+# Per-type building levels (added before the round-7 run) to judge individual weights.
+omni_census_n_markets = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_commerce_building > 0 }
+        add = num_of_commerce_building
+    }
+}
+omni_census_n_libraries = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_library_building > 0 }
+        add = num_of_library_building
+    }
+}
+omni_census_n_academies = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_academy_building > 0 }
+        add = num_of_academy_building
+    }
+}
+omni_census_n_mage_towers = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_mage_tower_building > 0 }
+        add = num_of_mage_tower_building
+    }
+}
+omni_census_n_magic_academies = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_magic_academy_building > 0 }
+        add = num_of_magic_academy_building
+    }
+}
+omni_census_n_temples = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_temple_building > 0 }
+        add = num_of_temple_building
+    }
+}
+omni_census_n_town_halls = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_town_hall_building > 0 }
+        add = num_of_town_hall_building
+    }
+}
+omni_census_n_courts = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_court_building > 0 }
+        add = num_of_court_building
+    }
+}
+omni_census_n_mines = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_slave_mine_building > 0 }
+        add = num_of_slave_mine_building
+    }
+}
+omni_census_n_farms = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_latifundia_building > 0 }
+        add = num_of_latifundia_building
+    }
+}
+omni_census_n_settlements = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_basic_settlement_infratructure_building > 0 }
+        add = num_of_basic_settlement_infratructure_building
+    }
+}
+omni_census_n_workshops = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_workshop_building > 0 }
+        add = num_of_workshop_building
+    }
+}
+omni_census_n_barracks = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_barracks_building > 0 }
+        add = num_of_barracks_building
+    }
+}
+omni_census_n_port_levels = {
+    value = 0
+    every_owned_province = {
+        limit = { num_of_port_building > 0 }
+        add = num_of_port_building
+    }
+}
+omni_census_ports_l2 = {
+    value = 0
+    every_owned_province = { limit = { num_of_port_building >= 2 } add = 1 }
+}
+
+# Ruler family (matchmaking check, 2026-11-19).
+omni_census_ruler_married = {
+    value = 0
+    if = { limit = { exists = current_ruler current_ruler = { is_married = yes } } add = 1 }
+}
+omni_census_ruler_children = {
+    value = 0
+    if = { limit = { exists = current_ruler } current_ruler = { add = num_of_children } }
+}
+omni_census_ruler_age = {
+    value = 0
+    if = { limit = { exists = current_ruler } current_ruler = { add = age } }
+}
+
+# Temple / mage tower diagnostics (2026-11-19).
+omni_census_inv_temples = {
+    value = 0
+    if = { limit = { invention = global_unrest_inv_2 } add = 1 }
+}
+omni_census_inv_mage_guilds = {
+    value = 0
+    if = { limit = { invention = organized_mage_guilds_inv } add = 1 }
+}
+# Academy cities where a tower could start right now (no tower, a free slot).
+omni_census_tower_ready = {
+    value = 0
+    every_owned_province = {
+        limit = {
+            has_building = magic_academy_building
+            NOT = { has_building = mage_tower_building }
+            free_building_slots >= 1
+        }
+        add = 1
+    }
+}

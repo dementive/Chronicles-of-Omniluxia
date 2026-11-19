@@ -9,11 +9,18 @@
 	# Units load before common/scripted_triggers is ready, and calling
 	# omni_state_has_ship_timber here crashed the game on launch (_pInstance).
 	# Keep in step with omni_state_has_ship_timber in omni_naval_triggers.txt.
+	# Timber must be PRESENT in the state (a producing territory or an import),
+	# not in surplus: surplus counts copies beyond the first and is exported away.
 	allow = {	# state scope (the building state)
-		OR = {
-			trade_good_surplus = { target = wood value > 0 }
-			trade_good_surplus = { target = cedar value > 0 }
-			trade_good_surplus = { target = hardwood value > 0 }
+		any_state_province = {
+			OR = {
+				trade_goods = wood
+				trade_goods = cedar
+				trade_goods = hardwood
+				is_importing_trade_good = wood
+				is_importing_trade_good = cedar
+				is_importing_trade_good = hardwood
+			}
 		}
 	}
 

@@ -668,7 +668,7 @@ me_zorgo_magic_focus.5 = { # Amten School
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 125 }
         }
-        add_3_free_province_investments = yes
+        add_1_free_province_investments = yes
         set_variable = { name = omni_cd_summon_earthworks days = 365 }
         custom_tooltip = omni_summon_country_cooldown_tt
         custom_tooltip = tier_three_spell_tt
@@ -791,48 +791,13 @@ me_zorgo_magic_focus.6 = { # Melodian School
 
     option = { # Summon Warborn N1
         trigger = {
-            scope:target = { omni_knows_spell = { SPELL = summon_warborn } }
             NOT = { has_variable = omni_cd_summon_warborn }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_summon_warborn } }
-            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
-            scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
-                has_variable = necromancer_t2_unlocked_var
+                omni_can_select_territory_summon_warborn = yes
+                omni_can_afford_spell = { BASE = 75 }
             }
         }
-        scope:target = {
-            omni_spell_mana_cost_effect = { BASE = 75 }
-        }
-        create_unit = {
-            navy = no
-            name = "Undead Auxiliaries"
-            location = capital_scope
-            hidden_effect = {
-                while = {
-                    count = 8
-                    add_subunit = light_infantry
-                }
-                add_food = 300
-                add_morale = 5
-            }
-        }
-        create_character = {
-            first_name = "Larry"
-            age = 25
-            culture = warborn
-            religion = blood_tainted_pantheon
-            female = no
-            save_scope_as = skelebro
-        }
-        set_global_variable = omni_warborn_summoned # PERF gate for me_zorgo_magic_focus.23 (00_monthly_country.txt)     
-        hidden_effect = {
-            scope:skelebro = {
-                add_martial=15
-                force_add_trait="tactician"
-                force_add_trait="aggressive"
-            }
-        }
-        set_variable = { name = omni_cd_summon_warborn days = 365 }
+        custom_tooltip = omni_spell_legacy_pick_territory_tt
         custom_tooltip = omni_summon_country_cooldown_tt
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = 75_mana_tt
@@ -1672,8 +1637,8 @@ me_zorgo_magic_focus.7 = { # Folk Magic
             }
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_explosion days = 90 } }
-        custom_tooltip = omni_spell_cooldown_90_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_explosion days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = folk_spell_tt
         custom_tooltip = 75_mana_tt
         name = "me_zorgo_magic_focus.7.t"
@@ -1987,6 +1952,7 @@ me_zorgo_magic_focus.10 = { # Omnic School
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = light_rays_ii } }
+            scope:selected_mage = { NOT = { has_variable = omni_cd_light_rays_ii } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
             scope:selected_mage = {
                 has_variable = diviner_t3_unlocked_var
@@ -1997,9 +1963,12 @@ me_zorgo_magic_focus.10 = { # Omnic School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.15
+                damage_unit_percent = 0.08
             }
         }
+        # Balance 2026-11-18: 15% army damage had no cooldown (spam-able anywhere).
+        scope:selected_mage = { set_variable = { name = omni_cd_light_rays_ii days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_two_spell_tt
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.10.b"
@@ -2162,8 +2131,8 @@ me_zorgo_magic_focus.10 = { # Omnic School
                 add_unit_modifier = { name = omni_gravity_well_mod duration = 30 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_gravity_well days = 90 } }
-        custom_tooltip = omni_spell_cooldown_90_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_gravity_well days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = 100_mana_tt
         name = "me_zorgo_magic_focus.new.omnic3"
@@ -2197,8 +2166,8 @@ me_zorgo_magic_focus.10 = { # Omnic School
                 add_unit_modifier = { name = omni_chronostasis_field_mod duration = 30 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_chronostasis_field days = 180 } }
-        custom_tooltip = omni_spell_cooldown_180_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_chronostasis_field days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_four_spell_tt
         custom_tooltip = 175_mana_tt
         name = "me_zorgo_magic_focus.new.omnic4"
@@ -2296,13 +2265,15 @@ me_zorgo_magic_focus.11 = { # Aldic School
         scope:selected_mage = {
             omni_spell_mana_cost_effect = { BASE = 50 }
         }
+        # Balance 2026-11-18: 10%/180 days -> 15%/30 days, matching Light Rays II
+        # (the other Tier II 50-mana army strike).
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.1
+                damage_unit_percent = 0.08
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_warped_flesh days = 180 } }
-        custom_tooltip = omni_spell_cooldown_180_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_warped_flesh days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_two_spell_tt
         custom_tooltip = 50_mana_tt
         name = "me_zorgo_magic_focus.11.c"
@@ -2424,11 +2395,11 @@ me_zorgo_magic_focus.11 = { # Aldic School
         scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 95 } }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.30
+                damage_unit_percent = 0.15
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_meteor_strike days = 90 } }
-        custom_tooltip = omni_spell_cooldown_90_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_meteor_strike days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = 95_mana_tt
         name = "me_zorgo_magic_focus.new.aldic3"
@@ -2462,8 +2433,8 @@ me_zorgo_magic_focus.11 = { # Aldic School
                 add_unit_modifier = { name = omni_word_of_annihilation_mod duration = 30 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_word_of_annihilation days = 180 } }
-        custom_tooltip = omni_spell_cooldown_180_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_word_of_annihilation days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_four_spell_tt
         custom_tooltip = 140_mana_tt
         name = "me_zorgo_magic_focus.new.aldic4"
@@ -2487,6 +2458,7 @@ me_zorgo_magic_focus.12 = { # Amten School
 
     option = { # Winds of Pedentrutzu E1
         trigger = {
+            scope:selected_mage = { NOT = { has_variable = omni_cd_winds_strike } }
             scope:selected_mage = { omni_knows_spell = { SPELL = winds_of_pedentrutzu } }
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
@@ -2500,15 +2472,18 @@ me_zorgo_magic_focus.12 = { # Amten School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.05
+                damage_unit_percent = 0.04
             }
         }
+        scope:selected_mage = { set_variable = { name = omni_cd_winds_strike days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = 25_mana_tt
         name = "me_zorgo_magic_focus.12.a"
     }
     option = { # Fireball E1
         trigger = {
+            scope:selected_mage = { NOT = { has_variable = omni_cd_fireball_strike } }
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = fireball } }
@@ -2522,9 +2497,11 @@ me_zorgo_magic_focus.12 = { # Amten School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.03
+                damage_unit_percent = 0.02
             }
         }
+        scope:selected_mage = { set_variable = { name = omni_cd_fireball_strike days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = 15_mana_tt
         name = "me_zorgo_magic_focus.12.b"
@@ -2686,49 +2663,21 @@ me_zorgo_magic_focus.12 = { # Amten School
                 add_unit_modifier = { name = omni_glacial_tomb_mod duration = 30 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_glacial_tomb days = 90 } }
-        custom_tooltip = omni_spell_cooldown_90_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_glacial_tomb days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = 85_mana_tt
         name = "me_zorgo_magic_focus.new.amten3"
     }
     option = { # Summon Elemental Colossus
         trigger = {
-            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
-            scope:selected_mage = { omni_knows_spell = { SPELL = summon_elemental_colossus } }
-            NOT = { has_variable = omni_cd_summon_elemental_colossus }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_summon_elemental_colossus } }
-            scope:selected_mage = { 
-                has_variable = elementalist_mastered_var
-                omni_can_afford_spell = { BASE = 150 }
-                omni_caster_amten_t3 = yes
-                any_character_unit = {
-                    OR = {
-                        is_army = yes
-                        is_navy = yes
-                    }
-                    unit_owner = { this = root }
-                    in_combat = yes
-                }
-            }
-
-        }
-        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 150 } }
-        scope:selected_mage = {
-            every_character_unit = {
-                limit = { 
-                    is_army = yes
-                    unit_owner = { this = root }
-                    in_combat = yes
-                }
-                if = { limit = { has_unit_modifier = omni_elemental_colossus_mod } remove_unit_modifier = omni_elemental_colossus_mod }
-                add_unit_modifier = { name = omni_elemental_colossus_mod duration = 30 }
+            scope:selected_mage = {
+                omni_can_summon_colossus = yes
+                any_character_unit = { omni_colossus_casting_army = yes unit_owner = root in_combat = yes }
             }
         }
-        set_variable = { name = omni_cd_summon_elemental_colossus days = 365 }
-        custom_tooltip = omni_summon_country_cooldown_tt
-        custom_tooltip = tier_four_spell_tt
-        custom_tooltip = 150_mana_tt
+        scope:selected_mage = { omni_summon_colossus_effect = yes }
+        custom_tooltip = omni_elemental_colossus_effect_tt
         name = "me_zorgo_magic_focus.new.amten4"
     }
     option = {
@@ -2840,11 +2789,11 @@ me_zorgo_magic_focus.13 = { # Melodian School
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.25
+                damage_unit_percent = 0.12
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_death_ray days = 90 } }
-        custom_tooltip = omni_spell_cooldown_90_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_death_ray days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_two_spell_tt
         custom_tooltip = 75_mana_tt
         name = "me_zorgo_magic_focus.13.d"
@@ -2984,8 +2933,8 @@ me_zorgo_magic_focus.13 = { # Melodian School
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_storm_wrack days = 90 } }
-        custom_tooltip = omni_spell_cooldown_90_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_storm_wrack days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = omni_storm_wrack_tt
         custom_tooltip = 85_mana_tt
@@ -3059,11 +3008,11 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                destroy_unit = yes
+                damage_unit_percent = 0.30
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_great_flare days = 365 } }
-        custom_tooltip = omni_spell_cooldown_365_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_great_flare days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = folk_spell_tt
         custom_tooltip = 200_mana_tt
         name = "me_zorgo_magic_focus.14.a"
@@ -3168,11 +3117,11 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.05
+                damage_unit_percent = 0.04
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_stinging_nettles days = 30 } }
-        custom_tooltip = omni_spell_cooldown_30_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_stinging_nettles days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = folk_spell_tt
         custom_tooltip = 25_mana_tt
         name = "me_zorgo_magic_focus.14.d"
@@ -3201,11 +3150,11 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.05
+                damage_unit_percent = 0.04
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_serpentine_swords days = 30 } }
-        custom_tooltip = omni_spell_cooldown_30_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_serpentine_swords days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = folk_spell_tt
         custom_tooltip = 25_mana_tt
         name = "me_zorgo_magic_focus.14.e"
@@ -3234,11 +3183,11 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.08
+                damage_unit_percent = 0.05
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_imperial_dragons_claw days = 30 } }
-        custom_tooltip = omni_spell_cooldown_30_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_imperial_dragons_claw days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = folk_spell_tt
         custom_tooltip = 35_mana_tt
         name = "me_zorgo_magic_focus.14.f"
@@ -3275,8 +3224,8 @@ me_zorgo_magic_focus.14 = { # Folk Magic
                 force_add_trait = maimed
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_sword_of_jaoz days = 365 } }
-        custom_tooltip = omni_spell_cooldown_365_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_sword_of_jaoz days = 90 } }
+        custom_tooltip = omni_spell_cooldown_90_tt
         custom_tooltip = folk_spell_tt
         custom_tooltip = 75_mana_tt
         name = "me_zorgo_magic_focus.14.g"
@@ -3313,8 +3262,8 @@ me_zorgo_magic_focus.14 = { # Folk Magic
                 force_add_trait = blind
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_hellas_light days = 365 } }
-        custom_tooltip = omni_spell_cooldown_365_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_hellas_light days = 90 } }
+        custom_tooltip = omni_spell_cooldown_90_tt
         custom_tooltip = folk_spell_tt
         custom_tooltip = 75_mana_tt
         name = "me_zorgo_magic_focus.14.h"
@@ -3333,7 +3282,7 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.05
+                damage_unit_percent = 0.04
             }
         }
         custom_tooltip = folk_spell_tt
@@ -3345,6 +3294,7 @@ me_zorgo_magic_focus.14 = { # Folk Magic
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { OR = { is_army = yes is_navy = yes } } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 25 } }
+            scope:selected_mage = { NOT = { has_variable = omni_cd_blood_rush } }
             scope:selected_mage = {
                 has_trait = blood_angel_curse_trait
             }
@@ -3354,9 +3304,12 @@ me_zorgo_magic_focus.14 = { # Folk Magic
         }
         scope:target = {
             random_character_unit = {
-                damage_unit_percent = 0.25
+                damage_unit_percent = 0.05
             }
         }
+        # Balance 2026-11-18: 25% damage for 25 mana had no cooldown; now matches Death Ray.
+        scope:selected_mage = { set_variable = { name = omni_cd_blood_rush days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = folk_spell_tt
         custom_tooltip = 25_mana_tt
         name = "me_zorgo_magic_focus.14.j"
@@ -4644,8 +4597,8 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_death_hex days = 365 } }
-        custom_tooltip = omni_spell_cooldown_365_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_death_hex days = 90 } }
+        custom_tooltip = omni_spell_cooldown_90_tt
         custom_tooltip = tier_four_spell_tt
         custom_tooltip = omni_battle_death_hex_tt
         custom_tooltip = 175_mana_tt
@@ -4830,8 +4783,8 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_plague_miasma days = 90 } }
-        custom_tooltip = omni_spell_cooldown_90_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_plague_miasma days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = 75_mana_tt
         name = "me_zorgo_magic_focus.new.melodian3"
@@ -4867,7 +4820,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                         }
                         in_combat = yes
                     }
-                    damage_unit_percent = 0.30
+                    damage_unit_percent = 0.25
                 }
                 every_character_unit = {
                     limit = {
@@ -4891,7 +4844,7 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
         else_if = {
             limit = { exists = scope:battle_enemy_force }
             scope:battle_enemy_force = {
-                damage_unit_percent = 0.30
+                damage_unit_percent = 0.25
                 if = {
                     limit = { has_unit_modifier = omni_cataclysmic_eruption_mod }
                     remove_unit_modifier = omni_cataclysmic_eruption_mod
@@ -4902,8 +4855,8 @@ me_zorgo_magic_focus.29 = { # Friendly Buff Menu - Cast a good spell on your own
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_cataclysmic_eruption days = 180 } }
-        custom_tooltip = omni_spell_cooldown_180_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_cataclysmic_eruption days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_four_spell_tt
         custom_tooltip = 165_mana_tt
         name = "me_zorgo_magic_focus.new.melodian4"
@@ -5307,8 +5260,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
                 add_unit_modifier = { name = omni_battle_haste_spell_mod duration = 30 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_battle_surge days = 30 } }
-        custom_tooltip = omni_spell_cooldown_30_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_battle_surge days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_one_spell_tt
         custom_tooltip = omni_battle_haste_tt
         custom_tooltip = 15_mana_tt
@@ -5345,8 +5298,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
                 add_morale = 0.75
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_battle_hymn days = 30 } }
-        custom_tooltip = omni_spell_cooldown_30_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_battle_hymn days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_two_spell_tt
         custom_tooltip = omni_battle_rally_tt
         custom_tooltip = 40_mana_tt
@@ -5416,8 +5369,8 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
                 add_morale = 1.5
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_heroic_resonance days = 30 } }
-        custom_tooltip = omni_spell_cooldown_30_tt
+        scope:selected_mage = { set_variable = { name = omni_cd_heroic_resonance days = 1 } }
+        custom_tooltip = omni_spell_cooldown_1_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = omni_battle_haste_3_tt
         custom_tooltip = 75_mana_tt
@@ -5708,6 +5661,9 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = breaching_tremor } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+            # Balance 2026-11-18: one breach per tremor while its 90-day effect lasts;
+            # with no cooldown a mana-rich mage could stack breaches and end any siege at once.
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes has_province_modifier = omni_siege_breach_spell_mod } } } }
             # Elementalist: shattering stone and fortifications.
             scope:selected_mage = { omni_caster_amten_t2 = yes }
         }
@@ -5997,6 +5953,8 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = seismic_tremor } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+            # Balance 2026-11-18: one breach per tremor while its 90-day effect lasts.
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes has_province_modifier = omni_seismic_tremor_siege_mod } } } }
             scope:selected_mage = { omni_caster_amten_t2 = yes }
 
         }
@@ -6021,7 +5979,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = plague_miasma } }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_plague_miasma } }
+            scope:selected_mage = { NOT = { has_variable = omni_cd_siege_plague_miasma } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
             scope:selected_mage = { omni_caster_melodian_t3 = yes }
 
@@ -6036,7 +5994,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_plague_miasma days = 90 } }
+        scope:selected_mage = { set_variable = { name = omni_cd_siege_plague_miasma days = 90 } }
         custom_tooltip = omni_spell_cooldown_90_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = 75_mana_tt
@@ -6048,7 +6006,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = glacial_tomb } }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_glacial_tomb } }
+            scope:selected_mage = { NOT = { has_variable = omni_cd_siege_glacial_tomb } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 85 } }
             scope:selected_mage = { omni_caster_amten_t3 = yes }
 
@@ -6063,7 +6021,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_glacial_tomb days = 90 } }
+        scope:selected_mage = { set_variable = { name = omni_cd_siege_glacial_tomb days = 90 } }
         custom_tooltip = omni_spell_cooldown_90_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = 85_mana_tt
@@ -6075,7 +6033,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = meteor_strike } }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_meteor_strike } }
+            scope:selected_mage = { NOT = { has_variable = omni_cd_siege_meteor_strike } }
             scope:selected_mage = { omni_can_afford_spell = { BASE = 95 } }
             scope:selected_mage = { omni_caster_aldic_t3 = yes }
 
@@ -6091,7 +6049,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_meteor_strike days = 90 } }
+        scope:selected_mage = { set_variable = { name = omni_cd_siege_meteor_strike days = 90 } }
         custom_tooltip = omni_spell_cooldown_90_tt
         custom_tooltip = tier_three_spell_tt
         custom_tooltip = 95_mana_tt
@@ -6103,7 +6061,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = word_of_annihilation } }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_word_of_annihilation } }
+            scope:selected_mage = { NOT = { has_variable = omni_cd_siege_word_of_annihilation } }
             scope:selected_mage = { 
                 has_variable = illusionist_mastered_var
                 omni_can_afford_spell = { BASE = 140 } 
@@ -6120,7 +6078,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_word_of_annihilation days = 180 } }
+        scope:selected_mage = { set_variable = { name = omni_cd_siege_word_of_annihilation days = 180 } }
         custom_tooltip = omni_spell_cooldown_180_tt
         custom_tooltip = tier_four_spell_tt
         custom_tooltip = 140_mana_tt
@@ -6128,34 +6086,13 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Summon Elemental Colossus (Siege)
         trigger = {
-            scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
-            scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
-            scope:selected_mage = { omni_knows_spell = { SPELL = summon_elemental_colossus } }
-            NOT = { has_variable = omni_cd_summon_elemental_colossus }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_summon_elemental_colossus } }
-            scope:selected_mage = { 
-                has_variable = elementalist_mastered_var
-                omni_can_afford_spell = { BASE = 150 } 
-                omni_caster_amten_t3 = yes
-            }
-
-        }
-        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 150 } }
-        scope:selected_mage = {
-            every_character_unit = {
-                limit = { 
-                    is_army = yes
-                    unit_owner = { this = root }
-                    unit_location = { has_siege = yes }
-                }
-                if = { limit = { has_unit_modifier = omni_elemental_colossus_mod } remove_unit_modifier = omni_elemental_colossus_mod }
-                add_unit_modifier = { name = omni_elemental_colossus_mod duration = 30 }
+            scope:selected_mage = {
+                omni_can_summon_colossus = yes
+                any_character_unit = { omni_colossus_casting_army = yes unit_owner = root unit_location = { has_siege = yes } }
             }
         }
-        set_variable = { name = omni_cd_summon_elemental_colossus days = 365 }
-        custom_tooltip = omni_summon_country_cooldown_tt
-        custom_tooltip = tier_four_spell_tt
-        custom_tooltip = 150_mana_tt
+        scope:selected_mage = { omni_summon_colossus_effect = yes }
+        custom_tooltip = omni_elemental_colossus_effect_tt
         name = "me_zorgo_magic_focus.new.siege9"
     }
     option = { # Cataclysmic Eruption (Siege)
@@ -6164,7 +6101,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = cataclysmic_eruption } }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_cataclysmic_eruption } }
+            scope:selected_mage = { NOT = { has_variable = omni_cd_siege_cataclysmic_eruption } }
             scope:selected_mage = { 
                 has_variable = warlock_mastered_var
                 omni_can_afford_spell = { BASE = 165 } 
@@ -6184,7 +6121,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
                 }
             }
         }
-        scope:selected_mage = { set_variable = { name = omni_cd_cataclysmic_eruption days = 180 } }
+        scope:selected_mage = { set_variable = { name = omni_cd_siege_cataclysmic_eruption days = 180 } }
         custom_tooltip = omni_spell_cooldown_180_tt
         custom_tooltip = tier_four_spell_tt
         custom_tooltip = 165_mana_tt
@@ -6258,7 +6195,7 @@ me_zorgo_magic_focus.31 = { # AI: a besieging mage-general auto-casts a siege sp
         war = yes
         any_army = {
             unit_location = { has_siege = yes NOT = { omni_province_is_warded = yes } }
-            omni_unit_commander_can_cast_trigger = { BASE = 25 }
+            omni_unit_commander_can_cast_trigger = { BASE = 10 }
         }
     }
 
@@ -6267,7 +6204,7 @@ me_zorgo_magic_focus.31 = { # AI: a besieging mage-general auto-casts a siege sp
         every_army = {
             limit = {
                 unit_location = { has_siege = yes NOT = { omni_province_is_warded = yes } }
-                omni_unit_commander_can_cast_trigger = { BASE = 25 }
+                omni_unit_commander_can_cast_trigger = { BASE = 10 }
             }
             unit_location = { save_scope_as = omni_siege_province }
             commander = {

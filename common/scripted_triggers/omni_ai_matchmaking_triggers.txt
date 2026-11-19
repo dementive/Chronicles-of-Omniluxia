@@ -1,0 +1,49 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# AI ruler matchmaking (2026-11-19)
+# The engine's automatic marriage never considers women older than
+# SPOUSE_CREATION_MAXIMUM_AGE, and nothing made the AI use Arrange Marriage, so AI
+# rulers who reached the throne unmarried often died childless (observe run: a
+# 64-year-old Wenelru queen, never married). Yearly, from omni_perf.6, AI only.
+# ----------------------------------------------------------------------------------------------------------------------
+
+# Character scope (the ruler). Unmarried, childless and still of child-bearing age.
+omni_ai_ruler_needs_spouse_trigger = {
+	is_adult = yes
+	is_married = no
+	prisoner = no
+	num_of_children = 0
+	NOT = { has_variable = is_the_revant }
+	NOT = { has_trait = snakefolk_trait }
+	trigger_if = {
+		limit = { is_female = yes }
+		age < 40
+	}
+	trigger_else = {
+		age < 55
+	}
+}
+
+# Character scope (candidate). scope:omni_mm_ruler set. Mirrors arrange_marriage's
+# character_actor_trigger plus a fertility-minded age cap for brides.
+omni_ai_valid_spouse_for_ruler_trigger = {
+	is_alive = yes
+	is_adult = yes
+	is_married = no
+	prisoner = no
+	is_ruler = no
+	is_mercenary = no
+	NOT = { this = scope:omni_mm_ruler }
+	NOT = { is_close_relative = scope:omni_mm_ruler }
+	NOT = { has_character_modifier = foreign_citizen }
+	NOT = { has_variable = is_the_revant }
+	NOT = { has_trait = snakefolk_trait }
+	trigger_if = {
+		limit = { scope:omni_mm_ruler = { is_female = yes } }
+		is_male = yes
+		age < 55
+	}
+	trigger_else = {
+		is_female = yes
+		age < 33
+	}
+}

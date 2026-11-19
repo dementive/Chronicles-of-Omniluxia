@@ -1,0 +1,51 @@
+﻿namespace = omni_elemental_colossus
+
+# Only scheduled for an active summon.
+# Subunits can't hold variables, so each cohort and its strength cap live in numbered
+# country slots (omni_colossus_cohort_N / omni_colossus_strength_N, N = 1..10).
+omni_elemental_colossus.1 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		omni_colossus_migrate_effect = yes
+
+		omni_colossus_maintain_slot = { N = 1 }
+		omni_colossus_maintain_slot = { N = 2 }
+		omni_colossus_maintain_slot = { N = 3 }
+		omni_colossus_maintain_slot = { N = 4 }
+		omni_colossus_maintain_slot = { N = 5 }
+		omni_colossus_maintain_slot = { N = 6 }
+		omni_colossus_maintain_slot = { N = 7 }
+		omni_colossus_maintain_slot = { N = 8 }
+		omni_colossus_maintain_slot = { N = 9 }
+		omni_colossus_maintain_slot = { N = 10 }
+
+		# Only the army with the tracked cohort gets the siege bonus, even if the summon is split.
+		if = {
+			limit = { NOT = { omni_colossus_tracked_cohort_valid = yes } }
+			remove_variable = omni_colossus_cohort
+			omni_colossus_pick_tracked_slot = { N = 1 }
+			omni_colossus_pick_tracked_slot = { N = 2 }
+			omni_colossus_pick_tracked_slot = { N = 3 }
+			omni_colossus_pick_tracked_slot = { N = 4 }
+			omni_colossus_pick_tracked_slot = { N = 5 }
+			omni_colossus_pick_tracked_slot = { N = 6 }
+			omni_colossus_pick_tracked_slot = { N = 7 }
+			omni_colossus_pick_tracked_slot = { N = 8 }
+			omni_colossus_pick_tracked_slot = { N = 9 }
+			omni_colossus_pick_tracked_slot = { N = 10 }
+		}
+		if = {
+			limit = { exists = var:omni_colossus_cohort }
+			omni_colossus_refresh_army_effect = yes
+			trigger_event = { id = omni_elemental_colossus.1 days = 1 }
+		}
+		else = {
+			omni_colossus_clear_army_effect = yes
+			omni_colossus_clear_slots_effect = yes
+			remove_variable = omni_colossus_active
+			remove_variable = omni_colossus_strength
+		}
+	}
+}

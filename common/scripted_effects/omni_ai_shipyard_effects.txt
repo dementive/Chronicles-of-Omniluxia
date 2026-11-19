@@ -1,0 +1,209 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# OMNILUXIA SHIPYARD DESIGNATION (BUILDING_AI_LATE_GAME_PLAN.md, Phase 1)
+# Mirrors Anbeeld's fort lists: a yearly pass in real province scope chooses
+# the shipyard sites and records them on their states. Building scoring reads
+# the lists through omni_shipyard_target_level, which is safe in cached scope.
+# ----------------------------------------------------------------------------------------------------------------------
+
+# Country scope. Yearly, from omni_perf.6.
+omni_ai_designate_shipyards = {
+    every_country_state = {
+        clear_variable_list = omni_shipyard_sites_giga
+        clear_variable_list = omni_shipyard_sites_mega
+    }
+    if = {
+        limit = {
+            is_ai = yes
+            num_of_ports > 0
+        }
+        # Heavy (level 5) sites first: they also satisfy medium demand.
+        set_local_variable = {
+            name = omni_shipyard_gap
+            value = omni_naval_giga_gap
+        }
+        while = {
+            limit = { local_var:omni_shipyard_gap > 0 }
+            change_local_variable = {
+                name = omni_shipyard_gap
+                subtract = 1
+            }
+            ordered_owned_province = {
+                limit = {
+                    omni_province_is_shipyard_candidate = { TIER = giga }
+                    omni_province_is_designated_shipyard = no
+                }
+                order_by = omni_naval_site_score
+                position = 0
+                check_range_bounds = no
+                save_scope_as = omni_shipyard_pick
+                state = {
+                    add_to_variable_list = {
+                        name = omni_shipyard_sites_giga
+                        target = scope:omni_shipyard_pick
+                    }
+                }
+            }
+        }
+        # Medium (level 3) sites for the remaining demand.
+        set_local_variable = {
+            name = omni_shipyard_gap
+            value = omni_naval_mega_gap
+        }
+        while = {
+            limit = { local_var:omni_shipyard_gap > 0 }
+            change_local_variable = {
+                name = omni_shipyard_gap
+                subtract = 1
+            }
+            ordered_owned_province = {
+                limit = {
+                    omni_province_is_shipyard_candidate = { TIER = mega }
+                    omni_province_is_designated_shipyard = no
+                }
+                order_by = omni_naval_site_score
+                position = 0
+                check_range_bounds = no
+                save_scope_as = omni_shipyard_pick
+                state = {
+                    add_to_variable_list = {
+                        name = omni_shipyard_sites_mega
+                        target = scope:omni_shipyard_pick
+                    }
+                }
+            }
+        }
+        remove_local_variable = omni_shipyard_gap
+        clear_saved_scope = omni_shipyard_pick
+    }
+    # Cached for brc_port: while a shipyard is still growing, new commercial
+    # ports drop below it instead of outranking it at brc_100.
+    if = {
+        limit = {
+            is_ai = yes
+            any_owned_province = { omni_shipyard_levels_remaining > 0 }
+        }
+        set_variable = omni_shipyard_pending
+    }
+    else = {
+        remove_variable = omni_shipyard_pending
+    }
+}
+
+# Country scope. Yearly, after designation. A designated shipyard that is
+# completely full gets one low-value building level removed per year, unless a
+# war threatens the homeland, and with money in hand. Markets, Libraries, Academies, the mage buildings,
+# Temples and civic infrastructure are never touched.
+omni_ai_make_room_for_shipyards = {
+    if = {
+        limit = {
+            is_ai = yes
+            # Top AIs are at war ~90% of the time; only homeland-threatening wars block this.
+            NOT = { has_variable = omni_ai_war_threatened }
+            treasury >= omni_naval_make_room_treasury
+        }
+        every_owned_province = {
+            limit = {
+                has_city_status = yes
+                free_building_slots <= 0
+                has_construction = no
+                omni_shipyard_levels_remaining > 0
+            }
+            omni_remove_one_low_value_building = yes
+        }
+    }
+}
+
+# Province scope. Fixed order, cheapest civic loss first.
+omni_remove_one_low_value_building = {
+    if = {
+        limit = { num_of_slum_building > 0 }
+        remove_building_level = slum_building
+    }
+    else_if = {
+        limit = { num_of_circus_building > 0 }
+        remove_building_level = circus_building
+    }
+    else_if = {
+        limit = { num_of_brewery_building > 0 }
+        remove_building_level = brewery_building
+    }
+    else_if = {
+        limit = { num_of_theathre_building > 0 }
+        remove_building_level = theathre_building
+    }
+    else_if = {
+        limit = { num_of_military_building > 0 }
+        remove_building_level = military_building
+    }
+    else_if = {
+        limit = { num_of_workshop_building > 0 }
+        remove_building_level = workshop_building
+    }
+}
+
+# Country scope. Monthly (ai_pulse.txt). Marks wars that threaten the homeland;
+# only those keep the wartime fund closed to construction. Timed so a missed
+# pulse can never leave a country frozen.
+omni_ai_update_war_threat = {
+    if = {
+        limit = {
+            is_ai = yes
+            war = yes
+            OR = {
+                has_war_exhaustion >= ai_dangerous_war_exhaustion
+                any_owned_province = {
+                    OR = {
+                        NOT = { controller = root }
+                        has_enemy_army = root
+                    }
+                }
+            }
+        }
+        set_variable = {
+            name = omni_ai_war_threatened
+            days = 45
+        }
+    }
+    else_if = {
+        limit = { has_variable = omni_ai_war_threatened }
+        remove_variable = omni_ai_war_threatened
+    }
+}
+
+# Country scope. Yearly, after the shipyard pass. The first Mage Tower must go in
+# a Magic Academy city (building allow) and is a brc_100 bootstrap, yet a 50-year
+# run produced none: academy cities are usually full. If the country has no tower,
+# free one slot in a full academy city using the same cheapest-first order.
+omni_ai_make_room_for_mage_tower = {
+    if = {
+        limit = {
+            is_ai = yes
+            invention = organized_mage_guilds_inv
+            NOT = { has_variable = omni_ai_war_threatened }
+            treasury >= 240
+            NOT = {
+                any_owned_province = {
+                    OR = {
+                        has_building = mage_tower_building
+                        has_specific_construction = mage_tower_building
+                    }
+                }
+            }
+            NOT = {
+                any_owned_province = {
+                    has_building = magic_academy_building
+                    free_building_slots >= 1
+                }
+            }
+        }
+        random_owned_province = {
+            limit = {
+                has_building = magic_academy_building
+                free_building_slots <= 0
+                has_construction = no
+                omni_province_has_removable_low_value_building = yes
+            }
+            omni_remove_one_low_value_building = yes
+        }
+    }
+}

@@ -2053,7 +2053,7 @@ omni_sb_known_glacial_tomb = {
 omni_sb_known_summon_elemental_colossus = {
 	scope = character
 	is_shown = { has_variable = summon_elemental_colossus_known_var }
-	is_valid = { custom_tooltip = { text = omni_sb_low_mana_summon_elemental_colossus_tt omni_can_afford_spell = { BASE = 150 } } }
+	is_valid = { custom_tooltip = { text = omni_sb_low_mana_summon_elemental_colossus_tt omni_can_afford_spell = { BASE = 200 } } }
 }
 
 omni_sb_known_fear_hex = {
@@ -4677,13 +4677,36 @@ omni_sb_cast_summon_earthworks = {
     } }
 }
 
-omni_sb_cast_summon_warborn = {
+omni_sb_confirm_summon_warborn = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_valid = { omni_sb_can_cast_summon_warborn = yes omni_sb_can_target_summon_warborn = yes }
+    ai_is_valid = { always = no }
+    effect = {
+        hidden_effect = {
+            scope:player = { trigger_event = { id = omni_spellbook_cast.120 } }
+            clear_variable_list = omni_sb_recipients
+            remove_variable = omni_sb_casting_mage
+        }
+    }
+}
+
+omni_sb_cast_summon_warborn = {
+    scope = country
+    saved_scopes = { player selected_mage }
     is_valid = { omni_sb_can_cast_summon_warborn = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
-        scope:player = { trigger_event = { id = omni_spellbook_cast.120 } }
+        scope:player = {
+            clear_variable_list = omni_sb_recipients
+            set_variable = { name = omni_sb_casting_mage value = scope:selected_mage }
+            every_owned_province = {
+                save_scope_as = target
+                if = { limit = { omni_sb_can_target_summon_warborn = yes }
+                    scope:player = { add_to_variable_list = { name = omni_sb_recipients target = scope:target } }
+                }
+            }
+        }
     } }
 }
 
@@ -5026,5 +5049,38 @@ omni_sb_cast_beastly_transformation = {
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
         scope:player = { trigger_event = { id = omni_spellbook_cast.136 } }
+    } }
+}
+
+omni_sb_confirm_summon_elemental_colossus = {
+    scope = country
+    saved_scopes = { player selected_mage target }
+    is_valid = { omni_sb_can_cast_summon_elemental_colossus = yes omni_sb_can_target_summon_elemental_colossus = yes }
+    ai_is_valid = { always = no }
+    effect = {
+        hidden_effect = {
+            scope:player = { trigger_event = { id = omni_spellbook_cast.119 } }
+            clear_variable_list = omni_sb_recipients
+            remove_variable = omni_sb_casting_mage
+        }
+    }
+}
+
+omni_sb_cast_summon_elemental_colossus = {
+    scope = country
+    saved_scopes = { player selected_mage }
+    is_valid = { omni_sb_can_cast_summon_elemental_colossus = yes }
+    ai_is_valid = { always = no }
+    effect = { hidden_effect = {
+        scope:player = {
+            clear_variable_list = omni_sb_recipients
+            set_variable = { name = omni_sb_casting_mage value = scope:selected_mage }
+            every_owned_province = {
+                save_scope_as = target
+                if = { limit = { omni_sb_can_target_summon_elemental_colossus = yes }
+                    scope:player = { add_to_variable_list = { name = omni_sb_recipients target = scope:target } }
+                }
+            }
+        }
     } }
 }

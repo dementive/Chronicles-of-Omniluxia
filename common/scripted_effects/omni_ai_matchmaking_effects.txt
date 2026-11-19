@@ -1,0 +1,52 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# AI ruler matchmaking (2026-11-19). Triggers are in omni_ai_matchmaking_triggers.txt.
+# ----------------------------------------------------------------------------------------------------------------------
+
+# Country scope. Yearly from omni_perf.6.
+omni_ai_ruler_matchmaking = {
+	if = {
+		limit = {
+			is_ai = yes
+			exists = current_ruler
+			current_ruler = { omni_ai_ruler_needs_spouse_trigger = yes }
+		}
+		current_ruler = { save_scope_as = omni_mm_ruler }
+		# Prefer someone already at court.
+		if = {
+			limit = { any_character = { omni_ai_valid_spouse_for_ruler_trigger = yes } }
+			random_character = {
+				limit = { omni_ai_valid_spouse_for_ruler_trigger = yes }
+				save_scope_as = omni_mm_spouse
+			}
+		}
+		# Otherwise bring in a suitor of the ruler's own culture and faith.
+		else = {
+			if = {
+				limit = { scope:omni_mm_ruler = { is_female = yes } }
+				create_character = {
+					female = no
+					age = 28
+					culture = scope:omni_mm_ruler.culture
+					religion = scope:omni_mm_ruler.religion
+					save_scope_as = omni_mm_spouse
+				}
+			}
+			else = {
+				create_character = {
+					female = yes
+					age = 20
+					culture = scope:omni_mm_ruler.culture
+					religion = scope:omni_mm_ruler.religion
+					save_scope_as = omni_mm_spouse
+				}
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:omni_mm_spouse
+				scope:omni_mm_spouse = { is_alive = yes is_married = no }
+			}
+			scope:omni_mm_ruler = { marry_character = scope:omni_mm_spouse }
+		}
+	}
+}

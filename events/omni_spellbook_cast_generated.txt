@@ -516,10 +516,10 @@ omni_spellbook_cast.38 = { # death_ray
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.25
+                    damage_unit_percent = 0.12
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_death_ray days = 90 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_death_ray days = 1 } }
         }
     }
 }
@@ -743,7 +743,7 @@ omni_spellbook_cast.47 = { # explosion
                 }
                 omni_spell_mana_cost_effect = { BASE = 75 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_explosion days = 90 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_explosion days = 1 } }
         }
     }
 }
@@ -861,10 +861,10 @@ omni_spellbook_cast.57 = { # great_flare
             }
             scope:target = {
                 random_character_unit = {
-                    destroy_unit = yes
+                    damage_unit_percent = 0.30
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_great_flare days = 365 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_great_flare days = 1 } }
         }
     }
 }
@@ -983,7 +983,7 @@ omni_spellbook_cast.64 = { # hellas_light
                     force_add_trait = blind
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_hellas_light days = 365 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_hellas_light days = 90 } }
         }
     }
 }
@@ -1074,10 +1074,10 @@ omni_spellbook_cast.72 = { # imperial_dragons_claw
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.08
+                    damage_unit_percent = 0.05
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_imperial_dragons_claw days = 30 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_imperial_dragons_claw days = 1 } }
         }
     }
 }
@@ -1177,9 +1177,10 @@ omni_spellbook_cast.78 = { # light_rays_ii
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.15
+                    damage_unit_percent = 0.08
                 }
             }
+            scope:selected_mage = { set_variable = { name = omni_cd_light_rays_ii days = 1 } }
         }
     }
 }
@@ -1742,10 +1743,10 @@ omni_spellbook_cast.107 = { # serpentine_swords
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.05
+                    damage_unit_percent = 0.04
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_serpentine_swords days = 30 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_serpentine_swords days = 1 } }
         }
     }
 }
@@ -1835,10 +1836,10 @@ omni_spellbook_cast.112 = { # stinging_nettles
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.05
+                    damage_unit_percent = 0.04
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_stinging_nettles days = 30 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_stinging_nettles days = 1 } }
         }
     }
 }
@@ -1866,7 +1867,7 @@ omni_spellbook_cast.114 = { # storm_wrack
                     }
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_storm_wrack days = 90 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_storm_wrack days = 1 } }
         }
     }
 }
@@ -1973,7 +1974,7 @@ omni_spellbook_cast.118 = { # summon_earthworks
             scope:target = {
                 omni_spell_mana_cost_effect = { BASE = 125 }
             }
-            add_3_free_province_investments = yes
+            add_1_free_province_investments = yes
             set_variable = { name = omni_cd_summon_earthworks days = 365 }
         }
     }
@@ -1984,40 +1985,38 @@ omni_spellbook_cast.120 = { # summon_warborn
     hidden = yes
     immediate = {
         if = {
-            limit = { omni_sb_can_cast_summon_warborn = yes }
-            scope:target = {
-                omni_spell_mana_cost_effect = { BASE = 75 }
-            }
-            create_unit = {
-                navy = no
-                name = "Undead Auxiliaries"
-                location = capital_scope
-                hidden_effect = {
-                    while = {
-                        count = 8
-                        add_subunit = light_infantry
+            limit = { omni_sb_can_cast_summon_warborn = yes omni_sb_can_target_summon_warborn = yes }
+            scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 75 } }
+            scope:player = {
+                set_variable = { name = omni_cd_summon_warborn days = 365 }
+                create_character = {
+                    first_name = "Lari"
+                    age = 25
+                    culture = warborn
+                    religion = blood_tainted_pantheon
+                    female = no
+                    save_scope_as = skelebro
+                }
+                create_unit = {
+                    navy = no
+                    name = "Undead Auxiliaries"
+                    location = scope:target
+                    set_as_commander = scope:skelebro
+                    hidden_effect = {
+                        while = { count = 8 add_subunit = omni_warborn }
+                        add_food = 300
+                        add_morale = 5
                     }
-                    add_food = 300
-                    add_morale = 5
                 }
             }
-            create_character = {
-                first_name = "Larry"
-                age = 25
-                culture = warborn
-                religion = blood_tainted_pantheon
-                female = no
-                save_scope_as = skelebro
-            }
-            set_global_variable = omni_warborn_summoned # PERF gate for me_zorgo_magic_focus.23 (00_monthly_country.txt)     
+            set_global_variable = omni_warborn_summoned # Enables the Warborn maintenance event in 00_monthly_country.txt.
             hidden_effect = {
                 scope:skelebro = {
-                    add_martial=15
-                    force_add_trait="tactician"
-                    force_add_trait="aggressive"
+                    add_martial = 15
+                    force_add_trait = "tactician"
+                    force_add_trait = "aggressive"
                 }
             }
-            set_variable = { name = omni_cd_summon_warborn days = 365 }
         }
     }
 }
@@ -2042,7 +2041,7 @@ omni_spellbook_cast.121 = { # sword_of_jaoz
                     force_add_trait = maimed
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_sword_of_jaoz days = 365 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_sword_of_jaoz days = 90 } }
         }
     }
 }
@@ -2174,10 +2173,10 @@ omni_spellbook_cast.128 = { # warped_flesh
             }
             scope:target = {
                 random_character_unit = {
-                    damage_unit_percent = 0.1
+                    damage_unit_percent = 0.08
                 }
             }
-            scope:selected_mage = { set_variable = { name = omni_cd_warped_flesh days = 180 } }
+            scope:selected_mage = { set_variable = { name = omni_cd_warped_flesh days = 1 } }
         }
     }
 }
@@ -2295,6 +2294,27 @@ omni_spellbook_cast.136 = { # beastly_transformation
             trigger_event = {
                 id = me_zorgo_magic_focus.22
                 days = 180
+            }
+        }
+    }
+}
+
+omni_spellbook_cast.119 = { # summon_elemental_colossus
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_summon_elemental_colossus = yes omni_sb_can_target_summon_elemental_colossus = yes }
+            scope:selected_mage = { save_scope_as = colossus_caster }
+            scope:player = {
+                create_unit = {
+                    navy = no
+                    name = omni_elemental_colossus
+                    location = scope:target
+                    sub_unit = omni_elemental_colossus
+                    save_scope_as = colossus_new_army
+                }
+                omni_colossus_register_cohort = yes
             }
         }
     }

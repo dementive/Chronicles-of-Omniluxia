@@ -37,8 +37,118 @@
 #                                      keeping even though its modifier is weak).
 #   Storm of the Siege 75 mana, Melodian T3 - unit buff: +25% assault and siege ability.
 # ---------------------------------------------------------------------------
+# 2026-11-18: every siege spell in the player's siege menu (me_zorgo_magic_focus.30)
+# is now on this ladder, with the player's cost, school/tier gate, cooldown and
+# effect. Ward Stones are respected by the calling event (.31), which skips warded
+# provinces. One cast per monthly firing; spells are skipped while their effect or
+# cooldown is active, so a mage works down the list across a siege.
 omni_ai_cast_siege_spell_effect = {
+	# Breach-granting spells first: they are the only instant siege progress.
+	# Cataclysmic Eruption - breach, -25% defence, -50% garrison, -10 civilization. 180-day cooldown.
 	if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 165 }
+			omni_knows_spell = { SPELL = cataclysmic_eruption }
+			has_variable = warlock_mastered_var
+			omni_caster_melodian_t3 = yes
+			NOT = { has_variable = omni_cd_siege_cataclysmic_eruption }
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_cataclysmic_eruption_siege_mod } }
+			scope:omni_siege_province = { has_siege = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 165 }
+		scope:omni_siege_province = {
+			add_civilization_value = -10
+			siege = { add_breach = 1 }
+			add_province_modifier = {
+				name = omni_cataclysmic_eruption_siege_mod
+				duration = 90
+			}
+		}
+		set_variable = { name = omni_cd_siege_cataclysmic_eruption days = 180 }
+	}
+	# Word of Annihilation - one breach. 180-day cooldown.
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 140 }
+			omni_knows_spell = { SPELL = word_of_annihilation }
+			has_variable = illusionist_mastered_var
+			omni_caster_aldic_t3 = yes
+			NOT = { has_variable = omni_cd_siege_word_of_annihilation }
+			scope:omni_siege_province = { has_siege = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 140 }
+		scope:omni_siege_province = {
+			siege = { add_breach = 1 }
+		}
+		set_variable = { name = omni_cd_siege_word_of_annihilation days = 180 }
+	}
+	# Meteor Strike - breach, -25% defence and garrison. 90-day cooldown.
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 95 }
+			omni_knows_spell = { SPELL = meteor_strike }
+			omni_caster_aldic_t3 = yes
+			NOT = { has_variable = omni_cd_siege_meteor_strike }
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_meteor_strike_mod } }
+			scope:omni_siege_province = { has_siege = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 95 }
+		scope:omni_siege_province = {
+			siege = { add_breach = 1 }
+			add_province_modifier = {
+				name = omni_meteor_strike_mod
+				duration = 90
+			}
+		}
+		set_variable = { name = omni_cd_siege_meteor_strike days = 90 }
+	}
+	# Breaching Tremor - breach. Once per 90-day effect (same rule now applies to the player).
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = breaching_tremor }
+			omni_caster_amten_t2 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_siege_breach_spell_mod } }
+			scope:omni_siege_province = { has_siege = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:omni_siege_province = {
+			siege = { add_breach = 1 }
+			add_province_modifier = {
+				name = omni_siege_breach_spell_mod
+				duration = 90
+			}
+		}
+	}
+	# Seismic Tremor - breach. Once per 90-day effect (same rule now applies to the player).
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = seismic_tremor }
+			omni_caster_amten_t2 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_seismic_tremor_siege_mod } }
+			scope:omni_siege_province = { has_siege = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:omni_siege_province = {
+			siege = { add_breach = 1 }
+			add_province_modifier = {
+				name = omni_seismic_tremor_siege_mod
+				duration = 90
+			}
+		}
+	}
+	# Summon the Colossus into the caster's army.
+	else_if = {
+		limit = {
+			omni_can_summon_colossus = yes
+			any_character_unit = { omni_colossus_casting_army = yes unit_location = { has_siege = yes } }
+		}
+		omni_summon_colossus_effect = yes
+	}
+	# Garrison and food attrition, best value first.
+	# Wasting Rot - garrison -50%, food -75%.
+	else_if = {
 		limit = {
 			omni_can_afford_spell = { BASE = 25 }
 			omni_knows_spell = { SPELL = wasting_rot }
@@ -52,6 +162,40 @@ omni_ai_cast_siege_spell_effect = {
 				duration = 90
 			}
 		}
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 85 }
+			omni_knows_spell = { SPELL = glacial_tomb }
+			omni_caster_amten_t3 = yes
+			NOT = { has_variable = omni_cd_siege_glacial_tomb }
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_glacial_tomb_siege_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 85 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_glacial_tomb_siege_mod
+				duration = 90
+			}
+		}
+		set_variable = { name = omni_cd_siege_glacial_tomb days = 90 }
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 75 }
+			omni_knows_spell = { SPELL = plague_miasma }
+			omni_caster_melodian_t3 = yes
+			NOT = { has_variable = omni_cd_siege_plague_miasma }
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_plague_miasma_siege_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 75 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_plague_miasma_siege_mod
+				duration = 90
+			}
+		}
+		set_variable = { name = omni_cd_siege_plague_miasma days = 90 }
 	}
 	else_if = {
 		limit = {
@@ -85,27 +229,41 @@ omni_ai_cast_siege_spell_effect = {
 	}
 	else_if = {
 		limit = {
-			omni_can_afford_spell = { BASE = 50 }
-			omni_knows_spell = { SPELL = breaching_tremor }
-			omni_caster_amten_t2 = yes
-			scope:omni_siege_province = { NOT = { has_province_modifier = omni_siege_breach_spell_mod } }
+			omni_can_afford_spell = { BASE = 30 }
+			omni_knows_spell = { SPELL = fireball }
+			omni_caster_melodian_t2 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_fireball_siege_mod } }
 		}
-		omni_spell_mana_cost_effect = { BASE = 50 }
+		omni_spell_mana_cost_effect = { BASE = 30 }
 		scope:omni_siege_province = {
 			add_province_modifier = {
-				name = omni_siege_breach_spell_mod
+				name = omni_fireball_siege_mod
 				duration = 90
 			}
-			siege = { add_breach = 1 }
 		}
 	}
 	else_if = {
-		# Assault blessing is a UNIT modifier on the besieging army, not a province
-		# modifier, so it is gated on the unit rather than the settlement.
+		limit = {
+			omni_can_afford_spell = { BASE = 40 }
+			omni_knows_spell = { SPELL = corrosive_rain }
+			omni_caster_aldic_t2 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_corrosive_rain_siege_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 40 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_corrosive_rain_siege_mod
+				duration = 90
+			}
+		}
+	}
+	# Storm of the Siege - unit buff on the besieging army: +25% assault and siege ability.
+	else_if = {
 		limit = {
 			omni_can_afford_spell = { BASE = 75 }
 			omni_knows_spell = { SPELL = storm_of_the_siege }
 			omni_caster_melodian_t3 = yes
+			NOT = { has_variable = omni_cd_storm_of_the_siege }
 			any_character_unit = {
 				is_army = yes
 				NOT = { has_unit_modifier = omni_siege_assault_blessing_spell_mod }
@@ -120,6 +278,22 @@ omni_ai_cast_siege_spell_effect = {
 			add_unit_modifier = {
 				name = omni_siege_assault_blessing_spell_mod
 				duration = 90
+			}
+		}
+		set_variable = { name = omni_cd_storm_of_the_siege days = 90 }
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 10 }
+			omni_knows_spell = { SPELL = igniting_spark }
+			omni_caster_melodian_t1 = yes
+			scope:omni_siege_province = { NOT = { has_province_modifier = omni_igniting_spark_siege_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 10 }
+		scope:omni_siege_province = {
+			add_province_modifier = {
+				name = omni_igniting_spark_siege_mod
+				duration = 30
 			}
 		}
 	}

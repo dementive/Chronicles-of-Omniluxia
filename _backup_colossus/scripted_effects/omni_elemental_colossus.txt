@@ -1,0 +1,93 @@
+﻿# Character scope. A player can move a separate Colossus or merge it into an army.
+# During battle and for the AI, reinforce the chosen army directly so it participates.
+omni_summon_colossus_effect = {
+	if = {
+		limit = { omni_can_summon_colossus = yes }
+		save_scope_as = colossus_caster
+		ordered_character_unit = {
+			limit = { omni_colossus_casting_army = yes }
+			order_by = omni_colossus_army_priority
+			max = 1
+			check_range_bounds = no
+			save_scope_as = colossus_summoning_army
+		}
+		scope:colossus_summoning_army.unit_owner = {
+			if = {
+				limit = { OR = { is_ai = yes scope:colossus_summoning_army = { in_combat = yes } } }
+				scope:colossus_summoning_army = {
+					add_subunit = omni_elemental_colossus
+					save_scope_as = colossus_new_army
+				}
+			}
+			else = {
+				create_unit = {
+					name = omni_elemental_colossus
+					location = scope:colossus_summoning_army.unit_location
+					sub_unit = omni_elemental_colossus
+					save_scope_as = colossus_new_army
+				}
+			}
+			omni_colossus_register_cohort = yes
+		}
+	}
+}
+
+# Country scope. Each summon adds ten 500-strength cohorts to a single army.
+omni_colossus_register_cohort = {
+	save_scope_as = colossus_summoning_country
+	scope:colossus_new_army = {
+		if = {
+			limit = { any_sub_unit = { sub_unit_type = omni_elemental_colossus } }
+			while = { count = 9 add_subunit = omni_elemental_colossus }
+			every_sub_unit = {
+				limit = { sub_unit_type = omni_elemental_colossus }
+				set_variable = { name = omni_colossus_strength value = subunit_strength_percentage }
+				scope:colossus_summoning_country = {
+					add_to_variable_list = { name = omni_colossus_cohorts target = prev }
+					set_variable = { name = omni_colossus_cohort value = prev }
+				}
+			}
+		}
+	}
+	if = {
+		limit = { has_variable_list = omni_colossus_cohorts }
+		scope:colossus_caster = { omni_spell_mana_cost_effect = { BASE = 200 } }
+		set_variable = { name = omni_cd_summon_elemental_colossus days = 365 }
+		set_variable = omni_colossus_active
+		omni_colossus_refresh_army_effect = yes
+		trigger_event = { id = omni_elemental_colossus.1 days = 1 }
+	}
+}
+
+# Country scope. Look up the cohort's current army so merging or splitting moves the bonus.
+omni_colossus_refresh_army_effect = {
+	var:omni_colossus_cohort.owning_unit = { save_scope_as = colossus_current_army }
+	if = {
+		limit = {
+			exists = var:omni_colossus_buffed_army
+			NOT = { var:omni_colossus_buffed_army = scope:colossus_current_army }
+		}
+		omni_colossus_clear_army_effect = yes
+	}
+	set_variable = { name = omni_colossus_buffed_army value = scope:colossus_current_army }
+	scope:colossus_current_army = {
+		if = {
+			limit = { has_unit_modifier = omni_colossus_siege_mod }
+			remove_unit_modifier = omni_colossus_siege_mod
+		}
+		add_unit_modifier = { name = omni_colossus_siege_mod duration = 2 }
+	}
+}
+
+omni_colossus_clear_army_effect = {
+	if = {
+		limit = { exists = var:omni_colossus_buffed_army }
+		var:omni_colossus_buffed_army = {
+			if = {
+				limit = { has_unit_modifier = omni_colossus_siege_mod }
+				remove_unit_modifier = omni_colossus_siege_mod
+			}
+		}
+	}
+	remove_variable = omni_colossus_buffed_army
+}

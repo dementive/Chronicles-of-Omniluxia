@@ -1,0 +1,465 @@
+﻿# ----------------------------------------------------------------------------------------------------------------------
+# OMNILUXIA AI CENSUS (debug only) - BUILDING_AI_LATE_GAME_PLAN.md, Phase 0
+# Writes plain debug_log lines to game.log so they need no localization:
+#   OMNI_CENSUS BEGIN               then debug_log_scopes (country identity)
+#   OMNI_CENSUS <metric> sign -     only for negative values
+#   OMNI_CENSUS <metric> <place> <digit>   place = 1000/100/10/1, values clamped to 0..9999
+#   OMNI_CENSUS END
+# Parse with: python tools/parse_ai_census.py <path to game.log>
+# ----------------------------------------------------------------------------------------------------------------------
+
+# Country scope. Yearly from omni_perf.6.
+omni_ai_census_log = {
+    if = {
+        limit = {
+            omni_ai_census_enabled > 0
+            is_ai = yes
+            num_of_territories_svalue >= omni_ai_census_min_territories
+        }
+        # World year counter: the first logging country each year advances it.
+        if = {
+            limit = { NOT = { has_global_variable = omni_census_year_guard } }
+            set_global_variable = {
+                name = omni_census_year_guard
+                days = 330
+            }
+            if = {
+                limit = { has_global_variable = omni_census_year }
+                change_global_variable = {
+                    name = omni_census_year
+                    add = 1
+                }
+            }
+            else = {
+                set_global_variable = {
+                    name = omni_census_year
+                    value = 1
+                }
+            }
+        }
+        debug_log = "OMNI_CENSUS BEGIN"
+        debug_log_scopes = yes
+        omni_census_print = { NAME = year VALUE = global_var:omni_census_year }
+        omni_census_print = { NAME = territories VALUE = num_of_territories_svalue }
+        omni_census_print = { NAME = states VALUE = omni_census_states }
+        omni_census_print = { NAME = treasury VALUE = treasury }
+        omni_census_print = { NAME = income10 VALUE = omni_census_income10 }
+        omni_census_print = { NAME = cohorts VALUE = num_of_cohorts }
+        omni_census_print = { NAME = manpower_pct VALUE = omni_census_manpower_pct }
+        omni_census_print = { NAME = ships VALUE = num_of_ships }
+        omni_census_print = { NAME = ports_l1 VALUE = omni_census_ports_l1 }
+        omni_census_print = { NAME = ports_l3 VALUE = omni_census_ports_l3 }
+        omni_census_print = { NAME = ports_l5 VALUE = omni_census_ports_l5 }
+        omni_census_print = { NAME = shipyards_designated VALUE = omni_census_shipyards_designated }
+        omni_census_print = { NAME = shipyards_stuck VALUE = omni_census_shipyards_stuck }
+        omni_census_print = { NAME = timber_states VALUE = omni_census_timber_states }
+        omni_census_print = { NAME = cap_fort VALUE = omni_census_cap_fort }
+        omni_census_print = { NAME = forts_l1 VALUE = omni_census_forts_l1 }
+        omni_census_print = { NAME = forts_l3 VALUE = omni_census_forts_l3 }
+        omni_census_print = { NAME = forts_l5 VALUE = omni_census_forts_l5 }
+        omni_census_print = { NAME = cap_free_slots VALUE = omni_census_cap_free_slots }
+        omni_census_print = { NAME = cap_markets VALUE = omni_census_cap_markets }
+        omni_census_print = { NAME = constructing VALUE = omni_census_constructing }
+        omni_census_print = { NAME = key_buildings VALUE = omni_census_key_buildings }
+        omni_census_print = { NAME = n_markets VALUE = omni_census_n_markets }
+        omni_census_print = { NAME = n_libraries VALUE = omni_census_n_libraries }
+        omni_census_print = { NAME = n_academies VALUE = omni_census_n_academies }
+        omni_census_print = { NAME = n_mage_towers VALUE = omni_census_n_mage_towers }
+        omni_census_print = { NAME = n_magic_academies VALUE = omni_census_n_magic_academies }
+        omni_census_print = { NAME = n_temples VALUE = omni_census_n_temples }
+        omni_census_print = { NAME = n_town_halls VALUE = omni_census_n_town_halls }
+        omni_census_print = { NAME = n_courts VALUE = omni_census_n_courts }
+        omni_census_print = { NAME = n_mines VALUE = omni_census_n_mines }
+        omni_census_print = { NAME = n_farms VALUE = omni_census_n_farms }
+        omni_census_print = { NAME = n_settlements VALUE = omni_census_n_settlements }
+        omni_census_print = { NAME = n_workshops VALUE = omni_census_n_workshops }
+        omni_census_print = { NAME = n_barracks VALUE = omni_census_n_barracks }
+        omni_census_print = { NAME = n_port_levels VALUE = omni_census_n_port_levels }
+        omni_census_print = { NAME = ports_l2 VALUE = omni_census_ports_l2 }
+        omni_census_print = { NAME = ruler_married VALUE = omni_census_ruler_married }
+        omni_census_print = { NAME = ruler_children VALUE = omni_census_ruler_children }
+        omni_census_print = { NAME = ruler_age VALUE = omni_census_ruler_age }
+        omni_census_print = { NAME = inv_temples VALUE = omni_census_inv_temples }
+        omni_census_print = { NAME = inv_mage_guilds VALUE = omni_census_inv_mage_guilds }
+        omni_census_print = { NAME = tower_ready VALUE = omni_census_tower_ready }
+        # Economy / construction gate
+        omni_census_print = { NAME = balance10 VALUE = omni_census_balance10 }
+        omni_census_print = { NAME = at_war VALUE = omni_census_at_war }
+        omni_census_print = { NAME = wartime_fund VALUE = ai_wartime_fund_desired }
+        omni_census_print = { NAME = build_ok VALUE = omni_census_build_ok }
+        omni_census_print = { NAME = new_port_wanted VALUE = omni_census_new_port_wanted }
+        omni_census_print = { NAME = desig_can_grow VALUE = omni_census_desig_can_grow }
+        omni_census_print = { NAME = desig_busy VALUE = omni_census_desig_busy }
+        omni_census_print = { NAME = desig_weight VALUE = omni_census_desig_weight }
+        # Magic
+        omni_census_print = { NAME = casters VALUE = omni_census_casters }
+        omni_census_print = { NAME = caster_commanders VALUE = omni_census_caster_commanders }
+        omni_census_print = { NAME = caster_mana VALUE = omni_census_caster_mana }
+        omni_census_print = { NAME = casts VALUE = omni_census_var_casts }
+        omni_census_print = { NAME = casts_battle VALUE = omni_census_var_casts_battle }
+        omni_census_print = { NAME = casts_field VALUE = omni_census_var_casts_field }
+        omni_census_print = { NAME = mana_spent VALUE = omni_census_var_mana_spent }
+        omni_census_print = { NAME = spend_econ VALUE = omni_census_var_spend_econ }
+        omni_census_print = { NAME = spend_build VALUE = omni_census_var_spend_build }
+        omni_census_print = { NAME = spend_court VALUE = omni_census_var_spend_court }
+        omni_census_print = { NAME = spend_quarterly VALUE = omni_census_var_spend_quarterly }
+        omni_census_print = { NAME = spend_colonize VALUE = omni_census_var_spend_colonize }
+        omni_census_print = { NAME = spend_education VALUE = omni_census_var_spend_education }
+        omni_census_print = { NAME = fort_levels VALUE = omni_census_fort_levels }
+        omni_census_print = { NAME = peace_flag_threat VALUE = omni_census_threatened }
+        remove_variable = omni_census_spend_econ
+        remove_variable = omni_census_spend_build
+        remove_variable = omni_census_spend_court
+        remove_variable = omni_census_spend_quarterly
+        remove_variable = omni_census_spend_colonize
+        remove_variable = omni_census_spend_education
+        remove_variable = omni_census_casts
+        remove_variable = omni_census_casts_battle
+        remove_variable = omni_census_casts_field
+        remove_variable = omni_census_mana_spent
+        debug_log = "OMNI_CENSUS END"
+    }
+}
+
+# Any scope. Prints VALUE as sign + four decimal digits, labelled NAME.
+omni_census_print = {
+    set_local_variable = {
+        name = omni_census_v
+        value = $VALUE$
+    }
+    if = {
+        limit = { local_var:omni_census_v < 0 }
+        debug_log = "OMNI_CENSUS $NAME$ sign -"
+        set_local_variable = {
+            name = omni_census_v
+            value = {
+                value = local_var:omni_census_v
+                multiply = -1
+            }
+        }
+    }
+    set_local_variable = {
+        name = omni_census_v
+        value = {
+            value = local_var:omni_census_v
+            max = 9999
+            round = yes
+        }
+    }
+    set_local_variable = {
+        name = omni_census_d
+        value = {
+            value = local_var:omni_census_v
+            divide = 1000
+            floor = yes
+        }
+    }
+    if = {
+        limit = { local_var:omni_census_d = 0 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 0"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 1 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 1"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 2 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 2"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 3 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 3"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 4 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 4"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 5 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 5"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 6 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 6"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 7 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 7"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 8 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 8"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 9 }
+        debug_log = "OMNI_CENSUS $NAME$ 1000 9"
+    }
+    set_local_variable = {
+        name = omni_census_v
+        value = {
+            value = local_var:omni_census_v
+            subtract = {
+                value = local_var:omni_census_d
+                multiply = 1000
+            }
+        }
+    }
+    set_local_variable = {
+        name = omni_census_d
+        value = {
+            value = local_var:omni_census_v
+            divide = 100
+            floor = yes
+        }
+    }
+    if = {
+        limit = { local_var:omni_census_d = 0 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 0"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 1 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 1"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 2 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 2"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 3 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 3"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 4 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 4"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 5 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 5"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 6 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 6"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 7 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 7"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 8 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 8"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 9 }
+        debug_log = "OMNI_CENSUS $NAME$ 100 9"
+    }
+    set_local_variable = {
+        name = omni_census_v
+        value = {
+            value = local_var:omni_census_v
+            subtract = {
+                value = local_var:omni_census_d
+                multiply = 100
+            }
+        }
+    }
+    set_local_variable = {
+        name = omni_census_d
+        value = {
+            value = local_var:omni_census_v
+            divide = 10
+            floor = yes
+        }
+    }
+    if = {
+        limit = { local_var:omni_census_d = 0 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 0"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 1 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 1"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 2 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 2"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 3 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 3"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 4 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 4"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 5 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 5"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 6 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 6"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 7 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 7"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 8 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 8"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 9 }
+        debug_log = "OMNI_CENSUS $NAME$ 10 9"
+    }
+    set_local_variable = {
+        name = omni_census_v
+        value = {
+            value = local_var:omni_census_v
+            subtract = {
+                value = local_var:omni_census_d
+                multiply = 10
+            }
+        }
+    }
+    set_local_variable = {
+        name = omni_census_d
+        value = {
+            value = local_var:omni_census_v
+            divide = 1
+            floor = yes
+        }
+    }
+    if = {
+        limit = { local_var:omni_census_d = 0 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 0"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 1 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 1"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 2 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 2"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 3 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 3"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 4 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 4"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 5 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 5"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 6 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 6"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 7 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 7"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 8 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 8"
+    }
+    else_if = {
+        limit = { local_var:omni_census_d = 9 }
+        debug_log = "OMNI_CENSUS $NAME$ 1 9"
+    }
+    set_local_variable = {
+        name = omni_census_v
+        value = {
+            value = local_var:omni_census_v
+            subtract = {
+                value = local_var:omni_census_d
+                multiply = 1
+            }
+        }
+    }
+    remove_local_variable = omni_census_v
+    remove_local_variable = omni_census_d
+}
+
+# Character scope (the caster). Called from omni_spell_mana_cost_effect while
+# omni_spell_base is still set. "battle" = caster's unit is fighting; "field" =
+# caster commands a unit but is not in combat; the rest are court/civic casts.
+omni_census_count_cast = {
+    set_local_variable = {
+        name = omni_census_cast_cost
+        value = omni_scaled_spell_cost_value
+    }
+    if = {
+        limit = { any_character_unit = { in_combat = yes } }
+        set_local_variable = { name = omni_census_cast_kind value = 2 }
+    }
+    else_if = {
+        limit = { any_character_unit = { always = yes } }
+        set_local_variable = { name = omni_census_cast_kind value = 1 }
+    }
+    else = {
+        set_local_variable = { name = omni_census_cast_kind value = 0 }
+    }
+    employer = {
+        if = {
+            limit = { NOT = { has_variable = omni_census_casts } }
+            set_variable = { name = omni_census_casts value = 0 }
+            set_variable = { name = omni_census_casts_battle value = 0 }
+            set_variable = { name = omni_census_casts_field value = 0 }
+            set_variable = { name = omni_census_mana_spent value = 0 }
+        }
+        change_variable = { name = omni_census_casts add = 1 }
+        change_variable = { name = omni_census_mana_spent add = local_var:omni_census_cast_cost }
+        if = {
+            limit = { local_var:omni_census_cast_kind = 2 }
+            change_variable = { name = omni_census_casts_battle add = 1 }
+        }
+        else_if = {
+            limit = { local_var:omni_census_cast_kind = 1 }
+            change_variable = { name = omni_census_casts_field add = 1 }
+        }
+    }
+    # Per-cast trace, battle casts only (all casts produced ~700 MB in 70 years).
+    if = {
+        limit = { local_var:omni_census_cast_kind = 2 }
+        debug_log = "OMNI_CAST begin"
+        debug_log_scopes = yes
+        omni_census_print = { NAME = cast_base VALUE = var:omni_spell_base }
+        omni_census_print = { NAME = cast_cost VALUE = local_var:omni_census_cast_cost }
+        omni_census_print = { NAME = cast_kind VALUE = local_var:omni_census_cast_kind }
+        omni_census_print = { NAME = cast_mana_left VALUE = var:magic }
+        debug_log = "OMNI_CAST end"
+    }
+    remove_local_variable = omni_census_cast_cost
+    remove_local_variable = omni_census_cast_kind
+}
+
+# Country scope. Brackets one immediate block of the yearly AI chain and adds the
+# gold it spent (same tick, so no income mixes in) to a per-country counter.
+omni_census_spend_begin = {
+    set_local_variable = {
+        name = omni_census_t0
+        value = treasury
+    }
+}
+omni_census_spend_end = {
+    if = {
+        limit = {
+            omni_ai_census_enabled > 0
+            has_local_variable = omni_census_t0
+        }
+        if = {
+            limit = { NOT = { has_variable = omni_census_spend_$KEY$ } }
+            set_variable = { name = omni_census_spend_$KEY$ value = 0 }
+        }
+        change_variable = {
+            name = omni_census_spend_$KEY$
+            add = {
+                value = local_var:omni_census_t0
+                subtract = treasury
+            }
+        }
+    }
+    remove_local_variable = omni_census_t0
+}

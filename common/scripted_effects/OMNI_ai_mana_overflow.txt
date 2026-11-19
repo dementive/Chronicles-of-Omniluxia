@@ -47,13 +47,17 @@ omni_ai_mana_overflow_effect = {
 		}
 		# 2) Civic spells (unrest, food, harbor, growth) - need-gated.
 		if = {
-			limit = { var:magic >= omni_ai_mana_overflow_threshold_value }
+			limit = {
+				var:magic >= omni_ai_mana_overflow_threshold_value
+				omni_ai_keep_mana_for_battle_trigger = no
+			}
 			omni_ai_cast_civic_spell_effect = yes
 		}
 		# 3) Folk utility spells (Golden Hands, Serpentine Scrying, Channeled Stars).
 		if = {
 			limit = {
 				var:magic >= omni_ai_mana_overflow_threshold_value
+				omni_ai_keep_mana_for_battle_trigger = no
 				has_variable = folk_unlocked_var
 			}
 			omni_ai_folk_cast_utility_effect = yes
@@ -69,9 +73,134 @@ omni_ai_mana_overflow_effect = {
 		else_if = {
 			limit = {
 				var:magic >= omni_ai_mana_overflow_threshold_value
+				omni_ai_keep_mana_for_battle_trigger = no
 				scope:caster_country = { war = yes }
 			}
 			omni_ai_cast_war_country_blessing_effect = yes
 		}
+		# 5) Strategic and personal spells (round 6): Inspired Thoughts, Pestilence,
+		#    Coils of the Serpent, Cafea's Breath, Raise Workers.
+		if = {
+			limit = { var:magic >= omni_ai_mana_overflow_threshold_value }
+			omni_ai_cast_strategic_spell_effect = yes
+		}
+	}
+}
+
+# CHARACTER scope, expects scope:caster_country. Quarterly from omni_ai_mana_overflow_effect.
+# Strategic and personal spells the AI never cast before (round 6). Player costs and
+# cooldowns; Raise Workers gets an AI-only yearly limit to keep pop counts in check.
+omni_ai_cast_strategic_spell_effect = {
+	# Inspired Thoughts - +15 legitimacy when it is slipping.
+	if = {
+		limit = {
+			omni_knows_spell = { SPELL = inspired_thoughts }
+			has_variable = illusionist_t2_unlocked_var
+			NOT = { has_variable = omni_cd_inspired_thoughts }
+			omni_can_afford_spell = { BASE = 40 }
+			scope:caster_country = { is_monarchy = yes legitimacy <= 60 }
+		}
+		omni_spell_mana_cost_effect = { BASE = 40 }
+		scope:caster_country = { add_legitimacy = 15 }
+		set_variable = { name = omni_cd_inspired_thoughts days = 365 }
+	}
+	# Pestilence - curse the largest enemy country for a year.
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = pestilence }
+			has_variable = cleric_t4_unlocked_var
+			NOT = { has_variable = omni_cd_pestilence }
+			omni_can_afford_spell = { BASE = 150 }
+			omni_ai_keep_mana_for_battle_trigger = no
+			scope:caster_country = {
+				war = yes
+				any_countries_at_war_with = {
+					NOT = { has_country_modifier = aldic_cleric_spell_t3_mod }
+					NOT = { tag = MER } NOT = { tag = BAR } NOT = { tag = REB } NOT = { tag = PIR }
+				}
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 150 }
+		scope:caster_country = {
+			ordered_countries_at_war_with = {
+				limit = {
+					NOT = { has_country_modifier = aldic_cleric_spell_t3_mod }
+					NOT = { tag = MER } NOT = { tag = BAR } NOT = { tag = REB } NOT = { tag = PIR }
+				}
+				order_by = num_of_territories_svalue
+				position = 0
+				add_country_modifier = { name = aldic_cleric_spell_t3_mod duration = 365 }
+			}
+		}
+		set_variable = { name = omni_cd_pestilence days = 365 }
+	}
+	# Coils of the Serpent - +10% enslavement efficiency while at war.
+	else_if = {
+		limit = {
+			OR = {
+				omni_knows_spell = { SPELL = coils_of_the_serpent }
+				has_trait = half_snake_trait
+			}
+			NOT = { has_variable = omni_cd_coils_of_the_serpent }
+			omni_can_afford_spell = { BASE = 50 }
+			omni_ai_keep_mana_for_battle_trigger = no
+			scope:caster_country = {
+				war = yes
+				NOT = { has_country_modifier = snakefolk_spell_3_mod }
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = { add_country_modifier = { name = snakefolk_spell_3_mod duration = 365 } }
+		set_variable = { name = omni_cd_coils_of_the_serpent days = 365 }
+	}
+	# Cafea's Breath - cure the caster's own affliction.
+	else_if = {
+		limit = {
+			OR = {
+				omni_knows_spell = { SPELL = cafeas_breath }
+				has_culture = waldonian
+			}
+			NOT = { has_variable = omni_cd_cafeas_breath }
+			omni_can_afford_spell = { BASE = 75 }
+			OR = { has_trait = hunchback has_trait = limp has_trait = castrated has_trait = blind has_trait = maimed has_trait = one_eyed }
+		}
+		if = { limit = { has_trait = hunchback } remove_trait = hunchback }
+		else_if = { limit = { has_trait = limp } remove_trait = limp }
+		else_if = { limit = { has_trait = castrated } remove_trait = castrated }
+		else_if = { limit = { has_trait = blind } remove_trait = blind }
+		else_if = { limit = { has_trait = maimed } remove_trait = maimed }
+		else_if = { limit = { has_trait = one_eyed } remove_trait = one_eyed }
+		omni_spell_mana_cost_effect = { BASE = 75 }
+		set_variable = { name = omni_cd_cafeas_breath days = 365 }
+	}
+	# Raise Workers - two undead slaves in a sparsely settled territory, once a year
+	# per necromancer (AI-only limit: unchecked pop creation slows the late game).
+	else_if = {
+		limit = {
+			omni_can_select_territory_raise_workers = yes
+			NOT = { has_variable = omni_cd_ai_raise_workers }
+			omni_can_afford_spell = { BASE = 50 }
+			omni_ai_keep_mana_for_battle_trigger = no
+			scope:caster_country = {
+				any_owned_province = {
+					omni_spell_target_land = yes
+					has_city_status = no
+					total_population <= 12
+				}
+			}
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		scope:caster_country = {
+			random_owned_province = {
+				limit = {
+					omni_spell_target_land = yes
+					has_city_status = no
+					total_population <= 12
+				}
+				define_pop = { type = slaves culture = undead religion = blood_tainted_pantheon }
+				define_pop = { type = slaves culture = undead religion = blood_tainted_pantheon }
+			}
+		}
+		set_variable = { name = omni_cd_ai_raise_workers days = 365 }
 	}
 }

@@ -1,0 +1,241 @@
+﻿# Character scope. A player can move a separate Colossus or merge it into an army.
+# During battle and for the AI, reinforce the chosen army directly so it participates.
+omni_summon_colossus_effect = {
+	if = {
+		limit = { omni_can_summon_colossus = yes }
+		save_scope_as = colossus_caster
+		ordered_character_unit = {
+			limit = { omni_colossus_casting_army = yes }
+			order_by = omni_colossus_army_priority
+			max = 1
+			check_range_bounds = no
+			save_scope_as = colossus_summoning_army
+		}
+		scope:colossus_summoning_army.unit_owner = {
+			if = {
+				limit = { OR = { is_ai = yes scope:colossus_summoning_army = { in_combat = yes } } }
+				scope:colossus_summoning_army = {
+					add_subunit = omni_elemental_colossus
+					save_scope_as = colossus_new_army
+				}
+			}
+			else = {
+				create_unit = {
+					name = omni_elemental_colossus
+					location = scope:colossus_summoning_army.unit_location
+					sub_unit = omni_elemental_colossus
+					save_scope_as = colossus_new_army
+				}
+			}
+			omni_colossus_register_cohort = yes
+		}
+	}
+}
+
+# Country scope. Each summon adds ten 500-strength cohorts to a single army.
+# Subunits can't hold variables, so each cohort gets a numbered country slot.
+omni_colossus_register_cohort = {
+	save_scope_as = colossus_summoning_country
+	omni_colossus_clear_slots_effect = yes
+	scope:colossus_new_army = {
+		if = {
+			limit = { any_sub_unit = { sub_unit_type = omni_elemental_colossus } }
+			while = { count = 9 add_subunit = omni_elemental_colossus }
+			every_sub_unit = {
+				limit = { sub_unit_type = omni_elemental_colossus }
+				save_scope_as = colossus_new_cohort
+				scope:colossus_summoning_country = {
+					omni_colossus_assign_slot_effect = yes
+					set_variable = { name = omni_colossus_cohort value = scope:colossus_new_cohort }
+				}
+			}
+		}
+	}
+	if = {
+		limit = { has_variable = omni_colossus_slot }
+		scope:colossus_caster = { omni_spell_mana_cost_effect = { BASE = 200 } }
+		set_variable = { name = omni_cd_summon_elemental_colossus days = 365 }
+		set_variable = omni_colossus_active
+		omni_colossus_refresh_army_effect = yes
+		trigger_event = { id = omni_elemental_colossus.1 days = 1 }
+	}
+}
+
+# Country scope, with scope:colossus_new_cohort set. Puts the cohort in the next free slot.
+omni_colossus_assign_slot_effect = {
+	if = {
+		limit = { NOT = { has_variable = omni_colossus_slot } }
+		set_variable = { name = omni_colossus_slot value = 0 }
+	}
+	change_variable = { name = omni_colossus_slot add = 1 }
+	if = { limit = { var:omni_colossus_slot = 1 } omni_colossus_set_slot = { N = 1 } }
+	else_if = { limit = { var:omni_colossus_slot = 2 } omni_colossus_set_slot = { N = 2 } }
+	else_if = { limit = { var:omni_colossus_slot = 3 } omni_colossus_set_slot = { N = 3 } }
+	else_if = { limit = { var:omni_colossus_slot = 4 } omni_colossus_set_slot = { N = 4 } }
+	else_if = { limit = { var:omni_colossus_slot = 5 } omni_colossus_set_slot = { N = 5 } }
+	else_if = { limit = { var:omni_colossus_slot = 6 } omni_colossus_set_slot = { N = 6 } }
+	else_if = { limit = { var:omni_colossus_slot = 7 } omni_colossus_set_slot = { N = 7 } }
+	else_if = { limit = { var:omni_colossus_slot = 8 } omni_colossus_set_slot = { N = 8 } }
+	else_if = { limit = { var:omni_colossus_slot = 9 } omni_colossus_set_slot = { N = 9 } }
+	else_if = { limit = { var:omni_colossus_slot = 10 } omni_colossus_set_slot = { N = 10 } }
+}
+
+omni_colossus_set_slot = {
+	set_variable = { name = omni_colossus_cohort_$N$ value = scope:colossus_new_cohort }
+	set_variable = { name = omni_colossus_strength_$N$ value = scope:colossus_new_cohort.subunit_strength_percentage }
+}
+
+omni_colossus_clear_slot = {
+	remove_variable = omni_colossus_cohort_$N$
+	remove_variable = omni_colossus_strength_$N$
+}
+
+omni_colossus_clear_slots_effect = {
+	omni_colossus_clear_slot = { N = 1 }
+	omni_colossus_clear_slot = { N = 2 }
+	omni_colossus_clear_slot = { N = 3 }
+	omni_colossus_clear_slot = { N = 4 }
+	omni_colossus_clear_slot = { N = 5 }
+	omni_colossus_clear_slot = { N = 6 }
+	omni_colossus_clear_slot = { N = 7 }
+	omni_colossus_clear_slot = { N = 8 }
+	omni_colossus_clear_slot = { N = 9 }
+	omni_colossus_clear_slot = { N = 10 }
+	remove_variable = omni_colossus_slot
+	if = {
+		limit = { has_variable_list = omni_colossus_cohorts }
+		clear_variable_list = omni_colossus_cohorts
+	}
+}
+
+# Country scope (event root). Daily upkeep for one slot.
+omni_colossus_maintain_slot = {
+	if = {
+		limit = { exists = var:omni_colossus_cohort_$N$ }
+		if = {
+			limit = {
+				var:omni_colossus_cohort_$N$ = {
+					# Cohort IDs are recycled after a cohort dies, so confirm it is still a Colossus.
+					sub_unit_type = omni_elemental_colossus
+					exists = owning_unit
+				}
+			}
+			var:omni_colossus_cohort_$N$ = { save_scope_as = colossus_slot_cohort }
+			if = {
+				limit = { scope:colossus_slot_cohort.owning_unit = { unit_owner = root } }
+				if = {
+					limit = { NOT = { has_variable = omni_colossus_strength_$N$ } }
+					set_variable = { name = omni_colossus_strength_$N$ value = scope:colossus_slot_cohort.subunit_strength_percentage }
+				}
+				# The engine reinforces the whole army. Undo reinforcement per summoned cohort.
+				if = {
+					limit = { scope:colossus_slot_cohort = { subunit_strength_percentage > root.var:omni_colossus_strength_$N$ } }
+					scope:colossus_slot_cohort = {
+						add_subunit_strength = { value = root.var:omni_colossus_strength_$N$ subtract = subunit_strength_percentage }
+					}
+				}
+				else = {
+					set_variable = { name = omni_colossus_strength_$N$ value = scope:colossus_slot_cohort.subunit_strength_percentage }
+				}
+			}
+			else_if = {
+				limit = { scope:colossus_slot_cohort.owning_unit = { unit_size = 1 } }
+				scope:colossus_slot_cohort.owning_unit = { destroy_unit = yes }
+				omni_colossus_clear_slot = { N = $N$ }
+			}
+			else = {
+				scope:colossus_slot_cohort = { destroy_subunit = yes }
+				omni_colossus_clear_slot = { N = $N$ }
+			}
+		}
+		else = { omni_colossus_clear_slot = { N = $N$ } }
+	}
+}
+
+# Country scope. Surviving slots are always root's Colossi, so any filled slot can carry the bonus.
+omni_colossus_pick_tracked_slot = {
+	if = {
+		limit = {
+			NOT = { exists = var:omni_colossus_cohort }
+			exists = var:omni_colossus_cohort_$N$
+		}
+		set_variable = { name = omni_colossus_cohort value = var:omni_colossus_cohort_$N$ }
+	}
+}
+
+# Country scope (event root). Converts saves made before the slot system.
+omni_colossus_migrate_effect = {
+	# Never runs. Old saves can still hold these legacy variables, but no current
+	# script sets them, which makes the validator log "used but is never set".
+	if = {
+		limit = { always = no }
+		set_variable = { name = omni_colossus_strength value = 0 }
+		add_to_variable_list = { name = omni_colossus_cohorts target = root }
+	}
+	# Original single-cohort summon kept its strength on the country.
+	if = {
+		limit = {
+			NOT = { has_variable = omni_colossus_slot }
+			has_variable = omni_colossus_strength
+			exists = var:omni_colossus_cohort
+		}
+		set_variable = { name = omni_colossus_slot value = 1 }
+		set_variable = { name = omni_colossus_cohort_1 value = var:omni_colossus_cohort }
+		set_variable = { name = omni_colossus_strength_1 value = var:omni_colossus_strength }
+		set_variable = omni_colossus_active
+		remove_variable = omni_colossus_strength
+	}
+	# Later saves kept a cohort list and tried to store strength on each cohort.
+	if = {
+		limit = {
+			NOT = { has_variable = omni_colossus_slot }
+			has_variable_list = omni_colossus_cohorts
+		}
+		every_in_list = {
+			variable = omni_colossus_cohorts
+			limit = {
+				exists = owning_unit
+				sub_unit_type = omni_elemental_colossus
+			}
+			save_scope_as = colossus_new_cohort
+			root = { omni_colossus_assign_slot_effect = yes }
+		}
+	}
+	if = {
+		limit = { has_variable_list = omni_colossus_cohorts }
+		clear_variable_list = omni_colossus_cohorts
+	}
+}
+
+# Country scope. Look up the cohort's current army so merging or splitting moves the bonus.
+omni_colossus_refresh_army_effect = {
+	var:omni_colossus_cohort.owning_unit = { save_scope_as = colossus_current_army }
+	if = {
+		limit = {
+			exists = var:omni_colossus_buffed_army
+			NOT = { var:omni_colossus_buffed_army = scope:colossus_current_army }
+		}
+		omni_colossus_clear_army_effect = yes
+	}
+	set_variable = { name = omni_colossus_buffed_army value = scope:colossus_current_army }
+	scope:colossus_current_army = {
+		if = {
+			limit = { has_unit_modifier = omni_colossus_siege_mod }
+			remove_unit_modifier = omni_colossus_siege_mod
+		}
+		add_unit_modifier = { name = omni_colossus_siege_mod duration = 2 }
+	}
+}
+
+omni_colossus_clear_army_effect = {
+	if = {
+		limit = { exists = var:omni_colossus_buffed_army }
+		var:omni_colossus_buffed_army = {
+			if = {
+				limit = { has_unit_modifier = omni_colossus_siege_mod }
+				remove_unit_modifier = omni_colossus_siege_mod
+			}
+		}
+	}
+	remove_variable = omni_colossus_buffed_army
+}

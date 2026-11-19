@@ -1,0 +1,52 @@
+﻿# Unit scope, immediately inside the caster's character-unit iterator.
+omni_colossus_casting_army = {
+	is_army = yes
+	is_exiled = no
+	trigger_if = {
+		limit = { prev = { exists = employer } }
+		unit_owner = prev.employer
+	}
+	trigger_else = { unit_owner = prev.country }
+	unit_owner = { omni_colossus_country_can_summon = yes }
+	NOT = { any_sub_unit = { sub_unit_type = omni_elemental_colossus } }
+	unit_location = {
+		has_owner = yes
+		is_sea = no
+		is_uninhabitable = no
+	}
+}
+
+# Country scope. All casts share one active cohort and cooldown.
+omni_colossus_country_can_summon = {
+	NOT = { has_variable = omni_cd_summon_elemental_colossus }
+	# Wait for maintenance to clear the previous summon before replacing it.
+	NOR = {
+		has_variable = omni_colossus_active
+		has_variable = omni_colossus_strength # Legacy single-cohort summon.
+	}
+}
+
+# Character scope. All summon routes share the same gate and country cooldown.
+omni_can_summon_colossus = {
+	is_alive = yes
+	omni_character_is_eligible_caster = yes
+	omni_knows_spell = { SPELL = summon_elemental_colossus }
+	OR = {
+		has_variable = elementalist_mastered_var
+		has_variable = druid_mastered_var
+	}
+	omni_caster_amten_t3 = yes
+	omni_can_afford_spell = { BASE = 200 }
+	any_character_unit = { omni_colossus_casting_army = yes }
+}
+
+# Country scope (event root). The tracked cohort is still a Colossus in one of root's armies.
+# Cohort IDs are recycled after a cohort dies, so always confirm the subunit type.
+omni_colossus_tracked_cohort_valid = {
+	exists = var:omni_colossus_cohort
+	var:omni_colossus_cohort = {
+		sub_unit_type = omni_elemental_colossus
+		exists = owning_unit
+		owning_unit = { unit_owner = root }
+	}
+}

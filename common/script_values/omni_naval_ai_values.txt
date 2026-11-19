@@ -1,35 +1,104 @@
 ﻿# All constants are named so balance changes stay separate from logic.
-# Province scope unless marked country. Two slots remain for civilian growth.
+# Province scope unless marked country.
+# Revised 2026-11-18 (BUILDING_AI_LATE_GAME_PLAN.md): designated shipyards,
+# next-level slot rule, map-scaled demand.
+
 omni_naval_civilian_slot_reserve = 2
-# New shipyard sites remain below commercial coverage. Existing ports get
-# an additional weight multiplier so the AI can finish a yard in stages.
-omni_naval_medium_upgrade_weight = 70
-omni_naval_heavy_upgrade_weight = 85
-omni_naval_existing_port_upgrade_multiplier = {
+
+# A brand-new port that is meant to grow into a shipyard: its first level plus
+# the civilian reserve. Existing harbors need only one slot per level.
+omni_naval_slots_needed_new_site = {
     value = 1
-    if = {
-        limit = { num_of_port_building >= 1 }
-        value = 2
-    }
-}
-omni_naval_slots_needed_mega = {
-    value = port_levels_to_mega_tier
-    # Reserve space when starting a new port. An existing harbor can use its
-    # remaining slots to reach the first shipyard tier.
-    if = { limit = { num_of_port_building < 1 } add = omni_naval_civilian_slot_reserve }
-}
-omni_naval_slots_needed_giga = {
-    value = port_levels_to_giga_tier
     add = omni_naval_civilian_slot_reserve
 }
+
+# Building weights on Anbeeld's brc scale (brc_N = 7N/(100-N)):
+# 140 ~ brc_95.2, 170 ~ brc_96. Both sit just above capital Markets (brc_95),
+# so a designated shipyard wins its own city whenever it has room.
+omni_naval_shipyard_weight_mega = 140
+omni_naval_shipyard_weight_giga = 170
+omni_naval_shipyard_weight = {
+    value = omni_naval_shipyard_weight_mega
+    if = {
+        limit = { omni_shipyard_target_level >= 5 }
+        value = omni_naval_shipyard_weight_giga
+    }
+    if = {
+        limit = { omni_province_has_naval_culture = yes }
+        multiply = 1.15
+    }
+}
+
+# Province/cache scope. Target level of a designated shipyard, read from the
+# state's variable lists (written yearly by omni_ai_designate_shipyards).
+# The province is passed in as a saved temporary scope, the pattern Anbeeld's
+# territory_state_has_enough_ports uses in cached building scoring. The earlier
+# `target = prev` lookup never matched there: in a 50-year run no designated site
+# was ever under construction while level-1 ports kept multiplying.
+omni_shipyard_target_level = {
+    value = 0
+    if = {
+        limit = {
+            exists = state
+            save_temporary_scope_as = omni_shipyard_site
+        }
+        state = {
+            if = {
+                limit = {
+                    has_non_empty_variable_list = {
+                        name = omni_shipyard_sites_giga
+                    }
+                    is_target_in_variable_list = {
+                        name = omni_shipyard_sites_giga
+                        target = scope:omni_shipyard_site
+                    }
+                }
+                add = 5
+            }
+            else_if = {
+                limit = {
+                    has_non_empty_variable_list = {
+                        name = omni_shipyard_sites_mega
+                    }
+                    is_target_in_variable_list = {
+                        name = omni_shipyard_sites_mega
+                        target = scope:omni_shipyard_site
+                    }
+                }
+                add = 3
+            }
+        }
+    }
+}
+
+omni_shipyard_levels_remaining = {
+    value = omni_shipyard_target_level
+    subtract = num_of_port_building
+    min = 0
+}
+
 omni_naval_site_preference = {
     value = 0
     if = { limit = { omni_province_is_notable_harbor = yes } add = 2 }
     if = { limit = { is_capital = yes } add = 1 }
 }
 
+# Province scope. Designation order: invested level, then free slots, then
+# authored/capital preference (replaces the old pairwise comparator).
+omni_naval_site_score = {
+    value = num_of_port_building
+    multiply = 1000
+    add = {
+        value = free_building_slots
+        max = 99
+        multiply = 10
+    }
+    add = omni_naval_site_preference
+}
+
 # Country scope: cumulative medium-or-better capacity, capped at four sites.
-# A small state with a supplied city harbor can develop its first shipyard.
+# Size bonuses are in territories scaled to the Omniluxia map (the engine's
+# regional/major ranks are 200/400 territories, which almost nobody reaches).
 omni_naval_medium_shipyards_wanted = {
     value = 0
     if = {
@@ -40,9 +109,9 @@ omni_naval_medium_shipyards_wanted = {
         }
         divide = 35
         floor = yes
-        if = { limit = { rank_by_num_territories >= regional_power } add = 1 }
-        if = { limit = { rank_by_num_territories >= major_power } add = 1 }
-        if = { limit = { rank_by_num_territories >= great_power } add = 1 }
+        if = { limit = { num_of_territories_svalue >= 60 } add = 1 }
+        if = { limit = { num_of_territories_svalue >= 150 } add = 1 }
+        if = { limit = { num_of_territories_svalue >= 250 } add = 1 }
         min = 1
         max = 4
     }
@@ -58,6 +127,51 @@ omni_naval_heavy_shipyards_wanted = {
             omni_country_has_feasible_heavy_shipyard = yes
         }
         add = 1
-        if = { limit = { rank_by_num_territories >= great_power } add = 1 }
+        if = { limit = { num_of_territories_svalue >= 150 } add = 1 }
     }
 }
+
+# Country scope. Completed capacity, counted in supplied (timber) states only.
+omni_naval_completed_shipyards_mega = {
+    value = 0
+    every_owned_province = {
+        limit = { is_territory_with_high_tier_port = { tier = mega } }
+        add = 1
+    }
+}
+omni_naval_completed_shipyards_giga = {
+    value = 0
+    every_owned_province = {
+        limit = { is_territory_with_high_tier_port = { tier = giga } }
+        add = 1
+    }
+}
+
+# Country scope. Heavy sites still below level 3 will pass through the medium
+# tier, so they already count toward medium demand.
+omni_naval_giga_sites_below_mega = {
+    value = 0
+    every_owned_province = {
+        limit = {
+            omni_shipyard_target_level >= 5
+            num_of_port_building < 3
+        }
+        add = 1
+    }
+}
+
+omni_naval_giga_gap = {
+    value = omni_naval_heavy_shipyards_wanted
+    subtract = omni_naval_completed_shipyards_giga
+    min = 0
+}
+
+omni_naval_mega_gap = {
+    value = omni_naval_medium_shipyards_wanted
+    subtract = omni_naval_completed_shipyards_mega
+    subtract = omni_naval_giga_sites_below_mega
+    min = 0
+}
+
+# Country scope. Money the make-room pass must leave untouched.
+omni_naval_make_room_treasury = 150

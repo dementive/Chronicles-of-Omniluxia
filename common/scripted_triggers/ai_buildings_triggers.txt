@@ -8,23 +8,15 @@
 
 # Port
 brc_needs_port = {
-    OR = { brc_needs_new_port = yes brc_needs_heavy_shipyard = yes brc_needs_medium_shipyard = yes }
+    OR = { brc_needs_new_port = yes omni_shipyard_needs_next_level = yes }
 }
 brc_needs_new_port = {
     can_build_new_port = yes
     territory_state_has_enough_ports = no
     is_best_territory_for_new_port_in_state = yes
 }
-brc_needs_heavy_shipyard = {
-    omni_province_can_expand_shipyard = { TIER = giga }
-    owner = { NOT = { has_wanted_num_of_high_tier_ports = { tier = giga } } }
-    is_best_territory_for_high_tier_port = { tier = giga }
-}
-brc_needs_medium_shipyard = {
-    omni_province_can_expand_shipyard = { TIER = mega }
-    owner = { NOT = { has_wanted_num_of_high_tier_ports = { tier = mega } } }
-    is_best_territory_for_high_tier_port = { tier = mega }
-}
+# Medium/heavy shipyard growth is driven by yearly designation
+# (omni_ai_designate_shipyards) and omni_shipyard_needs_next_level.
 brc_wants_port = {
     has_city_status = yes
     has_or_is_building_port = no
@@ -83,6 +75,8 @@ brc_is_research_city = {
 brc_is_trade_city = {
     exists = this
     has_city_status = yes
+    # A shipyard still growing is not a Market city yet.
+    omni_shipyard_levels_remaining <= 0
     OR = {
         has_or_is_building_port = yes
         num_of_commerce_building > 0
@@ -383,11 +377,13 @@ ai_treasury_is_enough_for_building = {
     trigger_if = {
         limit = {
             is_advanced_ai_enabled = yes
-            # Preserve the wartime fund while fighting. During peace, the
-            # native AI affordability check should decide whether a building
-            # can be started; the reserve must not zero every civilian
-            # building weight across the country.
+            # Keep the wartime (mercenary) fund only in wars that threaten the
+            # homeland: occupied/invaded territory or dangerous war exhaustion
+            # (omni_ai_war_threatened, refreshed monthly). Census 2026-11-18:
+            # top AIs are at war ~90% of the time and the unconditional gate
+            # froze all construction in 93% of war-years.
             war = yes
+            has_variable = omni_ai_war_threatened
         }
         treasury >= ai_wartime_fund_desired
     }
@@ -410,7 +406,12 @@ ai_prohibited_to_build_in_territory = {
 }
 
 ai_prohibited_to_build_in_city = {
-    ai_prohibited_to_build_in_territory = yes
+    OR = {
+        ai_prohibited_to_build_in_territory = yes
+        # The designated shipyard keeps the slots it still needs (port excluded:
+        # brc_port does not use this trigger).
+        omni_city_slots_reserved_for_shipyard = yes
+    }
 }
 
 ai_prohibited_to_build_in_settlement = {
@@ -608,27 +609,6 @@ is_territory_with_high_tier_port = {
 
 is_territory_with_high_or_higher_tier_port = {
     port_level_including_construction >= owner.level_of_$tier$_port_wanted
-}
-
-# Province/cache scope. The comparison helpers never overwrite omni_naval_site.
-is_best_territory_for_high_tier_port = {
-    is_eligible_for_building_high_tier_port = { tier = $tier$ }
-    save_temporary_scope_as = omni_naval_site
-    NOT = {
-        owner = {
-            any_owned_province = {
-                NOT = { this = scope:omni_naval_site }
-                is_eligible_for_building_high_tier_port = { tier = $tier$ }
-                omni_naval_candidate_beats_site = yes
-                # This iterator supplies a real province, unlike the cached scoring scope.
-                has_construction = no
-            }
-        }
-    }
-}
-
-is_eligible_for_building_high_tier_port = {
-    omni_province_can_expand_shipyard = { TIER = $tier$ }
 }
 
 has_any_city_ratio_building_maxed_out = {

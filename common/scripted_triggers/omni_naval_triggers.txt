@@ -1,10 +1,17 @@
 ﻿# Omniluxia naval policy. Scope contracts are part of the interface.
-# State scope, including imported surplus. Matches the four local ship definitions.
+# State scope. Timber is PRESENT: a territory producing it or a province
+# importing it. Surplus (copies beyond the first) was nearly unsatisfiable and
+# AI auto-trade exported it away. Inlined in the four ship `allow` blocks.
 omni_state_has_ship_timber = {
-    OR = {
-        trade_good_surplus = { target = wood value > 0 }
-        trade_good_surplus = { target = cedar value > 0 }
-        trade_good_surplus = { target = hardwood value > 0 }
+    any_state_province = {
+        OR = {
+            trade_goods = wood
+            trade_goods = cedar
+            trade_goods = hardwood
+            is_importing_trade_good = wood
+            is_importing_trade_good = cedar
+            is_importing_trade_good = hardwood
+        }
     }
 }
 
@@ -64,35 +71,58 @@ omni_naval_site_has_construction = {
 }
 
 # Province scope; TIER = mega (3) or giga (5). No scope saves inside this helper.
+# Can this harbor become (or grow into) a shipyard of the tier? An existing
+# port qualifies even when full: the yearly make-room pass frees slots at the
+# designated site. A brand-new port still needs its first level plus the
+# civilian reserve, so the AI does not found shipyards in cramped cities.
 omni_province_can_expand_shipyard = {
     can_have_port = yes
     has_city_status = yes
     state = { omni_state_has_ship_timber = yes }
     port_level_including_construction < owner.level_of_$TIER$_port_wanted
-    free_building_slots >= omni_naval_slots_needed_$TIER$
+    OR = {
+        AND = {
+            num_of_port_building >= 1
+            # A full city only qualifies if make_room can free a slot; otherwise
+            # it was designated every year and never grew (72-yr census).
+            OR = {
+                free_building_slots >= 1
+                omni_province_has_removable_low_value_building = yes
+            }
+        }
+        free_building_slots >= omni_naval_slots_needed_new_site
+    }
 }
 
-# Province scope; scope:omni_naval_site is the incumbent.
-# Lexicographic order gives exactly one winner, including complete numeric ties.
-omni_naval_candidate_beats_site = {
-    OR = {
-        port_level_including_construction > scope:omni_naval_site.port_level_including_construction
-        AND = {
-            port_level_including_construction = scope:omni_naval_site.port_level_including_construction
-            free_building_slots > scope:omni_naval_site.free_building_slots
-        }
-        AND = {
-            port_level_including_construction = scope:omni_naval_site.port_level_including_construction
-            free_building_slots = scope:omni_naval_site.free_building_slots
-            omni_naval_site_preference > scope:omni_naval_site.omni_naval_site_preference
-        }
-        AND = {
-            port_level_including_construction = scope:omni_naval_site.port_level_including_construction
-            free_building_slots = scope:omni_naval_site.free_building_slots
-            omni_naval_site_preference = scope:omni_naval_site.omni_naval_site_preference
-            province_id < scope:omni_naval_site.province_id
-        }
-    }
+# Province scope, real province only (designation effect). TIER = mega/giga.
+omni_province_is_shipyard_candidate = {
+    controller = owner
+    omni_province_can_expand_shipyard = { TIER = $TIER$ }
+}
+
+# Province/cache scope. Designation is read from state variable lists, the
+# same pattern Anbeeld's fort lists use in cached building scoring.
+omni_province_is_designated_shipyard = {
+    omni_shipyard_target_level > 0
+}
+
+# Province/cache scope. A designated site below its target with room for the
+# next level. Only one level is needed at a time.
+omni_shipyard_needs_next_level = {
+    has_city_status = yes
+    can_have_port = yes
+    omni_shipyard_levels_remaining > 0
+    free_building_slots >= 1
+    state = { omni_state_has_ship_timber = yes }
+}
+
+# Province/cache scope. Hold other city buildings while the designated
+# shipyard still needs every remaining free slot. Cheap checks first: this is
+# evaluated for every city building candidate.
+omni_city_slots_reserved_for_shipyard = {
+    has_city_status = yes
+    omni_shipyard_levels_remaining > 0
+    free_building_slots <= omni_shipyard_levels_remaining
 }
 
 # Country scope. Traditions may precede construction, provided it is feasible.
@@ -207,5 +237,17 @@ omni_naval_arcane_caster_ready = {
         omni_knows_spell = { SPELL = breaching_tremor }
         omni_can_afford_spell = { BASE = 50 }
         NOT = { has_variable = omni_naval_tremor_cooldown }
+    }
+}
+
+# Province scope. Mirrors the removal order in omni_remove_one_low_value_building.
+omni_province_has_removable_low_value_building = {
+    OR = {
+        num_of_slum_building > 0
+        num_of_circus_building > 0
+        num_of_brewery_building > 0
+        num_of_theathre_building > 0
+        num_of_military_building > 0
+        num_of_workshop_building > 0
     }
 }

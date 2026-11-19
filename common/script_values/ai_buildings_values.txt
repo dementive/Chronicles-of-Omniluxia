@@ -50,31 +50,32 @@ brc_port = {
         limit = { owner = { ai_treasury_is_enough_for_building = no } }
         value = 0
     }
+    # Commercial coverage: first port in a state that needs one.
     else_if = {
         limit = { brc_needs_new_port = yes }
         if = { limit = { omni_naval_site_has_construction = yes } value = 0 }
-        else = { value = brc_territory_importance multiply = brc_100 }
+        # Coverage is a normal priority, not a must-build: at brc_100 the AI built
+        # ~11 level-1 ports per large empire (50-yr census) ahead of markets,
+        # libraries and shipyard upgrades. A growing shipyard goes first.
+        else_if = {
+            limit = { owner = { has_variable = omni_shipyard_pending } }
+            value = brc_territory_importance
+            multiply = brc_40
+        }
+        else = { value = brc_territory_importance multiply = brc_60 }
     }
+    # Designated shipyard: one level at a time toward level 3 or 5. The site is
+    # chosen yearly by omni_ai_designate_shipyards; other city buildings hold
+    # their fire there via omni_city_slots_reserved_for_shipyard.
     else_if = {
-        limit = { brc_needs_heavy_shipyard = yes }
+        limit = { omni_shipyard_needs_next_level = yes }
         if = { limit = { omni_naval_site_has_construction = yes } value = 0 }
         else = {
             value = brc_territory_importance
-            multiply = omni_naval_heavy_upgrade_weight
-            multiply = omni_naval_existing_port_upgrade_multiplier
+            multiply = omni_naval_shipyard_weight
         }
     }
-    else_if = {
-        limit = { brc_needs_medium_shipyard = yes }
-        if = { limit = { omni_naval_site_has_construction = yes } value = 0 }
-        else = {
-            value = brc_territory_importance
-            multiply = omni_naval_medium_upgrade_weight
-            multiply = omni_naval_existing_port_upgrade_multiplier
-            if = { limit = { omni_province_has_naval_culture = yes } multiply = 1.15 }
-        }
-    }
-    # Timber loss, quota changes and a zero coverage target never demolish ports.
+    # Timber loss, quota changes and a zero target never demolish ports.
     else = { value = 0 }
 }
 
@@ -1483,18 +1484,6 @@ level_of_mega_port_wanted = 3
 
 num_of_mega_ports_wanted = { value = omni_naval_medium_shipyards_wanted }
 
-port_levels_to_giga_tier = {
-    value = owner.level_of_giga_port_wanted
-    subtract = port_level_including_construction
-}
-
-port_levels_to_mega_tier = {
-    value = owner.level_of_mega_port_wanted
-    subtract = port_level_including_construction
-}
-
-port_tier_enum_mega = 1
-port_tier_enum_giga = 2
 
 # 1 per every 20-30 pops - better to sync with 10s, so after reaching threshold AI could build it using the new slot
 level_of_granary_wanted = {

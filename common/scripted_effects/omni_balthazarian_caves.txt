@@ -88,15 +88,27 @@ ob_prepare_lanuthua = {
             culture = ice_vampire
             religion = helluvian
             age = 38
-            remove_trait = vampire_trait
-            add_trait = ob_rimebound_trait
             add_trait = intelligent
             add_finesse = 3
             save_scope_as = ob_returned
         }
         set_variable = { name = ob_returned value = scope:ob_returned }
     }
-    var:ob_returned = { set_variable = { name = ob_lanuthua } }
+    var:ob_returned = {
+        if = {
+            limit = { NOT = { has_culture = ice_vampire } }
+            set_culture = ice_vampire
+        }
+        if = {
+            limit = { has_trait = vampire_trait }
+            remove_trait = vampire_trait
+        }
+        if = {
+            limit = { NOT = { has_trait = ob_rimebound_trait } }
+            add_trait = ob_rimebound_trait
+        }
+        set_variable = { name = ob_lanuthua }
+    }
 }
 
 ob_launch_rimebound = {
@@ -131,6 +143,7 @@ ob_launch_rimebound = {
                     name = { name = ob_rimebound_country_name adjective = ob_rimebound_country_adj }
                     change_government = despotic_monarchy
                     set_primary_culture = ice_vampire
+                    set_graphical_culture = rimebound_gfx
                     save_scope_as = ob_rimebound_invader
                     create_character = {
                         first_name = "Skeld"
@@ -144,7 +157,7 @@ ob_launch_rimebound = {
                     }
                     set_as_ruler = scope:ob_rimebound_commander
                     create_unit = {
-                        name = ob_rimebound_country_name
+                        name = ob_rimebound_first_army_name
                         location = scope:ob_rimebound_foothold
                         set_as_commander = scope:ob_rimebound_commander
                         while = { count = 6 add_subunit = heavy_infantry }
