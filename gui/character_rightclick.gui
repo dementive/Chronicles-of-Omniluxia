@@ -4,9 +4,16 @@ base_sub_window = {
 	name = "character_rightclick"
 	
 	parentanchor = top|left
+	size = { 360 480 }
 	widgetanchor = top|left
 	movable = yes
 	layer = top
+
+	state = {
+		name = _hide
+		on_start = "[GetVariableSystem.Clear('omni_bl_marriage_menu')]"
+	}
+
 	blockoverride "White_buttons"
 	{
 		container = {
@@ -39,91 +46,85 @@ base_sub_window = {
 		using = Sub_Header_FontColor
 	}
 	
-	container = {
-		resizeparent = yes
-		ignoreinvisible = yes
+	vbox = {
+		using = vbox_item_grid_button
+		visible = "[Not(GetVariableSystem.Exists('omni_bl_marriage_menu'))]"
+		margin = { 20 0 }
+		margin_top = 40
+		margin_bottom = 18
 
-		vbox = {
-			size = { 336 440 }
-			using = vbox_item_grid_button
-			visible = "[Not(GetVariableSystem.Exists('omni_bl_marriage_menu'))]"
-			margin = { 20 0 }
-			margin_top = 40
-			margin_bottom = 18
+		blockoverride "DataModel" { datamodel = "[CharacterRightClickMenu.GetInteractions]" }
 
-			blockoverride "DataModel" { datamodel = "[CharacterRightClickMenu.GetInteractions]" }
-
-			blockoverride "On_click" {
-				onclick = "[InteractionItem.OnClick]"
-				enabled = "[InteractionItem.IsEnabled]"
-				tooltip = "[InteractionItem.GetTooltip]"
-				clicksound = "[InteractionItem.GetClickSound]"
-			}
-
-			blockoverride "Center_text"
-			{
-				text = "[InteractionItem.GetName]"
-			}
+		blockoverride "On_click" {
+			onclick = "[InteractionItem.OnClick]"
+			enabled = "[InteractionItem.IsEnabled]"
+			tooltip = "[InteractionItem.GetTooltip]"
+			clicksound = "[InteractionItem.GetClickSound]"
 		}
 
-		widget = {
-			size = { 336 235 }
-			visible = "[GetVariableSystem.Exists('omni_bl_marriage_menu')]"
+		blockoverride "Center_text"
+		{
+			text = "[InteractionItem.GetName]"
+		}
+	}
 
-			flowcontainer = {
-				position = { 16 40 }
-				direction = vertical
-				ignoreinvisible = yes
-				datamodel = "[CharacterRightClickMenu.GetInteractions]"
-				spacing = 6
-				item = {
-					widget = {
-						size = { 304 30 }
-						visible = "[Or(EqualTo_string(InteractionItem.GetName, Localize('omni_propose_dynastic_alliance')), Or(Or(EqualTo_string(InteractionItem.GetName, Localize('propose_marriage')), EqualTo_string(InteractionItem.GetName, Localize('propose_dynastic_marriage'))), Or(EqualTo_string(InteractionItem.GetName, Localize('arrange_marriage')), EqualTo_string(InteractionItem.GetName, Localize('arrange_marriage_snakefolk')))))]"
-						text_button_square = {
-							size = { 100% 100% }
-							blockoverride "On_click" {
-								onclick = "[GetVariableSystem.Clear('omni_bl_marriage_menu')]"
-								onclick = "[InteractionItem.OnClick]"
-								enabled = "[InteractionItem.IsEnabled]"
-								tooltip = "[InteractionItem.GetTooltip]"
-								clicksound = "[InteractionItem.GetClickSound]"
-							}
-							blockoverride "Center_text" { text = "[InteractionItem.GetName]" }
+	widget = {
+		size = { 336 235 }
+		visible = "[GetVariableSystem.Exists('omni_bl_marriage_menu')]"
+
+		flowcontainer = {
+			position = { 16 40 }
+			direction = vertical
+			ignoreinvisible = yes
+			datamodel = "[CharacterRightClickMenu.GetInteractions]"
+			spacing = 6
+			item = {
+				widget = {
+					size = { 304 30 }
+					visible = "[Or(EqualTo_string(InteractionItem.GetName, Localize('omni_propose_dynastic_alliance')), Or(Or(EqualTo_string(InteractionItem.GetName, Localize('propose_marriage')), EqualTo_string(InteractionItem.GetName, Localize('propose_dynastic_marriage'))), Or(EqualTo_string(InteractionItem.GetName, Localize('arrange_marriage')), EqualTo_string(InteractionItem.GetName, Localize('arrange_marriage_snakefolk')))))]"
+					text_button_square = {
+						size = { 100% 100% }
+						blockoverride "On_click" {
+							onclick = "[GetVariableSystem.Clear('omni_bl_marriage_menu')]"
+							onclick = "[InteractionItem.OnClick]"
+							enabled = "[InteractionItem.IsEnabled]"
+							tooltip = "[InteractionItem.GetTooltip]"
+							clicksound = "[InteractionItem.GetClickSound]"
 						}
+						blockoverride "Center_text" { text = "[InteractionItem.GetName]" }
 					}
 				}
 			}
-			textbox = {
-				position = { 16 40 }
-				size = { 304 64 }
-				using = BaseFontS
-				multiline = yes
-				visible = "[IsDataModelEmpty(CharacterRightClickMenu.GetInteractions)]"
-				text = "omni_bl_marriage_no_interactions"
-			}
-			flowcontainer = {
-				position = { 16 184 }
-				direction = vertical
-				ignoreinvisible = yes
-				datamodel = "[Player.MakeScope.GetList('omni_bl_marriage_target')]"
-				item = {
-					widget = {
-						datacontext = "[Scope.Char]"
-						size = { 304 30 }
-						visible = "[GetScriptedGui('omni_matchmaking_propose').IsValid(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End)]"
-						text_button_square = {
-							size = { 100% 100% }
-							blockoverride "On_click" {
-								onclick = "[GetScriptedGui('omni_matchmaking_propose').Execute(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End)]"
-								onclick = "[GetVariableSystem.Set('omni_bl_action_feedback', 'propose')]"
-								onclick = "[GetVariableSystem.Clear('omni_bl_marriage_menu')]"
-								onclick = "[CharacterRightClickMenu.OnClose]"
-								tooltip = "[SelectLocalization(GetScriptedGui('omni_matchmaking_propose').IsValid(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End), Select_CString(GetScriptedGui('omni_matchmaking_propose_preview_player').IsShown(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End), 'omni_bl_propose_tip_player', Select_CString(GetScriptedGui('omni_matchmaking_propose_preview_likely').IsShown(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End), 'omni_bl_propose_tip_likely', Select_CString(GetScriptedGui('omni_matchmaking_propose_preview_unlikely').IsShown(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End), 'omni_bl_propose_tip_unlikely', 'omni_bl_propose_tip_uncertain'))), 'omni_bl_propose_tip_blocked')]"
-								clicksound = "event:/SFX/UI/Character/Generic/sfx_ui_character_diplomacy"
-							}
-							blockoverride "Center_text" { text = "omni_bl_propose_button" }
+		}
+		textbox = {
+			position = { 16 40 }
+			size = { 304 64 }
+			using = BaseFontS
+			multiline = yes
+			visible = "[IsDataModelEmpty(CharacterRightClickMenu.GetInteractions)]"
+			text = "omni_bl_marriage_no_interactions"
+		}
+		flowcontainer = {
+			position = { 16 184 }
+			direction = vertical
+			ignoreinvisible = yes
+			datamodel = "[Player.MakeScope.GetList('omni_bl_marriage_target')]"
+			item = {
+				widget = {
+					datacontext = "[Scope.Char]"
+					size = { 304 30 }
+					visible = "[GetScriptedGui('omni_matchmaking_propose').IsValid(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End)]"
+					text_button_square = {
+						size = { 100% 100% }
+						blockoverride "On_click" {
+							onclick = "[GetScriptedGui('omni_matchmaking_propose').Execute(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End)]"
+							onclick = "[GetVariableSystem.Set('omni_bl_action_feedback', 'propose')]"
+							onclick = "[GetVariableSystem.Clear('omni_bl_marriage_menu')]"
+							onclick = "[CharacterRightClickMenu.OnClose]"
+							tooltip = "[SelectLocalization(GetScriptedGui('omni_matchmaking_propose').IsValid(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End), Select_CString(GetScriptedGui('omni_matchmaking_propose_preview_player').IsShown(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End), 'omni_bl_propose_tip_player', Select_CString(GetScriptedGui('omni_matchmaking_propose_preview_likely').IsShown(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End), 'omni_bl_propose_tip_likely', Select_CString(GetScriptedGui('omni_matchmaking_propose_preview_unlikely').IsShown(GuiScope.SetRoot(Character.MakeScope).AddScope('actor', Player.MakeScope).AddScope('target', Character.MakeScope).End), 'omni_bl_propose_tip_unlikely', 'omni_bl_propose_tip_uncertain'))), 'omni_bl_propose_tip_blocked')]"
+							clicksound = "event:/SFX/UI/Character/Generic/sfx_ui_character_diplomacy"
 						}
+						blockoverride "Center_text" { text = "omni_bl_propose_button" }
 					}
 				}
 			}
