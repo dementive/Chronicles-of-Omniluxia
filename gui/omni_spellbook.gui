@@ -1332,6 +1332,60 @@ types OmniSpellbook {
                         }
                     }
                 }
+                container = { # light_shields_ii
+                    position = { 730 256 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_light_shields_ii')]"
+                    widget = {
+                        size = { 132 54 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" {
+                                texture = "gfx/interface/icons/traits/omni_spell_light_shields_ii_trait.dds"
+                                color = { 0.42 0.42 0.42 1 }
+                            }
+                            blockoverride "Name_color" { fontcolor = { 0.62 0.62 0.62 1 } }
+                            blockoverride "Spell_border" {
+                                omni_sb_learnable_border = {
+                                    blockoverride "Border_visible" { visible = "[GetScriptedGui('omni_sb_learn_light_shields_ii').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }
+                                }
+                            }
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_learn_light_shields_ii').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_learn_light_shields_ii').Execute( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_spell_light_shields_ii" }
+                            tooltip = "[GetScriptedGui('omni_sb_learn_light_shields_ii').BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 132 54 }
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_light_shields_ii_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+                                enabled = "[GetScriptedGui('omni_sb_cast_light_shields_ii').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_light_shields_ii').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_light_shields_ii" }
+                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_light_shields_ii').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ), Localize('omni_sb_cast_light_shields_ii_tt'), GetScriptedGui('omni_sb_cast_light_shields_ii').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ) )]"
+                        }
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_light_shields_ii_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            blockoverride "Mana_tint" { visible = yes }
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_light_shields_ii" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                }
                 container = { # personal_ward
                     position = { 162 336 }
                     datacontext = "[GetScriptedGui('omni_sb_known_personal_ward')]"
@@ -2038,44 +2092,8 @@ types OmniSpellbook {
                     text = "omni_sb_family_traditions"
                     tooltip = "omni_sb_family_traditions_tt"
                 }
-                container = { # summon_animal_auxiliaries
-                    position = { 18 838 }
-                    datacontext = "[GetScriptedGui('omni_sb_known_summon_animal_auxiliaries')]"
-                    widget = { # known: one IsShown gate, mana state only evaluated when known
-                        size = { 196 38 }
-                        alpha = "[Select_float( GetScriptedGui('omni_sb_cooldown_summon_animal_auxiliaries').IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ), '(float)0.40', '(float)1' )]"
-                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
-                        omni_sb_cast_button = {
-                            size = { 196 38 }
-                            omni_sb_learned_border = {}
-                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
-                            blockoverride "Cast_action" {
-                                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
-                                enabled = "[GetScriptedGui('omni_sb_cast_summon_animal_auxiliaries').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
-                                onclick = "[GetScriptedGui('omni_sb_cast_summon_animal_auxiliaries').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
-                            }
-                            blockoverride "Spell_name" { text = "omni_sb_known_name_summon_animal_auxiliaries" }
-                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_summon_animal_auxiliaries').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ), Localize('omni_sb_cast_summon_animal_auxiliaries_tt'), GetScriptedGui('omni_sb_cast_summon_animal_auxiliaries').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ) )]"
-                        }
-                        omni_sb_cast_button = {
-                            size = { 196 38 }
-                            omni_sb_learned_border = {}
-                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
-                            blockoverride "Cast_action" { enabled = no }
-                            blockoverride "Spell_name" { text = "omni_sb_known_name_summon_animal_auxiliaries" }
-                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
-                        }
-                    }
-                    omni_sb_cast_button = {
-                        size = { 196 38 }
-                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
-                        blockoverride "Cast_action" { enabled = no }
-                        blockoverride "Spell_name" { text = "omni_sb_spell_summon_animal_auxiliaries" }
-                        tooltip = "omni_sb_special_unknown_tt"
-                    }
-                }
                 container = { # summon_eagle_of_zanis
-                    position = { 228 838 }
+                    position = { 18 838 }
                     datacontext = "[GetScriptedGui('omni_sb_known_summon_eagle_of_zanis')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2111,7 +2129,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # helluvius_peace
-                    position = { 438 838 }
+                    position = { 228 838 }
                     datacontext = "[GetScriptedGui('omni_sb_known_helluvius_peace')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2146,7 +2164,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # hellas_providence
-                    position = { 648 838 }
+                    position = { 438 838 }
                     datacontext = "[GetScriptedGui('omni_sb_known_hellas_providence')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2181,7 +2199,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # battle_avatar_taanka
-                    position = { 18 879 }
+                    position = { 648 838 }
                     datacontext = "[GetScriptedGui('omni_sb_known_battle_avatar_taanka')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2216,10 +2234,11 @@ types OmniSpellbook {
                     }
                 }
                 container = { # dragonscale_shield_dragonscale
-                    position = { 228 879 }
+                    position = { 18 879 }
                     datacontext = "[GetScriptedGui('omni_sb_known_dragonscale_shield_dragonscale')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
+                        alpha = "[Select_float( GetScriptedGui('omni_sb_cooldown_dragonscale_shield_dragonscale').IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ), '(float)0.40', '(float)1' )]"
                         visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
                         omni_sb_cast_button = {
                             size = { 196 38 }
@@ -2251,7 +2270,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # dragonscale_dome_dragonscale
-                    position = { 438 879 }
+                    position = { 228 879 }
                     datacontext = "[GetScriptedGui('omni_sb_known_dragonscale_dome_dragonscale')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -4336,6 +4355,61 @@ types OmniSpellbook {
                         }
                     }
                 }
+                container = { # summon_animal_auxiliaries
+                    position = { 730 127 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_summon_animal_auxiliaries')]"
+                    widget = {
+                        size = { 132 54 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" {
+                                texture = "gfx/interface/icons/traits/omni_spell_summon_animal_auxiliaries_trait.dds"
+                                color = { 0.42 0.42 0.42 1 }
+                            }
+                            blockoverride "Name_color" { fontcolor = { 0.62 0.62 0.62 1 } }
+                            blockoverride "Spell_border" {
+                                omni_sb_learnable_border = {
+                                    blockoverride "Border_visible" { visible = "[GetScriptedGui('omni_sb_learn_summon_animal_auxiliaries').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }
+                                }
+                            }
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_learn_summon_animal_auxiliaries').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_learn_summon_animal_auxiliaries').Execute( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_spell_summon_animal_auxiliaries" }
+                            tooltip = "[GetScriptedGui('omni_sb_learn_summon_animal_auxiliaries').BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 132 54 }
+                        alpha = "[Select_float( GetScriptedGui('omni_sb_cooldown_summon_animal_auxiliaries').IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ), '(float)0.40', '(float)1' )]"
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_summon_animal_auxiliaries_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+                                enabled = "[GetScriptedGui('omni_sb_cast_summon_animal_auxiliaries').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_summon_animal_auxiliaries').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_summon_animal_auxiliaries" }
+                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_summon_animal_auxiliaries').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ), Localize('omni_sb_cast_summon_animal_auxiliaries_tt'), GetScriptedGui('omni_sb_cast_summon_animal_auxiliaries').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ) )]"
+                        }
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_summon_animal_auxiliaries_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            blockoverride "Mana_tint" { visible = yes }
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_summon_animal_auxiliaries" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                }
                 container = { # frostbite_wind
                     position = { 588 127 }
                     datacontext = "[GetScriptedGui('omni_sb_known_frostbite_wind')]"
@@ -4868,6 +4942,114 @@ types OmniSpellbook {
                             visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
                             blockoverride "Cast_action" { enabled = no }
                             blockoverride "Spell_name" { text = "omni_sb_known_name_seismic_tremor" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                }
+                container = { # earthen_armor
+                    position = { 446 336 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_earthen_armor')]"
+                    widget = {
+                        size = { 132 54 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" {
+                                texture = "gfx/interface/icons/traits/omni_spell_earthen_armor_trait.dds"
+                                color = { 0.42 0.42 0.42 1 }
+                            }
+                            blockoverride "Name_color" { fontcolor = { 0.62 0.62 0.62 1 } }
+                            blockoverride "Spell_border" {
+                                omni_sb_learnable_border = {
+                                    blockoverride "Border_visible" { visible = "[GetScriptedGui('omni_sb_learn_earthen_armor').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }
+                                }
+                            }
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_learn_earthen_armor').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_learn_earthen_armor').Execute( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_spell_earthen_armor" }
+                            tooltip = "[GetScriptedGui('omni_sb_learn_earthen_armor').BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 132 54 }
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_earthen_armor_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+                                enabled = "[GetScriptedGui('omni_sb_cast_earthen_armor').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_earthen_armor').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_earthen_armor" }
+                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_earthen_armor').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ), Localize('omni_sb_cast_earthen_armor_tt'), GetScriptedGui('omni_sb_cast_earthen_armor').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ) )]"
+                        }
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_earthen_armor_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            blockoverride "Mana_tint" { visible = yes }
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_earthen_armor" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                }
+                container = { # arboreal_armor
+                    position = { 588 336 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_arboreal_armor')]"
+                    widget = {
+                        size = { 132 54 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" {
+                                texture = "gfx/interface/icons/traits/omni_spell_arboreal_armor_trait.dds"
+                                color = { 0.42 0.42 0.42 1 }
+                            }
+                            blockoverride "Name_color" { fontcolor = { 0.62 0.62 0.62 1 } }
+                            blockoverride "Spell_border" {
+                                omni_sb_learnable_border = {
+                                    blockoverride "Border_visible" { visible = "[GetScriptedGui('omni_sb_learn_arboreal_armor').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }
+                                }
+                            }
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_learn_arboreal_armor').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_learn_arboreal_armor').Execute( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_spell_arboreal_armor" }
+                            tooltip = "[GetScriptedGui('omni_sb_learn_arboreal_armor').BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 132 54 }
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_arboreal_armor_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+                                enabled = "[GetScriptedGui('omni_sb_cast_arboreal_armor').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_arboreal_armor').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_arboreal_armor" }
+                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_arboreal_armor').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ), Localize('omni_sb_cast_arboreal_armor_tt'), GetScriptedGui('omni_sb_cast_arboreal_armor').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ) )]"
+                        }
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_arboreal_armor_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            blockoverride "Mana_tint" { visible = yes }
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_arboreal_armor" }
                             tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
                         }
                     }
@@ -6127,6 +6309,115 @@ types OmniSpellbook {
                             visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
                             blockoverride "Cast_action" { enabled = no }
                             blockoverride "Spell_name" { text = "omni_sb_known_name_dark_visions" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                }
+                container = { # soul_armor
+                    position = { 730 256 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_soul_armor')]"
+                    widget = {
+                        size = { 132 54 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" {
+                                texture = "gfx/interface/icons/traits/omni_spell_soul_armor_trait.dds"
+                                color = { 0.42 0.42 0.42 1 }
+                            }
+                            blockoverride "Name_color" { fontcolor = { 0.62 0.62 0.62 1 } }
+                            blockoverride "Spell_border" {
+                                omni_sb_learnable_border = {
+                                    blockoverride "Border_visible" { visible = "[GetScriptedGui('omni_sb_learn_soul_armor').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }
+                                }
+                            }
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_learn_soul_armor').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_learn_soul_armor').Execute( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_spell_soul_armor" }
+                            tooltip = "[GetScriptedGui('omni_sb_learn_soul_armor').BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 132 54 }
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_soul_armor_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+                                enabled = "[GetScriptedGui('omni_sb_cast_soul_armor').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_soul_armor').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_soul_armor" }
+                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_soul_armor').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ), Localize('omni_sb_cast_soul_armor_tt'), GetScriptedGui('omni_sb_cast_soul_armor').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ) )]"
+                        }
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_soul_armor_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            blockoverride "Mana_tint" { visible = yes }
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_soul_armor" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                }
+                container = { # disrupt_magic
+                    position = { 162 336 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_disrupt_magic')]"
+                    widget = {
+                        size = { 132 54 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" {
+                                texture = "gfx/interface/icons/traits/omni_spell_disrupt_magic_trait.dds"
+                                color = { 0.42 0.42 0.42 1 }
+                            }
+                            blockoverride "Name_color" { fontcolor = { 0.62 0.62 0.62 1 } }
+                            blockoverride "Spell_border" {
+                                omni_sb_learnable_border = {
+                                    blockoverride "Border_visible" { visible = "[GetScriptedGui('omni_sb_learn_disrupt_magic').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }
+                                }
+                            }
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_learn_disrupt_magic').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_learn_disrupt_magic').Execute( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_spell_disrupt_magic" }
+                            tooltip = "[GetScriptedGui('omni_sb_learn_disrupt_magic').BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 132 54 }
+                        alpha = "[Select_float( GetScriptedGui('omni_sb_cooldown_disrupt_magic').IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ), '(float)0.40', '(float)1' )]"
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_disrupt_magic_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_cast_disrupt_magic').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_disrupt_magic').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End )]"
+                                onclick = "[GetVariableSystem.Set('omni_sb_recipient_picker', 'disrupt_magic')]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_disrupt_magic" }
+                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_disrupt_magic').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End ), Localize('omni_sb_cast_disrupt_magic_tt'), GetScriptedGui('omni_sb_cast_disrupt_magic').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End ) )]"
+                        }
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/omni_spell_disrupt_magic_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            blockoverride "Mana_tint" { visible = yes }
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_disrupt_magic" }
                             tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
                         }
                     }
@@ -9401,6 +9692,83 @@ types OmniSpellbook {
                     omni_sb_button = {
                         position = { 590 24 } size = { 110 30 }
                         datacontext = "[GetScriptedGui('omni_sb_confirm_hex')]"
+                        blockoverride "Center_text" { text = "omni_sb_picker_cast" }
+                        blockoverride "ClickSound" { clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen" }
+                        tooltip = "omni_sb_picker_cast_tt"
+                        blockoverride "On_click" {
+                            enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Player.MakeScope.GetVariable('omni_sb_casting_mage').GetCharacter.MakeScope ).AddScope('target', Scope.GetCharacter.MakeScope ).End )]"
+                            onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Player.MakeScope.GetVariable('omni_sb_casting_mage').GetCharacter.MakeScope ).AddScope('target', Scope.GetCharacter.MakeScope ).End )]"
+                            onclick = "[GetVariableSystem.Clear('omni_sb_recipient_picker')]"
+                        }
+                    }
+                }
+            }
+        }
+        omni_sb_recipient_list = {
+            blockoverride "Picker_visible" {
+                visible = "[GetVariableSystem.HasValue('omni_sb_recipient_picker', 'disrupt_magic')]"
+            }
+            blockoverride "Picker_title" { text = "omni_sb_spell_disrupt_magic" }
+            blockoverride "Picker_summary" { text = "omni_sb_picker_summary_disrupt_magic" }
+            blockoverride "Picker_instruction" { text = "omni_sb_picker_enemy" }
+            blockoverride "Recipient_spacing" { addrow = 82 }
+            blockoverride "Recipient_row" {
+                widget = {
+                    size = { 716 78 }
+                    background = {
+                        size = { 100% 100% }
+                        texture = "gfx/interface/base_parts/background_black_texture.dds"
+                        shaderfile = "gfx/FX/pdxgui_default.shader"
+                        spriteType = Corneredtiled spriteborder = { 12 12 }
+                    }
+                    cpt_button = {
+                        position = { 5 2 } size = { 50 75 }
+                        blockoverride "Context" { datacontext = "[Scope.GetCharacter]" }
+                        blockoverride "ShowIcons" { visible = no }
+                    }
+                    tag_dark = {
+                        position = { 66 29 } size = { 340 20 }
+                        visible = "[Scope.GetCharacter.HasTitle]"
+                        text = "[Scope.GetCharacter.GetTitleName]"
+                        blockoverride "Align" { align = left|nobaseline }
+                    }
+                    flowcontainer = {
+                        position = { 62 51 }
+                        spacing = 6
+                        icon_and_text_dark = {
+                            size = { 62 0 }
+                            tooltip = "[Scope.GetCharacter.GetMartialToolTip]"
+                            blockoverride "Icon" { texture = "gfx/interface/icons/shared_icons/military.dds" }
+                            blockoverride "Text" { text = "[Scope.GetCharacter.GetMartial]" }
+                        }
+                        icon_and_text_dark = {
+                            size = { 62 0 }
+                            tooltip = "[Scope.GetCharacter.GetFinesseToolTip]"
+                            blockoverride "Icon" { texture = "gfx/interface/icons/shared_icons/civic.dds" }
+                            blockoverride "Text" { text = "[Scope.GetCharacter.GetFinesse]" }
+                        }
+                        icon_and_text_dark = {
+                            size = { 62 0 }
+                            tooltip = "[Scope.GetCharacter.GetCharismaToolTip]"
+                            blockoverride "Icon" { texture = "gfx/interface/icons/shared_icons/oratory.dds" }
+                            blockoverride "Text" { text = "[Scope.GetCharacter.GetCharisma]" }
+                        }
+                        icon_and_text_dark = {
+                            size = { 62 0 }
+                            tooltip = "[Scope.GetCharacter.GetZealToolTip]"
+                            blockoverride "Icon" { texture = "gfx/interface/icons/shared_icons/religious.dds" }
+                            blockoverride "Text" { text = "[Scope.GetCharacter.GetZeal]" }
+                        }
+                    }
+                    textbox = {
+                        position = { 66 4 } size = { 494 26 }
+                        using = BaseFontM
+                        align = left|vcenter
+                        text = "omni_sb_recipient_name"
+                    }
+                    omni_sb_button = {
+                        position = { 590 24 } size = { 110 30 }
+                        datacontext = "[GetScriptedGui('omni_sb_confirm_disrupt_magic')]"
                         blockoverride "Center_text" { text = "omni_sb_picker_cast" }
                         blockoverride "ClickSound" { clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen" }
                         tooltip = "omni_sb_picker_cast_tt"

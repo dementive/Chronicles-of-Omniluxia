@@ -652,15 +652,10 @@ omni_spellbook_cast.43 = { # dragonscale_shield_dragonscale
         if = {
             limit = { omni_sb_can_cast_dragonscale_shield_dragonscale = yes }
             scope:target = {
-                force_add_trait = dragonscale_personal_trait
-                omni_spell_mana_cost_effect = { BASE = 75 }
-                set_variable = { name = omni_spell_active_dragonscale_personal_trait days = 180 }
-                save_scope_as = remove_magic_target
+                omni_apply_local_ward_effect = { MOD = dragonscale_shield_mod DAYS = 365 }
+                omni_spell_mana_cost_effect = { BASE = 125 }
             }
-            trigger_event = {
-                id = me_zorgo_magic_focus.22
-                days = 180
-            }
+            set_variable = { name = omni_cd_dragonscale_shield_dragonscale days = 365 }
         }
     }
 }
@@ -772,7 +767,7 @@ omni_spellbook_cast.47 = { # explosion
                 random = {
                     chance = 10
                     random_character_unit = {
-                        limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } } }
+                        limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } NOT = { omni_province_ward_blocks = { TIER = 1 } } } }
                         unit_location = {
                             add_city_smoke_effect = yes
                             add_city_fire_effect = yes
@@ -1296,6 +1291,11 @@ omni_spellbook_cast.79 = { # light_shields
                 force_add_trait = omnic_diviner_spell_t1_trait
                 omni_spell_mana_cost_effect = { BASE = 25 }
                 set_variable = { name = omni_spell_active_omnic_diviner_spell_t1_trait days = 90 }
+                # Personal Ward I: absorbs one hostile Tier I character spell.
+                if = {
+                    limit = { omni_personal_ward_available = yes }
+                    omni_apply_personal_ward_effect = { RANK = i }
+                }
                 save_scope_as = remove_magic_target
             }
             trigger_event = {
@@ -1764,7 +1764,7 @@ omni_spellbook_cast.102 = { # rock_slide
             limit = { omni_sb_can_cast_rock_slide = yes }
             scope:target = {
                 random_character_unit = {
-                    limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } } }
+                    limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } NOT = { omni_province_ward_blocks = { TIER = 2 } } } }
                     unit_location = {
                         add_city_smoke_effect = yes
                         add_city_fire_effect = yes
@@ -1901,7 +1901,7 @@ omni_spellbook_cast.110 = { # spirit_bomb
             limit = { omni_sb_can_cast_spirit_bomb = yes }
             scope:target = {
                 random_character_unit = {
-                    limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } } }
+                    limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } NOT = { omni_province_ward_blocks = { TIER = 3 } } } }
                     unit_location = {
                         add_city_smoke_effect = yes
                         add_city_fire_effect = yes
@@ -2018,28 +2018,11 @@ omni_spellbook_cast.115 = { # summon_animal_auxiliaries
     immediate = {
         if = {
             limit = { omni_sb_can_cast_summon_animal_auxiliaries = yes }
-            scope:target = {
+            scope:selected_mage = {
                 omni_spell_mana_cost_effect = { BASE = 75 }
+                save_scope_as = aux_caster
             }
-            create_unit = {
-                navy = no
-                name = "Light Animal Auxiliaries"
-                location = capital_scope
-                sub_unit = omni_eagle_handlers
-                hidden_effect = {
-                    while = {
-                        count = 3
-                        add_subunit = omni_eagle_handlers
-                    }
-                    while = {
-                        count = 6
-                        add_subunit = omni_war_bears
-                    }
-                    add_food = 800
-                    add_morale = 5
-                }
-            }
-            set_variable = { name = omni_cd_summon_animal_auxiliaries days = 365 }
+            omni_summon_animal_auxiliaries_effect = yes
         }
     }
 }
@@ -2522,6 +2505,88 @@ omni_spellbook_cast.140 = { # realm_ward
             limit = { omni_sb_can_cast_realm_ward = yes }
             scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 100 } }
             root = { omni_cast_country_ward_effect = yes }
+        }
+    }
+}
+
+# ---- Ward spells (2026-11 ward rework) ----
+
+omni_spellbook_cast.141 = { # light_shields_ii
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_light_shields_ii = yes }
+            scope:selected_mage = {
+                omni_spell_mana_cost_effect = { BASE = 50 }
+                random_character_unit = {
+                    limit = { omni_unit_ward_available = yes }
+                    omni_apply_unit_ward_with_mod_effect = { WARD = ii MOD = omni_light_shields_ii_mod DAYS = 90 }
+                }
+            }
+        }
+    }
+}
+
+omni_spellbook_cast.142 = { # earthen_armor
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_earthen_armor = yes }
+            scope:selected_mage = {
+                omni_spell_mana_cost_effect = { BASE = 50 }
+                random_character_unit = {
+                    limit = { is_army = yes omni_unit_ward_available = yes }
+                    omni_apply_unit_ward_with_mod_effect = { WARD = earthen MOD = omni_earthen_armor_mod DAYS = 90 }
+                }
+            }
+        }
+    }
+}
+
+omni_spellbook_cast.143 = { # arboreal_armor
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_arboreal_armor = yes }
+            scope:selected_mage = {
+                omni_spell_mana_cost_effect = { BASE = 50 }
+                random_character_unit = {
+                    limit = { is_army = yes omni_unit_ward_available = yes NOT = { has_unit_modifier = omni_arboreal_armor_mod } }
+                    omni_apply_unit_ward_with_mod_effect = { WARD = i MOD = omni_arboreal_armor_mod DAYS = 180 }
+                }
+            }
+        }
+    }
+}
+
+omni_spellbook_cast.144 = { # soul_armor
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_soul_armor = yes }
+            scope:selected_mage = {
+                omni_spell_mana_cost_effect = { BASE = 75 }
+                omni_cast_soul_armor_effect = yes
+            }
+        }
+    }
+}
+
+omni_spellbook_cast.145 = { # disrupt_magic
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_sb_can_cast_disrupt_magic = yes omni_sb_can_target_disrupt_magic = yes }
+            scope:selected_mage = {
+                omni_spell_mana_cost_effect = { BASE = 50 }
+                set_variable = { name = omni_cd_disrupt_magic days = 180 }
+            }
+            scope:target = { omni_apply_disrupt_magic_effect = yes }
         }
     }
 }

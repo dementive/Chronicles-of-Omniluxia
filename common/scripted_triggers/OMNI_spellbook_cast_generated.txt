@@ -531,7 +531,17 @@ omni_sb_can_cast_dragonscale_shield_dragonscale = {
 	    omni_character_is_eligible_caster = yes
 	    omni_knows_spell = { SPELL = dragonscale_shield_dragonscale }
 	}
-	scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
+	scope:selected_mage = {
+	    OR = {
+	        any_character_unit = { is_army = yes unit_location = { owner = root } }
+	        AND = {
+	            NOT = { any_character_unit = { is_army = yes } }
+	            location = { owner = root }
+	        }
+	    }
+	}
+	custom_tooltip = { text = omni_dragonscale_shield_cooldown_tt NOT = { has_variable = omni_cd_dragonscale_shield_dragonscale } }
+	scope:selected_mage = { omni_can_afford_spell = { BASE = 125 } }
 	scope:selected_mage = {
 	    has_variable = dragonscale_unlocked_var
 	}
@@ -605,14 +615,14 @@ omni_sb_can_cast_explosion = {
 	    omni_knows_spell = { SPELL = explosion }
 	}
 	scope:selected_mage = { NOT = { has_variable = omni_cd_explosion } }
-	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } } } }
+	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } NOT = { omni_province_ward_blocks = { TIER = 1 } } } } }
 	scope:selected_mage = {
 	    trigger_if = {
 	        limit = { has_variable = omni_folk_practitioner }
 	        omni_knows_spell = { SPELL = explosion }
 	    }
 	}
-	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } } } }
+	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } NOT = { omni_province_ward_blocks = { TIER = 1 } } } } }
 	scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
 	scope:selected_mage = {
 	    OR = {
@@ -1368,9 +1378,9 @@ omni_sb_can_cast_rock_slide = {
 	    omni_character_is_eligible_caster = yes
 	    omni_knows_spell = { SPELL = rock_slide }
 	}
-	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } } } }
+	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } NOT = { omni_province_ward_blocks = { TIER = 2 } } } } }
 	scope:selected_mage = { NOT = { has_variable = omni_cd_rock_slide } }
-	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } } } }
+	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } NOT = { omni_province_ward_blocks = { TIER = 2 } } } } }
 	scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
 }
 
@@ -1490,9 +1500,9 @@ omni_sb_can_cast_spirit_bomb = {
 	    omni_character_is_eligible_caster = yes
 	    omni_knows_spell = { SPELL = spirit_bomb }
 	}
-	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } } } }
+	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } NOT = { omni_province_ward_blocks = { TIER = 3 } } } } }
 	scope:selected_mage = { NOT = { has_variable = omni_cd_spirit_bomb } }
-	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } } } }
+	scope:selected_mage = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } NOT = { omni_province_ward_blocks = { TIER = 3 } } } } }
 	scope:selected_mage = { omni_can_afford_spell = { BASE = 125 } }
 }
 
@@ -1585,17 +1595,11 @@ omni_sb_can_target_storm_wrack = {
 
 omni_sb_can_cast_summon_animal_auxiliaries = {
 	scope:selected_mage = {
-	    is_alive = yes
 	    custom_tooltip = { text = omni_sb_cast_control_tt omni_sb_viewer_controls = yes }
-	    omni_character_is_eligible_caster = yes
-	    omni_knows_spell = { SPELL = summon_animal_auxiliaries }
+	    omni_can_cast_summon_animal_auxiliaries_char = yes
 	}
-	NOT = { has_variable = omni_cd_summon_animal_auxiliaries }
-	scope:selected_mage = { NOT = { has_variable = omni_cd_summon_animal_auxiliaries } }
+	custom_tooltip = { text = omni_summon_country_cooldown_tt NOT = { has_variable = omni_cd_summon_animal_auxiliaries } }
 	scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
-	scope:selected_mage = {
-	    has_variable = magonis_unlocked_var
-	}
 }
 
 omni_sb_can_cast_summon_dryads = {
@@ -1989,4 +1993,66 @@ omni_sb_can_cast_realm_ward = {
 	    omni_can_afford_spell = { BASE = 100 }
 	}
 	scope:player = { NOT = { has_country_modifier = omni_country_ward_cooldown } }
+}
+
+# ---- Ward spells (2026-11 ward rework). See common/scripted_triggers/OMNI_wards.txt. ----
+
+omni_sb_can_cast_light_shields_ii = {
+	scope:selected_mage = {
+	    is_alive = yes
+	    custom_tooltip = { text = omni_sb_cast_control_tt omni_sb_viewer_controls = yes }
+	    omni_character_is_eligible_caster = yes
+	    omni_knows_spell = { SPELL = light_shields_ii }
+	}
+	scope:selected_mage = { custom_tooltip = { text = omni_ward_needs_open_force_tt any_character_unit = { omni_unit_ward_available = yes } } }
+	scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+}
+
+omni_sb_can_cast_earthen_armor = {
+	scope:selected_mage = {
+	    is_alive = yes
+	    custom_tooltip = { text = omni_sb_cast_control_tt omni_sb_viewer_controls = yes }
+	    omni_character_is_eligible_caster = yes
+	    omni_knows_spell = { SPELL = earthen_armor }
+	}
+	scope:selected_mage = { custom_tooltip = { text = omni_ward_needs_open_army_tt any_character_unit = { is_army = yes omni_unit_ward_available = yes } } }
+	scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+}
+
+omni_sb_can_cast_arboreal_armor = {
+	scope:selected_mage = {
+	    is_alive = yes
+	    custom_tooltip = { text = omni_sb_cast_control_tt omni_sb_viewer_controls = yes }
+	    omni_character_is_eligible_caster = yes
+	    omni_knows_spell = { SPELL = arboreal_armor }
+	}
+	scope:selected_mage = { custom_tooltip = { text = omni_ward_needs_open_army_tt any_character_unit = { is_army = yes omni_unit_ward_available = yes NOT = { has_unit_modifier = omni_arboreal_armor_mod } } } }
+	scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+}
+
+omni_sb_can_cast_soul_armor = {
+	scope:selected_mage = {
+	    is_alive = yes
+	    custom_tooltip = { text = omni_sb_cast_control_tt omni_sb_viewer_controls = yes }
+	    omni_character_is_eligible_caster = yes
+	    omni_knows_spell = { SPELL = soul_armor }
+	}
+	scope:selected_mage = { custom_tooltip = { text = omni_ward_personal_busy_tt omni_personal_ward_available = yes } }
+	scope:selected_mage = { omni_can_afford_spell = { BASE = 75 } }
+}
+
+omni_sb_can_cast_disrupt_magic = {
+	scope:selected_mage = {
+	    is_alive = yes
+	    custom_tooltip = { text = omni_sb_cast_control_tt omni_sb_viewer_controls = yes }
+	    omni_character_is_eligible_caster = yes
+	    omni_knows_spell = { SPELL = disrupt_magic }
+	}
+	scope:selected_mage = { NOT = { has_variable = omni_cd_disrupt_magic } }
+	scope:selected_mage = { omni_can_afford_spell = { BASE = 50 } }
+}
+
+omni_sb_can_target_disrupt_magic = {
+	scope:target = { is_alive = yes OR = { is_general = yes is_admiral = yes } NOT = { has_variable = is_the_revant } employer = { NOT = { tag = MER } NOT = { tag = BAR } NOT = { tag = REB } NOT = { tag = PIR } war_with = scope:player } }
+	scope:target = { NOT = { has_character_modifier = omni_disrupt_magic_mod } }
 }

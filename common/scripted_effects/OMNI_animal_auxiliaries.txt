@@ -1,0 +1,36 @@
+﻿# Summon Animal Auxiliaries - Amten Tier I, Druid.
+# COUNTRY scope (the casting country) with scope:aux_caster = the casting mage.
+# Mana is paid by the caller. The army spawns with the caster's army if it stands
+# in our territory, otherwise at the caster's location, otherwise in the capital.
+# Cohort counts scale with the caster's Druid rank (omni_animal_aux_* script values).
+omni_summon_animal_auxiliaries_effect = {
+	if = {
+		limit = { scope:aux_caster = { any_character_unit = { is_army = yes unit_location = { owner = root } } } }
+		scope:aux_caster = {
+			random_character_unit = {
+				limit = { is_army = yes unit_location = { owner = root } }
+				unit_location = { save_scope_as = aux_site }
+			}
+		}
+	}
+	else_if = {
+		limit = { scope:aux_caster = { location = { owner = root } } }
+		scope:aux_caster = { location = { save_scope_as = aux_site } }
+	}
+	else = {
+		capital_scope = { save_scope_as = aux_site }
+	}
+	create_unit = {
+		navy = no
+		name = "Animal Auxiliaries"
+		location = scope:aux_site
+		sub_unit = omni_eagle_handlers
+		hidden_effect = {
+			while = { count = omni_animal_aux_extra_eagles add_subunit = omni_eagle_handlers }
+			while = { count = omni_animal_aux_bear_count add_subunit = omni_war_bears }
+			add_food = 800
+			add_morale = 5
+		}
+	}
+	set_variable = { name = omni_cd_summon_animal_auxiliaries days = 365 }
+}

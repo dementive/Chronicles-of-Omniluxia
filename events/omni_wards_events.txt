@@ -1,0 +1,95 @@
+﻿namespace = omni_wards
+
+omni_wards.1 = { # Arboreal Armor regrows its ward (monthly, omni_monthly_flavor_pulse)
+    type = country_event
+    hidden = yes
+
+    # PERF: only countries with at least one army under Arboreal Armor pass.
+    trigger = {
+        any_army = { has_unit_modifier = omni_arboreal_armor_mod }
+    }
+
+    immediate = {
+        omni_arboreal_armor_regrow_effect = yes
+    }
+}
+
+omni_wards.2 = { # AI: a Zare Jad mage raises a Dragonscale barrier over a besieged city (monthly)
+    type = country_event
+    hidden = yes
+
+    # PERF: cheap country checks first; the province scan is bounded to our own
+    # besieged cities without a barrier strong enough already.
+    trigger = {
+        is_ai = yes
+        war = yes
+        any_owned_province = {
+            has_siege = yes
+            NOT = { omni_province_ward_blocks = { TIER = 2 } }
+        }
+        any_character = {
+            employer = root
+            omni_character_is_eligible_caster = yes
+            OR = {
+                omni_knows_spell = { SPELL = dragonscale_shield_dragonscale }
+                omni_knows_spell = { SPELL = dragonscale_dome_dragonscale }
+            }
+            omni_can_afford_spell = { BASE = 75 }
+        }
+    }
+
+    immediate = {
+        random_owned_province = {
+            limit = { has_siege = yes NOT = { omni_province_ward_blocks = { TIER = 2 } } }
+            save_scope_as = omni_ai_barrier_site
+        }
+        # Shield first (once a year per country), then Dome.
+        if = {
+            limit = {
+                NOT = { has_variable = omni_cd_dragonscale_shield_dragonscale }
+                any_character = {
+                    employer = root
+                    omni_character_is_eligible_caster = yes
+                    has_variable = dragonscale_unlocked_var
+                    omni_knows_spell = { SPELL = dragonscale_shield_dragonscale }
+                    omni_can_afford_spell = { BASE = 125 }
+                }
+            }
+            random_character = {
+                limit = {
+                    employer = root
+                    omni_character_is_eligible_caster = yes
+                    has_variable = dragonscale_unlocked_var
+                    omni_knows_spell = { SPELL = dragonscale_shield_dragonscale }
+                    omni_can_afford_spell = { BASE = 125 }
+                }
+                omni_spell_mana_cost_effect = { BASE = 125 }
+            }
+            scope:omni_ai_barrier_site = { add_province_modifier = { name = dragonscale_shield_mod duration = 365 } }
+            set_variable = { name = omni_cd_dragonscale_shield_dragonscale days = 365 }
+        }
+        else_if = {
+            limit = {
+                any_character = {
+                    employer = root
+                    omni_character_is_eligible_caster = yes
+                    omni_knows_spell = { SPELL = dragonscale_dome_dragonscale }
+                    omni_can_afford_spell = { BASE = 75 }
+                }
+            }
+            random_character = {
+                limit = {
+                    employer = root
+                    omni_character_is_eligible_caster = yes
+                    omni_knows_spell = { SPELL = dragonscale_dome_dragonscale }
+                    omni_can_afford_spell = { BASE = 75 }
+                }
+                omni_spell_mana_cost_effect = { BASE = 75 }
+            }
+            scope:omni_ai_barrier_site = {
+                if = { limit = { has_province_modifier = dragonscale_dome_mod } remove_province_modifier = dragonscale_dome_mod }
+                add_province_modifier = { name = dragonscale_dome_mod duration = 180 }
+            }
+        }
+    }
+}

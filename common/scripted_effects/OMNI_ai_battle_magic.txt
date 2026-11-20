@@ -901,6 +901,46 @@ omni_ai_cast_combat_buff_effect = {
 		set_variable = { name = omni_cd_battle_hymn days = 1 }
 		set_variable = omni_ai_battle_cast_succeeded
 	}
+	# Army wards (2026-11 ward rework). Light Shields II first: Tier II and long-lived.
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = light_shields_ii }
+			any_character_unit = { in_combat = yes omni_unit_ward_available = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		random_character_unit = {
+			limit = { in_combat = yes omni_unit_ward_available = yes }
+			omni_apply_unit_ward_with_mod_effect = { WARD = ii MOD = omni_light_shields_ii_mod DAYS = 90 }
+		}
+		set_variable = omni_ai_battle_cast_succeeded
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = earthen_armor }
+			any_character_unit = { is_army = yes in_combat = yes omni_unit_ward_available = yes }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		random_character_unit = {
+			limit = { is_army = yes in_combat = yes omni_unit_ward_available = yes }
+			omni_apply_unit_ward_with_mod_effect = { WARD = earthen MOD = omni_earthen_armor_mod DAYS = 90 }
+		}
+		set_variable = omni_ai_battle_cast_succeeded
+	}
+	else_if = {
+		limit = {
+			omni_can_afford_spell = { BASE = 50 }
+			omni_knows_spell = { SPELL = arboreal_armor }
+			any_character_unit = { is_army = yes in_combat = yes omni_unit_ward_available = yes NOT = { has_unit_modifier = omni_arboreal_armor_mod } }
+		}
+		omni_spell_mana_cost_effect = { BASE = 50 }
+		random_character_unit = {
+			limit = { is_army = yes in_combat = yes omni_unit_ward_available = yes NOT = { has_unit_modifier = omni_arboreal_armor_mod } }
+			omni_apply_unit_ward_with_mod_effect = { WARD = i MOD = omni_arboreal_armor_mod DAYS = 180 }
+		}
+		set_variable = omni_ai_battle_cast_succeeded
+	}
 	else_if = {
 		limit = {
 			omni_can_afford_spell = { BASE = 75 }
@@ -1093,9 +1133,18 @@ omni_ai_cast_personal_ward_effect = {
 					omni_can_afford_spell = { BASE = 90 }
 				}
 				AND = {
+					omni_knows_spell = { SPELL = soul_armor }
+					omni_can_afford_spell = { BASE = 75 }
+					health > 40 # Soul Armor costs health; frail mages skip it
+				}
+				AND = {
 					omni_knows_spell = { SPELL = personal_ward }
 					has_variable = diviner_t3_unlocked_var
 					omni_can_afford_spell = { BASE = 50 }
+				}
+				AND = {
+					omni_knows_spell = { SPELL = light_shields }
+					omni_can_afford_spell = { BASE = 25 }
 				}
 			}
 			any_character_unit = {
@@ -1119,11 +1168,77 @@ omni_ai_cast_personal_ward_effect = {
 			omni_spell_mana_cost_effect = { BASE = 90 }
 			omni_apply_personal_ward_effect = { RANK = iii }
 		}
-		else = {
+		else_if = {
+			limit = {
+				omni_knows_spell = { SPELL = soul_armor }
+				omni_can_afford_spell = { BASE = 75 }
+				health > 40
+			}
+			omni_spell_mana_cost_effect = { BASE = 75 }
+			omni_cast_soul_armor_effect = yes
+		}
+		else_if = {
+			limit = {
+				omni_knows_spell = { SPELL = personal_ward }
+				has_variable = diviner_t3_unlocked_var
+				omni_can_afford_spell = { BASE = 50 }
+			}
 			omni_spell_mana_cost_effect = { BASE = 50 }
 			omni_apply_personal_ward_effect = { RANK = ii }
 		}
+		else = {
+			omni_spell_mana_cost_effect = { BASE = 25 }
+			force_add_trait = omnic_diviner_spell_t1_trait
+			set_variable = { name = omni_spell_active_omnic_diviner_spell_t1_trait days = 90 }
+			omni_apply_personal_ward_effect = { RANK = i }
+		}
 		set_variable = omni_ai_battle_cast_succeeded
+	}
+	# Disrupt Magic: strip an enemy mage-commander's wards in the same battle.
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = disrupt_magic }
+			NOT = { has_variable = omni_cd_disrupt_magic }
+			omni_can_afford_spell = { BASE = 50 }
+			any_character_unit = {
+				in_combat = yes
+				unit_location = {
+					any_unit_in_province = {
+						in_combat = yes
+						unit_owner = { war_with = scope:caster_country }
+						exists = commander
+						commander = {
+							omni_character_is_eligible_caster = yes
+							NOT = { has_character_modifier = omni_disrupt_magic_mod }
+						}
+					}
+				}
+			}
+		}
+		random_character_unit = {
+			limit = { in_combat = yes }
+			unit_location = {
+				random_unit_in_province = {
+					limit = {
+						in_combat = yes
+						unit_owner = { war_with = scope:caster_country }
+						exists = commander
+						commander = {
+							omni_character_is_eligible_caster = yes
+							NOT = { has_character_modifier = omni_disrupt_magic_mod }
+						}
+					}
+					commander = { save_scope_as = omni_ai_disrupt_target }
+				}
+			}
+		}
+		if = {
+			limit = { exists = scope:omni_ai_disrupt_target }
+			omni_spell_mana_cost_effect = { BASE = 50 }
+			set_variable = { name = omni_cd_disrupt_magic days = 180 }
+			scope:omni_ai_disrupt_target = { omni_apply_disrupt_magic_effect = yes }
+			set_variable = omni_ai_battle_cast_succeeded
+		}
 	}
 }
 

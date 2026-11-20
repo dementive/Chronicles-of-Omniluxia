@@ -1,15 +1,34 @@
 ﻿# Each charge is scoped to the character, unit, or country it protects.
+# Wards never stack: casts check *_ward_available first, so at most one charge is up.
 omni_spend_personal_ward = {
     if = { limit = { has_character_modifier = omni_personal_ward_iii } remove_character_modifier = omni_personal_ward_iii }
-    else = { remove_character_modifier = omni_personal_ward_ii }
+    else_if = { limit = { has_character_modifier = omni_personal_ward_ii } remove_character_modifier = omni_personal_ward_ii }
+    else = { remove_character_modifier = omni_personal_ward_i }
     add_character_modifier = { name = omni_personal_ward_rearm duration = 30 }
     custom_tooltip = omni_personal_ward_absorbed_tt
 }
 
 omni_spend_unit_ward = {
-    if = { limit = { has_unit_modifier = omni_unit_ward_iii } remove_unit_modifier = omni_unit_ward_iii }
-    else = { remove_unit_modifier = omni_unit_ward_i }
-    add_unit_modifier = { name = omni_unit_ward_rearm duration = 30 }
+    if = {
+        limit = { has_unit_modifier = omni_unit_ward_iii }
+        remove_unit_modifier = omni_unit_ward_iii
+        add_unit_modifier = { name = omni_unit_ward_rearm duration = 30 }
+    }
+    else_if = {
+        limit = { has_unit_modifier = omni_unit_ward_ii }
+        remove_unit_modifier = omni_unit_ward_ii
+        add_unit_modifier = { name = omni_unit_ward_rearm duration = 30 }
+    }
+    else_if = {
+        # Earthen Armor: the outer plating cracks, the inner layer still holds one Tier I spell.
+        limit = { has_unit_modifier = omni_unit_ward_earthen }
+        remove_unit_modifier = omni_unit_ward_earthen
+        add_unit_modifier = { name = omni_unit_ward_i duration = 60 }
+    }
+    else = {
+        remove_unit_modifier = omni_unit_ward_i
+        add_unit_modifier = { name = omni_unit_ward_rearm duration = 30 }
+    }
     custom_tooltip = omni_unit_ward_absorbed_tt
 }
 
@@ -44,4 +63,51 @@ omni_apply_arcane_aegis_effect = {
 # CHARACTER scope.
 omni_apply_personal_ward_effect = {
     add_character_modifier = { name = omni_personal_ward_$RANK$ duration = 90 }
+}
+
+# UNIT scope. Generic "ward + side buff" for army wards.
+#   $WARD$ = i / ii / iii / earthen   $MOD$ = side modifier   $DAYS$ = duration
+omni_apply_unit_ward_with_mod_effect = {
+    add_unit_modifier = { name = omni_unit_ward_$WARD$ duration = $DAYS$ }
+    if = { limit = { has_unit_modifier = $MOD$ } remove_unit_modifier = $MOD$ }
+    add_unit_modifier = { name = $MOD$ duration = $DAYS$ }
+}
+
+# CHARACTER scope (the caster). Soul Armor: Personal Ward III paid for in health.
+omni_cast_soul_armor_effect = {
+    omni_apply_personal_ward_effect = { RANK = iii }
+    if = { limit = { has_character_modifier = omni_soul_armor_mod } remove_character_modifier = omni_soul_armor_mod }
+    add_character_modifier = { name = omni_soul_armor_mod duration = 90 }
+}
+
+# CHARACTER scope (the enemy target). Disrupt Magic: a Tier III personal ward
+# absorbs it like any other hostile spell. Otherwise it strips the target's
+# lesser personal ward and the Tier I/II wards on the forces it commands, and
+# for 90 days the target's spells cost 50% more and it cannot raise new
+# personal wards (omni_personal_ward_available).
+omni_apply_disrupt_magic_effect = {
+    if = {
+        limit = { has_character_modifier = omni_personal_ward_iii }
+        omni_spend_personal_ward = yes
+    }
+    else = {
+        if = { limit = { has_character_modifier = omni_personal_ward_i } remove_character_modifier = omni_personal_ward_i }
+        if = { limit = { has_character_modifier = omni_personal_ward_ii } remove_character_modifier = omni_personal_ward_ii }
+        every_character_unit = {
+            if = { limit = { has_unit_modifier = omni_unit_ward_i } remove_unit_modifier = omni_unit_ward_i }
+            if = { limit = { has_unit_modifier = omni_unit_ward_ii } remove_unit_modifier = omni_unit_ward_ii }
+            if = { limit = { has_unit_modifier = omni_unit_ward_earthen } remove_unit_modifier = omni_unit_ward_earthen }
+        }
+        add_character_modifier = { name = omni_disrupt_magic_mod duration = 90 }
+        custom_tooltip = omni_disrupt_magic_applied_tt
+    }
+}
+
+# COUNTRY scope. Monthly: Arboreal Armor regrows a spent Tier I ward once the
+# 30-day rearm has passed. Called from omni_wards.1 on the monthly pulse.
+omni_arboreal_armor_regrow_effect = {
+    every_army = {
+        limit = { has_unit_modifier = omni_arboreal_armor_mod omni_unit_ward_available = yes }
+        add_unit_modifier = { name = omni_unit_ward_i duration = 30 }
+    }
 }

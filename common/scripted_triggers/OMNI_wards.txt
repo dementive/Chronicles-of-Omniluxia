@@ -1,22 +1,42 @@
-﻿omni_personal_ward_available = {
+﻿# ---- Ward ladder ----
+# Hostile spells call *_ward_blocks with their own TIER (1-4). A ward blocks a
+# spell of its own tier or lower. Tier IV spells are only stopped by Ward Stones.
+#
+#   Personal (character)  i: Light Shields      ii: Personal Ward     iii: Greater Personal Ward, Soul Armor
+#   Unit (army/fleet)     i: Arcane Aegis, Arboreal Armor   ii: Light Shields II   iii: Greater Arcane Aegis
+#                         earthen: Earthen Armor - two Tier I charges (the first degrades into a Tier I ward)
+#   Country               Realm Ward (through Tier III)
+#   Province (barrier)    i: Hearthward   ii: Dragonscale Dome   iii: Dragonscale Shield   all: Ward Stones
+#
+# Charges are consumed when they absorb a spell. Province wards are barriers:
+# they are not consumed, they stop the spell from being cast on that territory.
+
+# CHARACTER scope. No ward up, none recovering, and not under Disrupt Magic.
+omni_personal_ward_available = {
     NOR = {
+        has_character_modifier = omni_personal_ward_i
         has_character_modifier = omni_personal_ward_ii
         has_character_modifier = omni_personal_ward_iii
         has_character_modifier = omni_personal_ward_rearm
+        has_character_modifier = omni_disrupt_magic_mod
     }
 }
 
 omni_personal_ward_blocks = {
     OR = {
+        AND = { omni_ward_power_$TIER$ <= 1 has_character_modifier = omni_personal_ward_i }
         AND = { omni_ward_power_$TIER$ <= 2 has_character_modifier = omni_personal_ward_ii }
         AND = { omni_ward_power_$TIER$ <= 3 has_character_modifier = omni_personal_ward_iii }
     }
 }
 
+# UNIT scope.
 omni_unit_ward_available = {
     NOR = {
         has_unit_modifier = omni_unit_ward_i
+        has_unit_modifier = omni_unit_ward_ii
         has_unit_modifier = omni_unit_ward_iii
+        has_unit_modifier = omni_unit_ward_earthen
         has_unit_modifier = omni_unit_ward_rearm
     }
 }
@@ -24,6 +44,18 @@ omni_unit_ward_available = {
 omni_unit_ward_blocks = {
     OR = {
         AND = { omni_ward_power_$TIER$ <= 1 has_unit_modifier = omni_unit_ward_i }
+        AND = { omni_ward_power_$TIER$ <= 1 has_unit_modifier = omni_unit_ward_earthen }
+        AND = { omni_ward_power_$TIER$ <= 2 has_unit_modifier = omni_unit_ward_ii }
         AND = { omni_ward_power_$TIER$ <= 3 has_unit_modifier = omni_unit_ward_iii }
+    }
+}
+
+# PROVINCE scope. True if a city barrier stops a hostile spell of TIER here.
+omni_province_ward_blocks = {
+    OR = {
+        omni_province_is_warded = yes # Ward Stones: every tier
+        AND = { omni_ward_power_$TIER$ <= 3 has_province_modifier = dragonscale_shield_mod }
+        AND = { omni_ward_power_$TIER$ <= 2 has_province_modifier = dragonscale_dome_mod }
+        AND = { omni_ward_power_$TIER$ <= 1 has_province_modifier = omni_folk_hearth_ward_mod }
     }
 }

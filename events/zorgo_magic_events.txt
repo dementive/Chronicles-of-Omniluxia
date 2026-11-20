@@ -149,6 +149,10 @@ me_zorgo_magic_focus.3 = { # Omnic School
             force_add_trait = omnic_diviner_spell_t1_trait
             omni_spell_mana_cost_effect = { BASE = 25 }
             set_variable = { name = omni_spell_active_omnic_diviner_spell_t1_trait days = 90 }
+            if = {
+                limit = { omni_personal_ward_available = yes }
+                omni_apply_personal_ward_effect = { RANK = i }
+            }
             save_scope_as = remove_magic_target
         }
         trigger_event = {
@@ -184,16 +188,16 @@ me_zorgo_magic_focus.3 = { # Omnic School
     }
     option = { # Spirit Bomb D3
         trigger = {
-            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } } } }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } NOT = { omni_province_ward_blocks = { TIER = 3 } } } } }
             scope:target = { omni_knows_spell = { SPELL = spirit_bomb } }
             scope:selected_mage = { NOT = { has_variable = omni_cd_spirit_bomb } }
             scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
-            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } } } }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } NOT = { omni_province_ward_blocks = { TIER = 3 } } } } }
             scope:target = { omni_can_afford_spell = { BASE = 125 } }
         }
         scope:target = {
             random_character_unit = {
-                limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } } }
+                limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = omnic_diviner_spell_t3_mod } NOT = { omni_province_ward_blocks = { TIER = 3 } } } }
                 unit_location = {
                     add_city_smoke_effect = yes
                     add_city_fire_effect = yes
@@ -243,42 +247,20 @@ me_zorgo_magic_focus.3 = { # Omnic School
         custom_tooltip = 150_mana_tt
         name = "me_zorgo_magic_focus.3.d"
     }
-    option = { # Summon Animal Auxiliaries
+    option = { # Summon Animal Auxiliaries (Amten Tier I, Druid)
         trigger = {
-            scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
-            scope:target = { omni_knows_spell = { SPELL = summon_animal_auxiliaries } }
+            scope:target = { omni_can_cast_summon_animal_auxiliaries_char = yes }
             NOT = { has_variable = omni_cd_summon_animal_auxiliaries }
-            scope:selected_mage = { NOT = { has_variable = omni_cd_summon_animal_auxiliaries } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
-            scope:target = {
-                has_variable = magonis_unlocked_var
-            }
         }
         scope:target = {
             omni_spell_mana_cost_effect = { BASE = 75 }
+            save_scope_as = aux_caster
         }
-        create_unit = {
-            navy = no
-            name = "Light Animal Auxiliaries"
-            location = capital_scope
-            sub_unit = omni_eagle_handlers
-            hidden_effect = {
-                while = {
-                    count = 3
-                    add_subunit = omni_eagle_handlers
-                }
-                while = {
-                    count = 6
-                    add_subunit = omni_war_bears
-                }
-                add_food = 800
-                add_morale = 5
-            }
-        }
-        custom_tooltip = lubes_spell_tt
+        omni_summon_animal_auxiliaries_effect = yes
+        custom_tooltip = omni_sb_effect_summon_animal_auxiliaries
+        custom_tooltip = tier_one_spell_tt
         custom_tooltip = 75_mana_tt
-        set_variable = { name = omni_cd_summon_animal_auxiliaries days = 365 }
-        custom_tooltip = omni_summon_country_cooldown_tt
         name = "me_zorgo_magic_focus.3.e"
     }
     option = { # Helluvius' Peace
@@ -342,23 +324,27 @@ me_zorgo_magic_focus.3 = { # Omnic School
         trigger = {
             scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { omni_knows_spell = { SPELL = dragonscale_shield_dragonscale } }
-            scope:target = { omni_can_afford_spell = { BASE = 75 } }
+            scope:target = { omni_can_afford_spell = { BASE = 125 } }
             scope:target = {
                 has_variable = dragonscale_unlocked_var
+                OR = {
+                    any_character_unit = { is_army = yes unit_location = { owner = root } }
+                    AND = {
+                        NOT = { any_character_unit = { is_army = yes } }
+                        location = { owner = root }
+                    }
+                }
             }
+            NOT = { has_variable = omni_cd_dragonscale_shield_dragonscale }
         }
         scope:target = {
-            force_add_trait = dragonscale_personal_trait
-            omni_spell_mana_cost_effect = { BASE = 75 }
-            set_variable = { name = omni_spell_active_dragonscale_personal_trait days = 180 }
-            save_scope_as = remove_magic_target
+            omni_apply_local_ward_effect = { MOD = dragonscale_shield_mod DAYS = 365 }
+            omni_spell_mana_cost_effect = { BASE = 125 }
         }
-        trigger_event = {
-            id = me_zorgo_magic_focus.22
-            days = 180
-        }
+        set_variable = { name = omni_cd_dragonscale_shield_dragonscale days = 365 }
+        custom_tooltip = omni_sb_effect_dragonscale_shield_dragonscale
         custom_tooltip = zare_jad_spell_tt
-        custom_tooltip = 75_mana_tt
+        custom_tooltip = 125_mana_tt
         name = "me_zorgo_magic_focus.3.i"
     }
     option = { # Dragonscale Dome Dragonscale
@@ -383,6 +369,7 @@ me_zorgo_magic_focus.3 = { # Omnic School
             omni_apply_local_ward_effect = { MOD = dragonscale_dome_mod DAYS = 180 }
             omni_spell_mana_cost_effect = { BASE = 75 }
         }
+        custom_tooltip = omni_sb_effect_dragonscale_dome_dragonscale
         custom_tooltip = zare_jad_spell_tt
         custom_tooltip = 75_mana_tt
         name = "me_zorgo_magic_focus.3.j"
@@ -588,16 +575,16 @@ me_zorgo_magic_focus.5 = { # Amten School
     }
     option = { # Rock Slide E2
         trigger = {
-            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } } } }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } NOT = { omni_province_ward_blocks = { TIER = 2 } } } } }
             scope:target = { omni_knows_spell = { SPELL = rock_slide } }
             scope:selected_mage = { NOT = { has_variable = omni_cd_rock_slide } }
             scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
-            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } } } }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } NOT = { omni_province_ward_blocks = { TIER = 2 } } } } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
         }
         scope:target = {
             random_character_unit = {
-                limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } } }
+                limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = amten_elementalist_spell_t2_2_mod } NOT = { omni_province_ward_blocks = { TIER = 2 } } } }
                 unit_location = {
                     add_city_smoke_effect = yes
                     add_city_fire_effect = yes
@@ -1555,7 +1542,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
     option = { # Explosion Shoishoni
         trigger = {
             scope:selected_mage = { NOT = { has_variable = omni_cd_explosion } }
-            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } } } }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } NOT = { omni_province_ward_blocks = { TIER = 1 } } } } }
             scope:target = {
                 trigger_if = {
                     limit = { has_variable = omni_folk_practitioner }
@@ -1563,7 +1550,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
                 }
             }
             scope:target = { is_alive = yes omni_character_is_eligible_caster = yes }
-            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } } } }
+            scope:target = { any_character_unit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } NOT = { omni_province_ward_blocks = { TIER = 1 } } } } }
             scope:target = { omni_can_afford_spell = { BASE = 75 } }
             scope:target = {
                 OR = {
@@ -1577,7 +1564,7 @@ me_zorgo_magic_focus.7 = { # Folk Magic
             random = {
                 chance = 10
                 random_character_unit = {
-                    limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } } }
+                    limit = { is_army = yes unit_location = { owner = { war_with = root } NOT = { has_province_modifier = shoishoni_folk_mod } NOT = { omni_province_ward_blocks = { TIER = 1 } } } }
                     unit_location = {
                         add_city_smoke_effect = yes
                         add_city_fire_effect = yes
@@ -5969,7 +5956,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
     option = { # Wasting Rot - starve and weaken the garrison
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 1 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = wasting_rot } }
@@ -6018,7 +6005,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
     option = { # Breaching Tremor - shatter the walls (fortification defence)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 2 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = breaching_tremor } }
@@ -6071,7 +6058,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
     option = { # Storm of the Siege - bless the besieging army for the assault
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 3 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = storm_of_the_siege } }
@@ -6125,7 +6112,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Burning Pitch - make the defenders choke on smoke and fire
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 1 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = burning_pitch } }
@@ -6162,7 +6149,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Counterward - disrupt the defenders' protections
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 2 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = counterward } }
@@ -6199,7 +6186,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Illusion Walls - make the settlement seem harder to breach
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 2 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes owner = root } unit_owner = { this = root } } }
 			scope:selected_mage = { omni_knows_spell = { SPELL = illusion_walls } }
@@ -6238,7 +6225,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
 
     option = { # Igniting Spark (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 1 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = igniting_spark } }
@@ -6262,7 +6249,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Corrosive Rain (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 2 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = corrosive_rain } }
@@ -6286,7 +6273,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Fireball (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 2 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = fireball } }
@@ -6310,7 +6297,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Seismic Tremor (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 2 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = seismic_tremor } }
@@ -6337,7 +6324,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Plague Miasma (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 3 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = plague_miasma } }
@@ -6364,7 +6351,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Glacial Tomb (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 3 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = glacial_tomb } }
@@ -6391,7 +6378,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Meteor Strike (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 3 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = meteor_strike } }
@@ -6419,7 +6406,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Word of Annihilation (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 4 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = word_of_annihilation } }
@@ -6459,7 +6446,7 @@ me_zorgo_magic_focus.30 = { # Siege Magic Menu - Cast a spell on the place your 
     }
     option = { # Cataclysmic Eruption (Siege)
         trigger = {
-            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_is_warded = yes } } } } # Ward Stones
+            NOT = { scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes omni_province_ward_blocks = { TIER = 4 } } } } } # City wards (Ward Stones, Dragonscale, Hearthward)
             scope:selected_mage = { is_alive = yes omni_character_is_eligible_caster = yes }
             scope:target = { any_character_unit = { is_army = yes unit_location = { has_siege = yes } unit_owner = { this = root } } }
             scope:selected_mage = { omni_knows_spell = { SPELL = cataclysmic_eruption } }
