@@ -3,12 +3,12 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # AI non-combat magic drivers.
 #
-# Both events below are hidden, AI-only, and fire from the YEARLY chunked AI pulse
+# The spellcasting events below are hidden, AI-only, and use the chunked AI pulse
 # (omni_perf.7 in events/omni_perf_pulses.txt) rather than a monthly on_action -
 # neither healing nor civic buffing is time-critical, and per the performance rules
 # in MAGIC_AI_AUDIT.md we do not add new monthly ticks for the magic system.
 #
-# Trigger ordering in both is deliberately cheapest-first:
+# The spellcasting triggers are ordered cheapest-first:
 #   is_ai -> need checks -> the bounded any_character court scan.
 # The court scan is the only real cost and it is the last thing evaluated.
 # ----------------------------------------------------------------------------------------------------------------------
@@ -179,6 +179,146 @@ omni_ai_magic.4 = { # AI: a court mage casts a wartime country blessing
 	immediate = {
 		save_scope_as = caster_country
 		omni_ai_choose_war_country_blessing_effect = yes
+	}
+
+	option = {}
+}
+
+omni_ai_magic.6 = { # AI: raise one army through wartime summoning
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		war = yes
+	}
+
+	immediate = {
+		save_scope_as = player
+		clear_saved_scope = selected_mage
+		clear_saved_scope = target
+
+		if = {
+			limit = {
+				NOT = { has_variable = omni_cd_summon_animal_auxiliaries }
+				capital_scope = { owner = root omni_spell_target_land = yes }
+			}
+			random_character = {
+				limit = {
+					OR = { employer = root country = root }
+					is_alive = yes
+					has_variable = magonis_unlocked_var
+					omni_knows_spell = { SPELL = summon_animal_auxiliaries }
+					NOT = { has_variable = omni_cd_summon_animal_auxiliaries }
+					omni_character_is_eligible_caster = yes
+					omni_can_afford_spell = { BASE = 75 }
+				}
+				save_scope_as = selected_mage
+				save_scope_as = target
+				root = { trigger_event = { id = omni_spellbook_cast.115 } }
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = { exists = scope:selected_mage }
+				NOT = { has_variable = omni_cd_summon_warborn }
+				capital_scope = { owner = root omni_spell_target_land = yes }
+			}
+			random_character = {
+				limit = {
+					OR = { employer = root country = root }
+					omni_can_select_territory_summon_warborn = yes
+					omni_can_afford_spell = { BASE = 75 }
+				}
+				save_scope_as = selected_mage
+				root = {
+					capital_scope = { save_scope_as = target }
+					trigger_event = { id = omni_spellbook_cast.120 }
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = { exists = scope:selected_mage }
+				NOT = { has_variable = omni_summon_dryads_cooldown }
+			}
+			random_character = {
+				limit = {
+					OR = { employer = root country = root }
+					omni_can_select_territory_summon_dryads = yes
+					omni_can_afford_spell = { BASE = 100 }
+				}
+				save_scope_as = selected_mage
+				root = {
+					random_owned_province = {
+						limit = { omni_spell_target_forest = yes }
+						save_scope_as = target
+					}
+					if = {
+						limit = { exists = scope:target }
+						trigger_event = { id = omni_spellbook_cast.116 }
+					}
+				}
+			}
+		}
+	}
+
+	option = {}
+}
+
+omni_ai_magic.5 = { # AI: fund the country's first Magic Academy in its capital
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		invention = organized_mage_guilds_inv
+		NOR = {
+			has_country_modifier = omni_funding_magic_academy
+			has_variable = omni_ai_war_threatened
+		}
+		exists = capital_scope
+		capital_scope = {
+			has_city_status = yes
+			controller = owner
+			NOT = { has_building = magic_academy_building }
+			num_of_mages >= 6
+			OR = {
+				free_building_slots >= 1
+				AND = {
+					free_building_slots = 0
+					has_construction = no
+					omni_province_has_removable_low_value_building = yes
+				}
+			}
+		}
+		has_monthly_balance >= omni_ai_magic_academy_monthly_cost
+		# Check other cities only after the capital and budget pass.
+		omni_country_has_no_magic_academy = yes
+	}
+
+	immediate = {
+		capital_scope = {
+			if = {
+				limit = { free_building_slots = 0 }
+				omni_remove_one_low_value_building = yes
+			}
+			if = {
+				limit = { free_building_slots >= 1 }
+				# Scripted construction uses the funding modifier as its cost.
+				start_building_construction = magic_academy_building
+			}
+		}
+		if = {
+			limit = { capital_scope = { has_specific_construction = magic_academy_building } }
+			if = {
+				limit = { has_law = magic_banned }
+				change_law = magic_only_for_entrusted
+			}
+			add_country_modifier = { name = omni_funding_magic_academy duration = 1825 }
+		}
 	}
 
 	option = {}
