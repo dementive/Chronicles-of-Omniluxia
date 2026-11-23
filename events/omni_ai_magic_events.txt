@@ -198,8 +198,30 @@ omni_ai_magic.6 = { # AI: raise one army through wartime summoning
 		clear_saved_scope = selected_mage
 		clear_saved_scope = target
 
+		# Tier V first: a master of Summon Dragon binds one while at war.
+		# The cast event rechecks everything (mana, one dragon per realm, cooldown).
 		if = {
 			limit = {
+				NOT = { has_variable = omni_cd_summon_dragon }
+				omni_can_bind_dragon = yes
+			}
+			random_character = {
+				limit = {
+					# Cheapest and rarest test first: almost no one knows the spell.
+					has_variable = summon_dragon_known_var
+					OR = { employer = root country = root }
+					is_alive = yes
+					omni_character_is_eligible_caster = yes
+					omni_can_afford_spell = { BASE = 350 }
+				}
+				save_scope_as = selected_mage
+				root = { trigger_event = { id = omni_spellbook_cast.146 } } # summon_dragon
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = { exists = scope:selected_mage }
 				NOT = { has_variable = omni_cd_summon_animal_auxiliaries }
 				capital_scope = { owner = root omni_spell_target_land = yes }
 			}
