@@ -1,0 +1,63 @@
+﻿# Country scope, entered by the spellbook after validating scope:selected_mage.
+omni_bind_morrigon_dragon = {
+    omni_raise_bound_dragon_army = yes
+    if = {
+        limit = { exists = scope:omni_bound_dragon }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 200 } }
+        set_variable = { name = omni_cd_summon_dragon days = 365 }
+    }
+}
+
+omni_raise_bound_dragon_army = {
+    capital_scope = { save_scope_as = omni_dragon_capital }
+    create_unit = {
+        name = omni_dragon_bound_name
+        location = scope:omni_dragon_capital
+        sub_unit = omni_dragon
+        save_scope_as = omni_bound_dragon
+    }
+    if = {
+        limit = { exists = scope:omni_bound_dragon }
+        scope:omni_bound_dragon = {
+            while = { count = 9 add_subunit = omni_dragon }
+            add_morale = 10
+        }
+    }
+}
+
+# Only called on a native horde outside combat. Add the dragon first so the
+# engine always has a living cohort in the moving army during the conversion.
+omni_awaken_wild_dragon = {
+    set_global_variable = omni_dragon_hunt
+    set_global_variable = omni_dragon_in_field
+    set_global_variable = { name = omni_dragon_horde value = this }
+    set_variable = omni_wild_morrigon
+    if = {
+        limit = { exists = global_var:omni_dragon_den }
+        global_var:omni_dragon_den = { remove_province_modifier = omni_dragon_stirring }
+        remove_global_variable = omni_dragon_den
+    }
+    while = { count = 10 add_subunit = omni_dragon }
+    every_sub_unit = {
+        limit = { NOT = { sub_unit_type = omni_dragon } }
+        destroy_subunit = yes
+    }
+    add_morale = 10
+    unit_location = {
+        save_scope_as = omni_dragon_sighting
+        if = {
+            limit = { exists = scope:omni_dragon_observer }
+            scope:omni_dragon_observer = { trigger_event = { id = omni_dragon.2 } }
+        }
+        else_if = {
+            limit = { has_owner = yes }
+            owner = { trigger_event = { id = omni_dragon.2 } }
+        }
+        else = {
+            random_neighbor_province = {
+                limit = { has_owner = yes }
+                owner = { trigger_event = { id = omni_dragon.2 } }
+            }
+        }
+    }
+}

@@ -1,0 +1,107 @@
+﻿monthly_country_pulse = {
+    on_actions = { omni_wild_dragon_pulse }
+}
+
+omni_wild_dragon_pulse = {
+    trigger = { NOT = { has_global_variable = omni_dragon_month_lock } }
+    effect = {
+        set_global_variable = { name = omni_dragon_month_lock days = 27 }
+        if = {
+            limit = {
+                exists = global_var:omni_dragon_horde
+                global_var:omni_dragon_horde = {
+                    unit_owner = c:BAR
+                    in_combat = no
+                    any_sub_unit = { sub_unit_type = omni_dragon }
+                }
+            }
+            # Native hordes can pick up ordinary troops after a successful raid.
+            global_var:omni_dragon_horde = {
+                every_sub_unit = { limit = { NOT = { sub_unit_type = omni_dragon } } destroy_subunit = yes }
+            }
+        }
+        if = {
+            limit = {
+                exists = c:BAR
+                c:BAR = { NOT = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
+            }
+            if = {
+                limit = { has_global_variable = omni_dragon_in_field }
+                remove_global_variable = omni_dragon_in_field
+            }
+            if = {
+                limit = {
+                    NOR = { has_global_variable = omni_dragon_hunt has_global_variable = omni_dragon_roll_lock }
+                }
+                set_global_variable = { name = omni_dragon_roll_lock days = 85 }
+                random = { chance = 30 set_global_variable = omni_dragon_hunt }
+            }
+            if = {
+                limit = { has_global_variable = omni_dragon_hunt }
+                c:BAR = {
+                    random_unit = {
+                        limit = { omni_dragon_horde_candidate = yes }
+                        omni_awaken_wild_dragon = yes
+                    }
+                }
+                # A new campaign may have no hordes at all. Stir one of the
+                # map's actual barbarian strongholds while waiting for a raid.
+                # A den that has since been settled can never spawn a horde.
+                if = {
+                    limit = {
+                        exists = global_var:omni_dragon_den
+                        global_var:omni_dragon_den = { has_owner = yes }
+                    }
+                    global_var:omni_dragon_den = { remove_province_modifier = omni_dragon_stirring }
+                    remove_global_variable = omni_dragon_den
+                }
+                if = {
+                    limit = {
+                        NOT = { exists = global_var:omni_dragon_den }
+                        c:BAR = { NOT = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
+                    }
+                    random_province = {
+                        limit = {
+                            omni_dragon_den_candidate = yes
+                        }
+                        set_global_variable = { name = omni_dragon_den value = this }
+                        add_province_modifier = { name = omni_dragon_stirring duration = -1 }
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Native diplomacy can dismiss a horde. The hunt survives that and resumes on
+# another raid. Defeating its marked army in battle actually slays the dragon.
+on_battle_lost_country = { on_actions = { omni_dragon_slain_in_battle } }
+
+omni_dragon_slain_in_battle = {
+    trigger = {
+        this = c:BAR
+        has_global_variable = omni_dragon_hunt
+        OR = {
+            AND = { exists = scope:actor scope:actor = { has_variable = omni_wild_morrigon } }
+            # The engine may already have deleted a completely wiped stack.
+            AND = {
+                NOT = { exists = scope:actor }
+                has_global_variable = omni_dragon_in_field
+                NOT = { exists = global_var:omni_dragon_horde }
+            }
+        }
+    }
+    effect = {
+        remove_global_variable = omni_dragon_hunt
+        remove_global_variable = omni_dragon_in_field
+        remove_global_variable = omni_dragon_horde
+        set_global_variable = { name = omni_dragon_roll_lock days = 365 }
+        if = {
+            limit = { exists = scope:actor }
+            scope:actor = { save_scope_as = omni_fallen_dragon }
+        }
+        # Finish surviving cohorts after the battle engine releases them.
+        scope:target.unit_location = { save_scope_as = omni_dragon_battlefield }
+        scope:target.unit_owner = { trigger_event = { id = omni_dragon.4 days = 1 } }
+    }
+}

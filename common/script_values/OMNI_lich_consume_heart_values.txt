@@ -1,0 +1,56 @@
+﻿# Lich "Consume Heart" tuning (Tier V melodian, see common/character_interactions/OMNI_lich_consume_heart.txt).
+# All values are evaluated in the LICH's character scope.
+#
+# Balance model:
+#   - Hard gate: one heart per country per 30 days (interaction cooldown).
+#   - Soft gate: "heart glut". Every heart eaten within the last 365 days
+#     reduces the next heart's yield by 25% (floor 25%). The glut counter
+#     resets once a full year passes with no hearts eaten.
+#   - Cost: tyranny and stability, plus the prisoner is lost for good.
+# Full-strength heart: 25 mana + 10% of max mana (cap 60), +5 health.
+
+# Stacks currently counted against the lich (0 when the glut has expired).
+omni_consume_heart_stacks_value = {
+	value = 0
+	if = {
+		limit = {
+			has_variable = omni_heart_glut_timer
+			has_variable = omni_hearts_consumed
+		}
+		value = var:omni_hearts_consumed
+	}
+}
+
+# Yield multiplier: 1.0, 0.75, 0.5, then 0.25 floor.
+omni_consume_heart_yield_value = {
+	value = 1
+	subtract = {
+		value = omni_consume_heart_stacks_value
+		multiply = 0.25
+	}
+	min = 0.25
+	max = 1
+}
+
+omni_consume_heart_mana_value = {
+	value = omni_character_magic_max_value
+	multiply = 0.10
+	add = 25
+	max = 60
+	multiply = omni_consume_heart_yield_value
+	round = yes
+	min = 5
+}
+
+omni_consume_heart_health_value = {
+	value = 5
+	multiply = omni_consume_heart_yield_value
+	round = yes
+	min = 1
+}
+
+# Country scope (actor). Flat tyranny, never discounted by the glut, so
+# repeated feeding always costs the realm the same.
+omni_consume_heart_tyranny_value = {
+	value = 4
+}

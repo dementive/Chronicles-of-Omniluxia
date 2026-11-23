@@ -272,31 +272,100 @@ omni_ai_magic.5 = { # AI: fund the country's first Magic Academy in its capital
 	trigger = {
 		is_ai = yes
 		invention = organized_mage_guilds_inv
-		NOR = {
-			has_country_modifier = omni_funding_magic_academy
-			has_variable = omni_ai_war_threatened
-		}
+		NOT = { has_country_modifier = omni_funding_magic_academy }
 		exists = capital_scope
-		capital_scope = {
-			has_city_status = yes
-			controller = owner
-			NOT = { has_building = magic_academy_building }
-			num_of_mages >= 6
-			OR = {
-				free_building_slots >= 1
-				AND = {
-					free_building_slots = 0
-					has_construction = no
-					omni_province_has_removable_low_value_building = yes
+		OR = {
+			# Powerful countries are guaranteed an academy (see immediate).
+			omni_ai_academy_priority_country = yes
+			AND = {
+				NOT = { has_variable = omni_ai_war_threatened }
+				capital_scope = {
+					has_city_status = yes
+					controller = owner
+					NOT = { has_building = magic_academy_building }
+					num_of_mages >= 6
+					OR = {
+						free_building_slots >= 1
+						AND = {
+							free_building_slots = 0
+							has_construction = no
+							omni_province_has_removable_low_value_building = yes
+						}
+					}
 				}
+				has_monthly_balance >= omni_ai_magic_academy_monthly_cost
 			}
 		}
-		has_monthly_balance >= omni_ai_magic_academy_monthly_cost
-		# Check other cities only after the capital and budget pass.
+		# Check other cities only after the cheaper gates pass.
 		omni_country_has_no_magic_academy = yes
 	}
 
 	immediate = {
+		if = {
+			limit = { omni_ai_academy_priority_country = yes }
+			# 1) Capital with a free slot.
+			if = {
+				limit = {
+					capital_scope = {
+						has_city_status = yes
+						controller = owner
+						free_building_slots >= 1
+					}
+				}
+				capital_scope = { start_building_construction = magic_academy_building }
+			}
+			# 2) Largest other controlled city with a free slot.
+			else_if = {
+				limit = {
+					any_owned_province = {
+						has_city_status = yes
+						controller = owner
+						free_building_slots >= 1
+					}
+				}
+				ordered_owned_province = {
+					limit = {
+						has_city_status = yes
+						controller = owner
+						free_building_slots >= 1
+					}
+					order_by = total_population
+					start_building_construction = magic_academy_building
+				}
+			}
+			# 3) Capital is full: clear a low-value building, else place it
+			#    directly (overflowing the slot cap) so it can never stall.
+			else_if = {
+				limit = {
+					capital_scope = {
+						has_city_status = yes
+						controller = owner
+					}
+				}
+				capital_scope = {
+					if = {
+						limit = { omni_province_has_removable_low_value_building = yes }
+						omni_remove_one_low_value_building = yes
+					}
+					if = {
+						limit = { free_building_slots >= 1 }
+						start_building_construction = magic_academy_building
+					}
+					else = {
+						add_building_level = magic_academy_building
+					}
+				}
+			}
+			if = {
+				limit = { omni_country_has_no_magic_academy = no }
+				if = {
+					limit = { has_law = magic_banned }
+					change_law = magic_only_for_entrusted
+				}
+				add_country_modifier = { name = omni_funding_magic_academy duration = 1825 }
+			}
+		}
+		else = {
 		capital_scope = {
 			if = {
 				limit = { free_building_slots = 0 }
@@ -315,6 +384,7 @@ omni_ai_magic.5 = { # AI: fund the country's first Magic Academy in its capital
 				change_law = magic_only_for_entrusted
 			}
 			add_country_modifier = { name = omni_funding_magic_academy duration = 1825 }
+		}
 		}
 	}
 

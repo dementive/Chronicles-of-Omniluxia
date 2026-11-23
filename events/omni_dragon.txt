@@ -1,0 +1,164 @@
+﻿namespace = omni_dragon
+
+# Console encounter for testing: prefer a native horde in the player's lands.
+omni_dragon.1 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        save_scope_as = omni_dragon_observer
+        if = {
+            limit = {
+                exists = c:BAR
+                c:BAR = { NOT = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
+            }
+            c:BAR = {
+                random_unit = {
+                    limit = { omni_dragon_horde_candidate = yes unit_location = { owner = root } }
+                    save_scope_as = omni_dragon_test_horde
+                }
+                if = {
+                    limit = { NOT = { exists = scope:omni_dragon_test_horde } }
+                    random_unit = {
+                        limit = { omni_dragon_horde_candidate = yes }
+                        save_scope_as = omni_dragon_test_horde
+                    }
+                }
+            }
+        }
+        if = {
+            limit = { exists = scope:omni_dragon_test_horde }
+            scope:omni_dragon_test_horde = { omni_awaken_wild_dragon = yes }
+        }
+        else_if = {
+            limit = {
+                exists = global_var:omni_dragon_horde
+                global_var:omni_dragon_horde = { any_sub_unit = { sub_unit_type = omni_dragon } }
+            }
+            global_var:omni_dragon_horde.unit_location = { save_scope_as = omni_dragon_sighting }
+            trigger_event = { id = omni_dragon.2 }
+        }
+        else = { trigger_event = { id = omni_dragon.3 } }
+    }
+}
+
+omni_dragon.2 = {
+    type = country_event
+    title = omni_dragon.2.t
+    desc = omni_dragon.2.desc
+    picture = Event_dragons_burning_ships
+    goto_location = scope:omni_dragon_sighting
+    option = { name = omni_dragon.2.a }
+}
+
+omni_dragon.3 = {
+    type = country_event
+    title = omni_dragon.3.t
+    desc = omni_dragon.3.desc
+    picture = Event_dragons_burning_ships
+    option = { name = omni_dragon.3.a }
+}
+
+omni_dragon.4 = {
+    type = country_event
+    title = omni_dragon.4.t
+    desc = omni_dragon.4.desc
+    picture = Event_dragons_burning_ships
+    goto_location = scope:omni_dragon_battlefield
+    immediate = {
+        if = {
+            limit = {
+                exists = scope:omni_fallen_dragon
+                scope:omni_fallen_dragon = { unit_owner = c:BAR has_variable = omni_wild_morrigon }
+            }
+            scope:omni_fallen_dragon = {
+                remove_variable = omni_wild_morrigon
+                every_sub_unit = { limit = { sub_unit_type = omni_dragon } destroy_subunit = yes }
+            }
+        }
+    }
+    option = { name = omni_dragon.4.a }
+}
+
+# Console shortcut for a test save. Gameplay casts use the spellbook's mana gate.
+omni_dragon.5 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = {
+            limit = { omni_can_bind_dragon = yes }
+            omni_raise_bound_dragon_army = yes
+        }
+    }
+}
+
+# Console test: mark a den and start the hunt so the monthly pulse turns the
+# next barbarian horde into a Wild Morrigon. Points at a living one if present.
+# The game cannot create armies for the barbarians, so hordes come from the den.
+omni_dragon.6 = {
+    type = country_event
+    title = omni_dragon.6.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:omni_dragon_test_sighting }
+                desc = omni_dragon.6.desc
+            }
+            triggered_desc = {
+                trigger = { exists = scope:omni_dragon_test_den }
+                desc = omni_dragon.6.desc_den
+            }
+            desc = omni_dragon.6.desc_fail
+        }
+    }
+    picture = Event_dragons_burning_ships
+    goto_location = scope:omni_dragon_test_den
+    immediate = {
+        save_scope_as = omni_dragon_observer
+        # Diagnostics: written to logs/debug.log.
+        if = { limit = { exists = c:BAR } debug_log = "omni_dragon.6: c:BAR exists" }
+        else = { debug_log = "omni_dragon.6: c:BAR does NOT exist" }
+        if = { limit = { exists = global_var:omni_dragon_den } debug_log = "omni_dragon.6: den already set" }
+        if = {
+            limit = { any_province = { omni_dragon_den_candidate = yes } }
+            debug_log = "omni_dragon.6: den candidates found"
+        }
+        else = { debug_log = "omni_dragon.6: NO den candidates found" }
+        if = {
+            limit = { exists = c:BAR c:BAR = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
+            debug_log = "omni_dragon.6: barbarians already have a dragon"
+        }
+        if = {
+            limit = {
+                exists = c:BAR
+                c:BAR = { NOT = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
+            }
+            if = {
+                limit = { NOT = { exists = global_var:omni_dragon_den } }
+                random_province = {
+                    limit = {
+                        omni_dragon_den_candidate = yes
+                    }
+                    set_global_variable = { name = omni_dragon_den value = this }
+                    add_province_modifier = { name = omni_dragon_stirring duration = -1 }
+                }
+            }
+            if = {
+                limit = { exists = global_var:omni_dragon_den }
+                set_global_variable = omni_dragon_hunt
+                global_var:omni_dragon_den = { save_scope_as = omni_dragon_test_den }
+            }
+        }
+        # Point at the living wild dragon, new or already in the field.
+        if = {
+            limit = {
+                exists = global_var:omni_dragon_horde
+                global_var:omni_dragon_horde = { any_sub_unit = { sub_unit_type = omni_dragon } }
+            }
+            global_var:omni_dragon_horde.unit_location = {
+                save_scope_as = omni_dragon_test_sighting
+                save_scope_as = omni_dragon_test_den
+            }
+        }
+    }
+    option = { name = omni_dragon.6.a }
+}

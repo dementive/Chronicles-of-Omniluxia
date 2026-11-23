@@ -75,6 +75,23 @@ omni_perf.6 = {
 	immediate = {
 		omni_census_spend_begin = yes
 		optimize_state_capitals_and_forts = { periodic = 1 }
+		# Magic gateway catch-up: AIs that never researched the guild invention
+		# get it after a delay (powerful ones after 15 years, all after 30),
+		# so the academy event below and academy spell study can run.
+		if = {
+			limit = {
+				is_ai = yes
+				NOT = { invention = organized_mage_guilds_inv }
+				OR = {
+					current_date >= 1031.1.1
+					AND = {
+						current_date >= 1016.1.1
+						omni_ai_academy_priority_country = yes
+					}
+				}
+			}
+			unlock_invention = organized_mage_guilds_inv
+		}
 		trigger_event = { id = omni_ai_magic.5 }
 		# Shipyards: choose sites, then free a slot at any that are completely full.
 		omni_ai_designate_shipyards = yes

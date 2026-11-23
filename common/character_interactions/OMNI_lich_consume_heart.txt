@@ -1,0 +1,149 @@
+﻿# Consume Heart: a lich in the actor's court eats the heart of one of the
+# actor's prisoners. Unlocked by the Tier V melodian spell Rite of Lichdom
+# (which grants lich_trait). Tuning lives in
+# common/script_values/OMNI_lich_consume_heart_values.txt.
+#
+# Which lich feeds: the ruler if they are a lich, otherwise any other living,
+# free lich employed by the actor.
+
+omni_lich_consume_heart = {
+
+	on_other_nation = no
+	on_own_nation = yes
+	close_ui = yes
+	message = no
+
+	sound = "event:/SFX/UI/Character/Unique/sfx_ui_character_banish"
+
+	potential_trigger = {
+		exists = scope:actor
+		exists = scope:target
+		scope:actor = {
+			any_character = {
+				has_trait = lich_trait
+				is_alive = yes
+			}
+		}
+		hidden:scope:target = {
+			prisoner = yes
+			is_alive = yes
+			prisoner_valid_for_country_events_trigger = yes
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+			is_mercenary = no
+		}
+	}
+
+	allowed_trigger = {
+		exists = scope:actor
+		exists = scope:target
+		scope:target = {
+			is_ruler = no
+			is_co_ruler = no
+			# Liches have no heart worth eating, and must not feed on each other.
+			NOT = { has_trait = lich_trait }
+		}
+		scope:actor = {
+			custom_tooltip = {
+				text = omni_consume_heart_lich_free_tt
+				any_character = {
+					has_trait = lich_trait
+					is_alive = yes
+					prisoner = no
+				}
+			}
+			tyranny <= 90
+			custom_tooltip = {
+				text = omni_consume_heart_cooldown_tt
+				NOT = { has_variable = omni_consume_heart_cd }
+			}
+			# AI restraint: only feed while stable and not tyrannical, and
+			# stop once the lich's glut is heavy.
+			trigger_if = {
+				limit = { is_ai = yes }
+				tyranny < 40
+				stability >= 40
+				NOT = {
+					any_character = {
+						has_trait = lich_trait
+						omni_consume_heart_stacks_value >= 2
+					}
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			# Pick the feeding lich.
+			if = {
+				limit = {
+					current_ruler = {
+						has_trait = lich_trait
+						prisoner = no
+					}
+				}
+				current_ruler = { save_scope_as = omni_heart_lich }
+			}
+			else = {
+				random_character = {
+					limit = {
+						has_trait = lich_trait
+						is_alive = yes
+						prisoner = no
+					}
+					save_scope_as = omni_heart_lich
+				}
+			}
+
+			add_tyranny = omni_consume_heart_tyranny_value
+			add_stability = -1
+			set_variable = {
+				name = omni_consume_heart_cd
+				value = 1
+				days = 30
+			}
+		}
+
+		scope:omni_heart_lich = {
+			custom_tooltip = omni_consume_heart_effect_tt
+
+			hidden_effect = {
+				# Gains are computed BEFORE this heart is added to the glut.
+				if = {
+					limit = { NOT = { has_variable = magic } }
+					set_variable = { name = magic value = 0 }
+				}
+				change_variable = { name = magic add = omni_consume_heart_mana_value }
+				clamp_character_magic_to_max = yes
+				add_health = omni_consume_heart_health_value
+
+				# Glut bookkeeping: reset if a year passed, then add a stack
+				# and refresh the 365-day window.
+				if = {
+					limit = { NOT = { has_variable = omni_heart_glut_timer } }
+					set_variable = { name = omni_hearts_consumed value = 0 }
+				}
+				change_variable = { name = omni_hearts_consumed add = 1 }
+				set_variable = {
+					name = omni_heart_glut_timer
+					value = 1
+					days = 365
+				}
+			}
+		}
+
+		scope:target = {
+			death = {
+				death_reason = death_heart_consumed
+				killer = scope:omni_heart_lich
+			}
+		}
+	}
+
+	# scope:actor is not set inside ai_will_do, so the AI's country-side
+	# conditions live in allowed_trigger behind is_ai = yes.
+	ai_will_do = {
+		base = 10
+	}
+}

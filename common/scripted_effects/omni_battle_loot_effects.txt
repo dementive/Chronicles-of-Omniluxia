@@ -1,0 +1,70 @@
+﻿# Recipient is the winning commander or ruler. ROOT is the winning country.
+omni_resolve_battle_loot = {
+	save_scope_as = omni_battle_loot_recipient
+	set_local_variable = { name = omni_battle_loot_count value = 0 }
+	scope:target.commander = {
+		every_in_list = {
+			variable = item_list
+			if = {
+				limit = {
+					local_var:omni_battle_loot_count < 5
+					scope:omni_battle_loot_recipient = {
+						NOT = { is_target_in_variable_list = { name = item_list target = prev } }
+					}
+				}
+				add_to_list = omni_battle_loot
+				scope:omni_battle_loot_recipient = {
+					add_to_variable_list = { name = item_list target = prev }
+				}
+				change_local_variable = { name = omni_battle_loot_count add = 1 }
+			}
+			else = {
+				root = { save_scope_as = omni_battle_loot_discarded }
+			}
+		}
+		clear_variable_list = item_list
+	}
+	root = {
+		if = {
+			limit = { current_date >= 1175.1.1 }
+			random_list = {
+				65 = {
+					add_treasury = 25
+					save_scope_as = omni_battle_loot_gold_small
+				}
+				30 = {
+					add_treasury = 75
+					save_scope_as = omni_battle_loot_gold_medium
+				}
+				5 = {
+					add_treasury = 200
+					save_scope_as = omni_battle_loot_gold_large
+				}
+			}
+		}
+	}
+}
+
+omni_show_battle_loot = {
+	custom_tooltip = omni_loot_taken_tt
+	every_in_list = {
+		list = omni_battle_loot
+		custom_tooltip = omni_loot_item_tt
+	}
+	if = {
+		limit = { exists = scope:omni_battle_loot_discarded }
+		custom_tooltip = omni_loot_discarded_tt
+	}
+	if = {
+		limit = { exists = scope:omni_battle_loot_gold_small }
+		custom_tooltip = omni_loot_gold_small_tt
+	}
+	else_if = {
+		limit = { exists = scope:omni_battle_loot_gold_medium }
+		custom_tooltip = omni_loot_gold_medium_tt
+	}
+	else_if = {
+		limit = { exists = scope:omni_battle_loot_gold_large }
+		custom_tooltip = omni_loot_gold_large_tt
+	}
+}
