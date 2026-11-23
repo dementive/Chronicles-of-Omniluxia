@@ -1,0 +1,197 @@
+﻿# Tier V capstone interactions (2026-11). Effects: common/scripted_effects/OMNI_tier_v.txt.
+# Performance: every potential_trigger opens with a single country-variable
+# check (omni_has_oracle / omni_has_mindlord), so realms without a Tier V mage
+# fail at once. The court scans in allowed_trigger only run for those realms.
+
+# ---------------------------------------------------------------------------
+# Rite of the Oracle: Foresight. Used on the Oracle themself.
+# ---------------------------------------------------------------------------
+omni_oracle_foresight = {
+	on_other_nation = no
+	on_own_nation = yes
+	close_ui = yes
+	message = no
+
+	potential_trigger = {
+		exists = scope:actor
+		exists = scope:target
+		scope:actor = { has_variable = omni_has_oracle }
+		hidden:scope:target = {
+			has_trait = oracle_trait
+			is_alive = yes
+			employer = scope:actor
+		}
+	}
+
+	allowed_trigger = {
+		scope:actor = {
+			custom_tooltip = {
+				text = omni_foresight_cooldown_tt
+				NOT = { has_variable = omni_foresight_cd }
+			}
+			custom_tooltip = {
+				text = omni_foresight_capital_tt
+				exists = capital_scope
+				capital_scope = {
+					has_siege = no
+					controller = scope:actor
+				}
+			}
+		}
+		scope:target = {
+			prisoner = no
+			custom_tooltip = {
+				text = omni_foresight_general_tt
+				is_general = no
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = omni_foresight_cd value = 1 days = 730 }
+			trigger_event = { id = omni_tier_v.1 }
+		}
+	}
+
+	ai_will_do = {
+		base = 10
+	}
+}
+
+# ---------------------------------------------------------------------------
+# Dominion of the Mind: Enthrall. Own subjects grow loyal; a foreign
+# character turns against their own realm. Shares its cooldown with Sever.
+# ---------------------------------------------------------------------------
+omni_mindlord_enthrall = {
+	on_other_nation = yes
+	on_own_nation = yes
+	close_ui = yes
+	message = no
+
+	potential_trigger = {
+		exists = scope:actor
+		exists = scope:target
+		scope:actor = { has_variable = omni_has_mindlord }
+		hidden:scope:target = {
+			is_alive = yes
+			is_ruler = no
+			is_co_ruler = no
+			prisoner = no
+			is_mercenary = no
+			NOT = { has_trait = mindlord_trait }
+			NOT = { employer = { tag = REB } }
+			NOT = { employer = { tag = BAR } }
+		}
+	}
+
+	allowed_trigger = {
+		scope:actor = {
+			custom_tooltip = {
+				text = omni_enthrall_cooldown_tt
+				NOT = { has_variable = omni_enthrall_cd }
+			}
+			custom_tooltip = {
+				text = omni_mindlord_free_tt
+				any_character = {
+					has_trait = mindlord_trait
+					is_alive = yes
+					prisoner = no
+				}
+			}
+			# AI restraint: steady own commanders and governors who are wavering,
+			# or turn an enemy's commander in a war.
+			trigger_if = {
+				limit = { is_ai = yes }
+				OR = {
+					AND = {
+						scope:target = { employer = scope:actor loyalty < 50 }
+					}
+					AND = {
+						scope:target = { is_general = yes }
+						war_with = scope:target.employer
+					}
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = omni_enthrall_cd value = 1 days = 1095 }
+		}
+		scope:target = {
+			custom_tooltip = omni_enthrall_effect_tt
+			hidden_effect = { omni_enthrall_effect = yes }
+		}
+	}
+
+	ai_will_do = {
+		base = 10
+	}
+}
+
+# ---------------------------------------------------------------------------
+# Dominion of the Mind: Sever the Bond. Targets an enemy commander leading a
+# bound dragon. Shares the Enthrall cooldown.
+# ---------------------------------------------------------------------------
+omni_mindlord_sever_bond = {
+	on_other_nation = yes
+	on_own_nation = no
+	close_ui = yes
+	message = no
+
+	potential_trigger = {
+		exists = scope:actor
+		exists = scope:target
+		scope:actor = { has_variable = omni_has_mindlord }
+		hidden:scope:target = {
+			is_alive = yes
+			is_general = yes
+			any_character_unit = { any_sub_unit = { sub_unit_type = omni_dragon } }
+		}
+	}
+
+	allowed_trigger = {
+		scope:actor = {
+			custom_tooltip = {
+				text = omni_enthrall_cooldown_tt
+				NOT = { has_variable = omni_enthrall_cd }
+			}
+			custom_tooltip = {
+				text = omni_mindlord_free_tt
+				any_character = {
+					has_trait = mindlord_trait
+					is_alive = yes
+					prisoner = no
+				}
+			}
+			war_with = scope:target.employer
+		}
+		scope:target = {
+			custom_tooltip = {
+				text = omni_sever_not_in_battle_tt
+				NOT = {
+					any_character_unit = {
+						any_sub_unit = { sub_unit_type = omni_dragon }
+						in_combat = yes
+					}
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = omni_enthrall_cd value = 1 days = 1095 }
+		}
+		scope:target = {
+			custom_tooltip = omni_sever_effect_tt
+			hidden_effect = { omni_sever_the_bond_effect = yes }
+		}
+	}
+
+	ai_will_do = {
+		base = 50
+	}
+}

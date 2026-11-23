@@ -67,6 +67,45 @@ omni_sov_muster_rebel_host = {
     }
 }
 
+# Country scope (the Oath). When the Oath goes to war, a Sunaksatre who tamed
+# his dragon in omni_oath.7 rides it at the head of his own dragon flight.
+omni_oath_mount_dragonrider = {
+    random_character = {
+        limit = {
+            is_alive = yes
+            prisoner = no
+            employer = root
+            has_variable = omni_oath_dragonrider
+        }
+        save_scope_as = omni_oath_rider
+    }
+    if = {
+        limit = {
+            exists = scope:omni_oath_rider
+            NOT = { any_country_sub_unit = { sub_unit_type = omni_dragon } }
+        }
+        create_unit = {
+            name = "Wings of Daeyr"
+            location = capital_scope
+            sub_unit = omni_dragon
+            set_as_commander = scope:omni_oath_rider
+            save_scope_as = omni_oath_dragon_army
+        }
+        if = {
+            limit = { exists = scope:omni_oath_dragon_army }
+            scope:omni_oath_dragon_army = {
+                while = { count = 4 add_subunit = omni_dragon }
+                every_sub_unit = {
+                    limit = { sub_unit_type = omni_dragon }
+                    add_subunit_strength = 1
+                }
+                add_morale = 10
+                omni_dragon_register_army = yes
+            }
+        }
+    }
+}
+
 omni_sov_conclude_war = {
     if = {
         limit = {

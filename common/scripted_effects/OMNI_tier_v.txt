@@ -1,0 +1,127 @@
+﻿# Tier V capstones (2026-11): Rite of the Oracle (Omnic) and Dominion of the
+# Mind (Aldic). Everything runs on cast, on an interaction click or on death.
+# No pulses: country flags (omni_has_oracle / omni_has_mindlord) keep the
+# interaction potential checks to one variable lookup for every other realm.
+
+# CHARACTER scope (the caster).
+omni_become_oracle_effect = {
+	force_add_trait = oracle_trait
+	employer = {
+		set_variable = omni_has_oracle
+		if = {
+			limit = { NOT = { has_country_modifier = omni_oracle_sanctum } }
+			add_country_modifier = { name = omni_oracle_sanctum duration = -1 }
+		}
+	}
+}
+
+# CHARACTER scope (the caster). Any ward the caster held breaks: a Mindlord
+# can never hold one again (omni_personal_ward_available).
+omni_become_mindlord_effect = {
+	force_add_trait = mindlord_trait
+	if = { limit = { has_character_modifier = omni_personal_ward_i } remove_character_modifier = omni_personal_ward_i }
+	if = { limit = { has_character_modifier = omni_personal_ward_ii } remove_character_modifier = omni_personal_ward_ii }
+	if = { limit = { has_character_modifier = omni_personal_ward_iii } remove_character_modifier = omni_personal_ward_iii }
+	employer = { set_variable = omni_has_mindlord }
+}
+
+# CHARACTER scope (the dying character), from on_character_death. Clears the
+# realm flags once its last Oracle or Mindlord is gone.
+omni_tier_v_on_character_death = {
+	if = {
+		limit = { has_trait = oracle_trait exists = employer }
+		save_scope_as = omni_dead_tier_v_mage
+		employer = {
+			if = {
+				limit = {
+					NOT = {
+						any_character = {
+							has_trait = oracle_trait
+							is_alive = yes
+							NOT = { this = scope:omni_dead_tier_v_mage }
+						}
+					}
+				}
+				remove_variable = omni_has_oracle
+				remove_country_modifier = omni_oracle_sanctum
+			}
+		}
+	}
+	if = {
+		limit = { has_trait = mindlord_trait exists = employer }
+		save_scope_as = omni_dead_tier_v_mage
+		employer = {
+			if = {
+				limit = {
+					NOT = {
+						any_character = {
+							has_trait = mindlord_trait
+							is_alive = yes
+							NOT = { this = scope:omni_dead_tier_v_mage }
+						}
+					}
+				}
+				remove_variable = omni_has_mindlord
+			}
+		}
+	}
+}
+
+# COUNTRY scope. Foresight: replace any running vision with a new one.
+omni_foresight_vision_effect = {
+	if = { limit = { has_country_modifier = omni_vision_learning } remove_country_modifier = omni_vision_learning }
+	if = { limit = { has_country_modifier = omni_vision_plenty } remove_country_modifier = omni_vision_plenty }
+	if = { limit = { has_country_modifier = omni_vision_omens } remove_country_modifier = omni_vision_omens }
+	add_country_modifier = { name = $VISION$ duration = 730 }
+}
+
+# CHARACTER scope (the target), scope:actor = the Mindlord's realm.
+omni_enthrall_effect = {
+	if = {
+		limit = {
+			OR = {
+				has_character_modifier = omni_personal_ward_i
+				has_character_modifier = omni_personal_ward_ii
+				has_character_modifier = omni_personal_ward_iii
+			}
+		}
+		omni_spend_personal_ward = yes
+	}
+	else_if = {
+		limit = { employer = scope:actor }
+		add_loyalty = loyalty_omni_enthralled
+	}
+	else = {
+		add_loyalty = loyalty_omni_enthralled_foreign
+	}
+}
+
+# CHARACTER scope (the enemy commander). Wounds every dragon they lead by half;
+# a dragon already below half strength breaks free and flies off. Dragons
+# never heal, so the daily cap upkeep (omni_dragon.8) keeps the wound.
+omni_sever_the_bond_effect = {
+	every_character_unit = {
+		limit = { any_sub_unit = { sub_unit_type = omni_dragon } }
+		unit_owner = { save_scope_as = omni_severed_owner }
+		if = {
+			limit = {
+				any_sub_unit = {
+					sub_unit_type = omni_dragon
+					subunit_strength_percentage < 0.5
+				}
+			}
+			scope:omni_severed_owner = {
+				set_variable = { name = omni_cd_summon_dragon days = 365 }
+				trigger_event = { id = omni_tier_v.3 }
+			}
+			destroy_unit = yes
+		}
+		else = {
+			every_sub_unit = {
+				limit = { sub_unit_type = omni_dragon }
+				add_subunit_strength = -0.5
+			}
+			scope:omni_severed_owner = { trigger_event = { id = omni_tier_v.2 } }
+		}
+	}
+}

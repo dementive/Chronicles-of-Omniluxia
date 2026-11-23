@@ -6,25 +6,54 @@ omni_wild_dragon_pulse = {
     trigger = { NOT = { has_global_variable = omni_dragon_month_lock } }
     effect = {
         set_global_variable = { name = omni_dragon_month_lock days = 27 }
+        # Saves from before the scorched-land flag may already hold marked land.
+        if = {
+            limit = { NOT = { has_global_variable = omni_dragon_scorch_migrated } }
+            set_global_variable = omni_dragon_scorch_migrated
+            set_global_variable = omni_dragon_has_scorched
+        }
         if = {
             limit = {
                 exists = global_var:omni_dragon_horde
                 global_var:omni_dragon_horde = {
-                    unit_owner = c:BAR
+                    unit_owner = { omni_is_wild_dragon_owner = yes }
                     in_combat = no
                     any_sub_unit = { sub_unit_type = omni_dragon }
                 }
             }
-            # Native hordes can pick up ordinary troops after a successful raid.
             global_var:omni_dragon_horde = {
+                # Wild hordes can pick up ordinary troops after a successful raid.
                 every_sub_unit = { limit = { NOT = { sub_unit_type = omni_dragon } } destroy_subunit = yes }
+                # Remember land a rebel dragon takes so it is handed back when it falls.
+                if = {
+                    limit = { exists = c:REB unit_owner = c:REB }
+                    unit_location = {
+                        if = {
+                            limit = { has_owner = yes controller = c:REB }
+                            set_variable = omni_dragon_scorched
+                            set_global_variable = omni_dragon_has_scorched
+                        }
+                    }
+                }
             }
         }
+        # A dragon that has roosted on one continent long enough flies on.
         if = {
             limit = {
-                exists = c:BAR
-                c:BAR = { NOT = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
+                exists = global_var:omni_dragon_horde
+                global_var:omni_dragon_horde = {
+                    unit_owner = { omni_is_wild_dragon_owner = yes }
+                    in_combat = no
+                    has_variable = omni_wild_morrigon
+                    NOT = { has_variable = omni_dragon_roosting }
+                    any_sub_unit = { sub_unit_type = omni_dragon }
+                }
             }
+            omni_wild_dragon_take_wing = yes
+        }
+        if = {
+            limit = { NOT = { omni_wild_dragon_alive = yes } }
+            omni_release_dragon_scorched_land = yes
             if = {
                 limit = { has_global_variable = omni_dragon_in_field }
                 remove_global_variable = omni_dragon_in_field
@@ -38,34 +67,39 @@ omni_wild_dragon_pulse = {
             }
             if = {
                 limit = { has_global_variable = omni_dragon_hunt }
-                c:BAR = {
-                    random_unit = {
-                        limit = { omni_dragon_horde_candidate = yes }
-                        omni_awaken_wild_dragon = yes
-                    }
-                }
-                # A new campaign may have no hordes at all. Stir one of the
-                # map's actual barbarian strongholds while waiting for a raid.
-                # A den that has since been settled can never spawn a horde.
+                # Each new dragon rises on the next continent in the rotation.
+                omni_spawn_rotating_wild_dragon = yes
+                # Fallback: if no rebel dragon could be raised, wake a barbarian
+                # horde or stir one of the barbarian strongholds as before.
                 if = {
-                    limit = {
-                        exists = global_var:omni_dragon_den
-                        global_var:omni_dragon_den = { has_owner = yes }
-                    }
-                    global_var:omni_dragon_den = { remove_province_modifier = omni_dragon_stirring }
-                    remove_global_variable = omni_dragon_den
-                }
-                if = {
-                    limit = {
-                        NOT = { exists = global_var:omni_dragon_den }
-                        c:BAR = { NOT = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
-                    }
-                    random_province = {
-                        limit = {
-                            omni_dragon_den_candidate = yes
+                    limit = { NOT = { exists = scope:omni_new_wild_dragon } exists = c:BAR }
+                    c:BAR = {
+                        random_unit = {
+                            limit = { omni_dragon_horde_candidate = yes }
+                            omni_awaken_wild_dragon = yes
                         }
-                        set_global_variable = { name = omni_dragon_den value = this }
-                        add_province_modifier = { name = omni_dragon_stirring duration = -1 }
+                    }
+                    # A den that has since been settled can never spawn a horde.
+                    if = {
+                        limit = {
+                            exists = global_var:omni_dragon_den
+                            global_var:omni_dragon_den = { has_owner = yes }
+                        }
+                        global_var:omni_dragon_den = { remove_province_modifier = omni_dragon_stirring }
+                        remove_global_variable = omni_dragon_den
+                    }
+                    if = {
+                        limit = {
+                            NOT = { exists = global_var:omni_dragon_den }
+                            NOT = { omni_wild_dragon_alive = yes }
+                        }
+                        random_province = {
+                            limit = {
+                                omni_dragon_den_candidate = yes
+                            }
+                            set_global_variable = { name = omni_dragon_den value = this }
+                            add_province_modifier = { name = omni_dragon_stirring duration = -1 }
+                        }
                     }
                 }
             }
@@ -79,7 +113,7 @@ on_battle_lost_country = { on_actions = { omni_dragon_slain_in_battle } }
 
 omni_dragon_slain_in_battle = {
     trigger = {
-        this = c:BAR
+        omni_is_wild_dragon_owner = yes
         has_global_variable = omni_dragon_hunt
         OR = {
             AND = { exists = scope:actor scope:actor = { has_variable = omni_wild_morrigon } }

@@ -696,9 +696,9 @@ types OmniSpellbook {
                         scrollbar_vertical = { using = VerticalScrollBar }
                         scrollwidget = {
                             widget = {
-                                size = { 882 928 }
+                                size = { 882 1056 }
                     icon = {
-                        size = { 884 800 }
+                        size = { 884 928 }
                         texture = "gfx/interface/omniluxia/spell_tree_omnic.dds"
                         alwaystransparent = yes
                     }
@@ -725,6 +725,12 @@ types OmniSpellbook {
                         using = BaseFontM
                         text = "[SelectLocalization( GetScriptedGui('omni_sb_spell_tier_4').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ), 'omni_sb_tier_4_open', 'omni_sb_tier_4_locked' )]"
                         tooltip = "omni_sb_tree_tier_4_tt"
+                    }
+                    textbox = {
+                        position = { 20 818 } size = { 560 24 }
+                        using = BaseFontM
+                        text = "[SelectLocalization( GetScriptedGui('omni_sb_spell_tier_5').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ), 'omni_sb_tier_5_open', 'omni_sb_tier_5_locked' )]"
+                        tooltip = "omni_sb_tree_tier_5_tt"
                     }
                     widget = {
                         position = { 341 665 } size = { 200 29 }
@@ -2086,14 +2092,68 @@ types OmniSpellbook {
                         }
                     }
                 }
+                container = { # rite_of_the_oracle
+                    position = { 375 853 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_rite_of_the_oracle')]"
+                    widget = {
+                        size = { 132 54 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" {
+                                texture = "gfx/interface/icons/traits/oracle_trait.dds"
+                                color = { 0.42 0.42 0.42 1 }
+                            }
+                            blockoverride "Name_color" { fontcolor = { 0.62 0.62 0.62 1 } }
+                            blockoverride "Spell_border" {
+                                omni_sb_learnable_border = {
+                                    blockoverride "Border_visible" { visible = "[GetScriptedGui('omni_sb_learn_rite_of_the_oracle').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }
+                                }
+                            }
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_learn_rite_of_the_oracle').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_learn_rite_of_the_oracle').Execute( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_spell_rite_of_the_oracle" }
+                            tooltip = "[GetScriptedGui('omni_sb_preview_rite_of_the_oracle').BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 132 54 }
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/oracle_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+                                enabled = "[GetScriptedGui('omni_sb_cast_rite_of_the_oracle').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_rite_of_the_oracle').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_rite_of_the_oracle" }
+                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_rite_of_the_oracle').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ), Localize('omni_sb_cast_rite_of_the_oracle_tt'), Concatenate( Localize('omni_sb_spell_rite_of_the_oracle_tt'), Concatenate( Localize('omni_sb_tooltip_break'), GetScriptedGui('omni_sb_cast_rite_of_the_oracle').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ) ) ) )]"
+                        }
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/oracle_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            blockoverride "Mana_tint" { visible = yes }
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_rite_of_the_oracle" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                }
                 textbox = {
-                    position = { 18 800 } size = { 820 34 }
+                    position = { 18 928 } size = { 820 34 }
                     using = HeaderFont using = Highlight_FontColor
                     text = "omni_sb_family_traditions"
                     tooltip = "omni_sb_family_traditions_tt"
                 }
                 container = { # summon_eagle_of_zanis
-                    position = { 18 838 }
+                    position = { 18 966 }
                     datacontext = "[GetScriptedGui('omni_sb_known_summon_eagle_of_zanis')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2129,7 +2189,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # helluvius_peace
-                    position = { 228 838 }
+                    position = { 228 966 }
                     datacontext = "[GetScriptedGui('omni_sb_known_helluvius_peace')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2164,7 +2224,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # hellas_providence
-                    position = { 438 838 }
+                    position = { 438 966 }
                     datacontext = "[GetScriptedGui('omni_sb_known_hellas_providence')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2199,7 +2259,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # battle_avatar_taanka
-                    position = { 648 838 }
+                    position = { 648 966 }
                     datacontext = "[GetScriptedGui('omni_sb_known_battle_avatar_taanka')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2234,7 +2294,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # dragonscale_shield_dragonscale
-                    position = { 18 879 }
+                    position = { 18 1007 }
                     datacontext = "[GetScriptedGui('omni_sb_known_dragonscale_shield_dragonscale')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2270,7 +2330,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # dragonscale_dome_dragonscale
-                    position = { 228 879 }
+                    position = { 228 1007 }
                     datacontext = "[GetScriptedGui('omni_sb_known_dragonscale_dome_dragonscale')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -2396,9 +2456,9 @@ types OmniSpellbook {
                         scrollbar_vertical = { using = VerticalScrollBar }
                         scrollwidget = {
                             widget = {
-                                size = { 882 807 }
+                                size = { 882 935 }
                     icon = {
-                        size = { 884 720 }
+                        size = { 884 848 }
                         texture = "gfx/interface/omniluxia/spell_tree_aldic.dds"
                         alwaystransparent = yes
                     }
@@ -2425,6 +2485,12 @@ types OmniSpellbook {
                         using = BaseFontM
                         text = "[SelectLocalization( GetScriptedGui('omni_sb_spell_tier_4').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ), 'omni_sb_tier_4_open', 'omni_sb_tier_4_locked' )]"
                         tooltip = "omni_sb_tree_tier_4_tt"
+                    }
+                    textbox = {
+                        position = { 20 738 } size = { 560 24 }
+                        using = BaseFontM
+                        text = "[SelectLocalization( GetScriptedGui('omni_sb_spell_tier_5').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ), 'omni_sb_tier_5_open', 'omni_sb_tier_5_locked' )]"
+                        tooltip = "omni_sb_tree_tier_5_tt"
                     }
                     widget = {
                         position = { 341 585 } size = { 200 29 }
@@ -3567,14 +3633,68 @@ types OmniSpellbook {
                         }
                     }
                 }
+                container = { # dominion_of_the_mind
+                    position = { 375 773 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_dominion_of_the_mind')]"
+                    widget = {
+                        size = { 132 54 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" {
+                                texture = "gfx/interface/icons/traits/mindlord_trait.dds"
+                                color = { 0.42 0.42 0.42 1 }
+                            }
+                            blockoverride "Name_color" { fontcolor = { 0.62 0.62 0.62 1 } }
+                            blockoverride "Spell_border" {
+                                omni_sb_learnable_border = {
+                                    blockoverride "Border_visible" { visible = "[GetScriptedGui('omni_sb_learn_dominion_of_the_mind').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]" }
+                                }
+                            }
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_learn_dominion_of_the_mind').IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_learn_dominion_of_the_mind').Execute( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_spell_dominion_of_the_mind" }
+                            tooltip = "[GetScriptedGui('omni_sb_preview_dominion_of_the_mind').BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 132 54 }
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/mindlord_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+                                enabled = "[GetScriptedGui('omni_sb_cast_dominion_of_the_mind').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_dominion_of_the_mind').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End )]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_dominion_of_the_mind" }
+                            tooltip = "[Select_CString( GetScriptedGui('omni_sb_cast_dominion_of_the_mind').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ), Localize('omni_sb_cast_dominion_of_the_mind_tt'), Concatenate( Localize('omni_sb_spell_dominion_of_the_mind_tt'), Concatenate( Localize('omni_sb_tooltip_break'), GetScriptedGui('omni_sb_cast_dominion_of_the_mind').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).AddScope('target', Character.MakeScope ).End ) ) ) )]"
+                        }
+                        omni_sb_tree_node = {
+                            size = { 132 54 }
+                            blockoverride "Glyph" { texture = "gfx/interface/icons/traits/mindlord_trait.dds" }
+                            blockoverride "Spell_border" { omni_sb_learned_border = {} }
+                            blockoverride "Mana_tint" { visible = yes }
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_dominion_of_the_mind" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                }
                 textbox = {
-                    position = { 18 720 } size = { 820 34 }
+                    position = { 18 848 } size = { 820 34 }
                     using = HeaderFont using = Highlight_FontColor
                     text = "omni_sb_family_traditions"
                     tooltip = "omni_sb_family_traditions_tt"
                 }
                 container = { # silver_tongue_charm
-                    position = { 18 758 }
+                    position = { 18 886 }
                     datacontext = "[GetScriptedGui('omni_sb_known_silver_tongue_charm')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -3609,7 +3729,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # mended_anima_soul
-                    position = { 228 758 }
+                    position = { 228 886 }
                     datacontext = "[GetScriptedGui('omni_sb_known_mended_anima_soul')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -3644,7 +3764,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # astral_search_soul
-                    position = { 438 758 }
+                    position = { 438 886 }
                     datacontext = "[GetScriptedGui('omni_sb_known_astral_search_soul')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }
@@ -3770,9 +3890,9 @@ types OmniSpellbook {
                         scrollbar_vertical = { using = VerticalScrollBar }
                         scrollwidget = {
                             widget = {
-                                size = { 882 807 }
+                                size = { 882 935 }
                     icon = {
-                        size = { 884 720 }
+                        size = { 884 848 }
                         texture = "gfx/interface/omniluxia/spell_tree_amten.dds"
                         alwaystransparent = yes
                     }
@@ -3800,8 +3920,14 @@ types OmniSpellbook {
                         text = "[SelectLocalization( GetScriptedGui('omni_sb_spell_tier_4').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ), 'omni_sb_tier_4_open', 'omni_sb_tier_4_locked' )]"
                         tooltip = "omni_sb_tree_tier_4_tt"
                     }
+                    textbox = {
+                        position = { 20 738 } size = { 560 24 }
+                        using = BaseFontM
+                        text = "[SelectLocalization( GetScriptedGui('omni_sb_spell_tier_5').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ), 'omni_sb_tier_5_open', 'omni_sb_tier_5_locked' )]"
+                        tooltip = "omni_sb_tree_tier_5_tt"
+                    }
                     widget = {
-                        position = { 270 585 } size = { 200 29 }
+                        position = { 341 585 } size = { 200 29 }
                         tooltip = "omni_sb_req_amten_t3_count_tt"
                         background = {
                             texture = "gfx/interface/base_parts/background_black_texture.dds"
@@ -5273,7 +5399,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # summon_elemental_colossus
-                    position = { 304 644 }
+                    position = { 375 644 }
                     datacontext = "[GetScriptedGui('omni_sb_known_summon_elemental_colossus')]"
                     widget = {
                         size = { 132 54 }
@@ -5328,7 +5454,7 @@ types OmniSpellbook {
                     }
                 }
                 container = { # summon_dragon
-                    position = { 446 644 }
+                    position = { 375 773 }
                     datacontext = "[GetScriptedGui('omni_sb_known_summon_dragon')]"
                     widget = {
                         size = { 132 54 }
@@ -5383,13 +5509,13 @@ types OmniSpellbook {
                     }
                 }
                 textbox = {
-                    position = { 18 720 } size = { 820 34 }
+                    position = { 18 848 } size = { 820 34 }
                     using = HeaderFont using = Highlight_FontColor
                     text = "omni_sb_family_traditions"
                     tooltip = "omni_sb_family_traditions_tt"
                 }
                 container = { # sculpt_buildings_stone_magic
-                    position = { 18 758 }
+                    position = { 18 886 }
                     datacontext = "[GetScriptedGui('omni_sb_known_sculpt_buildings_stone_magic')]"
                     widget = { # known: one IsShown gate, mana state only evaluated when known
                         size = { 196 38 }

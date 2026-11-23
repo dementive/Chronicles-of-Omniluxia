@@ -195,3 +195,64 @@ omni_dragon_den_candidate = {
     has_owner = no
     omni_dragon_den_site = yes
 }
+
+# Any scope. A wild dragon (barbarian or rebel owned) is alive somewhere.
+omni_wild_dragon_alive = {
+    OR = {
+        AND = { exists = c:BAR c:BAR = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
+        AND = { exists = c:REB c:REB = { any_country_sub_unit = { sub_unit_type = omni_dragon } } }
+    }
+}
+
+# Country scope. The owners that can hold a wild dragon.
+omni_is_wild_dragon_owner = {
+    OR = {
+        AND = { exists = c:BAR this = c:BAR }
+        AND = { exists = c:REB this = c:REB }
+    }
+}
+
+# Province scope. Continents outside the old world count as one stop.
+omni_dragon_in_new_world = {
+    NOR = {
+        is_in_luxterra = yes
+        is_in_morrigon = yes
+        is_in_arteon = yes
+        is_in_horteon = yes
+        is_in_eptelon = yes
+        is_in_austropetolia = yes
+        is_in_omniluxian_isle = yes
+        is_in_polaris = yes
+    }
+}
+
+# Province scope. The continent the wild dragon rotation points at now.
+# 0 Luxterra, 1 Morrigon, 2 Arteon, 3 Horteon, 4 Eptelon, 5 Austropetolia,
+# 6 Omniluxian Isle, 7 Polaris, 8 the new world.
+omni_dragon_on_rotation_continent = {
+    OR = {
+        AND = { global_var:omni_dragon_rotation = 0 is_in_luxterra = yes }
+        AND = { global_var:omni_dragon_rotation = 1 is_in_morrigon = yes }
+        AND = { global_var:omni_dragon_rotation = 2 is_in_arteon = yes }
+        AND = { global_var:omni_dragon_rotation = 3 is_in_horteon = yes }
+        AND = { global_var:omni_dragon_rotation = 4 is_in_eptelon = yes }
+        AND = { global_var:omni_dragon_rotation = 5 is_in_austropetolia = yes }
+        AND = { global_var:omni_dragon_rotation = 6 is_in_omniluxian_isle = yes }
+        AND = { global_var:omni_dragon_rotation = 7 is_in_polaris = yes }
+        AND = { global_var:omni_dragon_rotation = 8 omni_dragon_in_new_world = yes }
+    }
+}
+
+# Province scope. Owned or wild land where a dragon can rise. Avoid an
+# ongoing battle so the new army is never dropped into combat.
+omni_dragon_lair_candidate = {
+    is_sea = no
+    is_inhabitable = yes
+    # People live here, so the dragon's rider has a culture and faith to come from.
+    total_population >= 1
+    omni_dragon_on_rotation_continent = yes
+    # The archipelago's small islands trap a land army: Austropetolian dragons
+    # rise only on the northern and southern isles.
+    NOT = { is_in_region = austropetolian_archipelago }
+    NOT = { any_unit_in_province = { in_combat = yes } }
+}

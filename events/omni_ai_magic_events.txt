@@ -390,3 +390,114 @@ omni_ai_magic.5 = { # AI: fund the country's first Magic Academy in its capital
 
 	option = {}
 }
+
+omni_ai_magic.7 = { # AI: an aging mage who knows the Rite of Lichdom performs it
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		any_character = {
+			country = root
+			omni_ai_lichdom_candidate = yes
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				country = root
+				omni_ai_lichdom_candidate = yes
+			}
+			save_scope_as = omni_lich_aspirant
+		}
+		# Fear of death drives the rite: the older or sicker, the likelier.
+		if = {
+			limit = { scope:omni_lich_aspirant = { OR = { age >= 90 health < 30 } } }
+			random = { chance = 75 set_local_variable = omni_lich_go }
+		}
+		else_if = {
+			limit = { scope:omni_lich_aspirant = { age >= 70 } }
+			random = { chance = 40 set_local_variable = omni_lich_go }
+		}
+		else = {
+			random = { chance = 20 set_local_variable = omni_lich_go }
+		}
+		if = {
+			limit = { has_local_variable = omni_lich_go }
+			scope:omni_lich_aspirant = {
+				omni_spell_mana_cost_effect = { BASE = 350 }
+				force_add_trait = lich_trait
+			}
+			save_scope_as = omni_lich_country
+			every_country = {
+				limit = { is_ai = no }
+				trigger_event = { id = omni_ai_magic.9 }
+			}
+		}
+	}
+
+	option = {}
+}
+
+omni_ai_magic.10 = { # AI: a master of the Rite of the Oracle performs it
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		NOT = { has_variable = omni_has_oracle }
+		any_character = {
+			country = root
+			omni_ai_oracle_candidate = yes
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				country = root
+				omni_ai_oracle_candidate = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 350 }
+			omni_become_oracle_effect = yes
+		}
+	}
+
+	option = {}
+}
+
+omni_ai_magic.11 = { # AI: a master of Dominion of the Mind performs it
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_ai = yes
+		NOT = { has_variable = omni_has_mindlord }
+		any_character = {
+			country = root
+			omni_ai_mindlord_candidate = yes
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				country = root
+				omni_ai_mindlord_candidate = yes
+			}
+			omni_spell_mana_cost_effect = { BASE = 350 }
+			omni_become_mindlord_effect = yes
+		}
+	}
+
+	option = {}
+}
+
+omni_ai_magic.9 = { # Player notice: a lich has risen somewhere in the world
+	type = country_event
+	title = omni_ai_magic.9.t
+	desc = omni_ai_magic.9.desc
+	picture = great_library
+	option = { name = omni_ai_magic.9.a }
+}

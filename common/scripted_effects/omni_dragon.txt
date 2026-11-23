@@ -3,7 +3,7 @@ omni_bind_morrigon_dragon = {
     omni_raise_bound_dragon_army = yes
     if = {
         limit = { exists = scope:omni_bound_dragon }
-        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 200 } }
+        scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 350 } }
         set_variable = { name = omni_cd_summon_dragon days = 365 }
     }
 }
@@ -20,7 +20,13 @@ omni_raise_bound_dragon_army = {
         limit = { exists = scope:omni_bound_dragon }
         scope:omni_bound_dragon = {
             while = { count = 9 add_subunit = omni_dragon }
+            # New cohorts start nearly empty. Fill them so the summon arrives at full strength.
+            every_sub_unit = {
+                limit = { sub_unit_type = omni_dragon }
+                add_subunit_strength = 1
+            }
             add_morale = 10
+            omni_dragon_register_army = yes
         }
     }
 }
@@ -32,17 +38,30 @@ omni_awaken_wild_dragon = {
     set_global_variable = omni_dragon_in_field
     set_global_variable = { name = omni_dragon_horde value = this }
     set_variable = omni_wild_morrigon
+    set_variable = { name = omni_dragon_roosting days = 540 }
     if = {
         limit = { exists = global_var:omni_dragon_den }
         global_var:omni_dragon_den = { remove_province_modifier = omni_dragon_stirring }
         remove_global_variable = omni_dragon_den
     }
     while = { count = 10 add_subunit = omni_dragon }
+    # New cohorts start nearly empty and barbarians never reinforce. Fill them
+    # before the old troops are removed so the army is never left empty.
+    every_sub_unit = {
+        limit = { sub_unit_type = omni_dragon }
+        add_subunit_strength = 1
+    }
     every_sub_unit = {
         limit = { NOT = { sub_unit_type = omni_dragon } }
         destroy_subunit = yes
     }
     add_morale = 10
+    omni_dragon_register_army = yes
+    omni_announce_wild_dragon = yes
+}
+
+# Unit scope, on a freshly raised wild dragon army.
+omni_announce_wild_dragon = {
     unit_location = {
         save_scope_as = omni_dragon_sighting
         if = {
@@ -59,5 +78,330 @@ omni_awaken_wild_dragon = {
                 owner = { trigger_event = { id = omni_dragon.2 } }
             }
         }
+    }
+}
+
+# Any scope. Raise a wild dragon on the continent the rotation points at, then
+# move the rotation on. The barbarians cannot be given new armies by script,
+# so the dragon flies for the rebels, who are hostile to every realm and can
+# appear on owned land. Sets scope:omni_new_wild_dragon on success.
+omni_spawn_rotating_wild_dragon = {
+    if = {
+        limit = { NOT = { has_global_variable = omni_dragon_rotation } }
+        set_global_variable = { name = omni_dragon_rotation value = 0 }
+    }
+    random_province = {
+        limit = { omni_dragon_lair_candidate = yes }
+        weight = {
+            modifier = {
+                factor = 10
+                OR = {
+                    is_in_region = dragons_point_region
+                    is_in_region = dragon_steppes_west_region
+                    is_in_region = dragon_steppes_east_region
+                    is_in_region = dragon_pass
+                    is_in_region = dragon_lands_west
+                    is_in_region = dragon_lands_east
+                }
+            }
+            modifier = { factor = 4 terrain = mountain }
+            modifier = { factor = 2 terrain = hills }
+            modifier = { factor = 2 has_owner = no }
+            modifier = { factor = 0.25 is_capital = yes }
+        }
+        save_scope_as = omni_dragon_lair
+    }
+    # Move on even when this continent had no lair, so the hunt never stalls.
+    change_global_variable = { name = omni_dragon_rotation add = 1 }
+    if = {
+        limit = { global_var:omni_dragon_rotation >= 9 }
+        set_global_variable = { name = omni_dragon_rotation value = 0 }
+    }
+    if = {
+        limit = { exists = scope:omni_dragon_lair exists = c:REB }
+        c:REB = {
+            # Every wild dragon is led by a battle-hardened rider from the lair's people.
+            create_character = {
+                culture = scope:omni_dragon_lair.dominant_province_culture
+                religion = scope:omni_dragon_lair.dominant_province_religion
+                age = 40
+                save_scope_as = omni_dragon_rider
+            }
+            scope:omni_dragon_rider = {
+                random_list = {
+                    1 = { omni_set_dragon_rider_martial = { M = 10 } }
+                    1 = { omni_set_dragon_rider_martial = { M = 11 } }
+                    1 = { omni_set_dragon_rider_martial = { M = 12 } }
+                    1 = { omni_set_dragon_rider_martial = { M = 13 } }
+                    1 = { omni_set_dragon_rider_martial = { M = 14 } }
+                    1 = { omni_set_dragon_rider_martial = { M = 15 } }
+                }
+            }
+            create_unit = {
+                name = omni_dragon_wild_name
+                location = scope:omni_dragon_lair
+                sub_unit = omni_dragon
+                set_as_commander = scope:omni_dragon_rider
+                save_scope_as = omni_new_wild_dragon
+            }
+        }
+    }
+    if = {
+        limit = { exists = scope:omni_new_wild_dragon }
+        scope:omni_new_wild_dragon = {
+            while = { count = 9 add_subunit = omni_dragon }
+            every_sub_unit = {
+                limit = { sub_unit_type = omni_dragon }
+                add_subunit_strength = 1
+            }
+            add_morale = 10
+            add_food = 500
+            omni_dragon_register_army = yes
+            set_variable = omni_wild_morrigon
+            # The dragon roosts here for a while, then takes wing for another continent.
+            set_variable = { name = omni_dragon_roosting days = 540 }
+            set_global_variable = omni_dragon_hunt
+            set_global_variable = omni_dragon_in_field
+            set_global_variable = { name = omni_dragon_horde value = this }
+            omni_announce_wild_dragon = yes
+        }
+        # A den stirred for the barbarian fallback is no longer needed.
+        if = {
+            limit = { exists = global_var:omni_dragon_den }
+            global_var:omni_dragon_den = { remove_province_modifier = omni_dragon_stirring }
+            remove_global_variable = omni_dragon_den
+        }
+    }
+}
+
+# Any scope. Hand back provinces a fallen rebel dragon still holds.
+omni_release_dragon_scorched_land = {
+    # Only scan the map when the dragon actually took land.
+    if = {
+        limit = { has_global_variable = omni_dragon_has_scorched }
+        remove_global_variable = omni_dragon_has_scorched
+        every_province = {
+            limit = {
+                has_variable = omni_dragon_scorched
+            }
+            if = {
+                limit = { has_owner = yes controller = c:REB }
+                set_controller = owner
+            }
+            remove_variable = omni_dragon_scorched
+        }
+    }
+}
+
+# Any scope. The wild dragon in global_var:omni_dragon_horde leaves this
+# continent: land armies cannot cross the sea, so the army is removed, the land
+# it held is handed back, and a fresh dragon rises on the next continent.
+# Never run inside the dragon's own unit scope: once destroy_unit runs, that
+# scope is dead, and the global variable must not keep pointing at it.
+omni_wild_dragon_take_wing = {
+    global_var:omni_dragon_horde.unit_location = { save_scope_as = omni_dragon_departure }
+    global_var:omni_dragon_horde = {
+        remove_variable = omni_wild_morrigon
+        destroy_unit = yes
+    }
+    remove_global_variable = omni_dragon_horde
+    scope:omni_dragon_departure = {
+        if = {
+            limit = { has_owner = yes }
+            owner = { trigger_event = { id = omni_dragon.7 } }
+        }
+        else = {
+            random_neighbor_province = {
+                limit = { has_owner = yes }
+                owner = { trigger_event = { id = omni_dragon.7 } }
+            }
+        }
+    }
+    omni_release_dragon_scorched_land = yes
+    omni_spawn_rotating_wild_dragon = yes
+}
+
+# Country scope (omni_dragon.8). scope:omni_dragon_rider_unit is this country's
+# dragon army, if it still has one. Its commander holds omni_dragon_rider_trait;
+# a former rider (new commander, no commander, or dragon gone) loses it.
+omni_dragon_update_rider = {
+    if = {
+        limit = {
+            exists = var:omni_dragon_rider
+            OR = {
+                is_ai = no # only AI dragons get a rider trait
+                NOT = { exists = scope:omni_dragon_rider_unit }
+                scope:omni_dragon_rider_unit = { NOT = { exists = commander } }
+                NOT = { scope:omni_dragon_rider_unit.commander = var:omni_dragon_rider }
+            }
+        }
+        var:omni_dragon_rider = {
+            if = {
+                limit = { is_alive = yes has_trait = omni_dragon_rider_trait }
+                remove_trait = omni_dragon_rider_trait
+            }
+        }
+        remove_variable = omni_dragon_rider
+    }
+    if = {
+        limit = {
+            is_ai = yes
+            NOT = { exists = var:omni_dragon_rider }
+            exists = scope:omni_dragon_rider_unit
+            scope:omni_dragon_rider_unit = { exists = commander }
+        }
+        scope:omni_dragon_rider_unit.commander = {
+            save_scope_as = omni_dragon_new_rider
+            if = {
+                limit = {
+                    NOT = { has_trait = omni_dragon_rider_trait }
+                    NOT = { has_trait = sunaksatre_dragonrider }
+                }
+                add_trait = omni_dragon_rider_trait
+            }
+        }
+        set_variable = { name = omni_dragon_rider value = scope:omni_dragon_new_rider }
+    }
+}
+
+# Character scope. Bring martial to exactly $M$.
+omni_set_dragon_rider_martial = {
+    while = { limit = { martial < $M$ } add_martial = 1 }
+    while = { limit = { martial > $M$ } add_martial = -1 }
+}
+
+# ---------------------------------------------------------------------------
+# Dragons never heal. Like the Elemental Colossus, each dragon cohort keeps a
+# strength cap: what it had when raised, lowered by every wound it takes. The
+# engine's reinforcement is undone daily. Subunits cannot hold variables, so
+# each cohort and its cap live in numbered slots on the owning country
+# (omni_dragon_cohort_N / omni_dragon_strength_N, N = 1..10). A country only
+# ever holds one dragon army, so ten slots are enough.
+# ---------------------------------------------------------------------------
+
+# Unit scope, on a freshly raised dragon army (already at its starting strength).
+omni_dragon_register_army = {
+    save_scope_as = omni_dragon_tracked_army
+    unit_owner = {
+        save_scope_as = omni_dragon_tracking_country
+        omni_dragon_clear_slots = yes
+    }
+    every_sub_unit = {
+        limit = { sub_unit_type = omni_dragon }
+        save_scope_as = omni_dragon_new_cohort
+        scope:omni_dragon_tracking_country = { omni_dragon_assign_slot = yes }
+    }
+    scope:omni_dragon_tracking_country = {
+        if = {
+            limit = { NOT = { has_variable = omni_dragon_tracking } }
+            set_variable = omni_dragon_tracking
+            trigger_event = { id = omni_dragon.8 days = 1 }
+        }
+    }
+}
+
+# Country scope. Put scope:omni_dragon_new_cohort in the first free slot.
+omni_dragon_assign_slot = {
+    if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_1 } }
+        set_variable = { name = omni_dragon_cohort_1 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_1 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_2 } }
+        set_variable = { name = omni_dragon_cohort_2 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_2 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_3 } }
+        set_variable = { name = omni_dragon_cohort_3 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_3 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_4 } }
+        set_variable = { name = omni_dragon_cohort_4 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_4 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_5 } }
+        set_variable = { name = omni_dragon_cohort_5 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_5 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_6 } }
+        set_variable = { name = omni_dragon_cohort_6 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_6 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_7 } }
+        set_variable = { name = omni_dragon_cohort_7 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_7 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_8 } }
+        set_variable = { name = omni_dragon_cohort_8 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_8 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_9 } }
+        set_variable = { name = omni_dragon_cohort_9 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_9 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+    else_if = {
+        limit = { NOT = { exists = var:omni_dragon_cohort_10 } }
+        set_variable = { name = omni_dragon_cohort_10 value = scope:omni_dragon_new_cohort }
+        set_variable = { name = omni_dragon_strength_10 value = scope:omni_dragon_new_cohort.subunit_strength_percentage }
+    }
+}
+
+# Country scope.
+omni_dragon_clear_slot = {
+    remove_variable = omni_dragon_cohort_$N$
+    remove_variable = omni_dragon_strength_$N$
+}
+
+omni_dragon_clear_slots = {
+    omni_dragon_clear_slot = { N = 1 }
+    omni_dragon_clear_slot = { N = 2 }
+    omni_dragon_clear_slot = { N = 3 }
+    omni_dragon_clear_slot = { N = 4 }
+    omni_dragon_clear_slot = { N = 5 }
+    omni_dragon_clear_slot = { N = 6 }
+    omni_dragon_clear_slot = { N = 7 }
+    omni_dragon_clear_slot = { N = 8 }
+    omni_dragon_clear_slot = { N = 9 }
+    omni_dragon_clear_slot = { N = 10 }
+}
+
+# Country scope (event root). Daily upkeep for one slot: wounds lower the cap,
+# reinforcement is taken back off.
+omni_dragon_maintain_slot = {
+    if = {
+        limit = { exists = var:omni_dragon_cohort_$N$ }
+        if = {
+            limit = {
+                var:omni_dragon_cohort_$N$ = {
+                    # Cohort IDs are recycled after a cohort dies, so confirm it is still a dragon.
+                    sub_unit_type = omni_dragon
+                    exists = owning_unit
+                    owning_unit = { unit_owner = root }
+                }
+            }
+            var:omni_dragon_cohort_$N$ = { save_scope_as = omni_dragon_slot_cohort }
+            if = {
+                limit = { NOT = { exists = var:omni_dragon_strength_$N$ } }
+                set_variable = { name = omni_dragon_strength_$N$ value = scope:omni_dragon_slot_cohort.subunit_strength_percentage }
+            }
+            if = {
+                limit = { scope:omni_dragon_slot_cohort = { subunit_strength_percentage > root.var:omni_dragon_strength_$N$ } }
+                scope:omni_dragon_slot_cohort = {
+                    add_subunit_strength = { value = root.var:omni_dragon_strength_$N$ subtract = subunit_strength_percentage }
+                }
+            }
+            else = {
+                set_variable = { name = omni_dragon_strength_$N$ value = scope:omni_dragon_slot_cohort.subunit_strength_percentage }
+            }
+        }
+        else = { omni_dragon_clear_slot = { N = $N$ } }
     }
 }

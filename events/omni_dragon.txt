@@ -29,6 +29,15 @@ omni_dragon.1 = {
             limit = { exists = scope:omni_dragon_test_horde }
             scope:omni_dragon_test_horde = { omni_awaken_wild_dragon = yes }
         }
+        # No barbarian horde to wake: raise one on the next rotation continent.
+        else_if = {
+            limit = { NOT = { omni_wild_dragon_alive = yes } }
+            omni_spawn_rotating_wild_dragon = yes
+            if = {
+                limit = { NOT = { exists = scope:omni_new_wild_dragon } }
+                trigger_event = { id = omni_dragon.3 }
+            }
+        }
         else_if = {
             limit = {
                 exists = global_var:omni_dragon_horde
@@ -68,13 +77,14 @@ omni_dragon.4 = {
         if = {
             limit = {
                 exists = scope:omni_fallen_dragon
-                scope:omni_fallen_dragon = { unit_owner = c:BAR has_variable = omni_wild_morrigon }
+                scope:omni_fallen_dragon = { unit_owner = { omni_is_wild_dragon_owner = yes } has_variable = omni_wild_morrigon }
             }
             scope:omni_fallen_dragon = {
                 remove_variable = omni_wild_morrigon
                 every_sub_unit = { limit = { sub_unit_type = omni_dragon } destroy_subunit = yes }
             }
         }
+        omni_release_dragon_scorched_land = yes
     }
     option = { name = omni_dragon.4.a }
 }
@@ -161,4 +171,57 @@ omni_dragon.6 = {
         }
     }
     option = { name = omni_dragon.6.a }
+}
+
+omni_dragon.7 = {
+    type = country_event
+    title = omni_dragon.7.t
+    desc = omni_dragon.7.desc
+    picture = Event_dragons_burning_ships
+    goto_location = scope:omni_dragon_departure
+    option = { name = omni_dragon.7.a }
+}
+
+# Daily dragon upkeep: dragons never regain lost strength.
+omni_dragon.8 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        omni_dragon_maintain_slot = { N = 1 }
+        omni_dragon_maintain_slot = { N = 2 }
+        omni_dragon_maintain_slot = { N = 3 }
+        omni_dragon_maintain_slot = { N = 4 }
+        omni_dragon_maintain_slot = { N = 5 }
+        omni_dragon_maintain_slot = { N = 6 }
+        omni_dragon_maintain_slot = { N = 7 }
+        omni_dragon_maintain_slot = { N = 8 }
+        omni_dragon_maintain_slot = { N = 9 }
+        omni_dragon_maintain_slot = { N = 10 }
+        # The last living cohort found above leads to the dragon army.
+        if = {
+            limit = { exists = scope:omni_dragon_slot_cohort }
+            scope:omni_dragon_slot_cohort.owning_unit = { save_scope_as = omni_dragon_rider_unit }
+        }
+        omni_dragon_update_rider = yes
+        if = {
+            limit = {
+                OR = {
+                    exists = var:omni_dragon_cohort_1
+                    exists = var:omni_dragon_cohort_2
+                    exists = var:omni_dragon_cohort_3
+                    exists = var:omni_dragon_cohort_4
+                    exists = var:omni_dragon_cohort_5
+                    exists = var:omni_dragon_cohort_6
+                    exists = var:omni_dragon_cohort_7
+                    exists = var:omni_dragon_cohort_8
+                    exists = var:omni_dragon_cohort_9
+                    exists = var:omni_dragon_cohort_10
+                }
+            }
+            trigger_event = { id = omni_dragon.8 days = 1 }
+        }
+        else = {
+            remove_variable = omni_dragon_tracking
+        }
+    }
 }
