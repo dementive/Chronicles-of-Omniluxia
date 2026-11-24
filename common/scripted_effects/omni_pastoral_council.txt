@@ -69,15 +69,24 @@ omni_pc_reply_decline_effect = {
     hidden_effect = {
         omni_pc_set_reply_effect = { REPLY = 3 }
         save_scope_as = omni_pc_decliner
-        if = { limit = { NOT = { has_variable = omni_pc_refusals } } set_variable = { name = omni_pc_refusals value = 0 } }
-        change_variable = { name = omni_pc_refusals add = 1 }
+        if = {
+            limit = { has_variable = omni_pc_refusals }
+            change_variable = { name = omni_pc_refusals add = 1 }
+        }
+        else = { set_variable = { name = omni_pc_refusals value = 1 } }
         var:omni_pc_invited_by = {
             remove_opinion = { target = scope:omni_pc_decliner modifier = omni_pc_declined_opinion }
             add_opinion = { target = scope:omni_pc_decliner modifier = omni_pc_declined_opinion }
         }
         # A second consecutive refusal is remembered much longer.
         if = {
-            limit = { var:omni_pc_refusals >= 2 }
+            limit = {
+                trigger_if = {
+                    limit = { has_variable = omni_pc_refusals }
+                    var:omni_pc_refusals >= 2
+                }
+                trigger_else = { always = no }
+            }
             var:omni_pc_invited_by = {
                 remove_opinion = { target = scope:omni_pc_decliner modifier = omni_pc_repeated_refusal_opinion }
                 add_opinion = { target = scope:omni_pc_decliner modifier = omni_pc_repeated_refusal_opinion }
