@@ -23,6 +23,10 @@ omni_wards.2 = { # AI: a Zare Jad mage raises a Dragonscale barrier over a besie
     trigger = {
         is_ai = yes
         war = yes
+        OR = {
+            NOT = { has_variable = omni_cd_dragonscale_shield_dragonscale }
+            NOT = { has_variable = omni_cd_dragonscale_dome_dragonscale }
+        }
         any_owned_province = {
             has_siege = yes
             NOT = { omni_province_ward_blocks = { TIER = 2 } }
@@ -43,7 +47,7 @@ omni_wards.2 = { # AI: a Zare Jad mage raises a Dragonscale barrier over a besie
             limit = { has_siege = yes NOT = { omni_province_ward_blocks = { TIER = 2 } } }
             save_scope_as = omni_ai_barrier_site
         }
-        # Shield first (once a year per country), then Dome.
+        # Shield first, then Dome. Each barrier has its own realm cooldown.
         if = {
             limit = {
                 NOT = { has_variable = omni_cd_dragonscale_shield_dragonscale }
@@ -70,6 +74,7 @@ omni_wards.2 = { # AI: a Zare Jad mage raises a Dragonscale barrier over a besie
         }
         else_if = {
             limit = {
+                NOT = { has_variable = omni_cd_dragonscale_dome_dragonscale }
                 any_character = {
                     employer = root
                     omni_character_is_eligible_caster = yes
@@ -90,6 +95,7 @@ omni_wards.2 = { # AI: a Zare Jad mage raises a Dragonscale barrier over a besie
                 if = { limit = { has_province_modifier = dragonscale_dome_mod } remove_province_modifier = dragonscale_dome_mod }
                 add_province_modifier = { name = dragonscale_dome_mod duration = 180 }
             }
+            set_variable = { name = omni_cd_dragonscale_dome_dragonscale days = 180 }
         }
     }
 }

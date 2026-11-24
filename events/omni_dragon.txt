@@ -182,7 +182,7 @@ omni_dragon.7 = {
     option = { name = omni_dragon.7.a }
 }
 
-# Daily dragon upkeep: dragons never regain lost strength.
+# Daily dragon upkeep: track wounds and breach forts the dragon is besieging.
 omni_dragon.8 = {
     type = country_event
     hidden = yes
@@ -200,7 +200,22 @@ omni_dragon.8 = {
         # The last living cohort found above leads to the dragon army.
         if = {
             limit = { exists = scope:omni_dragon_slot_cohort }
-            scope:omni_dragon_slot_cohort.owning_unit = { save_scope_as = omni_dragon_rider_unit }
+            scope:omni_dragon_slot_cohort.owning_unit = {
+                save_scope_as = omni_dragon_rider_unit
+                unit_location = {
+                    if = {
+                        limit = {
+                            fort_level >= 1
+                            has_siege = yes
+                            siege = {
+                                has_breach = no
+                                siege_controller = { this = root }
+                            }
+                        }
+                        siege = { add_breach = 1 }
+                    }
+                }
+            }
         }
         omni_dragon_update_rider = yes
         if = {

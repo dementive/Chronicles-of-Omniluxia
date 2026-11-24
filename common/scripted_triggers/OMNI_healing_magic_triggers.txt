@@ -1,47 +1,40 @@
-﻿# ---------------------------------------------------------------------------
-# Curable-ailment checks for healing magic. CHARACTER scope.
-#
-# The trait lists here mirror exactly what the Healing Light / Healing Light II
-# options in me_zorgo_magic_focus.18 actually remove. They were previously only
-# expressed as an inline else_if chain inside those options, so nothing else -
-# including the AI - could ask "does this character need healing?".
-#
-# Keep these in sync with the removal chains in events/zorgo_magic_events.txt.
-# ---------------------------------------------------------------------------
+﻿# Character-scope eligibility for the shared Healing Light cure effects.
 
-# Removable by Healing Light (tier 1).
 omni_has_minor_curable_ailment = {
 	OR = {
-		has_trait = schizophrenic
-		has_trait = epileptic
-		has_trait = hemorrhagic_fever
-		has_trait = vampiric_fever
-		has_trait = plague
-		has_trait = mentagra
+		has_trait = pneumonia
 		has_trait = pox
 		has_trait = dysentery
 		has_trait = infection
 		has_trait = inflammation
-		has_trait = pneumonia
-		has_trait = gangrene
+		has_trait = arthritis
+		has_trait = gout
+		has_trait = drow_mushroom_spots_trait
 	}
 }
 
-# Removable by Healing Light II (tier 2). Chronic and disabling conditions.
-omni_has_curable_ailment = {
+omni_has_moderate_curable_ailment = {
 	OR = {
+		has_trait = vampiric_fever
+		has_trait = schizophrenic
+		has_trait = epileptic
 		has_trait = invalid
-		has_trait = gangrene
-		has_trait = arthritis
-		has_trait = leper
 		has_trait = blind
-		has_trait = paralysis
+		has_trait = mentagra
+	}
+}
+
+omni_has_major_curable_ailment = {
+	OR = {
+		has_trait = plague
+		has_trait = hemorrhagic_fever
+		has_trait = cancer
+		has_trait = gangrene
+		has_trait = diphtheria
+		has_trait = leper
 		has_trait = brain_damaged
 		has_trait = dementia
-		has_trait = cancer
-		has_trait = diphtheria
-		has_trait = gout
-		has_trait = drow_mushroom_spots_trait
+		has_trait = paralysis
 	}
 }
 
@@ -70,18 +63,25 @@ omni_is_healing_priority_character = {
 }
 
 # Caster checks for the selected AI patient.
-omni_ai_can_cast_major_cure = {
-	omni_can_afford_spell = { BASE = 100 }
-	has_variable = cleric_t3_unlocked_var
-	omni_knows_spell = { SPELL = healing_light_ii }
-	scope:omni_heal_target = { omni_has_curable_ailment = yes }
-}
-
 omni_ai_can_cast_minor_cure = {
-	omni_can_afford_spell = { BASE = 75 }
+	omni_can_afford_spell = { BASE = 50 }
 	has_variable = cleric_t2_unlocked_var
 	omni_knows_spell = { SPELL = healing_light }
 	scope:omni_heal_target = { omni_has_minor_curable_ailment = yes }
+}
+
+omni_ai_can_cast_moderate_cure = {
+	omni_can_afford_spell = { BASE = 100 }
+	has_variable = cleric_t3_unlocked_var
+	omni_knows_spell = { SPELL = healing_light_ii }
+	scope:omni_heal_target = { omni_has_moderate_curable_ailment = yes }
+}
+
+omni_ai_can_cast_major_cure = {
+	omni_can_afford_spell = { BASE = 150 }
+	has_variable = cleric_t4_unlocked_var
+	omni_knows_spell = { SPELL = healing_light_iii }
+	scope:omni_heal_target = { omni_has_major_curable_ailment = yes }
 }
 
 omni_ai_can_cast_vitality = {

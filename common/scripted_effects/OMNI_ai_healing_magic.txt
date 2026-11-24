@@ -1,81 +1,56 @@
-﻿# ----------------------------------------------------------------------------------------------------------------------
-# Omniluxia - AI healing magic
-#
-# The cure logic exists in the Aldic support menu (me_zorgo_magic_focus.18):
-# Healing Light removes acute mental and infectious illnesses, Healing Light II removes a long list of
-# chronic and terminal ailments, Vitality grants add_health. None of it was
-# reachable by the AI, so an AI ruler could rot to death from a curable disease
-# while their own court cleric sat on a full mana pool.
-#
-# Runs in the CASTER (character) scope. scope:omni_heal_target is the patient.
-# Costs and tier gates match the player options exactly:
-#   Healing Light     75 mana, cleric T1 - clears acute mental and infectious illnesses
-#   Healing Light II 100 mana, cleric_t3_unlocked_var   - clears the full list
-#   Vitality         100 mana, cleric_t3_unlocked_var   - add_health = 3
-#
-# PERF: no scope iteration. The calling event does the (bounded) court scan once
-# and hands this effect a single caster and a single target.
-# ----------------------------------------------------------------------------------------------------------------------
+﻿# The caster pays for one cure. Player and AI casts share the same patient effects.
 
 omni_ai_cast_healing_effect = {
 	if = {
-		# Best case: the full cure list. One ailment per cast, matching the
-		# player's else_if chain - the AI simply comes back next year for the rest.
-		limit = {
-			omni_ai_can_cast_major_cure = yes
-		}
-		omni_spell_mana_cost_effect = { BASE = 100 }
-		scope:omni_heal_target = { omni_remove_one_curable_ailment = yes }
+		limit = { omni_ai_can_cast_major_cure = yes }
+		omni_spell_mana_cost_effect = { BASE = 150 }
+		scope:omni_heal_target = { omni_remove_one_major_curable_ailment = yes }
 	}
 	else_if = {
-		# Tier 1 fallback: one acute ailment, matching the player spell.
-		limit = {
-			omni_ai_can_cast_minor_cure = yes
-		}
-		omni_spell_mana_cost_effect = { BASE = 75 }
+		limit = { omni_ai_can_cast_moderate_cure = yes }
+		omni_spell_mana_cost_effect = { BASE = 100 }
+		scope:omni_heal_target = { omni_remove_one_moderate_curable_ailment = yes }
+	}
+	else_if = {
+		limit = { omni_ai_can_cast_minor_cure = yes }
+		omni_spell_mana_cost_effect = { BASE = 50 }
 		scope:omni_heal_target = { omni_remove_one_minor_curable_ailment = yes }
 	}
 	else_if = {
-		# Nothing chronic to cure, but the patient is hurt or ill - top them up.
-		limit = {
-			omni_ai_can_cast_vitality = yes
-		}
+		limit = { omni_ai_can_cast_vitality = yes }
 		omni_spell_mana_cost_effect = { BASE = 100 }
 		scope:omni_heal_target = { add_health = 3 }
 	}
 }
 
-# Mirrors the Healing Light II removal chain in me_zorgo_magic_focus.18.
-# One ailment per cast, worst-first so the AI clears the things that actually
-# kill or incapacitate before the merely inconvenient ones. The player option
-# uses this same helper, so both paths cure the same conditions in the same order.
-omni_remove_one_curable_ailment = {
-	if =      { limit = { has_trait = cancer }        remove_trait = cancer }
-	else_if = { limit = { has_trait = gangrene }      remove_trait = gangrene }
-	else_if = { limit = { has_trait = diphtheria }    remove_trait = diphtheria }
-	else_if = { limit = { has_trait = leper }         remove_trait = leper }
-	else_if = { limit = { has_trait = brain_damaged } remove_trait = brain_damaged }
-	else_if = { limit = { has_trait = dementia }      remove_trait = dementia }
-	else_if = { limit = { has_trait = paralysis }     remove_trait = paralysis }
-	else_if = { limit = { has_trait = invalid }       remove_trait = invalid }
-	else_if = { limit = { has_trait = blind }         remove_trait = blind }
-	else_if = { limit = { has_trait = arthritis }     remove_trait = arthritis }
-	else_if = { limit = { has_trait = gout }          remove_trait = gout }
-	else_if = { limit = { has_trait = drow_mushroom_spots_trait } remove_trait = drow_mushroom_spots_trait }
-}
-
-# Shared with the player Healing Light option.
 omni_remove_one_minor_curable_ailment = {
-	if = { limit = { has_trait = schizophrenic } remove_trait = schizophrenic }
-	else_if = { limit = { has_trait = epileptic } remove_trait = epileptic }
-	else_if = { limit = { has_trait = hemorrhagic_fever } remove_trait = hemorrhagic_fever }
-	else_if = { limit = { has_trait = vampiric_fever } remove_trait = vampiric_fever }
-	else_if = { limit = { has_trait = plague } remove_trait = plague }
-	else_if = { limit = { has_trait = mentagra } remove_trait = mentagra }
+	if = { limit = { has_trait = pneumonia } remove_trait = pneumonia }
 	else_if = { limit = { has_trait = pox } remove_trait = pox }
 	else_if = { limit = { has_trait = dysentery } remove_trait = dysentery }
 	else_if = { limit = { has_trait = infection } remove_trait = infection }
 	else_if = { limit = { has_trait = inflammation } remove_trait = inflammation }
-	else_if = { limit = { has_trait = pneumonia } remove_trait = pneumonia }
+	else_if = { limit = { has_trait = arthritis } remove_trait = arthritis }
+	else_if = { limit = { has_trait = gout } remove_trait = gout }
+	else_if = { limit = { has_trait = drow_mushroom_spots_trait } remove_trait = drow_mushroom_spots_trait }
+}
+
+omni_remove_one_moderate_curable_ailment = {
+	if = { limit = { has_trait = vampiric_fever } remove_trait = vampiric_fever }
+	else_if = { limit = { has_trait = schizophrenic } remove_trait = schizophrenic }
+	else_if = { limit = { has_trait = epileptic } remove_trait = epileptic }
+	else_if = { limit = { has_trait = invalid } remove_trait = invalid }
+	else_if = { limit = { has_trait = blind } remove_trait = blind }
+	else_if = { limit = { has_trait = mentagra } remove_trait = mentagra }
+}
+
+omni_remove_one_major_curable_ailment = {
+	if = { limit = { has_trait = plague } remove_trait = plague }
+	else_if = { limit = { has_trait = hemorrhagic_fever } remove_trait = hemorrhagic_fever }
+	else_if = { limit = { has_trait = cancer } remove_trait = cancer }
 	else_if = { limit = { has_trait = gangrene } remove_trait = gangrene }
+	else_if = { limit = { has_trait = diphtheria } remove_trait = diphtheria }
+	else_if = { limit = { has_trait = leper } remove_trait = leper }
+	else_if = { limit = { has_trait = brain_damaged } remove_trait = brain_damaged }
+	else_if = { limit = { has_trait = dementia } remove_trait = dementia }
+	else_if = { limit = { has_trait = paralysis } remove_trait = paralysis }
 }

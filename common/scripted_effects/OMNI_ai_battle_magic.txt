@@ -220,9 +220,12 @@ omni_ai_cast_battle_offense_effect = {
 			else = {
 				random_list = {
 					50 = {
-						death = {
-							killer = scope:omni_ai_death_hex_caster
-							death_reason = death_magic
+						if = {
+							limit = { NOT = { has_trait = mindlord_trait } }
+							death = {
+								killer = scope:omni_ai_death_hex_caster
+								death_reason = death_magic
+							}
 						}
 					}
 					50 = {}
@@ -244,7 +247,7 @@ omni_ai_cast_battle_offense_effect = {
 		}
 		omni_spell_mana_cost_effect = { BASE = 165 }
 		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.25 }
-		if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { add_health = -4 } }
+		if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { omni_apply_spell_health_damage = { DAMAGE = -4 RESISTED_DAMAGE = -2 } } }
 		omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_army TIER = 4 HIT_PRIMARY = no }
 		omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_navy TIER = 4 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_cataclysmic_eruption days = 1 }
@@ -295,7 +298,8 @@ omni_ai_cast_battle_offense_effect = {
 				limit = { omni_personal_ward_blocks = { TIER = 2 } }
 				omni_spend_personal_ward = yes
 			}
-			else = {
+			else_if = {
+				limit = { NOT = { has_trait = mindlord_trait } }
 				set_variable = { name = omni_skull_curse_country value = scope:caster_country }
 				force_add_trait = skull_curse_trait
 			}
@@ -434,7 +438,7 @@ omni_ai_cast_battle_offense_effect = {
 					limit = { omni_personal_ward_blocks = { TIER = 3 } }
 					omni_spend_personal_ward = yes
 				}
-				else = { add_health = -2 }
+				else = { omni_apply_spell_health_damage = { DAMAGE = -2 RESISTED_DAMAGE = -1 } }
 			}
 		}
 		omni_apply_enemy_debuff_effect = { MOD = omni_plague_miasma_mod DAYS = 30 UNITTYPE = is_army TIER = 3 HIT_PRIMARY = no }
@@ -458,7 +462,7 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_personal_ward = yes
 			}
 			else = {
-				add_health = -3
+				omni_apply_spell_health_damage = { DAMAGE = -3 RESISTED_DAMAGE = -1.5 }
 			}
 		}
 		add_health = 2
@@ -481,14 +485,17 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_personal_ward = yes
 			}
 			else = {
-				random_list = {
-					1 = { force_add_trait = leper }
-					1 = { force_add_trait = cancer }
-					1 = { force_add_trait = depressed }
-					1 = { force_add_trait = plague }
-					1 = { force_add_trait = pox }
-					1 = { force_add_trait = vampiric_fever }
-					1 = { force_add_trait = paralysis }
+				if = {
+					limit = { NOT = { has_trait = mindlord_trait } }
+					random_list = {
+						1 = { force_add_trait = leper }
+						1 = { force_add_trait = cancer }
+						1 = { force_add_trait = depressed }
+						1 = { force_add_trait = plague }
+						1 = { force_add_trait = pox }
+						1 = { force_add_trait = vampiric_fever }
+						1 = { force_add_trait = paralysis }
+					}
 				}
 			}
 		}
@@ -610,7 +617,7 @@ omni_ai_cast_battle_offense_effect = {
 					limit = { omni_personal_ward_blocks = { TIER = 2 } }
 					omni_spend_personal_ward = yes
 				}
-				else = { add_health = -1 }
+				else = { omni_apply_spell_health_damage = { DAMAGE = -1 RESISTED_DAMAGE = -0.5 } }
 			}
 		}
 		omni_apply_enemy_debuff_effect = { MOD = omni_fireball_mod DAYS = 30 UNITTYPE = is_army TIER = 2 HIT_PRIMARY = yes }
@@ -746,7 +753,7 @@ omni_ai_cast_battle_offense_effect = {
 					limit = { omni_personal_ward_blocks = { TIER = 1 } }
 					omni_spend_personal_ward = yes
 				}
-				else = { add_health = -0.5 }
+				else = { omni_apply_spell_health_damage = { DAMAGE = -0.5 RESISTED_DAMAGE = -0.25 } }
 			}
 		}
 		omni_apply_enemy_debuff_effect = { MOD = omni_igniting_spark_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }

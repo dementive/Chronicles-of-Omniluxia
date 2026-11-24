@@ -323,7 +323,10 @@ me_magic_studying.7 = {
     option = {
         name = "me_magic_studying.7.a"
         scope:unfortunate_soul = {
-            death = { death_reason = death_magic }
+            if = {
+                limit = { NOT = { has_trait = mindlord_trait } }
+                death = { death_reason = death_magic }
+            }
         }
         add_country_modifier = {
             name = magic_murder_coverup_mod
@@ -721,19 +724,22 @@ me_magic_studying.17 = {
     option = {
         name = "me_magic_studying.17.a"
         add_stability = -3
-        scope:unfortunate_madman = {
-            if = {
-                limit = { NOT = { has_trait = epileptic } }
-                force_add_trait = epileptic
+        if = {
+            limit = { scope:unfortunate_madman = { NOT = { has_trait = mindlord_trait } } }
+            scope:unfortunate_madman = {
+                if = {
+                    limit = { NOT = { has_trait = epileptic } }
+                    force_add_trait = epileptic
+                }
+                else_if = {
+                    limit = { NOT = { has_trait = lunatic } }
+                    force_add_trait = lunatic
+                }
+                else = {
+                    death = { death_reason = death_magic }
+                }
+                add_loyalty = magic_victim_loyalty
             }
-            else_if = {
-                limit = { NOT = { has_trait = lunatic } }
-                force_add_trait = lunatic
-            }
-            else = {
-                death = { death_reason = death_magic }
-            }
-            add_loyalty = magic_victim_loyalty
         }
         custom_tooltip = me_magic_studying_bad_tooltip
 
@@ -1005,7 +1011,10 @@ me_magic_studying.22 = {
                 else = {
                     random = {
                         chance = 50
-                        death = { death_reason = death_magic }
+                        if = {
+                            limit = { NOT = { has_trait = mindlord_trait } }
+                            death = { death_reason = death_magic }
+                        }
                     }
                 }
                 add_loyalty = magic_victim_loyalty
@@ -1162,17 +1171,20 @@ me_magic_studying.25 = {
 
     option = {
         name = "me_magic_studying.25.a"
-        scope:easy_pickings = {
-            if = {
-                limit = { NOT = { has_trait = weak_willed } }
-                force_add_trait = weak_willed
+        if = {
+            limit = { scope:easy_pickings = { NOT = { has_trait = mindlord_trait } } }
+            scope:easy_pickings = {
+                if = {
+                    limit = { NOT = { has_trait = weak_willed } }
+                    force_add_trait = weak_willed
+                }
+                else = {
+                    add_loyalty = charm_magic_loyalty
+                }
+                add_gold = -120
             }
-            else = {
-                add_loyalty = charm_magic_loyalty
-            }
-            add_gold = -120
+            add_treasury = 120
         }
-        add_treasury = 120
         custom_tooltip = me_magic_studying_good_tooltip
 
         hidden_effect = {

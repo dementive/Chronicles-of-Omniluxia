@@ -211,11 +211,6 @@ omni_sb_spell_tier_4 = {
 	is_shown = { omni_sb_any_t4_access = yes }
 }
 
-omni_sb_spell_tier_5 = {
-	scope = character
-	is_shown = { omni_sb_any_t5_access = yes }
-}
-
 omni_sb_learn_battle_clarity = {
 	scope = character
 	saved_scopes = { player }
@@ -943,9 +938,12 @@ omni_sb_learn_rite_of_the_oracle = {
 		employer = scope:player
 		omni_can_learn_academy_magic = yes
 		NOT = { has_variable = rite_of_the_oracle_known_var }
-		has_variable = chronostasis_field_known_var
-		omni_sb_any_t5_access = yes
-		omni_sb_has_points = { N = 8 }
+		omni_sb_knows_omnic_t3_count = yes
+		omni_sb_any_t4_access = yes
+		trigger_if = { limit = { omni_sb_can_claim_supreme_rite_of_the_oracle = no }
+			trigger_if = { limit = { OR = { omni_sb_omnic_t4_access = yes } } omni_sb_has_points = { N = 5 } }
+			trigger_else = { omni_sb_has_points = { N = 8 } }
+		}
 	}
 	effect = {
 		hidden_effect = { omni_sb_buy_rite_of_the_oracle = yes }
@@ -956,9 +954,13 @@ omni_sb_preview_rite_of_the_oracle = {
 	saved_scopes = { player }
 	effect = {
 		custom_tooltip = omni_sb_spell_rite_of_the_oracle_tt
-		if = { limit = { omni_sb_has_points = { N = 8 } } custom_tooltip = omni_sb_cost_8_tt } else = { custom_tooltip = omni_sb_cost_8_short_tt }
-		if = { limit = { NOT = { has_variable = chronostasis_field_known_var } } custom_tooltip = omni_sb_req_chronostasis_field_tt }
-		if = { limit = { NOT = { omni_sb_any_t5_access = yes } } custom_tooltip = omni_sb_tier_5_tt }
+		if = { limit = { omni_sb_can_claim_supreme_rite_of_the_oracle = yes } custom_tooltip = omni_sb_supreme_spell_free_tt }
+		else = {
+			if = { limit = { OR = { omni_sb_omnic_t4_access = yes } } if = { limit = { omni_sb_has_points = { N = 5 } } custom_tooltip = omni_sb_cost_5_tt } else = { custom_tooltip = omni_sb_cost_5_short_tt } }
+			else = { if = { limit = { omni_sb_has_points = { N = 8 } } custom_tooltip = omni_sb_cost_8_tt } else = { custom_tooltip = omni_sb_cost_8_short_tt } }
+		}
+		if = { limit = { NOT = { omni_sb_knows_omnic_t3_count = yes } } custom_tooltip = omni_sb_req_omnic_t3_count_tt }
+		if = { limit = { NOT = { omni_sb_any_t4_access = yes } } custom_tooltip = omni_sb_tier_4_tt }
 	}
 }
 omni_sb_learn_arcane_aegis = {
@@ -1401,6 +1403,38 @@ omni_sb_preview_corrosive_rain = {
 		if = { limit = { NOT = { omni_sb_any_t2_access = yes } } custom_tooltip = omni_sb_tier_2_tt }
 	}
 }
+omni_sb_learn_healing_light_iii = {
+	scope = character
+	saved_scopes = { player }
+	is_valid = {
+		omni_sb_viewer_controls = yes
+		employer = scope:player
+		omni_can_learn_academy_magic = yes
+		NOT = { has_variable = healing_light_iii_known_var }
+		has_variable = healing_light_ii_known_var
+		omni_sb_knows_aldic_t2_count = yes
+		omni_sb_any_t3_access = yes
+		trigger_if = { limit = { OR = { has_variable = cleric_t4_unlocked_var } } omni_sb_has_points = { N = 2 } }
+		trigger_else_if = { limit = { OR = { omni_sb_aldic_t3_access = yes } } omni_sb_has_points = { N = 4 } }
+		trigger_else = { omni_sb_has_points = { N = 6 } }
+	}
+	effect = {
+		hidden_effect = { omni_sb_buy_healing_light_iii = yes }
+	}
+}
+omni_sb_preview_healing_light_iii = {
+	scope = character
+	saved_scopes = { player }
+	effect = {
+		custom_tooltip = omni_sb_spell_healing_light_iii_tt
+		if = { limit = { OR = { has_variable = cleric_t4_unlocked_var } } if = { limit = { omni_sb_has_points = { N = 2 } } custom_tooltip = omni_sb_cost_2_tt } else = { custom_tooltip = omni_sb_cost_2_short_tt } }
+		else_if = { limit = { OR = { omni_sb_aldic_t3_access = yes } } if = { limit = { omni_sb_has_points = { N = 4 } } custom_tooltip = omni_sb_cost_4_tt } else = { custom_tooltip = omni_sb_cost_4_short_tt } }
+		else = { if = { limit = { omni_sb_has_points = { N = 6 } } custom_tooltip = omni_sb_cost_6_tt } else = { custom_tooltip = omni_sb_cost_6_short_tt } }
+		if = { limit = { NOT = { has_variable = healing_light_ii_known_var } } custom_tooltip = omni_sb_req_healing_light_ii_tt }
+		if = { limit = { NOT = { omni_sb_knows_aldic_t2_count = yes } } custom_tooltip = omni_sb_req_aldic_t2_count_tt }
+		if = { limit = { NOT = { omni_sb_any_t3_access = yes } } custom_tooltip = omni_sb_tier_3_tt }
+	}
+}
 omni_sb_learn_pestilence = {
 	scope = character
 	saved_scopes = { player }
@@ -1566,9 +1600,12 @@ omni_sb_learn_dominion_of_the_mind = {
 		employer = scope:player
 		omni_can_learn_academy_magic = yes
 		NOT = { has_variable = dominion_of_the_mind_known_var }
-		has_variable = word_of_annihilation_known_var
-		omni_sb_any_t5_access = yes
-		omni_sb_has_points = { N = 8 }
+		omni_sb_knows_aldic_t3_count = yes
+		omni_sb_any_t4_access = yes
+		trigger_if = { limit = { omni_sb_can_claim_supreme_dominion_of_the_mind = no }
+			trigger_if = { limit = { OR = { omni_sb_aldic_t4_access = yes } } omni_sb_has_points = { N = 5 } }
+			trigger_else = { omni_sb_has_points = { N = 8 } }
+		}
 	}
 	effect = {
 		hidden_effect = { omni_sb_buy_dominion_of_the_mind = yes }
@@ -1579,9 +1616,13 @@ omni_sb_preview_dominion_of_the_mind = {
 	saved_scopes = { player }
 	effect = {
 		custom_tooltip = omni_sb_spell_dominion_of_the_mind_tt
-		if = { limit = { omni_sb_has_points = { N = 8 } } custom_tooltip = omni_sb_cost_8_tt } else = { custom_tooltip = omni_sb_cost_8_short_tt }
-		if = { limit = { NOT = { has_variable = word_of_annihilation_known_var } } custom_tooltip = omni_sb_req_word_of_annihilation_tt }
-		if = { limit = { NOT = { omni_sb_any_t5_access = yes } } custom_tooltip = omni_sb_tier_5_tt }
+		if = { limit = { omni_sb_can_claim_supreme_dominion_of_the_mind = yes } custom_tooltip = omni_sb_supreme_spell_free_tt }
+		else = {
+			if = { limit = { OR = { omni_sb_aldic_t4_access = yes } } if = { limit = { omni_sb_has_points = { N = 5 } } custom_tooltip = omni_sb_cost_5_tt } else = { custom_tooltip = omni_sb_cost_5_short_tt } }
+			else = { if = { limit = { omni_sb_has_points = { N = 8 } } custom_tooltip = omni_sb_cost_8_tt } else = { custom_tooltip = omni_sb_cost_8_short_tt } }
+		}
+		if = { limit = { NOT = { omni_sb_knows_aldic_t3_count = yes } } custom_tooltip = omni_sb_req_aldic_t3_count_tt }
+		if = { limit = { NOT = { omni_sb_any_t4_access = yes } } custom_tooltip = omni_sb_tier_4_tt }
 	}
 }
 omni_sb_learn_blighted_ground = {
@@ -2373,9 +2414,12 @@ omni_sb_learn_summon_dragon = {
 		employer = scope:player
 		omni_can_learn_academy_magic = yes
 		NOT = { has_variable = summon_dragon_known_var }
-		has_variable = summon_elemental_colossus_known_var
-		omni_sb_any_t5_access = yes
-		omni_sb_has_points = { N = 8 }
+		omni_sb_knows_amten_t3_count = yes
+		omni_sb_any_t4_access = yes
+		trigger_if = { limit = { omni_sb_can_claim_supreme_summon_dragon = no }
+			trigger_if = { limit = { OR = { omni_sb_amten_t4_access = yes } } omni_sb_has_points = { N = 5 } }
+			trigger_else = { omni_sb_has_points = { N = 8 } }
+		}
 	}
 	effect = {
 		hidden_effect = { omni_sb_buy_summon_dragon = yes }
@@ -2386,9 +2430,13 @@ omni_sb_preview_summon_dragon = {
 	saved_scopes = { player }
 	effect = {
 		custom_tooltip = omni_sb_spell_summon_dragon_tt
-		if = { limit = { omni_sb_has_points = { N = 8 } } custom_tooltip = omni_sb_cost_8_tt } else = { custom_tooltip = omni_sb_cost_8_short_tt }
-		if = { limit = { NOT = { has_variable = summon_elemental_colossus_known_var } } custom_tooltip = omni_sb_req_summon_elemental_colossus_tt }
-		if = { limit = { NOT = { omni_sb_any_t5_access = yes } } custom_tooltip = omni_sb_tier_5_tt }
+		if = { limit = { omni_sb_can_claim_supreme_summon_dragon = yes } custom_tooltip = omni_sb_supreme_spell_free_tt }
+		else = {
+			if = { limit = { OR = { omni_sb_amten_t4_access = yes } } if = { limit = { omni_sb_has_points = { N = 5 } } custom_tooltip = omni_sb_cost_5_tt } else = { custom_tooltip = omni_sb_cost_5_short_tt } }
+			else = { if = { limit = { omni_sb_has_points = { N = 8 } } custom_tooltip = omni_sb_cost_8_tt } else = { custom_tooltip = omni_sb_cost_8_short_tt } }
+		}
+		if = { limit = { NOT = { omni_sb_knows_amten_t3_count = yes } } custom_tooltip = omni_sb_req_amten_t3_count_tt }
+		if = { limit = { NOT = { omni_sb_any_t4_access = yes } } custom_tooltip = omni_sb_tier_4_tt }
 	}
 }
 omni_sb_learn_fear_hex = {
@@ -3068,9 +3116,12 @@ omni_sb_learn_rite_of_lichdom = {
 		employer = scope:player
 		omni_can_learn_academy_magic = yes
 		NOT = { has_variable = rite_of_lichdom_known_var }
-		has_variable = cataclysmic_eruption_known_var
-		omni_sb_any_t5_access = yes
-		omni_sb_has_points = { N = 8 }
+		omni_sb_knows_melodian_t3_count = yes
+		omni_sb_any_t4_access = yes
+		trigger_if = { limit = { omni_sb_can_claim_supreme_rite_of_lichdom = no }
+			trigger_if = { limit = { OR = { omni_sb_melodian_t4_access = yes } } omni_sb_has_points = { N = 5 } }
+			trigger_else = { omni_sb_has_points = { N = 8 } }
+		}
 	}
 	effect = {
 		hidden_effect = { omni_sb_buy_rite_of_lichdom = yes }
@@ -3081,9 +3132,13 @@ omni_sb_preview_rite_of_lichdom = {
 	saved_scopes = { player }
 	effect = {
 		custom_tooltip = omni_sb_spell_rite_of_lichdom_tt
-		if = { limit = { omni_sb_has_points = { N = 8 } } custom_tooltip = omni_sb_cost_8_tt } else = { custom_tooltip = omni_sb_cost_8_short_tt }
-		if = { limit = { NOT = { has_variable = cataclysmic_eruption_known_var } } custom_tooltip = omni_sb_req_cataclysmic_eruption_tt }
-		if = { limit = { NOT = { omni_sb_any_t5_access = yes } } custom_tooltip = omni_sb_tier_5_tt }
+		if = { limit = { omni_sb_can_claim_supreme_rite_of_lichdom = yes } custom_tooltip = omni_sb_supreme_spell_free_tt }
+		else = {
+			if = { limit = { OR = { omni_sb_melodian_t4_access = yes } } if = { limit = { omni_sb_has_points = { N = 5 } } custom_tooltip = omni_sb_cost_5_tt } else = { custom_tooltip = omni_sb_cost_5_short_tt } }
+			else = { if = { limit = { omni_sb_has_points = { N = 8 } } custom_tooltip = omni_sb_cost_8_tt } else = { custom_tooltip = omni_sb_cost_8_short_tt } }
+		}
+		if = { limit = { NOT = { omni_sb_knows_melodian_t3_count = yes } } custom_tooltip = omni_sb_req_melodian_t3_count_tt }
+		if = { limit = { NOT = { omni_sb_any_t4_access = yes } } custom_tooltip = omni_sb_tier_4_tt }
 	}
 }
 # ---- Spell knowledge and mana availability ----
@@ -3264,7 +3319,7 @@ omni_sb_known_restoration = {
 omni_sb_known_healing_light = {
 	scope = character
 	is_shown = { has_variable = healing_light_known_var }
-	is_valid = { custom_tooltip = { text = omni_sb_low_mana_healing_light_tt omni_can_afford_spell = { BASE = 75 } } }
+	is_valid = { custom_tooltip = { text = omni_sb_low_mana_healing_light_tt omni_can_afford_spell = { BASE = 50 } } }
 }
 
 omni_sb_known_altered_inspiration = {
@@ -3337,6 +3392,12 @@ omni_sb_known_corrosive_rain = {
 	scope = character
 	is_shown = { has_variable = corrosive_rain_known_var }
 	is_valid = { custom_tooltip = { text = omni_sb_low_mana_corrosive_rain_tt omni_can_afford_spell = { BASE = 40 } } }
+}
+
+omni_sb_known_healing_light_iii = {
+	scope = character
+	is_shown = { has_variable = healing_light_iii_known_var }
+	is_valid = { custom_tooltip = { text = omni_sb_low_mana_healing_light_iii_tt omni_can_afford_spell = { BASE = 150 } } }
 }
 
 omni_sb_known_pestilence = {
@@ -4223,6 +4284,7 @@ omni_sb_cast_arrows_of_lavas = {
 omni_sb_cast_astral_search_soul = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_astral_search_soul } } } }
     is_valid = { omni_sb_can_cast_astral_search_soul = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -4267,6 +4329,7 @@ omni_sb_cast_atheus_blessing = {
 omni_sb_cast_battle_avatar_taanka = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_battle_avatar_taanka } } } }
     is_valid = { omni_sb_can_cast_battle_avatar_taanka = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -4831,6 +4894,7 @@ omni_sb_cast_divine_ceremonies = {
 omni_sb_cast_dragonscale_dome_dragonscale = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_dragonscale_dome_dragonscale } } } }
     is_valid = { omni_sb_can_cast_dragonscale_dome_dragonscale = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -4841,6 +4905,7 @@ omni_sb_cast_dragonscale_dome_dragonscale = {
 omni_sb_cast_dragonscale_shield_dragonscale = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_dragonscale_shield_dragonscale } } } }
     is_valid = { omni_sb_can_cast_dragonscale_shield_dragonscale = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -5218,6 +5283,7 @@ omni_sb_cast_hellas_light = {
 omni_sb_cast_hellas_providence = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_hellas_providence } } } }
     is_valid = { omni_sb_can_cast_hellas_providence = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -5228,6 +5294,7 @@ omni_sb_cast_hellas_providence = {
 omni_sb_cast_helluvius_peace = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_helluvius_peace } } } }
     is_valid = { omni_sb_can_cast_helluvius_peace = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -5502,6 +5569,7 @@ omni_sb_cast_magical_construction = {
 omni_sb_cast_mended_anima_soul = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_mended_anima_soul } } } }
     is_valid = { omni_sb_can_cast_mended_anima_soul = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -5687,6 +5755,7 @@ omni_sb_confirm_palpan = {
 omni_sb_cast_palpan = {
     scope = country
     saved_scopes = { player selected_mage }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_palpan } } } }
     is_valid = { omni_sb_can_cast_palpan = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -5984,6 +6053,7 @@ omni_sb_cast_scramble = {
 omni_sb_cast_sculpt_buildings_stone_magic = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_sculpt_buildings_stone_magic } } } }
     is_valid = { omni_sb_can_cast_sculpt_buildings_stone_magic = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -6041,6 +6111,7 @@ omni_sb_cast_serpentine_swords = {
 omni_sb_cast_silver_tongue_charm = {
     scope = country
     saved_scopes = { player selected_mage target }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_silver_tongue_charm } } } }
     is_valid = { omni_sb_can_cast_silver_tongue_charm = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -6229,6 +6300,7 @@ omni_sb_confirm_summon_eagle_of_zanis = {
 omni_sb_cast_summon_eagle_of_zanis = {
     scope = country
     saved_scopes = { player selected_mage }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_summon_eagle_of_zanis } } } }
     is_valid = { omni_sb_can_cast_summon_eagle_of_zanis = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -6349,6 +6421,7 @@ omni_sb_confirm_summon_warborn = {
 omni_sb_cast_summon_warborn = {
     scope = country
     saved_scopes = { player selected_mage }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_summon_warborn } any_owned_province = { omni_spell_target_land = yes } } } }
     is_valid = { omni_sb_can_cast_summon_warborn = yes }
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
@@ -6783,5 +6856,39 @@ omni_sb_cast_realm_ward = {
     ai_is_valid = { always = no }
     effect = { hidden_effect = {
         scope:player = { trigger_event = { id = omni_spellbook_cast.140 } }
+    } }
+}
+
+omni_sb_confirm_healing_light_iii = {
+    scope = country
+    saved_scopes = { player selected_mage target }
+    is_valid = { omni_sb_can_cast_healing_light_iii = yes omni_sb_can_target_healing_light_iii = yes }
+    ai_is_valid = { always = no }
+    effect = {
+        hidden_effect = {
+            scope:player = { trigger_event = { id = omni_spellbook_cast.150 } }
+            clear_variable_list = omni_sb_recipients
+            remove_variable = omni_sb_casting_mage
+        }
+    }
+}
+
+omni_sb_cast_healing_light_iii = {
+    scope = country
+    saved_scopes = { player selected_mage }
+    is_valid = { omni_sb_can_cast_healing_light_iii = yes }
+    ai_is_valid = { always = no }
+    effect = { hidden_effect = {
+        scope:player = {
+            clear_variable_list = omni_sb_recipients
+            set_variable = { name = omni_sb_casting_mage value = scope:selected_mage }
+            every_character = {
+                limit = { is_alive = yes }
+                save_scope_as = target
+                if = { limit = { omni_sb_can_target_healing_light_iii = yes }
+                    scope:player = { add_to_variable_list = { name = omni_sb_recipients target = scope:target } }
+                }
+            }
+        }
     } }
 }
