@@ -632,13 +632,34 @@ base_window = {
 						position = { 0 0 }
 						size = { 100% 28 }	
 						datacontext = "[GovernmentView]"
-						blockoverride "Title_text" { text = "[SelectLocalization( GetScriptedGui('ob_order_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ), 'ob_order_reign', 'RULER_TERM_DESCRIPTION_MONARCHY_CORULER' )]" }
+						# The text is evaluated even while hidden, so only resolve the praenomen key when
+						# it can succeed: a valid co-ruler, not a dragon realm (dragons error on
+						# GetPraenomen), not the Balthazarian Order (its own header follows).
+						blockoverride "Title_text" { text = "[SelectLocalization( And( GovernmentView.GetPlayer.GetCoRuler.IsValid, Not( Or( GetScriptedGui('omni_dragon_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ), GetScriptedGui('ob_order_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ) ) ) ), 'RULER_TERM_DESCRIPTION_MONARCHY_CORULER', 'omni_blank_loc' )]" }
 						blockoverride "Max_text_width" { max_width = 650 }
-						#visible = "[And( GovernmentView.GetPlayer.GetGovernment.IsMonarchy, GovernmentView.GetPlayer.GetCoRuler.IsValid )]"	
-						visible = "[And( GovernmentView.GetPlayer.UseCoRuler, And( GovernmentView.GetPlayer.GetGovernment.IsMonarchy, Not( Player.HasTimedModifier('regency_government') ) ) )]"						
+						#visible = "[And( GovernmentView.GetPlayer.GetGovernment.IsMonarchy, GovernmentView.GetPlayer.GetCoRuler.IsValid )]"
+						visible = "[And( Not( Or( GetScriptedGui('omni_dragon_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ), GetScriptedGui('ob_order_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ) ) ), And( GovernmentView.GetPlayer.UseCoRuler, And( GovernmentView.GetPlayer.GetGovernment.IsMonarchy, Not( Player.HasTimedModifier('regency_government') ) ) ) )]"
 					}
 					sub_header = {
-						name = "Government Regency Overview Header"	
+						name = "Government Overview Header Balthazarian Order"
+						position = { 0 0 }
+						size = { 100% 28 }
+						datacontext = "[GovernmentView]"
+						blockoverride "Title_text" { text = "[SelectLocalization( And( GovernmentView.GetPlayer.GetCoRuler.IsValid, GetScriptedGui('ob_order_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ) ), 'ob_order_reign', 'omni_blank_loc' )]" }
+						blockoverride "Max_text_width" { max_width = 650 }
+						visible = "[And( GetScriptedGui('ob_order_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ), And( GovernmentView.GetPlayer.UseCoRuler, And( GovernmentView.GetPlayer.GetGovernment.IsMonarchy, Not( Player.HasTimedModifier('regency_government') ) ) ) )]"
+					}
+					sub_header = {
+						name = "Government Overview Header Dragon Dominion"
+						position = { 0 0 }
+						size = { 100% 28 }
+						datacontext = "[GovernmentView]"
+						blockoverride "Title_text" { text = "omni_dragon_reign_header" }
+						blockoverride "Max_text_width" { max_width = 650 }
+						visible = "[And( GetScriptedGui('omni_dragon_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ), And( GovernmentView.GetPlayer.UseCoRuler, Not( Player.HasTimedModifier('regency_government') ) ) )]"
+					}
+					sub_header = {
+						name = "Government Regency Overview Header"
 						position = { 0 0 }
 						size = { 100% 28 }	
 						datacontext = "[GovernmentView]"
@@ -1291,8 +1312,15 @@ base_window = {
 								using = pt_button_large
 								pop_out = yes
 								datacontext = "[GovernmentView.GetPlayer.GetRuler]"
-								visible = "[Not( Player.HasTimedModifier('regency_government') )]"
+								visible = "[And( Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet )), Not( Player.HasTimedModifier('regency_government') ) )]"
 								portrait_texture = "[Character.GetPortrait('default', 'looking_right')]"
+							}
+							omni_dragon_face = {
+								size = { 130 195 }
+								position = { -4 14 }
+								parentanchor = bottom|left
+								datacontext = "[GovernmentView.GetPlayer.GetRuler]"
+								visible = "[And( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ), Not( Player.HasTimedModifier('regency_government') ) )]"
 							}
 							portrait_button = {
 								name = "regency_rulerpic"
@@ -1302,8 +1330,16 @@ base_window = {
 								using = pt_button_large
 								pop_out = yes
 								datacontext = "[GovernmentView.GetPlayer.GetRuler]"
-								visible = "[Player.HasTimedModifier('regency_government')]"
+								visible = "[And( Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet )), Player.HasTimedModifier('regency_government') )]"
 								portrait_texture = "[Character.GetPortrait('default', 'looking_left')]"
+							}
+							omni_dragon_face = {
+								size = { 130 195 }
+								position = { 4 14 }
+								parentanchor = bottom|right
+								datacontext = "[GovernmentView.GetPlayer.GetRuler]"
+								visible = "[And( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ), Player.HasTimedModifier('regency_government') )]"
+								blockoverride "DragonMirror" { mirror = horizontal }
 							}
 							portrait_button = {
 								name = "consortpic"
@@ -1313,8 +1349,16 @@ base_window = {
 								using = pt_button_large
 								pop_out = yes
 								datacontext = "[GovernmentView.GetPlayer.GetConsort]"
-								visible = "[And( GovernmentView.GetPlayer.UseConsort, And( GovernmentView.GetPlayer.GetConsort.IsValid, Not( Player.HasTimedModifier('regency_government') ) ) )]"
+								visible = "[And( Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet )), And( GovernmentView.GetPlayer.UseConsort, And( GovernmentView.GetPlayer.GetConsort.IsValid, Not( Player.HasTimedModifier('regency_government') ) ) ) )]"
 								portrait_texture = "[Character.GetPortrait('default', 'looking_left')]"
+							}
+							omni_dragon_face = {
+								size = { 130 195 }
+								position = { 4 14 }
+								parentanchor = bottom|right
+								datacontext = "[GovernmentView.GetPlayer.GetConsort]"
+								visible = "[And( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ), And( GovernmentView.GetPlayer.UseConsort, And( GovernmentView.GetPlayer.GetConsort.IsValid, Not( Player.HasTimedModifier('regency_government') ) ) ) )]"
+								blockoverride "DragonMirror" { mirror = horizontal }
 							}
 							portrait_button = {
 								name = "corulerpic"
@@ -1324,11 +1368,19 @@ base_window = {
 								using = pt_button_large
 								pop_out = yes
 								datacontext = "[GovernmentView.GetPlayer.GetCoRuler]"
-								visible = "[And( GovernmentView.GetPlayer.UseCoRuler, Not( Player.HasTimedModifier('regency_government') ) )]"
+								visible = "[And( Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet )), And( GovernmentView.GetPlayer.UseCoRuler, Not( Player.HasTimedModifier('regency_government') ) ) )]"
 								# Match the left ruler's camera and proportions, then reflect inward.
                                 blockoverride "PortraitScale" { portrait_scale = { -1.0 1.0 } }
                                 blockoverride "PortraitOffset" { portrait_offset = { 1.0 0.06 } }
                                 portrait_texture = "[Character.GetPortrait('default', 'looking_right')]"
+							}
+							omni_dragon_face = {
+								size = { 130 195 }
+								parentanchor = bottom|right
+								position = { 4 14 }
+								datacontext = "[GovernmentView.GetPlayer.GetCoRuler]"
+								visible = "[And( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ), And( GovernmentView.GetPlayer.UseCoRuler, Not( Player.HasTimedModifier('regency_government') ) ) )]"
+								blockoverride "DragonMirror" { mirror = horizontal }
 							}
 							portrait_button = {
 								name = "regency_corulerpic"
@@ -1338,8 +1390,15 @@ base_window = {
 								using = pt_button_large
 								pop_out = yes
 								datacontext = "[GovernmentView.GetPlayer.GetCoRuler]"
-								visible = "[And( GovernmentView.GetPlayer.UseCoRuler, Player.HasTimedModifier('regency_government') )]"
+								visible = "[And( Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet )), And( GovernmentView.GetPlayer.UseCoRuler, Player.HasTimedModifier('regency_government') ) )]"
 								portrait_texture = "[Character.GetPortrait('default', 'looking_right')]"
+							}
+							omni_dragon_face = {
+								size = { 130 195 }
+								parentanchor = bottom|left
+								position = { -4 14 }
+								datacontext = "[GovernmentView.GetPlayer.GetCoRuler]"
+								visible = "[And( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ), And( GovernmentView.GetPlayer.UseCoRuler, Player.HasTimedModifier('regency_government') ) )]"
 							}
 							
 							icon = {
@@ -1350,7 +1409,7 @@ base_window = {
 							sub_header = {
 								datacontext = "[GovernmentView]"
 								#visible = "[And( GovernmentView.GetPlayer.GetGovernment.IsMonarchy, GovernmentView.GetPlayer.GetConsort.IsValid )]"
-								visible = "[And( Not( And( GetScriptedGui('ob_order_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ), GovernmentView.GetPlayer.UseCoRuler ) ), And( GovernmentView.GetPlayer.GetConsort.IsValid, And( GovernmentView.GetPlayer.GetGovernment.IsMonarchy, Not( Player.HasTimedModifier('regency_government') ) ) ) )]"
+								visible = "[And( Not( GetScriptedGui('omni_dragon_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ) ), And( Not( And( GetScriptedGui('ob_order_government').IsShown( GuiScope.SetRoot( GovernmentView.GetPlayer.MakeScope ).End ), GovernmentView.GetPlayer.UseCoRuler ) ), And( GovernmentView.GetPlayer.GetConsort.IsValid, And( GovernmentView.GetPlayer.GetGovernment.IsMonarchy, Not( Player.HasTimedModifier('regency_government') ) ) ) ) )]"
 								position = { 0 0 }
 								size = { 400 22 }
 								blockoverride "HeaderTexture" { texture = "gfx/interface/base_parts/background_noninteractable_texture.dds"  }
@@ -1359,7 +1418,7 @@ base_window = {
 									alpha = 0.4
 								}
 								blockoverride "Title_text" { 
-									text = "RULER_TERM_SPOUSE_DESCRIPTION" 
+									text = "RULER_TERM_SPOUSE_DESCRIPTION"
 									using = Black_FontColor
 								}
 								blockoverride "Max_text_width" { max_width = 400 }

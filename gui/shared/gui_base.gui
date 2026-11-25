@@ -4868,6 +4868,30 @@ types Base_GUI_Types
 		}
 	}
 
+	type omni_dragon_face = button {
+        size = { 100% 100% }
+        texture = "gfx/interface/transparent.dds"
+        icon = {
+            block "HatchlingPosition" { position = { 0 6 } }
+            size = { 100% 100% }
+            texture = "gfx/interface/portrait/omniluxia/morrigon_hatchling.dds"
+            visible = "[LessThan_int32( Character.GetAge, '(int32)16' )]"
+            alwaystransparent = yes
+            block "DragonMirror" {}
+        }
+        icon = {
+            size = { 100% 100% }
+            texture = "gfx/interface/portrait/omniluxia/morrigon_sovereign.dds"
+            visible = "[GreaterThanOrEqualTo_int32( Character.GetAge, '(int32)16' )]"
+            alwaystransparent = yes
+            block "DragonMirror" {}
+        }
+        visible = "[Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet )]"
+        using = tooltip_es_portrait
+        onclick = "[DefaultOnCharacterClick( Character.GetID )]"
+        onrightclick = "[DefaultOnCharacterRightClick( Character.GetID )]"
+    }
+
 	type cpt_button = margin_widget {
 		block "Size" { size = { 100 150 } }
 
@@ -5552,6 +5576,13 @@ types Base_GUI_Types
 			    alwaystransparent = yes
 			}
 			    icon = {
+			        name = "omni_portrait_dragon_roost_normal"
+			        size = { 100% 100% }
+			        texture = "gfx/interface/portrait/omniluxia/dragon_roost_normal.dds"
+			        visible = "[GetScriptedGui('omni_portrait_show_dragon_roost').IsShown(GuiScope.SetRoot(Character.MakeScope).End)]"
+			        alwaystransparent = yes
+			    }
+			    icon = {
 			        name = "omni_portrait_wartent_fallback_normal"
 			        size = { 100% 100% }
 			        texture = "gfx/interface/portrait/omniluxia/wartent_fallback_normal.dds"
@@ -5634,11 +5665,16 @@ types Base_GUI_Types
 			    }
 			    block "BackgroundTint" { texture = "[GetCharacterBackgroundIconTint( Character.Self, Character.GetLocation.GetTerrain )]" }
 			    block "PortraitTexture" { portrait_texture = "[Character.GetPortrait('default', 'default')]" }
+				visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ))]"
+			}
+			omni_dragon_face = {
+				# Small portraits (children, family) left a gap under the hatchling.
+				blockoverride "HatchlingPosition" { position = { 0 8 } }
 			}
 		}
 		margin_widget = {
 			size = { 100% 100% }
-			visible = "[Not( Character.IsValid )]" 
+			visible = "[Not( Character.IsValid )]"
 			#margin = { 3 3 }
 			background = {
 				shaderfile = "gfx/FX/pdxgui_default.shader"
@@ -6929,6 +6965,13 @@ types Base_GUI_Types
 		    }
 		}
 		    icon = {
+		        name = "omni_portrait_dragon_roost_huge"
+		        size = { 100% 100% }
+		        texture = "gfx/interface/portrait/omniluxia/dragon_roost_huge.dds"
+		        visible = "[GetScriptedGui('omni_portrait_show_dragon_roost').IsShown(GuiScope.SetRoot(Character.MakeScope).End)]"
+		        alwaystransparent = yes
+		    }
+		    icon = {
 		        name = "omni_portrait_wartent_fallback_huge"
 		        size = { 100% 100% }
 		        texture = "gfx/interface/portrait/omniluxia/wartent_fallback_huge.dds"
@@ -7027,7 +7070,9 @@ types Base_GUI_Types
 			portrait_button = {
 				using = pt_button_large
 				pop_out = yes
+				visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ))]"
 			}
+			omni_dragon_face = {}
 		}
 
 		margin_widget = {
@@ -7039,7 +7084,11 @@ types Base_GUI_Types
 			position = { 36 18 }
 			portrait_button = {
 				using = pt_button_baby
-			}
+                visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ))]"
+            }
+            omni_dragon_face = {
+                blockoverride "HatchlingPosition" { position = { 0 10 } }
+            }
 		}
 
 

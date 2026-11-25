@@ -24,18 +24,15 @@ omni_wild_dragon_pulse = {
             global_var:omni_dragon_horde = {
                 # Wild hordes can pick up ordinary troops after a successful raid.
                 every_sub_unit = { limit = { NOT = { sub_unit_type = omni_dragon } } destroy_subunit = yes }
-                # Remember land a rebel dragon takes so it is handed back when it falls.
-                if = {
-                    limit = { exists = c:REB unit_owner = c:REB }
-                    unit_location = {
-                        if = {
-                            limit = { has_owner = yes controller = c:REB }
-                            set_variable = omni_dragon_scorched
-                            set_global_variable = omni_dragon_has_scorched
-                        }
-                    }
-                }
+
             }
+        }
+        if = {
+            limit = {
+                exists = global_var:omni_dragon_horde
+                global_var:omni_dragon_horde.unit_location = { omni_occupied_by_wild_dragon = yes }
+            }
+            global_var:omni_dragon_horde.unit_location.owner = { omni_try_dragon_settlement = yes }
         }
         # A dragon that has roosted on one continent long enough flies on.
         if = {
@@ -53,6 +50,7 @@ omni_wild_dragon_pulse = {
         }
         if = {
             limit = { NOT = { omni_wild_dragon_alive = yes } }
+            omni_retire_wild_dragon_self = yes
             omni_release_dragon_scorched_land = yes
             if = {
                 limit = { has_global_variable = omni_dragon_in_field }

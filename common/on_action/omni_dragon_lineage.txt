@@ -1,0 +1,50 @@
+﻿# Backfill the trait once per save, including dragons outside the ruling family.
+monthly_country_pulse = { on_actions = { omni_dragon_trait_backfill } }
+omni_dragon_trait_backfill = {
+    trigger = { NOT = { has_global_variable = omni_dragon_trait_backfill_done } }
+    effect = {
+        set_global_variable = omni_dragon_trait_backfill_done
+        every_living_character = {
+            limit = {
+                omni_is_dragon_character = yes
+                NOT = { has_trait = omni_dragon_sovereign_trait }
+            }
+            omni_apply_dragon_sovereign_trait = yes
+        }
+    }
+}
+
+# The portrait GUI reads these variables directly (a scripted GUI errors on empty
+# portrait slots), so mark children who only qualify through a parent. Once per save.
+monthly_country_pulse = { on_actions = { omni_dragon_identity_backfill } }
+omni_dragon_identity_backfill = {
+    trigger = { NOT = { has_global_variable = omni_dragon_identity_backfill_done } }
+    effect = {
+        set_global_variable = omni_dragon_identity_backfill_done
+        every_living_character = {
+            limit = {
+                OR = {
+                    omni_is_dragon_character = yes
+                    has_trait = omni_dragon_sovereign_trait
+                }
+                omni_has_dragon_identity = no
+            }
+            set_variable = omni_dragon_descendant
+        }
+    }
+}
+
+on_being_born = { on_actions = { omni_dragon_child_born } }
+omni_dragon_child_born = {
+    trigger = {
+        OR = {
+            AND = { exists = father father = { omni_is_dragon_character = yes } }
+            AND = { exists = mother mother = { omni_is_dragon_character = yes } }
+        }
+    }
+    effect = {
+        set_variable = omni_dragon_descendant
+        set_racial_trait_effect = yes
+        set_character_religion = dragkhan_pantheon
+    }
+}

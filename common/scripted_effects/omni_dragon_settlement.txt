@@ -1,0 +1,180 @@
+﻿# Province scope, on verified occupation or via the console fixture.
+omni_record_dragon_occupation = {
+    set_variable = omni_dragon_scorched
+    set_variable = { name = omni_dragon_occupier value = global_var:omni_dragon_horde }
+    set_global_variable = omni_dragon_has_scorched
+}
+
+# Character scope. Character creation may have already assigned a race from the local culture.
+omni_apply_dragon_sovereign_trait = {
+    remove_trait = high_elf_trait
+    remove_trait = forest_elf_trait
+    remove_trait = half_elf_trait
+    remove_trait = copper_dwarf_trait
+    remove_trait = gold_dwarf_trait
+    remove_trait = silver_dwarf_trait
+    remove_trait = orc_trait
+    remove_trait = snakefolk_trait
+    remove_trait = half_snake_trait
+    remove_trait = human_trait
+    remove_trait = goblin_trait
+    remove_trait = hobgoblin_trait
+    remove_trait = drow_trait
+    remove_trait = wraith_trait
+    remove_trait = zorg_trait
+    remove_trait = dragkhanic_trait
+    remove_trait = vampire_trait
+    remove_trait = silver_halfling_trait
+    remove_trait = halfling_trait
+    remove_trait = gnome_trait
+    remove_trait = deep_gnome_trait
+    remove_trait = sea_elf_trait
+    remove_trait = kinones_trait
+    remove_trait = chivix_trait
+    remove_trait = mycelar_trait
+    remove_trait = ettin_trait
+    remove_trait = ayrith_trait
+    remove_trait = castaway_dwarf_trait
+    remove_trait = golem_trait
+    remove_trait = arame_trait
+    remove_trait = saurthi_trait
+    remove_trait = tsaalan_trait
+    remove_trait = vothkin_trait
+    remove_trait = ulvenar_trait
+    remove_trait = tenmari_trait
+    remove_trait = ob_rimebound_trait
+    add_trait = omni_dragon_sovereign_trait
+    # The portrait GUI keys off these variables, not the trait: a dragon by
+    # blood alone (e.g. one dragon parent) must still draw as a dragon.
+    if = {
+        limit = { omni_has_dragon_identity = no }
+        set_variable = omni_dragon_descendant
+    }
+}
+
+# Country scope. Overrides each culture's levy template only within this realm.
+omni_set_dragon_levies = {
+    every_country_culture = {
+        set_levy_template = levy_omni_dragon_dominion
+    }
+}
+
+# Country scope, with scope:omni_new_sovereign set by coronation.
+omni_found_dragon_royal_family = {
+    random_list = {
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_cinderwing } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_ashveila } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_vessirath } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_kaelthyra } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_orysaveth } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_sablemaw } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_nyrakhessa } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_zyralenne } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_embercrest } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_rhazavelle } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_mirthazra } }
+        1 = { omni_create_dragon_royal_family = { NAME = omni_dragon_queen_thaloryss } }
+    }
+}
+
+omni_create_dragon_royal_family = {
+    create_character = {
+        first_name = $NAME$
+        age = 32
+        female = yes
+        culture = scope:omni_new_sovereign.culture
+        religion = dragkhan_pantheon
+        set_variable = { name = omni_dragon_sovereign }
+        save_scope_as = omni_dragon_bride
+    }
+    # Flag outside create_character too, matching the sovereign; the portrait GUI keys off this.
+    scope:omni_dragon_bride = {
+        set_variable = { name = omni_dragon_sovereign }
+        omni_apply_dragon_sovereign_trait = yes
+    }
+    scope:omni_new_sovereign = { marry_character = scope:omni_dragon_bride }
+    set_as_coruler = scope:omni_dragon_bride
+    random_list = {
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_emberwing } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_ashspark } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_brighthorn } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_cindertail } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_duskscale } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_flintsnap } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_glowcrest } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_littlethunder } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_palesmoke } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_sootclaw } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_starfang } }
+        1 = { omni_create_dragon_hatchling = { NAME = omni_dragon_hatchling_wildspark } }
+    }
+}
+
+# Country scope, with both parents saved by the coronation.
+omni_create_dragon_hatchling = {
+    create_character = {
+        first_name = $NAME$
+        age = 1
+        father = scope:omni_new_sovereign
+        mother = scope:omni_dragon_bride
+        culture = scope:omni_new_sovereign.culture
+        religion = dragkhan_pantheon
+        set_variable = { name = omni_dragon_descendant }
+        save_scope_as = omni_dragon_hatchling
+    }
+    scope:omni_dragon_hatchling = { set_racial_trait_effect = yes }
+}
+
+# Country scope, with scope:omni_dragon_new_realm set. Queue omni_dragon.12.
+omni_dragon_send_herald = {
+    set_variable = { name = omni_dragon_herald_realm value = scope:omni_dragon_new_realm days = 30 }
+    trigger_event = { id = omni_dragon.12 days = 3 }
+}
+
+# Country scope. Recheck after siege resolution before retiring the rebel unit.
+omni_try_dragon_settlement = {
+    if = {
+        limit = { omni_dragon_controls_realm = yes }
+        every_owned_province = {
+            remove_variable = omni_dragon_occupier
+            remove_variable = omni_dragon_scorched
+            set_controller = owner
+        }
+        if = {
+            limit = { global_var:omni_dragon_horde = { has_variable = omni_dragon_name_index } }
+            set_variable = { name = omni_dragon_name_index value = global_var:omni_dragon_horde.var:omni_dragon_name_index }
+        }
+        global_var:omni_dragon_horde = {
+            remove_variable = omni_wild_morrigon
+            destroy_unit = yes
+        }
+        remove_global_variable = omni_dragon_horde
+        omni_retire_wild_dragon_self = yes
+        remove_global_variable = omni_dragon_in_field
+        remove_global_variable = omni_dragon_hunt
+        set_global_variable = { name = omni_dragon_roll_lock days = 365 }
+        omni_release_dragon_scorched_land = yes
+        change_government = omni_dragon_dominion
+        omni_set_dragon_levies = yes
+        change_country_adjective = omni_morrigon_realm_adj
+        capital_scope = { save_scope_as = omni_dragon_capital }
+        omni_choose_dragon_name = { ACTION = omni_crown_named_dragon }
+        remove_variable = omni_dragon_name_index
+        trigger_event = { id = omni_dragon.11 }
+        # Word of the coronation reaches every neighbour, then every other realm
+        # holding land on the dragon's continent. The variable doubles as the
+        # "already told" mark, so no realm hears it twice.
+        save_scope_as = omni_dragon_new_realm
+        every_neighbour_country = {
+            omni_dragon_send_herald = yes
+        }
+        every_country = {
+            limit = {
+                NOT = { this = scope:omni_dragon_new_realm }
+                NOT = { has_variable = omni_dragon_herald_realm }
+                any_owned_province = { omni_dragon_same_continent_as = { PROV = scope:omni_dragon_capital } }
+            }
+            omni_dragon_send_herald = yes
+        }
+    }
+}

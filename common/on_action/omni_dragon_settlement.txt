@@ -1,0 +1,54 @@
+﻿on_province_occupied = { on_actions = { omni_dragon_capture } }
+omni_dragon_capture = {
+    effect = {
+        if = {
+            limit = { omni_occupied_by_wild_dragon = yes }
+            omni_record_dragon_occupation = yes
+            owner = { trigger_event = { id = omni_dragon.10 days = 1 } }
+        }
+        else_if = {
+            limit = { has_variable = omni_dragon_occupier }
+            remove_variable = omni_dragon_occupier
+            remove_variable = omni_dragon_scorched
+        }
+    }
+}
+
+# Repair reigning dragons in existing saves and reassert their faith after conversion.
+monthly_country_pulse = {
+    on_actions = {
+        omni_dragon_sovereign_upkeep
+        omni_dragon_levy_upkeep
+    }
+}
+
+# Backfill existing dominions and cover cultures added after coronation.
+omni_dragon_levy_upkeep = {
+    trigger = { government = omni_dragon_dominion }
+    effect = { omni_set_dragon_levies = yes }
+}
+
+omni_dragon_sovereign_upkeep = {
+    trigger = {
+        exists = current_ruler
+        current_ruler = {
+            has_variable = omni_dragon_sovereign
+            OR = {
+                NOT = { has_religion = dragkhan_pantheon }
+                NOT = { has_trait = omni_dragon_sovereign_trait }
+            }
+        }
+    }
+    effect = {
+        current_ruler = {
+            if = {
+                limit = { NOT = { has_trait = omni_dragon_sovereign_trait } }
+                omni_apply_dragon_sovereign_trait = yes
+            }
+            if = {
+                limit = { NOT = { has_religion = dragkhan_pantheon } }
+                set_character_religion = dragkhan_pantheon
+            }
+        }
+    }
+}

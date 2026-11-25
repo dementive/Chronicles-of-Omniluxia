@@ -1,0 +1,50 @@
+﻿# Province scope. REB also fields ordinary rebels, so verify the actual army.
+omni_occupied_by_wild_dragon = {
+    has_owner = yes
+    exists = c:REB
+    controller = c:REB
+    exists = global_var:omni_dragon_horde
+    global_var:omni_dragon_horde = {
+        has_variable = omni_wild_morrigon
+        unit_owner = c:REB
+        unit_location = prev
+        any_sub_unit = { sub_unit_type = omni_dragon }
+    }
+}
+
+# Country scope. A stale mark from another dragon cannot finish the conquest.
+omni_dragon_controls_realm = {
+    exists = capital_scope
+    exists = global_var:omni_dragon_horde
+    global_var:omni_dragon_horde = {
+        unit_owner = c:REB
+        has_variable = omni_wild_morrigon
+        in_combat = no
+        any_sub_unit = { sub_unit_type = omni_dragon }
+    }
+    NOT = {
+        any_owned_province = {
+            OR = {
+                NOT = { controller = c:REB }
+                NOT = { exists = var:omni_dragon_occupier }
+                NOT = { var:omni_dragon_occupier = global_var:omni_dragon_horde }
+            }
+        }
+    }
+}
+
+# Province scope. On the same continent as $PROV$ (the continents of
+# omni_dragon_on_rotation_continent; everything else counts as the new world).
+omni_dragon_same_continent_as = {
+    OR = {
+        AND = { is_in_luxterra = yes $PROV$ = { is_in_luxterra = yes } }
+        AND = { is_in_morrigon = yes $PROV$ = { is_in_morrigon = yes } }
+        AND = { is_in_arteon = yes $PROV$ = { is_in_arteon = yes } }
+        AND = { is_in_horteon = yes $PROV$ = { is_in_horteon = yes } }
+        AND = { is_in_eptelon = yes $PROV$ = { is_in_eptelon = yes } }
+        AND = { is_in_austropetolia = yes $PROV$ = { is_in_austropetolia = yes } }
+        AND = { is_in_omniluxian_isle = yes $PROV$ = { is_in_omniluxian_isle = yes } }
+        AND = { is_in_polaris = yes $PROV$ = { is_in_polaris = yes } }
+        AND = { omni_dragon_in_new_world = yes $PROV$ = { omni_dragon_in_new_world = yes } }
+    }
+}

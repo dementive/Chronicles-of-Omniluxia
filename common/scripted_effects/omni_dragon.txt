@@ -10,12 +10,7 @@ omni_bind_morrigon_dragon = {
 
 omni_raise_bound_dragon_army = {
     capital_scope = { save_scope_as = omni_dragon_capital }
-    create_unit = {
-        name = omni_dragon_bound_name
-        location = scope:omni_dragon_capital
-        sub_unit = omni_dragon
-        save_scope_as = omni_bound_dragon
-    }
+    omni_choose_dragon_name = { ACTION = omni_create_named_bound_dragon }
     if = {
         limit = { exists = scope:omni_bound_dragon }
         scope:omni_bound_dragon = {
@@ -34,6 +29,7 @@ omni_raise_bound_dragon_army = {
 # Only called on a native horde outside combat. Add the dragon first so the
 # engine always has a living cohort in the moving army during the conversion.
 omni_awaken_wild_dragon = {
+    omni_remember_dragon_name = yes
     set_global_variable = omni_dragon_hunt
     set_global_variable = omni_dragon_in_field
     set_global_variable = { name = omni_dragon_horde value = this }
@@ -120,30 +116,8 @@ omni_spawn_rotating_wild_dragon = {
     if = {
         limit = { exists = scope:omni_dragon_lair exists = c:REB }
         c:REB = {
-            # Every wild dragon is led by a battle-hardened rider from the lair's people.
-            create_character = {
-                culture = scope:omni_dragon_lair.dominant_province_culture
-                religion = scope:omni_dragon_lair.dominant_province_religion
-                age = 40
-                save_scope_as = omni_dragon_rider
-            }
-            scope:omni_dragon_rider = {
-                random_list = {
-                    1 = { omni_set_dragon_rider_martial = { M = 10 } }
-                    1 = { omni_set_dragon_rider_martial = { M = 11 } }
-                    1 = { omni_set_dragon_rider_martial = { M = 12 } }
-                    1 = { omni_set_dragon_rider_martial = { M = 13 } }
-                    1 = { omni_set_dragon_rider_martial = { M = 14 } }
-                    1 = { omni_set_dragon_rider_martial = { M = 15 } }
-                }
-            }
-            create_unit = {
-                name = omni_dragon_wild_name
-                location = scope:omni_dragon_lair
-                sub_unit = omni_dragon
-                set_as_commander = scope:omni_dragon_rider
-                save_scope_as = omni_new_wild_dragon
-            }
+            # Every wild dragon leads itself (see omni_create_wild_dragon_self).
+            omni_choose_dragon_name = { ACTION = omni_create_named_wild_dragon }
         }
     }
     if = {
@@ -188,6 +162,7 @@ omni_release_dragon_scorched_land = {
                 limit = { has_owner = yes controller = c:REB }
                 set_controller = owner
             }
+            remove_variable = omni_dragon_occupier
             remove_variable = omni_dragon_scorched
         }
     }
@@ -200,11 +175,16 @@ omni_release_dragon_scorched_land = {
 # scope is dead, and the global variable must not keep pointing at it.
 omni_wild_dragon_take_wing = {
     global_var:omni_dragon_horde.unit_location = { save_scope_as = omni_dragon_departure }
+    if = {
+        limit = { exists = c:REB global_var:omni_dragon_horde = { has_variable = omni_dragon_name_index } }
+        c:REB = { set_variable = { name = omni_dragon_name_index value = global_var:omni_dragon_horde.var:omni_dragon_name_index } }
+    }
     global_var:omni_dragon_horde = {
         remove_variable = omni_wild_morrigon
         destroy_unit = yes
     }
     remove_global_variable = omni_dragon_horde
+    omni_retire_wild_dragon_self = yes
     scope:omni_dragon_departure = {
         if = {
             limit = { has_owner = yes }
@@ -219,6 +199,7 @@ omni_wild_dragon_take_wing = {
     }
     omni_release_dragon_scorched_land = yes
     omni_spawn_rotating_wild_dragon = yes
+    if = { limit = { exists = c:REB } c:REB = { remove_variable = omni_dragon_name_index } }
 }
 
 # Country scope (omni_dragon.8). scope:omni_dragon_rider_unit is this country's
@@ -256,6 +237,7 @@ omni_dragon_update_rider = {
                 limit = {
                     NOT = { has_trait = omni_dragon_rider_trait }
                     NOT = { has_trait = sunaksatre_dragonrider }
+                    NOT = { has_variable = omni_wild_dragon_self } # a dragon doesn't ride itself
                 }
                 add_trait = omni_dragon_rider_trait
             }

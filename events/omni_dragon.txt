@@ -84,6 +84,7 @@ omni_dragon.4 = {
                 every_sub_unit = { limit = { sub_unit_type = omni_dragon } destroy_subunit = yes }
             }
         }
+        omni_retire_wild_dragon_self = yes
         omni_release_dragon_scorched_land = yes
     }
     option = { name = omni_dragon.4.a }
@@ -239,4 +240,95 @@ omni_dragon.8 = {
             remove_variable = omni_dragon_tracking
         }
     }
+}
+
+
+omni_dragon.10 = {
+    type = country_event
+    hidden = yes
+    immediate = { omni_try_dragon_settlement = yes }
+}
+
+omni_dragon.11 = {
+    type = country_event
+    title = omni_dragon.11.t
+    desc = omni_dragon.11.desc
+    picture = Event_dragons_burning_ships
+    option = { name = omni_dragon.11.a }
+}
+
+# Neighbours of a newly crowned dragon dominion hear the news. Sent by
+# omni_try_dragon_settlement, which leaves var:omni_dragon_herald_realm on the
+# recipient so the scopes survive the hop between countries.
+omni_dragon.12 = {
+    type = country_event
+    title = omni_dragon.12.t
+    desc = omni_dragon.12.desc
+    picture = Event_dragons_burning_ships
+    left_portrait = current_ruler
+    right_portrait = scope:omni_dragon_herald_king
+    trigger = {
+        exists = var:omni_dragon_herald_realm
+        var:omni_dragon_herald_realm = { government = omni_dragon_dominion }
+    }
+    immediate = {
+        var:omni_dragon_herald_realm = {
+            save_scope_as = omni_dragon_herald_realm
+            current_ruler = { save_scope_as = omni_dragon_herald_king }
+            capital_scope = { save_scope_as = omni_dragon_herald_seat }
+        }
+        remove_variable = omni_dragon_herald_realm
+    }
+    option = {
+        name = omni_dragon.12.a
+        add_country_modifier = { name = omni_dragon_vigil duration = 1825 }
+        ai_chance = { factor = 50 }
+    }
+    option = {
+        name = omni_dragon.12.b
+        trigger = { treasury >= 50 }
+        add_treasury = -50
+        add_stability = 5
+        ai_chance = { factor = 30 }
+    }
+    option = {
+        name = omni_dragon.12.c
+        add_country_modifier = { name = omni_dragon_dread duration = 1095 }
+        ai_chance = { factor = 20 }
+    }
+}
+
+# Console only. Stage a complete occupation on the selected player's realm.
+omni_dragon.99 = {
+    type = country_event
+    title = omni_dragon.99.t
+    desc = omni_dragon.99.desc
+    picture = Event_dragons_burning_ships
+    option = {
+        name = omni_dragon.99.a
+        trigger = {
+            exists = capital_scope
+            exists = c:REB
+            NOT = { exists = global_var:omni_dragon_horde }
+            NOT = { government = omni_dragon_dominion }
+        }
+        capital_scope = { save_scope_as = omni_dragon_test_capital }
+        c:REB = {
+            omni_choose_dragon_name = { ACTION = omni_create_named_test_dragon }
+            scope:omni_test_dragon = {
+                every_sub_unit = { add_subunit_strength = 1 }
+                set_variable = omni_wild_morrigon
+                set_global_variable = { name = omni_dragon_horde value = this }
+            }
+        }
+        if = {
+            limit = { exists = global_var:omni_dragon_horde }
+            every_owned_province = {
+                set_controller = c:REB
+                omni_record_dragon_occupation = yes
+            }
+            trigger_event = { id = omni_dragon.10 days = 1 }
+        }
+    }
+    option = { name = omni_dragon.99.b }
 }
