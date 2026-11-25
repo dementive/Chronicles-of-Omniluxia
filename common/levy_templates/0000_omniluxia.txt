@@ -1,52 +1,54 @@
 ﻿# NOTE: No levy templates should ever have more than 4 entries.
 #
-# Pop tier mapping:
-#   Basic-tier pops (freemen, tribesmen, serfs) can only supply basic units:
-#   light_infantry, archers, light_cavalry, horse_archers, camels.
-#   Advanced-tier pops (citizens, nobles) supply heavy_infantry, heavy_cavalry.
-#
-# Fallback rule: a unit type the country cannot recruit is replaced by light_infantry
-# by the engine. Design templates so the fallback is intentional — if a country
-# lacks trade goods or traditions for mounted units, light_infantry fills in.
-#
-# Chariots are excluded from all templates: they are disabled (enable = no) in the
-# base unit file until a military tradition unlocks them. Including them causes most
-# countries to silently fall back to light_infantry for that weight slot.
-#
-# Each template should have one clear lead unit drawn from the basic-tier list,
-# so a country with no special trade goods or traditions still fields a coherent army.
-#
 # Weights are relative; each template must sum to 1.0.
-# Mounted units are gated by trade goods OR the culture triggers in
-# common/scripted_triggers/OMNI_levy_mount_triggers.txt — keep those lists in sync
-# when adding mounted units to a template.
+#
+# Pop tier mapping:
+#   Basic-tier pops (freemen, tribesmen, serfs) supply basic units:
+#   light_infantry, archers, spearmen, axemen, light_cavalry, horse_archers,
+#   horse_skirmishers, camels.
+#   Advanced-tier pops (citizens, nobles) supply heavy_infantry, heavy_cavalry,
+#   chariots, warelephant.
+#
+# Fallback rule: a unit the country cannot recruit is replaced by another unit of the
+# same tier (basic -> light_infantry/archers, advanced -> heavy_infantry). So an
+# advanced mount slot reads as heavy infantry until the country has the mount.
+#
+# Mount access (common/units army_07..12 allow blocks): the trade good (owned or
+# imported) OR a culture listed in that unit's inline owner = { } block. The lists are
+# mirrored in common/scripted_triggers/OMNI_levy_mount_triggers.txt - keep them in sync.
+#
+# Horse share targets (light/heavy cavalry, horse archers, skirmishers, chariots):
+#   steppe nomads ~50-60%, horse/knight cultures ~30-45%,
+#   settled peoples ~10-25%, cave/island/forest peoples 0-15%.
+# Every culture group whose homeland has horses, steppe horses, camels or elephants
+# (2+ provinces) has a unit here that uses them.
 
 levy_placeholder = {
 	default = no
 
-	light_infantry = 0.35
-	archers = 0.35
-	light_cavalry = 0.15
-	heavy_infantry = 0.15
+	light_infantry = 0.4
+	archers = 0.4
+	heavy_infantry = 0.2
 }
 
 # Orcs: ridge fighters and raiders; boar/wolf outriders
 levy_orcish = {
 	default = no
 
-	light_infantry = 0.4
-	light_cavalry = 0.25
+	light_infantry = 0.45
+	archers = 0.2
 	heavy_infantry = 0.2
-	archers = 0.15
+	light_cavalry = 0.15
 }
 
 # Goblins: hill companies with war-carts
 levy_goblin = {
 	default = no
 
-	archers = 0.4
-	light_infantry = 0.3
-	light_cavalry = 0.3
+	light_infantry = 0.45
+	archers = 0.3
+	spearmen = 0.1
+	chariots = 0.15
 }
 
 levy_deepgnome = {
@@ -61,9 +63,9 @@ levy_deepgnome = {
 levy_hobgoblin = {
 	default = no
 
-	light_cavalry = 0.3
-	heavy_infantry = 0.3
-	light_infantry = 0.2
+	light_infantry = 0.3
+	heavy_infantry = 0.25
+	light_cavalry = 0.25
 	archers = 0.2
 }
 
@@ -71,10 +73,10 @@ levy_hobgoblin = {
 levy_northerner = {
 	default = no
 
-	archers = 0.4
-	light_infantry = 0.25
-	heavy_infantry = 0.25
-	light_cavalry = 0.1
+	light_infantry = 0.35
+	archers = 0.3
+	heavy_infantry = 0.2
+	chariots = 0.15
 }
 
 levy_kinones = {
@@ -93,33 +95,33 @@ levy_kinones_m = {
 	heavy_infantry = 0.3
 }
 
-# Common dwarves: Yamhad chariots, axe-bearers of the holds
+# Common dwarves: Yamhad chariots, shield walls of the holds
 levy_dwarf = {
 	default = no
 
-	heavy_infantry = 0.45
-	archers = 0.3
-	light_infantry = 0.15
-	light_cavalry = 0.1
+	light_infantry = 0.35
+	archers = 0.25
+	heavy_infantry = 0.2
+	chariots = 0.2
 }
 
 # High elves: every elf an archer; elven horselords
 levy_high_elves = {
 	default = no
 
-	archers = 0.3
-	heavy_infantry = 0.3
-	light_cavalry = 0.25
-	heavy_cavalry = 0.15
+	archers = 0.35
+	heavy_infantry = 0.35
+	light_cavalry = 0.2
+	heavy_cavalry = 0.1
 }
 
 # Sea elves: "Chariots of Doom" and Sea Elven light riders
 levy_sea_elves = {
 	default = no
 
-	heavy_infantry = 0.3
+	heavy_infantry = 0.35
 	archers = 0.25
-	light_cavalry = 0.25
+	light_cavalry = 0.2
 	chariots = 0.2
 }
 
@@ -127,27 +129,27 @@ levy_sea_elves = {
 levy_zani = {
 	default = no
 
-	light_cavalry = 0.35
-	light_infantry = 0.25
-	heavy_infantry = 0.25
+	light_infantry = 0.35
+	heavy_infantry = 0.3
+	light_cavalry = 0.2
 	archers = 0.15
 }
 
 levy_colonial = {
 	default = no
 
-	horse_archers = 0.4
-	light_cavalry = 0.3
-	light_infantry = 0.2
-	archers = 0.1
+	light_infantry = 0.5
+	heavy_infantry = 0.2
+	archers = 0.15
+	light_cavalry = 0.15
 }
 
 levy_forest_elves = {
 	default = no
 
-	archers = 0.5
-	light_infantry = 0.2
-	light_cavalry = 0.2
+	archers = 0.45
+	light_infantry = 0.3
+	light_cavalry = 0.15
 	horse_archers = 0.1
 }
 
@@ -164,109 +166,109 @@ levy_southern_forest_elves = {
 levy_western_half_elves = {
 	default = no
 
-	archers = 0.35
-	light_cavalry = 0.3
-	light_infantry = 0.2
+	archers = 0.4
+	light_infantry = 0.3
 	heavy_infantry = 0.15
+	light_cavalry = 0.15
 }
 
 levy_drow = {
 	default = no
 
 	light_infantry = 0.35
-	archers = 0.3
+	archers = 0.35
 	heavy_infantry = 0.2
-	light_cavalry = 0.15
+	light_cavalry = 0.1
 }
 
 # Hazalars, Selaskusians: steppe horse archers; bronze chariots of the steppe invaders
 levy_great_steppes = {
 	default = no
 
-	horse_archers = 0.55
-	light_cavalry = 0.25
-	archers = 0.1
-	light_infantry = 0.1
+	horse_archers = 0.4
+	archers = 0.4
+	light_cavalry = 0.1
+	chariots = 0.1
 }
 
 # Alaguric: steppe horse archers, with the camels and elephants of the central steppe
 levy_alaguric = {
 	default = no
 
-	horse_archers = 0.55
-	chariots = 0.15
-	camels = 0.15
-	warelephant = 0.15
+	horse_archers = 0.45
+	camels = 0.2
+	warelephant = 0.25
+	chariots = 0.1
 }
 
-# Etaredica: the Etaredica Draft plus noble riders and chariots
+# Etaredica: the Etaredica Draft plus noble riders, chariots and camels of the north
 levy_etaredican = {
 	default = no
 
-	heavy_cavalry = 0.35
-	light_cavalry = 0.25
-	heavy_infantry = 0.25
-	light_infantry = 0.15
+	light_infantry = 0.45
+	camels = 0.25
+	heavy_cavalry = 0.15
+	chariots = 0.15
 }
 
 # Aralans: cataphracts in imported armor
 levy_aralans = {
 	default = no
 
-	light_cavalry = 0.3
-	heavy_cavalry = 0.25
+	light_infantry = 0.4
 	heavy_infantry = 0.25
-	light_infantry = 0.2
+	heavy_cavalry = 0.2
+	light_cavalry = 0.15
 }
 
 # Horteon: horse-traders who test mounts on the cold slopes
 levy_horteon = {
 	default = no
 
-	light_infantry = 0.35
-	light_cavalry = 0.3
-	heavy_infantry = 0.2
-	archers = 0.15
+	light_infantry = 0.4
+	light_cavalry = 0.25
+	archers = 0.2
+	warelephant = 0.15
 }
 
 # Eptelon: marsh and mountain holdouts
 levy_eptelon = {
 	default = no
 
-	heavy_infantry = 0.35
-	light_infantry = 0.3
+	light_infantry = 0.4
+	heavy_infantry = 0.3
 	archers = 0.2
-	light_cavalry = 0.15
+	light_cavalry = 0.1
 }
 
 # Flusenlanders: horse archers
 levy_flusenlander = {
 	default = no
 
-	horse_archers = 0.45
-	light_cavalry = 0.25
-	light_infantry = 0.15
-	heavy_cavalry = 0.15
+	horse_archers = 0.4
+	light_infantry = 0.3
+	archers = 0.2
+	heavy_cavalry = 0.1
 }
 
 # Werhenlanders: "unequaled masters of the horse", noble knights
 levy_werhenlander = {
 	default = no
 
-	heavy_infantry = 0.35
-	light_infantry = 0.3
+	light_infantry = 0.35
+	heavy_infantry = 0.3
 	light_cavalry = 0.2
-	archers = 0.15
+	heavy_cavalry = 0.15
 }
 
 # Dragkhans: hordes of dragkhanic horsemen
 levy_dragkhanic = {
 	default = no
 
-	horse_archers = 0.35
-	light_cavalry = 0.25
-	archers = 0.25
-	light_infantry = 0.15
+	horse_archers = 0.3
+	archers = 0.3
+	light_infantry = 0.25
+	light_cavalry = 0.15
 }
 
 # Tsaalan: seasonal cavalry raiders bonded to their war-horses
@@ -274,27 +276,28 @@ levy_tsaalan = {
 	default = no
 
 	horse_archers = 0.3
-	light_cavalry = 0.3
-	archers = 0.2
-	light_infantry = 0.2
+	archers = 0.25
+	light_infantry = 0.25
+	light_cavalry = 0.2
 }
 
+# Snakefolk: jungle ambushers with poisoned arrows
 levy_snakefolk = {
 	default = no
 
-	light_cavalry = 0.4
-	archers = 0.3
-	light_infantry = 0.2
+	light_infantry = 0.4
+	archers = 0.4
 	heavy_infantry = 0.1
+	light_cavalry = 0.1
 }
 
 # Arteon: hill fighters ("an army can vanish up a slope") with riders from the horse valleys
 levy_arteon = {
 	default = no
 
+	light_infantry = 0.4
 	archers = 0.3
-	heavy_infantry = 0.3
-	light_infantry = 0.25
+	heavy_infantry = 0.15
 	light_cavalry = 0.15
 }
 
@@ -302,38 +305,38 @@ levy_arteon = {
 levy_zaraken = {
 	default = no
 
-	camels = 0.4
-	light_cavalry = 0.25
-	light_infantry = 0.2
-	heavy_cavalry = 0.15
+	light_infantry = 0.45
+	heavy_infantry = 0.2
+	light_cavalry = 0.2
+	chariots = 0.15
 }
 
 # Golden dwarves: shield skirmishers, camelry adopted from the Karksm
 levy_gold_dwarf = {
 	default = no
 
-	heavy_infantry = 0.4
-	archers = 0.3
-	light_infantry = 0.2
-	light_cavalry = 0.1
+	light_infantry = 0.35
+	heavy_infantry = 0.25
+	camels = 0.2
+	chariots = 0.2
 }
 
 # Silver dwarves: the Iron Wall and the Sennkallen armored knights
 levy_silver_dwarf = {
 	default = no
 
+	light_infantry = 0.45
 	heavy_infantry = 0.4
-	light_infantry = 0.35
-	light_cavalry = 0.25
+	heavy_cavalry = 0.15
 }
 
 # Zinduidians: the Camel Tribes of Karksm
 levy_zinduidian = {
 	default = no
 
+	light_infantry = 0.35
 	camels = 0.3
-	heavy_infantry = 0.3
-	light_infantry = 0.25
+	heavy_infantry = 0.2
 	light_cavalry = 0.15
 }
 
@@ -341,10 +344,10 @@ levy_zinduidian = {
 levy_egyptian = {
 	default = no
 
-	light_cavalry = 0.3
-	archers = 0.25
-	light_infantry = 0.25
+	light_infantry = 0.4
+	camels = 0.25
 	heavy_infantry = 0.2
+	chariots = 0.15
 }
 
 # Upper Baetep: camelry, chariots and the war elephants of the upper river
@@ -361,30 +364,30 @@ levy_baetep_upper = {
 levy_navshodian = {
 	default = no
 
+	light_infantry = 0.4
 	heavy_infantry = 0.3
-	light_infantry = 0.3
-	archers = 0.2
-	heavy_cavalry = 0.2
+	heavy_cavalry = 0.15
+	light_cavalry = 0.15
 }
 
 # Eastern Zerywani: steppe hordes
 levy_east_navshodian = {
 	default = no
 
+	light_infantry = 0.35
 	horse_archers = 0.3
-	light_cavalry = 0.25
-	light_infantry = 0.25
 	heavy_infantry = 0.2
+	warelephant = 0.15
 }
 
 # Celtican, Vetalian, Borderlander, Rohenoan: shield walls, knights and chariots
 levy_celtic = {
 	default = no
 
-	light_cavalry = 0.3
-	heavy_infantry = 0.3
-	light_infantry = 0.25
-	archers = 0.15
+	light_infantry = 0.4
+	heavy_infantry = 0.35
+	light_cavalry = 0.15
+	chariots = 0.1
 }
 
 levy_dissolved = {
@@ -399,19 +402,19 @@ levy_dissolved = {
 levy_halfling = {
 	default = no
 
-	archers = 0.5
-	light_infantry = 0.3
-	light_cavalry = 0.2
+	light_infantry = 0.45
+	archers = 0.4
+	light_cavalry = 0.15
 }
 
 # Gnomes: "Embracing Heavy Cavalry"
 levy_gnome = {
 	default = no
 
-	heavy_infantry = 0.35
-	archers = 0.3
-	light_infantry = 0.25
-	light_cavalry = 0.1
+	light_infantry = 0.4
+	heavy_infantry = 0.3
+	archers = 0.15
+	heavy_cavalry = 0.15
 }
 
 levy_shwi = {
