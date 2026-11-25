@@ -35,3 +35,28 @@ omni_pay_mage_tower_price = {
 		}
 	}
 }
+
+# COUNTRY scope (the magic menu's employer). Pays for and starts one academy
+# course for scope:target. Shared by every course option in events/magic_menu.txt.
+#   PRICE  - gold, paid from the treasury by a ruler, otherwise personally
+#   SCHOOL - suffix of the omni_studying_<SCHOOL>_var flag
+# The first session goes through the generic study events only. The Diviner
+# Accident (me_magic_studying.5) is chosen later by magic_studying_t1_effect,
+# which limits it to Diviner students.
+omni_start_academy_course = {
+	omni_pay_magic_study_cost = { PRICE = $PRICE$ }
+	scope:target = { set_variable = omni_studying_$SCHOOL$_var }
+	hidden_effect = {
+		if = {
+			limit = { scope:target = { NOT = { has_variable = first_magic_event_blocker_var } } }
+			trigger_event = { id = me_magic_studying.1 days = 15 }
+		}
+		else = {
+			random_list = {
+				1 = { trigger_event = { id = me_magic_studying.2 days = { 30 180 } } }
+				1 = { trigger_event = { id = me_magic_studying.3 days = { 30 180 } } }
+				1 = { trigger_event = { id = me_magic_studying.4 days = { 30 180 } } }
+			}
+		}
+	}
+}

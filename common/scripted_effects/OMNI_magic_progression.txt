@@ -26,7 +26,22 @@ omni_add_study_progress = {
 # PERF: pure variable arithmetic on the character already in scope. No iteration.
 omni_check_study_rank_up = {
 	if = {
-		limit = { var:magic_study_progress >= RANK_THRESHOLD }
+		limit = {
+			var:magic_study_progress >= RANK_THRESHOLD
+			# Only the eight tiered schools have a ladder to climb. Special
+			# academy courses (Magonis, Taanka, Soul Magic...) finish through their
+			# own graduation events, so do not spend progress on them for nothing.
+			OR = {
+				has_variable = omni_studying_diviner_var
+				has_variable = omni_studying_hierophant_var
+				has_variable = omni_studying_cleric_var
+				has_variable = omni_studying_illusionist_var
+				has_variable = omni_studying_elementalist_var
+				has_variable = omni_studying_druid_var
+				has_variable = omni_studying_necromancer_var
+				has_variable = omni_studying_warlock_var
+			}
+		}
 		change_variable = { name = magic_study_progress subtract = RANK_THRESHOLD }
 		omni_grant_next_school_tier = yes
 	}

@@ -355,8 +355,12 @@ omni_dynastic_union.4 = {
 			factor = 70
 		}
 		omni_dynastic_union_renew_subject_effect = yes
+		# The senior court used to hear nothing of a junior succession.
+		scope:dynastic_senior_country = {
+			trigger_event = { id = omni_dynastic_union.20 }
+		}
 	}
-	
+
 	option = {
 		name = omni_dynastic_union.4.c
 		trigger = {
@@ -369,9 +373,13 @@ omni_dynastic_union.4 = {
 		ai_chance = {
 			factor = 10
 		}
+		scope:dynastic_senior_country = {
+			set_variable = { name = omni_du_junior_contested days = 30 }
+			trigger_event = { id = omni_dynastic_union.20 }
+		}
 		omni_dynastic_union_independence_war_effect = yes
 	}
-	
+
 	# BALANCE: this used to dissolve the union outright for any player junior,
 	# at any loyalty, even at war - a free exit from a subject type with
 	# subject_can_cancel = no. It is now a request the senior court answers (.16).
@@ -385,7 +393,10 @@ omni_dynastic_union.4 = {
 		ai_chance = {
 			factor = 0
 		}
-		omni_dynastic_union_renew_subject_effect = yes
+		# Only re-point the union at the sitting rulers (so the old spouse's
+		# later death cannot replay this succession). The renewal modifiers
+		# belong to .4.b: asking to leave is not swearing the oaths again.
+		omni_dynastic_union_rebind_effect = yes
 		scope:dynastic_senior_country = {
 			trigger_event = { id = omni_dynastic_union.16 }
 		}
@@ -728,6 +739,12 @@ omni_dynastic_union.16 = {
 				modifier = opinion_dynastic_union_release_refused
 				target = root
 			}
+			# A refused junior crown may take its freedom by force for ten
+			# years (decision omni_dynastic_union_declare_independence).
+			set_variable = {
+				name = omni_du_independence_claim
+				days = 3650
+			}
 			trigger_event = { id = omni_dynastic_union.17 }
 		}
 	}
@@ -745,6 +762,70 @@ omni_dynastic_union.17 = {
 	goto_location = capital_scope
 
 	option = { name = omni_dynastic_union.17.a }
+}
+
+# Senior court: the junior spouse died or left the throne, and the junior court
+# answered (.4.b renewed the oaths, .4.c went to war). .4.a annexes outright and
+# .4.d already asks us through .16. Scopes carried from .4: former_ruler,
+# dynastic_union_subject, dynastic_senior_country.
+omni_dynastic_union.20 = {
+	type = country_event
+	title = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = omni_du_junior_contested }
+				desc = omni_dynastic_union.20.t.contested
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = omni_dynastic_union.20.t
+			}
+		}
+	}
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_variable = omni_du_junior_contested
+					scope:former_ruler = { is_alive = yes }
+				}
+				desc = omni_dynastic_union.20.desc.contested.stepped_down
+			}
+			triggered_desc = {
+				trigger = { has_variable = omni_du_junior_contested }
+				desc = omni_dynastic_union.20.desc.contested
+			}
+			triggered_desc = {
+				trigger = { scope:former_ruler = { is_alive = yes } }
+				desc = omni_dynastic_union.20.desc.stepped_down
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = omni_dynastic_union.20.desc
+			}
+		}
+	}
+	picture = throneroom
+
+	left_portrait = scope:dynastic_union_subject.current_ruler
+	right_portrait = scope:former_ruler
+	goto_location = scope:dynastic_union_subject.capital_scope
+
+	trigger = {
+		exists = scope:dynastic_union_subject
+		exists = scope:former_ruler
+		scope:dynastic_union_subject = { has_land = yes }
+	}
+
+	option = {
+		name = omni_dynastic_union.20.a
+		trigger = { NOT = { has_variable = omni_du_junior_contested } }
+	}
+	option = {
+		name = omni_dynastic_union.20.b
+		trigger = { has_variable = omni_du_junior_contested }
+		remove_variable = omni_du_junior_contested
+	}
 }
 
 # ======================================================================================
