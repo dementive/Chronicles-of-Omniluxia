@@ -3952,6 +3952,12 @@ omni_sb_known_kinweaving = {
 	is_valid = { custom_tooltip = { text = omni_sb_low_mana_kinweaving_tt omni_can_afford_spell = { BASE = 100 } } }
 }
 
+omni_sb_known_summon_emzalian_alligators = {
+	scope = character
+	is_shown = { has_variable = summon_emzalian_alligators_known_var }
+	is_valid = { custom_tooltip = { text = omni_sb_low_mana_summon_emzalian_alligators_tt omni_can_afford_spell = { BASE = 60 } } }
+}
+
 omni_sb_known_summon_animal_auxiliaries = {
 	scope = character
 	is_shown = { has_variable = summon_animal_auxiliaries_known_var }
@@ -10322,6 +10328,69 @@ omni_sb_why_healing_light_iii = {
                 limit = {
                     scope:selected_mage = { omni_sb_viewer_controls = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = healing_light_iii } omni_can_afford_spell = { BASE = 150 } }
                     NOT = { omni_sb_can_cast_healing_light_iii = yes }
+                }
+                custom_tooltip = omni_sb_why_other_tt
+            }
+        }
+    }
+}
+
+omni_sb_confirm_summon_emzalian_alligators = {
+    scope = country
+    saved_scopes = { player selected_mage target }
+    is_valid = { omni_sb_can_cast_summon_emzalian_alligators = yes omni_sb_can_target_summon_emzalian_alligators = yes }
+    ai_is_valid = { always = no }
+    effect = {
+        hidden_effect = {
+            scope:player = { trigger_event = { id = omni_spellbook_cast.151 } }
+            clear_variable_list = omni_sb_recipients
+            remove_variable = omni_sb_casting_mage
+        }
+    }
+}
+
+omni_sb_cast_summon_emzalian_alligators = {
+    scope = country
+    saved_scopes = { player selected_mage }
+    is_shown = { NOT = { scope:player = { NOT = { has_variable = omni_cd_summon_emzalian_alligators } any_owned_province = { omni_spell_target_land = yes } } } }
+    is_valid = { omni_sb_can_cast_summon_emzalian_alligators = yes }
+    ai_is_valid = { always = no }
+    effect = { hidden_effect = {
+        scope:player = {
+            clear_variable_list = omni_sb_recipients
+            set_variable = { name = omni_sb_casting_mage value = scope:selected_mage }
+            every_owned_province = {
+                save_scope_as = target
+                if = { limit = { omni_sb_can_target_summon_emzalian_alligators = yes }
+                    scope:player = { add_to_variable_list = { name = omni_sb_recipients target = scope:target } }
+                }
+            }
+        }
+    } }
+}
+
+omni_sb_why_summon_emzalian_alligators = {
+    scope = country
+    saved_scopes = { player selected_mage }
+    effect = {
+        if = {
+            limit = { exists = scope:selected_mage }
+            scope:selected_mage = {
+                if = { limit = { NOT = { omni_sb_viewer_controls = yes } } custom_tooltip = omni_sb_why_control_tt }
+                if = { limit = { NOT = { omni_character_is_eligible_caster = yes } }
+                    if = { limit = { has_trait = brain_damaged } custom_tooltip = omni_sb_why_brain_damaged_tt }
+                    else_if = { limit = { has_trait = goblin_trait } custom_tooltip = omni_sb_why_goblin_tt }
+                    else_if = { limit = { OR = { has_variable = on_orc_adventure has_variable = on_omni_adventure } } custom_tooltip = omni_sb_why_adventure_tt }
+                    else = { custom_tooltip = omni_sb_why_trait_tt }
+                }
+                if = { limit = { NOT = { omni_knows_spell = { SPELL = summon_emzalian_alligators } } } custom_tooltip = omni_sb_why_unknown_tt }
+                if = { limit = { scope:player = { has_variable = omni_cd_summon_emzalian_alligators } } custom_tooltip = omni_sb_why_cooldown_tt }
+                if = { limit = { NOT = { omni_can_afford_spell = { BASE = 60 } } } custom_tooltip = omni_sb_why_mana_tt }
+            }
+            if = {
+                limit = {
+                    scope:selected_mage = { omni_sb_viewer_controls = yes omni_character_is_eligible_caster = yes omni_knows_spell = { SPELL = summon_emzalian_alligators } NOT = { scope:player = { has_variable = omni_cd_summon_emzalian_alligators } } omni_can_afford_spell = { BASE = 60 } }
+                    NOT = { omni_sb_can_cast_summon_emzalian_alligators = yes }
                 }
                 custom_tooltip = omni_sb_why_other_tt
             }

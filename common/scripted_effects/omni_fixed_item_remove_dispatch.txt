@@ -6,8 +6,17 @@
 # CHARACTER scope. The country half is kept when the realm army loadout still
 # holds the same item, since that slot applies the same _army modifier.
 
+# Load time: the $item_ID$ wrapper stays tiny because remove_character_item
+# (hundreds of call sites) expands it at every call; the table below has no
+# parameter, so it is parsed once.
 omni_remove_fixed_combat_item_layers = {
 	set_variable = { name = omni_removed_combat_item value = flag:$item_ID$ }
+	omni_remove_fixed_combat_item_layers_by_var = yes
+	remove_variable = omni_removed_combat_item
+}
+
+# Reads var:omni_removed_combat_item; call through the wrapper above.
+omni_remove_fixed_combat_item_layers_by_var = {
 	if = { limit = { var:omni_removed_combat_item = flag:item_angelic_spear } every_character_unit = { limit = { has_unit_modifier = item_angelic_spear_unit } remove_unit_modifier = item_angelic_spear_unit } if = { limit = { OR = { is_ruler = no country = { NOT = { omni_country_slots_hold_item = { ITEM = item_angelic_spear } } } } } remove_character_modifier = item_angelic_spear_personal if = { limit = { is_ruler = yes } country = { remove_country_modifier = item_angelic_spear_army } } } }
 	else_if = { limit = { var:omni_removed_combat_item = flag:item_aralans_claid } every_character_unit = { limit = { has_unit_modifier = item_aralans_claid_unit } remove_unit_modifier = item_aralans_claid_unit } if = { limit = { OR = { is_ruler = no country = { NOT = { omni_country_slots_hold_item = { ITEM = item_aralans_claid } } } } } remove_character_modifier = item_aralans_claid_personal if = { limit = { is_ruler = yes } country = { remove_country_modifier = item_aralans_claid_army } } } }
 	else_if = { limit = { var:omni_removed_combat_item = flag:item_armet_helmet } every_character_unit = { limit = { has_unit_modifier = item_armet_helmet_unit } remove_unit_modifier = item_armet_helmet_unit } if = { limit = { OR = { is_ruler = no country = { NOT = { omni_country_slots_hold_item = { ITEM = item_armet_helmet } } } } } remove_character_modifier = item_armet_helmet_personal if = { limit = { is_ruler = yes } country = { remove_country_modifier = item_armet_helmet_army } } } }
@@ -55,5 +64,4 @@ omni_remove_fixed_combat_item_layers = {
 	else_if = { limit = { var:omni_removed_combat_item = flag:item_vetalian_longbow } every_character_unit = { limit = { has_unit_modifier = item_vetalian_longbow_unit } remove_unit_modifier = item_vetalian_longbow_unit } if = { limit = { OR = { is_ruler = no country = { NOT = { omni_country_slots_hold_item = { ITEM = item_vetalian_longbow } } } } } remove_character_modifier = item_vetalian_longbow_personal if = { limit = { is_ruler = yes } country = { remove_country_modifier = item_vetalian_longbow_army } } } }
 	else_if = { limit = { var:omni_removed_combat_item = flag:item_wreath_of_joy } every_character_unit = { limit = { has_unit_modifier = item_wreath_of_joy_unit } remove_unit_modifier = item_wreath_of_joy_unit } if = { limit = { OR = { is_ruler = no country = { NOT = { omni_country_slots_hold_item = { ITEM = item_wreath_of_joy } } } } } remove_character_modifier = item_wreath_of_joy_personal if = { limit = { is_ruler = yes } country = { remove_country_modifier = item_wreath_of_joy_army } } } }
 	else_if = { limit = { var:omni_removed_combat_item = flag:item_zanis_spear } every_character_unit = { limit = { has_unit_modifier = item_zanis_spear_unit } remove_unit_modifier = item_zanis_spear_unit } if = { limit = { OR = { is_ruler = no country = { NOT = { omni_country_slots_hold_item = { ITEM = item_zanis_spear } } } } } remove_character_modifier = item_zanis_spear_personal if = { limit = { is_ruler = yes } country = { remove_country_modifier = item_zanis_spear_army } } } }
-	remove_variable = omni_removed_combat_item
 }

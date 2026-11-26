@@ -5654,6 +5654,33 @@ me_zorgo_magic_focus.130 = { # Friendly Battle Buff Menu - Cast a good spell on 
         name = "me_zorgo_magic_focus.7.hearth_ward"
     }
 
+    option = { # Summon Emzalian Alligators - Borderlander folk battle summon
+        name = me_zorgo_magic_focus.29.alligators
+        trigger = {
+            exists = scope:battle_spell_context
+            NOT = { has_variable = omni_cd_summon_emzalian_alligators }
+            scope:selected_mage = {
+                is_alive = yes
+                omni_character_is_eligible_caster = yes
+                omni_knows_spell = { SPELL = summon_emzalian_alligators }
+                omni_can_afford_spell = { BASE = 60 }
+            }
+            scope:target = { any_character_unit = { is_army = yes in_combat = yes } }
+        }
+        scope:target = {
+            random_character_unit = {
+                limit = { is_army = yes in_combat = yes }
+                unit_location = { save_scope_as = emzalian_summon_site }
+            }
+        }
+        if = {
+            limit = { exists = scope:emzalian_summon_site }
+            scope:selected_mage = { omni_spell_mana_cost_effect = { BASE = 60 } }
+            omni_raise_emzalian_alligators = yes
+        }
+        custom_tooltip = omni_folk_discovery.effect_summon_emzalian_alligators
+    }
+
     option = { # Battle Surge
         trigger = {
             scope:selected_mage = { NOT = { has_variable = omni_cd_battle_surge } }

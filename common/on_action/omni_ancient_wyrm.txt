@@ -1,0 +1,86 @@
+﻿on_character_death = { on_actions = { omni_wyrm_on_death } }
+omni_wyrm_on_death = {
+	trigger = { omni_has_deployed_wyrm = yes }
+	effect = { omni_end_wyrm_flight = yes }
+}
+
+on_ruler_change = { on_actions = { omni_wyrm_on_succession } }
+omni_wyrm_on_succession = {
+	trigger = { scope:former_ruler = { omni_has_deployed_wyrm = yes } }
+	effect = { scope:former_ruler = { omni_end_wyrm_flight = yes } }
+}
+
+# A wiped-out flight is fatal. Check a day after any lost battle, and monthly
+# for flights lost outside battle (attrition, shattered retreat).
+on_battle_lost_country = { on_actions = { omni_wyrm_battle_lost } }
+omni_wyrm_battle_lost = {
+	trigger = {
+		exists = current_ruler
+		current_ruler = { has_variable = omni_wyrm_in_flight }
+	}
+	effect = { trigger_event = { id = omni_ancient_wyrm.1 days = 1 } }
+}
+
+monthly_country_pulse = { on_actions = { omni_wyrm_wipeout_pulse omni_wyrm_recover } }
+omni_wyrm_wipeout_pulse = {
+	trigger = {
+		exists = current_ruler
+		current_ruler = { has_variable = omni_wyrm_in_flight }
+	}
+	effect = { omni_wyrm_check_wipeout = yes }
+}
+
+# Keep the wyrm in command and mend surviving cohorts. Strength is capped at
+# full cohort strength, so the formation never exceeds 4,000.
+omni_wyrm_recover = {
+	trigger = {
+		has_land = yes
+		exists = current_ruler
+		current_ruler = { has_variable = omni_ancient_wyrm omni_has_deployed_wyrm = yes }
+	}
+	effect = {
+		current_ruler = {
+			# Flights launched before the wipeout rule existed.
+			if = {
+				limit = { NOT = { has_variable = omni_wyrm_in_flight } }
+				set_variable = omni_wyrm_in_flight
+			}
+			if = {
+				limit = {
+					prisoner = no
+					any_in_list = {
+						variable = omni_wyrm_cohorts
+						sub_unit_type = omni_dragon
+						owning_unit = {
+							unit_owner = root
+							in_combat = no
+							NOT = { commander = root.current_ruler }
+						}
+					}
+				}
+				random_in_list = {
+					variable = omni_wyrm_cohorts
+					limit = {
+						sub_unit_type = omni_dragon
+						owning_unit = { unit_owner = root in_combat = no }
+					}
+					owning_unit = { set_as_commander = root.current_ruler }
+				}
+			}
+			every_in_list = {
+				variable = omni_wyrm_cohorts
+				limit = {
+					sub_unit_type = omni_dragon
+					subunit_strength_percentage < 1
+					owning_unit = {
+						unit_owner = root
+						in_combat = no
+						unit_location = { controller = root }
+					}
+				}
+				# One percent per surviving 500-strength cohort, up to full strength.
+				add_subunit_strength = { value = 1 subtract = subunit_strength_percentage max = 0.01 }
+			}
+		}
+	}
+}

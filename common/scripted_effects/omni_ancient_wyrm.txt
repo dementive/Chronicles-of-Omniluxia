@@ -1,0 +1,153 @@
+﻿# Sarthovar's flight, modelled on the Dracolich's (omni_dracolich.txt).
+# 8 cohorts x 500 strength = 4,000 at most. Cohorts never exceed full strength,
+# and cohorts lost in the field do not return.
+
+# Country scope. Called by Take Flight and by the military screen's levy button.
+omni_deploy_wyrm = {
+	if = {
+		limit = { omni_can_deploy_wyrm = yes }
+		current_ruler = { save_scope_as = omni_wyrm_commander }
+		capital_scope = { save_scope_as = omni_wyrm_departure }
+		create_unit = {
+			name = omni_wyrm_army_name
+			location = scope:omni_wyrm_departure
+			sub_unit = omni_dragon
+			save_scope_as = omni_wyrm_army
+		}
+		if = {
+			limit = {
+				exists = scope:omni_wyrm_army
+				scope:omni_wyrm_army = { any_sub_unit = { sub_unit_type = omni_dragon } }
+			}
+			omni_fill_wyrm_army = yes
+			scope:omni_wyrm_army = {
+				set_as_commander = scope:omni_wyrm_commander
+			}
+			scope:omni_wyrm_commander = {
+				set_variable = omni_wyrm_in_flight
+				set_variable = { name = omni_wyrm_landing_cooldown days = 90 }
+				remove_variable = omni_wyrm_landed_cohorts
+				remove_variable = omni_wyrm_landed_strength
+			}
+		}
+	}
+}
+
+# The formation starts with one cohort; add the rest up to the cap.
+omni_fill_wyrm_army = {
+	scope:omni_wyrm_commander = { clear_variable_list = omni_wyrm_cohorts }
+	scope:omni_wyrm_army = {
+		if = {
+			limit = { scope:omni_wyrm_commander = { has_variable = omni_wyrm_landed_cohorts } }
+			set_local_variable = {
+				name = omni_wyrm_extra_cohorts
+				value = {
+					value = scope:omni_wyrm_commander.var:omni_wyrm_landed_cohorts
+					max = 8
+					subtract = 1
+				}
+			}
+			while = {
+				count = local_var:omni_wyrm_extra_cohorts
+				add_subunit = omni_dragon
+			}
+		}
+		else = {
+			while = {
+				count = 7
+				add_subunit = omni_dragon
+			}
+		}
+		every_sub_unit = {
+			limit = { sub_unit_type = omni_dragon }
+			if = {
+				limit = { scope:omni_wyrm_commander = { has_variable = omni_wyrm_landed_strength } }
+				add_subunit_strength = {
+					value = scope:omni_wyrm_commander.var:omni_wyrm_landed_strength
+					subtract = subunit_strength_percentage
+				}
+			}
+			else = { add_subunit_strength = 1 }
+			save_scope_as = omni_wyrm_new_cohort
+			scope:omni_wyrm_commander = {
+				add_to_variable_list = { name = omni_wyrm_cohorts target = scope:omni_wyrm_new_cohort }
+			}
+		}
+		add_morale = 10
+		add_unit_modifier = { name = omni_wyrm_slow_recovery duration = -1 }
+	}
+}
+
+# Country scope. Record surviving strength before removing the flying formation.
+omni_land_wyrm = {
+	if = {
+		limit = { omni_can_land_wyrm = yes }
+		current_ruler = {
+			save_scope_as = omni_wyrm_landing_ruler
+			set_variable = { name = omni_wyrm_landed_cohorts value = 0 }
+			set_variable = { name = omni_wyrm_landed_strength value = 0 }
+			every_in_list = {
+				variable = omni_wyrm_cohorts
+				limit = { sub_unit_type = omni_dragon omni_wyrm_cohort_can_land = yes }
+				omni_record_landed_wyrm_cohort = yes
+			}
+			if = {
+				limit = { var:omni_wyrm_landed_cohorts > 0 }
+				change_variable = { name = omni_wyrm_landed_strength divide = var:omni_wyrm_landed_cohorts }
+				set_variable = { name = omni_wyrm_flight_cooldown days = 730 }
+				omni_end_wyrm_flight = yes
+			}
+			else = {
+				remove_variable = omni_wyrm_landed_cohorts
+				remove_variable = omni_wyrm_landed_strength
+			}
+		}
+	}
+}
+
+# Subunit scope. The stored strength is averaged across surviving cohorts when landed.
+omni_record_landed_wyrm_cohort = {
+	save_scope_as = omni_wyrm_landing_cohort
+	scope:omni_wyrm_landing_ruler = {
+		change_variable = { name = omni_wyrm_landed_cohorts add = 1 }
+		change_variable = { name = omni_wyrm_landed_strength add = scope:omni_wyrm_landing_cohort.subunit_strength_percentage }
+	}
+	owning_unit = {
+		if = {
+			limit = { has_unit_modifier = omni_wyrm_slow_recovery }
+			remove_unit_modifier = omni_wyrm_slow_recovery
+		}
+	}
+}
+
+# Character scope.
+omni_end_wyrm_flight = {
+	every_in_list = {
+		variable = omni_wyrm_cohorts
+		limit = { sub_unit_type = omni_dragon }
+		destroy_subunit = yes
+	}
+	clear_variable_list = omni_wyrm_cohorts
+	remove_variable = omni_wyrm_in_flight
+}
+
+# Country scope. Sarthovar dies if his flight is gone without having landed:
+# destroyed in battle, shattered, or lost to attrition.
+omni_wyrm_check_wipeout = {
+	if = {
+		limit = { exists = current_ruler }
+		current_ruler = {
+			if = {
+				limit = {
+					has_variable = omni_ancient_wyrm
+					has_variable = omni_wyrm_in_flight
+					is_alive = yes
+					omni_has_deployed_wyrm = no
+				}
+				clear_variable_list = omni_wyrm_cohorts
+				remove_variable = omni_wyrm_in_flight
+				death = { death_reason = death_battle }
+			}
+		}
+	}
+}

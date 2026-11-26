@@ -1,0 +1,72 @@
+﻿# Sarthovar's flight, modelled on the Dracolich's (omni_lich_ascension.txt).
+# The wyrm is the character flagged omni_ancient_wyrm in setup/characters/00_RXD.txt.
+
+# Country scope.
+omni_can_deploy_wyrm = {
+	has_land = yes
+	government = omni_dragon_dominion
+	exists = current_ruler
+	custom_tooltip = {
+		text = omni_wyrm_capital_control_tt
+		capital_scope = { controller = root }
+	}
+	current_ruler = {
+		has_variable = omni_ancient_wyrm
+		is_alive = yes
+		prisoner = no
+		custom_tooltip = {
+			text = omni_wyrm_flight_cooldown_tt
+			NOT = { has_variable = omni_wyrm_flight_cooldown }
+		}
+		custom_tooltip = {
+			text = omni_wyrm_not_deployed_tt
+			omni_has_deployed_wyrm = no
+		}
+	}
+}
+
+# Character scope. Check type too, since the engine recycles destroyed cohort IDs.
+omni_has_deployed_wyrm = {
+	any_in_list = {
+		variable = omni_wyrm_cohorts
+		sub_unit_type = omni_dragon
+	}
+}
+
+# Subunit scope. Every surviving cohort must physically return to the capital.
+omni_wyrm_cohort_can_land = {
+	owning_unit = {
+		unit_owner = root
+		unit_location = root.capital_scope
+		in_combat = no
+		is_moving = no
+		is_exiled = no
+	}
+}
+
+# Country scope.
+omni_can_land_wyrm = {
+	custom_tooltip = {
+		text = omni_wyrm_capital_control_tt
+		capital_scope = { controller = root }
+	}
+	current_ruler = {
+		is_alive = yes
+		prisoner = no
+		custom_tooltip = {
+			text = omni_wyrm_landing_cooldown_tt
+			NOT = { has_variable = omni_wyrm_landing_cooldown }
+		}
+		custom_tooltip = {
+			text = omni_wyrm_landing_location_tt
+			omni_has_deployed_wyrm = yes
+			NOT = {
+				any_in_list = {
+					variable = omni_wyrm_cohorts
+					sub_unit_type = omni_dragon
+					omni_wyrm_cohort_can_land = no
+				}
+			}
+		}
+	}
+}

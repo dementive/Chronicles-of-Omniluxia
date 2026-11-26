@@ -117,6 +117,35 @@
 	                }
             	}
 
+				if = {
+					limit = { is_ai = yes }
+					add_country_modifier = { name = omni_gaaron_horde_upkeep duration = 730 }
+					if = {
+						limit = { war = no is_subject = no }
+						random_neighbour_country = {
+							limit = {
+								is_subject = no
+								NOR = { alliance_with = root has_truce_with = root is_guaranteed_by = root }
+								omni_gaaron_defender_strength_svalue <= root.omni_crusade_strength_svalue
+								any_owned_province = { omni_gaaron_border_claim = yes }
+							}
+							save_scope_as = gaaron_opening_target
+							random_owned_province = {
+								limit = { omni_gaaron_border_claim = yes }
+								save_scope_as = gaaron_opening_wargoal
+							}
+						}
+						if = {
+							limit = { exists = scope:gaaron_opening_wargoal }
+							declare_war_with_wargoal = {
+								war_goal = conquer_wargoal
+								province = scope:gaaron_opening_wargoal
+								target = scope:gaaron_opening_target
+							}
+						}
+					}
+				}
+
 				every_country = {
 	            	limit = {
 	            		NOT = {

@@ -8276,6 +8276,42 @@ types OmniSpellbook {
                         tooltip = "omni_sb_folk_kinweaving_unknown_tt"
                     }
                 }
+                container = { # summon_emzalian_alligators
+                    position = { 886 360 }
+                    datacontext = "[GetScriptedGui('omni_sb_known_summon_emzalian_alligators')]"
+                    widget = { # known: one IsShown gate, mana state only evaluated when known
+                        size = { 196 38 }
+                        alpha = "[Select_float( GetScriptedGui('omni_sb_cooldown_summon_emzalian_alligators').IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ), '(float)0.40', '(float)1' )]"
+                        visible = "[ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        omni_sb_cast_button = {
+                            size = { 196 38 }
+                            omni_sb_learned_border = {}
+                            visible = "[ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                            blockoverride "Cast_action" {
+                                enabled = "[GetScriptedGui('omni_sb_cast_summon_emzalian_alligators').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End )]"
+                                onclick = "[GetScriptedGui('omni_sb_cast_summon_emzalian_alligators').Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End )]"
+                                onclick = "[GetVariableSystem.Set('omni_sb_recipient_picker', 'summon_emzalian_alligators')]"
+                            }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_summon_emzalian_alligators" }
+                            tooltip = "[Select_CString( Not( GetScriptedGui('omni_sb_cast_summon_emzalian_alligators').IsShown( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End ) ), Localize('omni_sb_cast_summon_emzalian_alligators_cooldown_tt'), Select_CString( GetScriptedGui('omni_sb_cast_summon_emzalian_alligators').IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End ), Localize('omni_sb_folk_summon_emzalian_alligators_tt'), Concatenate( Localize('omni_sb_folk_summon_emzalian_alligators_info_tt'), Concatenate( Localize('omni_sb_tooltip_break'), GetScriptedGui('omni_sb_why_summon_emzalian_alligators').BuildTooltip( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Character.MakeScope ).End ) ) ) ) )]"
+                        }
+                        omni_sb_cast_button = {
+                            size = { 196 38 }
+                            omni_sb_learned_border = {}
+                            visible = "[Not( ScriptedGui.IsValid( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                            blockoverride "Cast_action" { enabled = no }
+                            blockoverride "Spell_name" { text = "omni_sb_known_name_summon_emzalian_alligators" }
+                            tooltip = "[ScriptedGui.BuildTooltip( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End )]"
+                        }
+                    }
+                    omni_sb_cast_button = {
+                        size = { 196 38 }
+                        visible = "[Not( ScriptedGui.IsShown( GuiScope.SetRoot( Character.MakeScope ).AddScope('player', Player.MakeScope ).End ) )]"
+                        blockoverride "Cast_action" { enabled = no }
+                        blockoverride "Spell_name" { text = "omni_sb_spell_summon_emzalian_alligators" }
+                        tooltip = "omni_sb_folk_summon_emzalian_alligators_unknown_tt"
+                    }
+                }
             }
             widget = {
                 size = { 1136 710 }
@@ -11638,6 +11674,21 @@ types OmniSpellbook {
             blockoverride "Picker_summary" { text = "omni_sb_picker_summary_summon_elemental_colossus" }
             blockoverride "Cast_province" {
                 datacontext = "[GetScriptedGui('omni_sb_confirm_summon_elemental_colossus')]"
+                enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Player.MakeScope.GetVariable('omni_sb_casting_mage').GetCharacter.MakeScope ).AddScope('target', Scope.GetProvince.MakeScope ).End )]"
+                onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Player.MakeScope.GetVariable('omni_sb_casting_mage').GetCharacter.MakeScope ).AddScope('target', Scope.GetProvince.MakeScope ).End )]"
+                onclick = "[ClearHighlightColors]"
+                onclick = "[GetVariableSystem.Clear('omni_sb_recipient_picker')]"
+                clicksound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+            }
+        }
+        omni_sb_province_picker = {
+            blockoverride "Picker_visible" {
+                visible = "[GetVariableSystem.HasValue('omni_sb_recipient_picker', 'summon_emzalian_alligators')]"
+            }
+            blockoverride "Picker_title" { text = "omni_sb_spell_summon_emzalian_alligators" }
+            blockoverride "Picker_summary" { text = "omni_sb_picker_summary_summon_emzalian_alligators" }
+            blockoverride "Cast_province" {
+                datacontext = "[GetScriptedGui('omni_sb_confirm_summon_emzalian_alligators')]"
                 enabled = "[ScriptedGui.IsValid( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Player.MakeScope.GetVariable('omni_sb_casting_mage').GetCharacter.MakeScope ).AddScope('target', Scope.GetProvince.MakeScope ).End )]"
                 onclick = "[ScriptedGui.Execute( GuiScope.SetRoot( Player.MakeScope ).AddScope('player', Player.MakeScope ).AddScope('selected_mage', Player.MakeScope.GetVariable('omni_sb_casting_mage').GetCharacter.MakeScope ).AddScope('target', Scope.GetProvince.MakeScope ).End )]"
                 onclick = "[ClearHighlightColors]"

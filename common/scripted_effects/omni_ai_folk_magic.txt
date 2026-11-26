@@ -118,7 +118,22 @@ omni_ai_folk_battlecast = {
             }
         }
     }
-    if = { limit = { exists = scope:omni_folk_enemy } omni_ai_folk_offensive_cast = yes }
+    if = {
+        limit = {
+            omni_knows_spell = { SPELL = summon_emzalian_alligators }
+            omni_can_afford_spell = { BASE = 60 }
+            scope:caster_country = { NOT = { has_variable = omni_cd_summon_emzalian_alligators } }
+            any_character_unit = { is_army = yes in_combat = yes }
+        }
+        random_character_unit = {
+            limit = { is_army = yes in_combat = yes }
+            unit_location = { save_scope_as = emzalian_summon_site }
+        }
+        omni_spell_mana_cost_effect = { BASE = 60 }
+        scope:caster_country = { omni_raise_emzalian_alligators = yes }
+        set_variable = omni_ai_battle_cast_succeeded
+    }
+    else_if = { limit = { exists = scope:omni_folk_enemy } omni_ai_folk_offensive_cast = yes }
     if = {
         limit = {
             NOT = { has_variable = omni_ai_battle_cast_succeeded }

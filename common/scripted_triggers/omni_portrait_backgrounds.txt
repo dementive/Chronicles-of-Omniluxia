@@ -38,6 +38,16 @@ omni_portrait_migratory_employer = {
     employer = { OR = { government = tribal_chiefdom government = nomadic_tribe government = ulus_monarchy } }
 }
 
+# Province scope. Shared by the island quay and the landmark override.
+omni_portrait_offshore_island_location = {
+    OR = {
+        is_in_region = outer_passage_region
+        is_in_region = western_isles_region
+        is_in_region = luxterra_offshore_region
+        is_in_region = nurago_isles_region
+    }
+}
+
 # Cheap location-only gate shared by national and cultural fallbacks.
 omni_portrait_has_landmark = {
     exists = location
@@ -50,6 +60,7 @@ omni_portrait_has_landmark = {
             AND = { province_id = 2175 has_owner = yes owner = { tag = IT8 } }
             AND = { province_id = 2548 has_owner = yes owner = { tag = ITC } }
             province_id = 888
+            omni_portrait_offshore_island_location = yes
             province_id = 748
             AND = { province_id = 870 has_owner = yes owner = { tag = BLZ } }
             province_id = 345
@@ -561,6 +572,9 @@ omni_portrait_scene_polarian_snow = {
 # New cultural fallbacks never replace an existing location, culture or government scene.
 omni_portrait_has_existing_scene = {
     OR = {
+        omni_portrait_scene_urzhaketh_silver_roost = yes
+        omni_portrait_scene_targuzh_storm_roost = yes
+        omni_portrait_scene_outer_passage_island_quay = yes
         omni_portrait_scene_palace_v2 = yes
         omni_portrait_scene_tariku = yes
         omni_portrait_scene_sum_khaya = yes
@@ -1174,4 +1188,44 @@ omni_portrait_scene_fallback_goblin_cave = {
     OR = { has_culture = kana has_culture = taata has_culture = tiawana }
     omni_portrait_scene_eligible = yes
     NOT = { omni_portrait_has_existing_scene = yes }
+}
+
+# Character-rooted. RXD's ruler always uses the dragon roost (omni_portrait_dragon_roost.txt),
+# so they are kept out of the Outer Passage island scenes, whose layers draw above it.
+# Other RXD characters keep the island scenes.
+omni_portrait_rxd_dragon_court = {
+    is_ruler = yes
+    exists = employer
+    employer = { tag = RXD }
+}
+
+omni_portrait_scene_urzhaketh_silver_roost = {
+    exists = location
+    location = {
+        province_id = 6044
+    }
+    omni_portrait_scene_eligible = yes
+    NOT = { omni_portrait_migratory_employer = yes }
+    NOT = { omni_portrait_rxd_dragon_court = yes }
+}
+
+omni_portrait_scene_targuzh_storm_roost = {
+    exists = location
+    location = {
+        province_id = 6047
+    }
+    omni_portrait_scene_eligible = yes
+    NOT = { omni_portrait_migratory_employer = yes }
+    NOT = { omni_portrait_rxd_dragon_court = yes }
+}
+
+omni_portrait_scene_outer_passage_island_quay = {
+    exists = location
+    location = {
+        omni_portrait_offshore_island_location = yes
+        NOT = { OR = { province_id = 6044 province_id = 6047 } }
+    }
+    omni_portrait_scene_eligible = yes
+    NOT = { omni_portrait_migratory_employer = yes }
+    NOT = { omni_portrait_rxd_dragon_court = yes }
 }

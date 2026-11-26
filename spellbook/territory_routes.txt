@@ -420,3 +420,42 @@ omni_cast_weathercall_growth = {
 		}
 	}
 }
+
+omni_cast_summon_emzalian_alligators = {
+	sound = "event:/SFX/UI/Actions/sfx_ui_action_invoke_omen"
+	on_other_nation = no
+	on_own_nation = yes
+
+	potential_trigger = {
+		scope:actor = { is_ai = no }
+		scope:target = { omni_can_select_territory_summon_emzalian_alligators = yes }
+	}
+
+	allowed_trigger = {
+		scope:actor = { NOT = { has_variable = omni_cd_summon_emzalian_alligators } any_owned_province = { omni_spell_target_land = yes } }
+		scope:target = { omni_can_afford_spell = { BASE = 60 } }
+	}
+
+	province_actor_trigger = { omni_spell_target_land = yes }
+
+	effect = {
+		if = {
+			limit = {
+				exists = scope:recipient
+				scope:actor = { NOT = { has_variable = omni_cd_summon_emzalian_alligators } }
+				scope:recipient = {
+					owner = scope:actor
+					omni_spell_target_land = yes
+				}
+				scope:target = {
+					OR = { employer = scope:actor country = scope:actor }
+					omni_can_select_territory_summon_emzalian_alligators = yes
+					omni_can_afford_spell = { BASE = 60 }
+				}
+			}
+			scope:target = { omni_spell_mana_cost_effect = { BASE = 60 } }
+			scope:recipient = { save_scope_as = emzalian_summon_site }
+			scope:actor = { omni_raise_emzalian_alligators = yes }
+		}
+	}
+}
