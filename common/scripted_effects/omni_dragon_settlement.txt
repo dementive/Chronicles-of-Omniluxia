@@ -6,44 +6,55 @@ omni_record_dragon_occupation = {
 }
 
 # Character scope. Character creation may have already assigned a race from the local culture.
+# Living characters only: remove_trait/add_trait on a dead character writes into trait
+# data the engine has already freed, which crashed the game (EXCEPTION_ACCESS_VIOLATION,
+# "nIndex > -1 && nIndex < _nSize" on the first line, remove_trait = high_elf_trait).
 omni_apply_dragon_sovereign_trait = {
-    remove_trait = high_elf_trait
-    remove_trait = forest_elf_trait
-    remove_trait = half_elf_trait
-    remove_trait = copper_dwarf_trait
-    remove_trait = gold_dwarf_trait
-    remove_trait = silver_dwarf_trait
-    remove_trait = orc_trait
-    remove_trait = snakefolk_trait
-    remove_trait = half_snake_trait
-    remove_trait = human_trait
-    remove_trait = goblin_trait
-    remove_trait = hobgoblin_trait
-    remove_trait = drow_trait
-    remove_trait = wraith_trait
-    remove_trait = zorg_trait
-    remove_trait = dragkhanic_trait
-    remove_trait = vampire_trait
-    remove_trait = silver_halfling_trait
-    remove_trait = halfling_trait
-    remove_trait = gnome_trait
-    remove_trait = deep_gnome_trait
-    remove_trait = sea_elf_trait
-    remove_trait = kinones_trait
-    remove_trait = chivix_trait
-    remove_trait = mycelar_trait
-    remove_trait = ettin_trait
-    remove_trait = ayrith_trait
-    remove_trait = castaway_dwarf_trait
-    remove_trait = golem_trait
-    remove_trait = arame_trait
-    remove_trait = saurthi_trait
-    remove_trait = tsaalan_trait
-    remove_trait = vothkin_trait
-    remove_trait = ulvenar_trait
-    remove_trait = tenmari_trait
-    remove_trait = ob_rimebound_trait
+    if = {
+        limit = { is_alive = yes }
+        omni_apply_dragon_sovereign_trait_inner = yes
+    }
+}
+omni_apply_dragon_sovereign_trait_inner = {
+    # Add first and remove only held traits: remove_trait on a character with no traits
+    # yet (fresh from create_character) writes into unallocated trait data and crashes.
     add_trait = omni_dragon_sovereign_trait
+    if = { limit = { has_trait = high_elf_trait } remove_trait = high_elf_trait }
+    if = { limit = { has_trait = forest_elf_trait } remove_trait = forest_elf_trait }
+    if = { limit = { has_trait = half_elf_trait } remove_trait = half_elf_trait }
+    if = { limit = { has_trait = copper_dwarf_trait } remove_trait = copper_dwarf_trait }
+    if = { limit = { has_trait = gold_dwarf_trait } remove_trait = gold_dwarf_trait }
+    if = { limit = { has_trait = silver_dwarf_trait } remove_trait = silver_dwarf_trait }
+    if = { limit = { has_trait = orc_trait } remove_trait = orc_trait }
+    if = { limit = { has_trait = snakefolk_trait } remove_trait = snakefolk_trait }
+    if = { limit = { has_trait = half_snake_trait } remove_trait = half_snake_trait }
+    if = { limit = { has_trait = human_trait } remove_trait = human_trait }
+    if = { limit = { has_trait = goblin_trait } remove_trait = goblin_trait }
+    if = { limit = { has_trait = hobgoblin_trait } remove_trait = hobgoblin_trait }
+    if = { limit = { has_trait = drow_trait } remove_trait = drow_trait }
+    if = { limit = { has_trait = wraith_trait } remove_trait = wraith_trait }
+    if = { limit = { has_trait = zorg_trait } remove_trait = zorg_trait }
+    if = { limit = { has_trait = dragkhanic_trait } remove_trait = dragkhanic_trait }
+    if = { limit = { has_trait = vampire_trait } remove_trait = vampire_trait }
+    if = { limit = { has_trait = silver_halfling_trait } remove_trait = silver_halfling_trait }
+    if = { limit = { has_trait = halfling_trait } remove_trait = halfling_trait }
+    if = { limit = { has_trait = gnome_trait } remove_trait = gnome_trait }
+    if = { limit = { has_trait = deep_gnome_trait } remove_trait = deep_gnome_trait }
+    if = { limit = { has_trait = sea_elf_trait } remove_trait = sea_elf_trait }
+    if = { limit = { has_trait = kinones_trait } remove_trait = kinones_trait }
+    if = { limit = { has_trait = chivix_trait } remove_trait = chivix_trait }
+    if = { limit = { has_trait = mycelar_trait } remove_trait = mycelar_trait }
+    if = { limit = { has_trait = ettin_trait } remove_trait = ettin_trait }
+    if = { limit = { has_trait = ayrith_trait } remove_trait = ayrith_trait }
+    if = { limit = { has_trait = castaway_dwarf_trait } remove_trait = castaway_dwarf_trait }
+    if = { limit = { has_trait = golem_trait } remove_trait = golem_trait }
+    if = { limit = { has_trait = arame_trait } remove_trait = arame_trait }
+    if = { limit = { has_trait = saurthi_trait } remove_trait = saurthi_trait }
+    if = { limit = { has_trait = tsaalan_trait } remove_trait = tsaalan_trait }
+    if = { limit = { has_trait = vothkin_trait } remove_trait = vothkin_trait }
+    if = { limit = { has_trait = ulvenar_trait } remove_trait = ulvenar_trait }
+    if = { limit = { has_trait = tenmari_trait } remove_trait = tenmari_trait }
+    if = { limit = { has_trait = ob_rimebound_trait } remove_trait = ob_rimebound_trait }
     # The portrait GUI keys off these variables, not the trait: a dragon by
     # blood alone (e.g. one dragon parent) must still draw as a dragon.
     if = {
