@@ -6815,9 +6815,45 @@ me_zorgo_magic_focus.37 = { # AI: battle mages auto-cast from live combat
             in_combat = yes
         }
         omni_can_afford_spell = { BASE = 15 }
+        NOT = { has_variable = omni_ai_battlecast_queued }
+    }
+
+    # Fired from in_land_battle / in_naval_battle, i.e. while the engine is still
+    # resolving the battle. Damaging cohorts, spawning units or killing commanders
+    # from inside that callback crashed the game ("nIndex > -1 && nIndex < _nSize"),
+    # so only queue the cast here; .36 runs it a day later on the normal event tick.
+    immediate = {
+        set_variable = { name = omni_ai_battlecast_queued days = 2 }
+        trigger_event = { id = me_zorgo_magic_focus.36 days = 1 }
+    }
+}
+me_zorgo_magic_focus.36 = { # AI: queued battle cast from .37, run outside battle resolution
+    type = character_event
+    hidden = yes
+
+    trigger = {
+        exists = employer
+        employer = {
+            is_ai = yes
+        }
+        is_alive = yes
+        OR = {
+            is_general = yes
+            is_admiral = yes
+        }
+        omni_character_is_eligible_caster = yes
+        any_character_unit = {
+            OR = {
+                is_army = yes
+                is_navy = yes
+            }
+            in_combat = yes
+        }
+        omni_can_afford_spell = { BASE = 15 }
     }
 
     immediate = {
+        remove_variable = omni_ai_battlecast_queued
         employer = {
             save_scope_as = caster_country
         }
