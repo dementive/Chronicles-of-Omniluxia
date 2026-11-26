@@ -1,0 +1,130 @@
+﻿# Character scope.
+omni_has_lich_ascension = {
+	is_alive = yes
+	has_trait = lich_trait
+	exists = var:omni_phylactery_site
+	var:omni_phylactery_site = { has_province_modifier = omni_lich_phylactery }
+	NOR = { has_trait = omni_archlich_trait has_trait = omni_dracolich_trait }
+}
+
+omni_lich_ascension_ready = {
+	omni_has_lich_ascension = yes
+	has_variable = omni_lich_ascension_months
+	var:omni_lich_ascension_months >= omni_lich_ascension_required_months
+}
+
+# Country scope, rechecked when the player selects an event option.
+omni_can_resolve_lich_ascension = {
+	exists = scope:omni_ascending_lich
+	current_ruler = { this = scope:omni_ascending_lich omni_lich_ascension_ready = yes }
+}
+
+# Country scope.
+omni_can_deploy_dracolich = {
+	has_land = yes
+	exists = current_ruler
+	custom_tooltip = {
+		text = omni_lich_phylactery_capital_control_tt
+		capital_scope = { controller = root }
+	}
+	current_ruler = {
+		has_trait = omni_dracolich_trait
+		is_alive = yes
+		prisoner = no
+		custom_tooltip = {
+			text = omni_dracolich_flight_cooldown_tt
+			NAND = {
+				has_variable = omni_dracolich_first_flight
+				has_variable = omni_dracolich_flight_cooldown
+			}
+		}
+		custom_tooltip = {
+			text = omni_dracolich_not_deployed_tt
+			omni_has_deployed_dracolich = no
+		}
+	}
+}
+
+# Character scope. Check type too, since the engine recycles destroyed cohort IDs.
+omni_has_deployed_dracolich = {
+	OR = {
+		AND = {
+			exists = var:omni_dracolich_cohort
+			var:omni_dracolich_cohort = { sub_unit_type = omni_dracolich }
+		}
+		any_in_list = {
+			variable = omni_dracolich_cohorts
+			sub_unit_type = omni_dracolich
+		}
+	}
+}
+
+# Subunit scope. Every surviving cohort must physically return to the capital.
+omni_dracolich_cohort_can_land = {
+	owning_unit = {
+		unit_owner = root
+		unit_location = root.capital_scope
+		in_combat = no
+		is_moving = no
+		is_exiled = no
+	}
+}
+
+# Country scope.
+omni_can_land_dracolich = {
+	custom_tooltip = {
+		text = omni_lich_phylactery_capital_control_tt
+		capital_scope = { controller = root }
+	}
+	current_ruler = {
+		is_alive = yes
+		prisoner = no
+		custom_tooltip = {
+			text = omni_dracolich_landing_cooldown_tt
+			NOT = { has_variable = omni_dracolich_landing_cooldown }
+		}
+		custom_tooltip = {
+			text = omni_dracolich_landing_location_tt
+			omni_has_deployed_dracolich = yes
+			NOT = {
+				any_in_list = {
+					variable = omni_dracolich_cohorts
+					sub_unit_type = omni_dracolich
+					omni_dracolich_cohort_can_land = no
+				}
+			}
+			trigger_if = {
+				limit = {
+					exists = var:omni_dracolich_cohort
+					var:omni_dracolich_cohort = { sub_unit_type = omni_dracolich }
+				}
+				var:omni_dracolich_cohort = { omni_dracolich_cohort_can_land = yes }
+			}
+		}
+	}
+}
+
+# Character scope. Ascended liches cannot be targeted by hostile spells.
+omni_lich_offensive_magic_immune = {
+	OR = {
+		has_trait = omni_archlich_trait
+		has_trait = omni_dracolich_trait
+	}
+}
+
+# Unit scope. The immunity also protects the forces the lich commands.
+omni_lich_led_unit = {
+	exists = commander
+	commander = { omni_lich_offensive_magic_immune = yes }
+}
+
+# Battle events recheck the saved targets when resolving an offensive spell.
+omni_battle_enemy_target_can_receive_spell = {
+	exists = scope:battle_enemy_target
+	scope:battle_enemy_target = { omni_lich_offensive_magic_immune = no }
+}
+
+omni_battle_enemy_force_can_receive_spell = {
+	exists = scope:battle_enemy_force
+	scope:battle_enemy_force = { omni_lich_led_unit = no }
+}

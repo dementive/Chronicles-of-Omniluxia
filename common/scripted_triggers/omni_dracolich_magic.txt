@@ -1,0 +1,39 @@
+﻿# Country scope. Both player and AI supply scope:selected_mage.
+omni_has_dracolich_spell_caster = {
+    exists = scope:selected_mage
+    scope:selected_mage = {
+        has_trait = omni_dracolich_trait
+        is_alive = yes
+        OR = {
+            AND = { exists = employer employer = root }
+            AND = { exists = country country = root }
+        }
+    }
+}
+
+omni_dracolich_spell_ready = {
+    omni_has_dracolich_spell_caster = yes
+    NOT = { has_variable = omni_dracolich_magic_recovery }
+    NOT = { has_variable = omni_dracolich_cd_$SPELL$ }
+}
+
+omni_can_cast_dracolich_eclipse = {
+    omni_dracolich_spell_ready = { SPELL = eclipse }
+    scope:selected_mage = { prisoner = no }
+    war = yes
+    any_countries_at_war_with = { exists = capital_scope }
+}
+
+omni_can_cast_dracolich_bone_levy = {
+    omni_dracolich_spell_ready = { SPELL = bone_levy }
+    scope:selected_mage = { prisoner = no }
+    OR = { war = yes has_civil_war = yes }
+    capital_scope = { controller = root }
+}
+
+omni_can_cast_dracolich_silent_throne = {
+    omni_dracolich_spell_ready = { SPELL = silent_throne }
+    scope:selected_mage = { prisoner = no }
+    war = no
+    has_civil_war = no
+}

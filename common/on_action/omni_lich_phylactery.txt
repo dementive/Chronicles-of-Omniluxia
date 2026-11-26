@@ -1,0 +1,50 @@
+﻿on_province_occupied = { on_actions = { omni_destroy_occupied_phylacteries } }
+omni_destroy_occupied_phylacteries = {
+	trigger = {
+		has_province_modifier = omni_lich_phylactery
+		exists = owner
+		controller = { war_with = root.owner }
+	}
+	effect = {
+		remove_province_modifier = omni_lich_phylactery
+		every_in_list = {
+			variable = omni_phylactery_liches
+			limit = { exists = var:omni_phylactery_site var:omni_phylactery_site = root }
+			# Unlink before death so the death hook leaves the list intact during iteration.
+			remove_variable = omni_phylactery_site
+			if = {
+				limit = { is_alive = yes has_trait = lich_trait }
+				death = { death_reason = death_magic }
+			}
+		}
+		clear_variable_list = omni_phylactery_liches
+	}
+}
+
+on_character_death = { on_actions = { omni_clear_dead_lich_phylactery } }
+omni_clear_dead_lich_phylactery = {
+	trigger = { exists = var:omni_phylactery_site }
+	effect = {
+		var:omni_phylactery_site = {
+			remove_list_variable = { name = omni_phylactery_liches target = root }
+			if = {
+				limit = { NOT = { has_non_empty_variable_list = { name = omni_phylactery_liches } } }
+				remove_province_modifier = omni_lich_phylactery
+			}
+		}
+		remove_variable = omni_phylactery_site
+	}
+}
+
+# Start the clock once for phylacteries placed before ascension was added.
+monthly_country_pulse = { on_actions = { omni_backfill_lich_ascension } }
+omni_backfill_lich_ascension = {
+	trigger = { NOT = { has_global_variable = omni_lich_ascension_backfilled } }
+	effect = {
+		set_global_variable = omni_lich_ascension_backfilled
+		every_living_character = {
+			limit = { omni_has_lich_ascension = yes NOT = { has_variable = omni_lich_ascension_months } }
+			omni_begin_lich_ascension = yes
+		}
+	}
+}

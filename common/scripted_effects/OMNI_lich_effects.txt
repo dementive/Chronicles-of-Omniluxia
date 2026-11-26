@@ -6,3 +6,38 @@ omni_force_add_trait_unless_lich = {
 		force_add_trait = $TRAIT$
 	}
 }
+
+# Character scope, called by the casting country's event.
+omni_perform_rite_of_lichdom = {
+	omni_spell_mana_cost_effect = { BASE = 350 }
+	omni_bind_lich_phylactery = yes
+}
+
+omni_bind_lich_phylactery = {
+	force_add_trait = lich_trait
+	save_scope_as = omni_phylactery_lich
+	root.capital_scope = {
+		if = {
+			limit = { NOT = { has_province_modifier = omni_lich_phylactery } }
+			add_province_modifier = { name = omni_lich_phylactery duration = -1 }
+		}
+		add_to_variable_list = { name = omni_phylactery_liches target = scope:omni_phylactery_lich }
+		scope:omni_phylactery_lich = { set_variable = { name = omni_phylactery_site value = prev } }
+	}
+	omni_begin_lich_ascension = yes
+}
+
+# Character scope. Five 31-day intervals plus seven 30-day intervals per year.
+omni_begin_lich_ascension = {
+	set_variable = { name = omni_lich_ascension_months value = 0 }
+	set_variable = { name = omni_lich_ascension_cycle value = 0 }
+	omni_queue_lich_ascension_month = yes
+}
+
+omni_queue_lich_ascension_month = {
+	if = {
+		limit = { var:omni_lich_ascension_cycle < 5 }
+		trigger_event = { id = omni_lich_ascension.1 days = 31 }
+	}
+	else = { trigger_event = { id = omni_lich_ascension.1 days = 30 } }
+}

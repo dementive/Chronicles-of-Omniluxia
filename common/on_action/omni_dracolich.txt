@@ -1,0 +1,110 @@
+﻿on_character_death = { on_actions = { omni_dracolich_on_death } }
+omni_dracolich_on_death = {
+	trigger = { omni_has_deployed_dracolich = yes }
+	effect = { omni_end_dracolich_flight = yes }
+}
+
+on_ruler_change = { on_actions = { omni_dracolich_on_succession } }
+omni_dracolich_on_succession = {
+	trigger = { scope:former_ruler = { omni_has_deployed_dracolich = yes } }
+	effect = { scope:former_ruler = { omni_end_dracolich_flight = yes } }
+}
+
+monthly_country_pulse = { on_actions = { omni_dracolich_existing_save_dominion omni_dracolich_existing_save_flight omni_dracolich_recover } }
+
+# Apply the ascension's government change to rulers from older saves.
+omni_dracolich_existing_save_dominion = {
+	trigger = {
+		has_land = yes
+		NOT = { has_variable = omni_dracolich_dominion_established }
+		exists = current_ruler
+		current_ruler = { has_trait = omni_dracolich_trait }
+	}
+	effect = { omni_establish_dracolich_dominion = yes }
+}
+
+# Deploy once for rulers who ascended before the event gained its deployment effect.
+omni_dracolich_existing_save_flight = {
+	trigger = {
+		has_land = yes
+		exists = current_ruler
+		current_ruler = { NOT = { has_variable = omni_dracolich_first_flight } }
+		omni_can_deploy_dracolich = yes
+	}
+	effect = { omni_deploy_dracolich = yes }
+}
+
+omni_dracolich_recover = {
+	trigger = {
+		has_land = yes
+		exists = current_ruler
+		current_ruler = { has_trait = omni_dracolich_trait omni_has_deployed_dracolich = yes }
+	}
+	effect = {
+		current_ruler = {
+			if = {
+				limit = { NOT = { has_variable = omni_dracolich_first_flight } }
+				set_variable = omni_dracolich_first_flight
+			}
+			if = {
+				limit = {
+					NOT = { has_non_empty_variable_list = { name = omni_dracolich_cohorts } }
+					exists = var:omni_dracolich_cohort
+					var:omni_dracolich_cohort = {
+						sub_unit_type = omni_dracolich
+						owning_unit = { unit_owner = root in_combat = no }
+					}
+				}
+				save_scope_as = omni_dracolich_commander
+				var:omni_dracolich_cohort.owning_unit = { save_scope_as = omni_dracolich_army }
+				omni_fill_dracolich_army = yes
+			}
+			# Repair saves with an empty or replaced commander on the original formation.
+			if = {
+				limit = {
+					NOT = {
+						exists = var:omni_dracolich_cohort
+						var:omni_dracolich_cohort = { sub_unit_type = omni_dracolich }
+					}
+				}
+				random_in_list = {
+					variable = omni_dracolich_cohorts
+					limit = { sub_unit_type = omni_dracolich owning_unit = { unit_owner = root } }
+					save_scope_as = omni_dracolich_surviving_cohort
+					root.current_ruler = {
+						set_variable = { name = omni_dracolich_cohort value = scope:omni_dracolich_surviving_cohort }
+					}
+				}
+			}
+			if = {
+				limit = {
+					prisoner = no
+					exists = var:omni_dracolich_cohort
+					var:omni_dracolich_cohort = {
+						sub_unit_type = omni_dracolich
+						owning_unit = {
+							unit_owner = root
+							in_combat = no
+							NOT = { commander = root.current_ruler }
+						}
+					}
+				}
+				var:omni_dracolich_cohort.owning_unit = { set_as_commander = root.current_ruler }
+			}
+			every_in_list = {
+				variable = omni_dracolich_cohorts
+				limit = {
+					sub_unit_type = omni_dracolich
+					subunit_strength_percentage < 1
+					owning_unit = {
+						unit_owner = root
+						in_combat = no
+						unit_location = { controller = root }
+					}
+				}
+				# One percent per surviving 500-strength cohort, up to 100 per month.
+				add_subunit_strength = { value = 1 subtract = subunit_strength_percentage max = 0.01 }
+			}
+		}
+	}
+}

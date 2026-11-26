@@ -1,0 +1,146 @@
+﻿# Country scope. Called by Take Flight and by the military screen's levy button.
+omni_deploy_dracolich = {
+	if = {
+		limit = { omni_can_deploy_dracolich = yes }
+		current_ruler = { save_scope_as = omni_dracolich_commander }
+		capital_scope = { save_scope_as = omni_dracolich_departure }
+		create_unit = {
+			name = omni_dracolich_army_name
+			location = scope:omni_dracolich_departure
+			sub_unit = omni_dracolich
+			save_scope_as = omni_dracolich_army
+		}
+		if = {
+			limit = {
+				exists = scope:omni_dracolich_army
+				scope:omni_dracolich_army = { any_sub_unit = { sub_unit_type = omni_dracolich } }
+			}
+			omni_fill_dracolich_army = yes
+			scope:omni_dracolich_army = {
+				set_as_commander = scope:omni_dracolich_commander
+			}
+			scope:omni_dracolich_commander = {
+				set_variable = omni_dracolich_first_flight
+				set_variable = { name = omni_dracolich_flight_cooldown days = 730 }
+				set_variable = { name = omni_dracolich_landing_cooldown days = 90 }
+				remove_variable = omni_dracolich_landed_cohorts
+				remove_variable = omni_dracolich_landed_strength
+			}
+		}
+	}
+}
+
+# Country scope. Dracolich ascension uses the established Draconic Dominion government.
+omni_establish_dracolich_dominion = {
+	if = {
+		limit = { NOT = { government = omni_dragon_dominion } }
+		change_government = omni_dragon_dominion
+	}
+	hidden_effect = { omni_set_dragon_levies = yes }
+	set_variable = omni_dracolich_dominion_established
+}
+
+# The mod uses 500 strength per cohort. The formation starts with one cohort.
+omni_fill_dracolich_army = {
+	scope:omni_dracolich_commander = { clear_variable_list = omni_dracolich_cohorts }
+	scope:omni_dracolich_army = {
+		if = {
+			limit = { scope:omni_dracolich_commander = { has_variable = omni_dracolich_landed_cohorts } }
+			set_local_variable = {
+				name = omni_dracolich_extra_cohorts
+				value = { value = scope:omni_dracolich_commander.var:omni_dracolich_landed_cohorts subtract = 1 }
+			}
+			while = {
+				count = local_var:omni_dracolich_extra_cohorts
+				add_subunit = omni_dracolich
+			}
+		}
+		else = { while = { count = 19 add_subunit = omni_dracolich } }
+		every_sub_unit = {
+			limit = { sub_unit_type = omni_dracolich }
+			if = {
+				limit = { scope:omni_dracolich_commander = { has_variable = omni_dracolich_landed_strength } }
+				add_subunit_strength = {
+					value = scope:omni_dracolich_commander.var:omni_dracolich_landed_strength
+					subtract = subunit_strength_percentage
+				}
+			}
+			else = { add_subunit_strength = 1 }
+			save_scope_as = omni_dracolich_new_cohort
+			scope:omni_dracolich_commander = {
+				add_to_variable_list = { name = omni_dracolich_cohorts target = scope:omni_dracolich_new_cohort }
+			}
+		}
+		add_morale = 10
+		add_unit_modifier = { name = omni_dracolich_slow_recovery duration = -1 }
+	}
+	scope:omni_dracolich_commander = {
+		set_variable = { name = omni_dracolich_cohort value = scope:omni_dracolich_new_cohort }
+	}
+}
+
+# Country scope. Record surviving strength before removing the flying representation.
+omni_land_dracolich = {
+	if = {
+		limit = { omni_can_land_dracolich = yes }
+		current_ruler = {
+			save_scope_as = omni_dracolich_landing_ruler
+			set_variable = { name = omni_dracolich_landed_cohorts value = 0 }
+			set_variable = { name = omni_dracolich_landed_strength value = 0 }
+			if = {
+				limit = { has_non_empty_variable_list = { name = omni_dracolich_cohorts } }
+				every_in_list = {
+					variable = omni_dracolich_cohorts
+					limit = { sub_unit_type = omni_dracolich omni_dracolich_cohort_can_land = yes }
+					omni_record_landed_dracolich_cohort = yes
+				}
+			}
+			else = { var:omni_dracolich_cohort = { omni_record_landed_dracolich_cohort = yes } }
+			if = {
+				limit = { var:omni_dracolich_landed_cohorts > 0 }
+				change_variable = { name = omni_dracolich_landed_strength divide = var:omni_dracolich_landed_cohorts }
+				set_variable = omni_dracolich_first_flight
+				set_variable = { name = omni_dracolich_flight_cooldown days = 730 }
+				omni_end_dracolich_flight = yes
+			}
+			else = {
+				remove_variable = omni_dracolich_landed_cohorts
+				remove_variable = omni_dracolich_landed_strength
+			}
+		}
+	}
+}
+
+# Subunit scope. The stored strength is averaged across surviving cohorts when landed.
+omni_record_landed_dracolich_cohort = {
+	save_scope_as = omni_dracolich_landing_cohort
+	scope:omni_dracolich_landing_ruler = {
+		change_variable = { name = omni_dracolich_landed_cohorts add = 1 }
+		change_variable = { name = omni_dracolich_landed_strength add = scope:omni_dracolich_landing_cohort.subunit_strength_percentage }
+	}
+	owning_unit = {
+		if = {
+			limit = { has_unit_modifier = omni_dracolich_slow_recovery }
+			remove_unit_modifier = omni_dracolich_slow_recovery
+		}
+	}
+}
+
+# Character scope. The old single-cohort variable is retained for save compatibility.
+omni_end_dracolich_flight = {
+	if = {
+		limit = {
+			NOT = { has_non_empty_variable_list = { name = omni_dracolich_cohorts } }
+			exists = var:omni_dracolich_cohort
+			var:omni_dracolich_cohort = { sub_unit_type = omni_dracolich }
+		}
+		var:omni_dracolich_cohort = { destroy_subunit = yes }
+	}
+	remove_variable = omni_dracolich_cohort
+	every_in_list = {
+		variable = omni_dracolich_cohorts
+		limit = { sub_unit_type = omni_dracolich }
+		destroy_subunit = yes
+	}
+	clear_variable_list = omni_dracolich_cohorts
+}

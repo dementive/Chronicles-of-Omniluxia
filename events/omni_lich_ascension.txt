@@ -1,0 +1,106 @@
+﻿namespace = omni_lich_ascension
+
+omni_lich_ascension.1 = {
+	type = character_event
+	hidden = yes
+	trigger = { omni_has_lich_ascension = yes NOT = { omni_lich_ascension_ready = yes } }
+	immediate = {
+		change_variable = { name = omni_lich_ascension_months add = 1 }
+		change_variable = { name = omni_lich_ascension_cycle add = 1 }
+		if = {
+			limit = { var:omni_lich_ascension_cycle >= 12 }
+			set_variable = { name = omni_lich_ascension_cycle value = 0 }
+		}
+		if = {
+			limit = { NOT = { omni_lich_ascension_ready = yes } }
+			omni_queue_lich_ascension_month = yes
+		}
+		else = { remove_variable = omni_lich_ascension_cycle }
+	}
+}
+
+# Console fixtures use the same phylactery binding and player decision as normal play.
+omni_lich_ascension.90 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				is_ai = no
+				capital_scope = { controller = root }
+				current_ruler = { is_alive = yes NOT = { has_trait = lich_trait } }
+			}
+			current_ruler = { omni_bind_lich_phylactery = yes }
+		}
+	}
+}
+
+omni_lich_ascension.91 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = { is_ai = no current_ruler = { omni_has_lich_ascension = yes } }
+			current_ruler = {
+				set_variable = { name = omni_lich_ascension_months value = omni_lich_ascension_required_months }
+				remove_variable = omni_lich_ascension_cycle
+			}
+		}
+	}
+}
+
+# Give the test formation wounds without needing to fight a battle.
+omni_lich_ascension.92 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = { is_ai = no current_ruler = { has_trait = omni_dracolich_trait } }
+			current_ruler = {
+				every_in_list = {
+					variable = omni_dracolich_cohorts
+					limit = {
+						sub_unit_type = omni_dracolich
+						subunit_strength_percentage > 0.5
+						owning_unit = { unit_owner = root in_combat = no }
+					}
+					add_subunit_strength = { value = 0.5 subtract = subunit_strength_percentage }
+				}
+			}
+		}
+	}
+}
+
+omni_lich_ascension.2 = {
+	type = country_event
+	title = omni_lich_ascension.2.t
+	desc = omni_lich_ascension.2.desc
+	picture = Event_dragonpit
+	left_portrait = scope:omni_ascending_lich
+	trigger = { omni_can_resolve_lich_ascension = yes }
+
+	option = {
+		name = omni_lich_ascension.2.archlich
+		trigger = { omni_can_resolve_lich_ascension = yes }
+		if = {
+			limit = { omni_can_resolve_lich_ascension = yes }
+			scope:omni_ascending_lich = { add_trait = omni_archlich_trait }
+		}
+	}
+	option = {
+		name = omni_lich_ascension.2.dracolich
+		trigger = { omni_can_resolve_lich_ascension = yes }
+		if = {
+			limit = { omni_can_resolve_lich_ascension = yes }
+			scope:omni_ascending_lich = {
+				add_trait = omni_dracolich_trait
+				set_variable = omni_dracolich
+			}
+			omni_establish_dracolich_dominion = yes
+			omni_deploy_dracolich = yes
+		}
+	}
+	option = {
+		name = omni_lich_ascension.2.later
+	}
+}

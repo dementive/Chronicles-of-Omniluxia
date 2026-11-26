@@ -4875,18 +4875,26 @@ types Base_GUI_Types
             block "HatchlingPosition" { position = { 0 6 } }
             size = { 100% 100% }
             texture = "gfx/interface/portrait/omniluxia/morrigon_hatchling.dds"
-            visible = "[LessThan_int32( Character.GetAge, '(int32)16' )]"
+            visible = "[And(Not(Character.MakeScope.Var('omni_dracolich').IsSet), LessThan_int32( Character.GetAge, '(int32)16' ))]"
             alwaystransparent = yes
             block "DragonMirror" {}
         }
         icon = {
             size = { 100% 100% }
             texture = "gfx/interface/portrait/omniluxia/morrigon_sovereign.dds"
-            visible = "[GreaterThanOrEqualTo_int32( Character.GetAge, '(int32)16' )]"
+            visible = "[And(Not(Character.MakeScope.Var('omni_dracolich').IsSet), GreaterThanOrEqualTo_int32( Character.GetAge, '(int32)16' ))]"
             alwaystransparent = yes
             block "DragonMirror" {}
         }
-        visible = "[Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet )]"
+        icon = {
+            block "DracolichPortraitSize" { size = { 100% 100% } }
+            block "DracolichPortraitPosition" { position = { 0 0 } }
+            texture = "gfx/interface/portrait/omniluxia/omni_dracolich.dds"
+            visible = "[Character.MakeScope.Var('omni_dracolich').IsSet]"
+            alwaystransparent = yes
+            block "DragonMirror" {}
+        }
+        visible = "[Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) )]"
         using = tooltip_es_portrait
         onclick = "[DefaultOnCharacterClick( Character.GetID )]"
         onrightclick = "[DefaultOnCharacterRightClick( Character.GetID )]"
@@ -5665,7 +5673,7 @@ types Base_GUI_Types
 			    }
 			    block "BackgroundTint" { texture = "[GetCharacterBackgroundIconTint( Character.Self, Character.GetLocation.GetTerrain )]" }
 			    block "PortraitTexture" { portrait_texture = "[Character.GetPortrait('default', 'default')]" }
-				visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ))]"
+				visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ))]"
 			}
 			omni_dragon_face = {
 				# Small portraits (children, family) left a gap under the hatchling.
@@ -7070,9 +7078,12 @@ types Base_GUI_Types
 			portrait_button = {
 				using = pt_button_large
 				pop_out = yes
-				visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ))]"
+				visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ))]"
 			}
-			omni_dragon_face = {}
+			omni_dragon_face = {
+				blockoverride "DracolichPortraitSize" { size = { 120% 120% } }
+				blockoverride "DracolichPortraitPosition" { position = { 0 -60 } }
+			}
 		}
 
 		margin_widget = {
@@ -7084,7 +7095,7 @@ types Base_GUI_Types
 			position = { 36 18 }
 			portrait_button = {
 				using = pt_button_baby
-                visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Character.MakeScope.Var('omni_wild_dragon_self').IsSet ))]"
+                visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ))]"
             }
             omni_dragon_face = {
                 blockoverride "HatchlingPosition" { position = { 0 10 } }
@@ -7238,13 +7249,22 @@ types Base_GUI_Types
 						}
 						tag_dark = {
 							minimumsize = { 0 34 }
-							visible = "[And( Character.HasTitle, Not( GetScriptedGui('ob_order_sword_master').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) )]"
+							visible = "[And(Character.HasTitle, Not(Or(GetScriptedGui('ob_order_sword_master').IsShown(GuiScope.SetRoot(Character.MakeScope).End), GetScriptedGui('omni_dragon_ruler_title').IsShown(GuiScope.SetRoot(Character.MakeScope).End))))]"
 							text = "[Character.GetTitleNameShort]"
 							fontsize_min = 10
 							max_width = 248
 							elide = right
 							parentanchor = hcenter
 							tooltip = "[Character.GetTitle.GetTooltip]"
+						}
+						tag_dark = {
+							minimumsize = { 0 34 }
+							visible = "[GetScriptedGui('omni_dragon_ruler_title').IsShown(GuiScope.SetRoot(Character.MakeScope).End)]"
+							text = "[Character.Custom('omni_dragon_ruler_title')]"
+							fontsize_min = 10
+							max_width = 248
+							elide = right
+							parentanchor = hcenter
 						}
 						tag_dark = {
 							minimumsize = { 0 34 }
@@ -7258,7 +7278,7 @@ types Base_GUI_Types
 						flowcontainer = {
 							spacing = 8
 							ignoreinvisible = no
-							visible = "[Not( Or( Character.HasTitle, GetScriptedGui('ob_order_sword_master').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) )]"
+							visible = "[Not(Or(Character.HasTitle, Or(GetScriptedGui('ob_order_sword_master').IsShown(GuiScope.SetRoot(Character.MakeScope).End), GetScriptedGui('omni_dragon_ruler_title').IsShown(GuiScope.SetRoot(Character.MakeScope).End))))]"
 							widget = {
 								size = { 40 30 }
 								parentanchor = left|vcenter

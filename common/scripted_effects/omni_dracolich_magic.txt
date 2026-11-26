@@ -1,0 +1,69 @@
+﻿# Country scope. The realm retains cooldowns through changes in court or rulership.
+omni_start_dracolich_spell_recovery = {
+    set_variable = { name = omni_dracolich_magic_recovery days = 540 }
+    set_variable = { name = omni_dracolich_cd_$SPELL$ days = $DAYS$ }
+}
+
+omni_cast_dracolich_eclipse = {
+    if = {
+        limit = { omni_can_cast_dracolich_eclipse = yes }
+        every_countries_at_war_with = {
+            limit = { exists = capital_scope }
+            save_scope_as = omni_eclipse_enemy
+            add_war_exhaustion = 8
+            capital_scope = {
+                if = {
+                    limit = { NOT = { omni_province_ward_blocks = { TIER = 3 } } }
+                    if = {
+                        limit = { has_province_modifier = omni_dracolich_eclipse }
+                        remove_province_modifier = omni_dracolich_eclipse
+                    }
+                    add_province_modifier = { name = omni_dracolich_eclipse duration = 360 }
+                    every_unit_in_province = {
+                        limit = { is_army = yes unit_owner = scope:omni_eclipse_enemy omni_lich_led_unit = no }
+                        if = {
+                            limit = { omni_unit_ward_blocks = { TIER = 3 } }
+                            omni_spend_unit_ward = yes
+                        }
+                        else = { omni_apply_spell_unit_damage = { CASTER = scope:selected_mage DAMAGE = 0.40 } }
+                    }
+                }
+            }
+        }
+        omni_start_dracolich_spell_recovery = { SPELL = eclipse DAYS = 1080 }
+    }
+}
+
+omni_cast_dracolich_bone_levy = {
+    if = {
+        limit = { omni_can_cast_dracolich_bone_levy = yes }
+        capital_scope = { save_scope_as = omni_dracolich_levy_capital }
+        create_unit = {
+            name = omni_dracolich_warborn_army
+            location = scope:omni_dracolich_levy_capital
+            sub_unit = omni_warborn
+            save_scope_as = omni_dracolich_raised_legion
+        }
+        if = {
+            limit = { exists = scope:omni_dracolich_raised_legion }
+            scope:omni_dracolich_raised_legion = {
+                while = { count = 19 add_subunit = omni_warborn }
+                every_sub_unit = { add_subunit_strength = 1 }
+                add_food = 300
+                add_morale = 5
+            }
+            add_country_modifier = { name = omni_dracolich_bone_levy duration = 360 }
+            set_global_variable = omni_warborn_summoned
+            omni_start_dracolich_spell_recovery = { SPELL = bone_levy DAYS = 1440 }
+        }
+    }
+}
+
+omni_cast_dracolich_silent_throne = {
+    if = {
+        limit = { omni_can_cast_dracolich_silent_throne = yes }
+        add_stability = 15
+        add_country_modifier = { name = omni_dracolich_silent_throne duration = 540 }
+        omni_start_dracolich_spell_recovery = { SPELL = silent_throne DAYS = 1080 }
+    }
+}

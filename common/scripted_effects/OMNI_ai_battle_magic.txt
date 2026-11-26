@@ -84,6 +84,7 @@ omni_apply_enemy_debuff_effect = {
 				limit = {
 					$UNITTYPE$ = yes
 					unit_owner = { war_with = scope:caster_country }
+					omni_lich_led_unit = no
 					NOT = { has_unit_modifier = $MOD$ }
 					NOT = { is_in_list = omni_ward_resolved_units }
 				}
@@ -99,7 +100,7 @@ omni_apply_enemy_debuff_effect = {
 							this = scope:omni_ai_dmg_enemy_unit
 							always = $HIT_PRIMARY$
 						}
-						damage_unit_percent = 0.05
+						omni_apply_spell_unit_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = 0.05 }
 					}
 					add_unit_modifier = { name = $MOD$ duration = $DAYS$ }
 				}
@@ -124,6 +125,7 @@ omni_apply_enemy_debuff_effect = {
 # its commander (never the Revant). Debuffs hit every hostile stack of the right
 # kind in that province.
 omni_ai_cast_battle_offense_effect = {
+    save_scope_as = omni_spell_damage_caster
 	clear_saved_scope = omni_ai_dmg_enemy_unit
 	clear_saved_scope = omni_ai_dmg_enemy_cmdr
 	random_character_unit = {
@@ -143,6 +145,7 @@ omni_ai_cast_battle_offense_effect = {
 						is_navy = yes
 					}
 					unit_owner = { war_with = scope:caster_country }
+					omni_lich_led_unit = no
 				}
 				save_scope_as = omni_ai_dmg_enemy_unit
 				if = {
@@ -246,8 +249,8 @@ omni_ai_cast_battle_offense_effect = {
 			omni_can_afford_spell = { BASE = 165 }
 		}
 		omni_spell_mana_cost_effect = { BASE = 165 }
-		scope:omni_ai_dmg_enemy_unit = { damage_unit_percent = 0.25 }
-		if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { omni_apply_spell_health_damage = { DAMAGE = -4 RESISTED_DAMAGE = -2 } } }
+		scope:omni_ai_dmg_enemy_unit = { omni_apply_spell_unit_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = 0.25 } }
+		if = { limit = { exists = scope:omni_ai_dmg_enemy_cmdr } scope:omni_ai_dmg_enemy_cmdr = { omni_apply_spell_health_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = -4 RESISTED_DAMAGE = -2 } } }
 		omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_army TIER = 4 HIT_PRIMARY = no }
 		omni_apply_enemy_debuff_effect = { MOD = omni_cataclysmic_eruption_mod DAYS = 30 UNITTYPE = is_navy TIER = 4 HIT_PRIMARY = no }
 		set_variable = { name = omni_cd_cataclysmic_eruption days = 1 }
@@ -341,7 +344,7 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_unit_ward = yes
 			}
 			else = {
-				damage_unit_percent = 0.15
+				omni_apply_spell_unit_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = 0.15 }
 			}
 		}
 		set_variable = { name = omni_cd_meteor_strike days = 1 }
@@ -416,7 +419,7 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_unit_ward = yes
 			}
 			else = {
-				damage_unit_percent = 0.12
+				omni_apply_spell_unit_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = 0.12 }
 			}
 		}
 		set_variable = { name = omni_cd_death_ray days = 1 }
@@ -438,7 +441,7 @@ omni_ai_cast_battle_offense_effect = {
 					limit = { omni_personal_ward_blocks = { TIER = 3 } }
 					omni_spend_personal_ward = yes
 				}
-				else = { omni_apply_spell_health_damage = { DAMAGE = -2 RESISTED_DAMAGE = -1 } }
+				else = { omni_apply_spell_health_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = -2 RESISTED_DAMAGE = -1 } }
 			}
 		}
 		omni_apply_enemy_debuff_effect = { MOD = omni_plague_miasma_mod DAYS = 30 UNITTYPE = is_army TIER = 3 HIT_PRIMARY = no }
@@ -462,7 +465,7 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_personal_ward = yes
 			}
 			else = {
-				omni_apply_spell_health_damage = { DAMAGE = -3 RESISTED_DAMAGE = -1.5 }
+				omni_apply_spell_health_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = -3 RESISTED_DAMAGE = -1.5 }
 			}
 		}
 		add_health = 2
@@ -518,7 +521,7 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_unit_ward = yes
 			}
 			else = {
-				damage_unit_percent = 0.08
+				omni_apply_spell_unit_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = 0.08 }
 			}
 		}
 		set_variable = { name = omni_cd_light_rays_ii days = 1 }
@@ -540,7 +543,7 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_unit_ward = yes
 			}
 			else = {
-				damage_unit_percent = 0.08
+				omni_apply_spell_unit_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = 0.08 }
 			}
 		}
 		set_variable = { name = omni_cd_warped_flesh days = 1 }
@@ -617,7 +620,7 @@ omni_ai_cast_battle_offense_effect = {
 					limit = { omni_personal_ward_blocks = { TIER = 2 } }
 					omni_spend_personal_ward = yes
 				}
-				else = { omni_apply_spell_health_damage = { DAMAGE = -1 RESISTED_DAMAGE = -0.5 } }
+				else = { omni_apply_spell_health_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = -1 RESISTED_DAMAGE = -0.5 } }
 			}
 		}
 		omni_apply_enemy_debuff_effect = { MOD = omni_fireball_mod DAYS = 30 UNITTYPE = is_army TIER = 2 HIT_PRIMARY = yes }
@@ -664,7 +667,7 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_unit_ward = yes
 			}
 			else = {
-				damage_unit_percent = 0.04
+				omni_apply_spell_unit_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = 0.04 }
 			}
 		}
 		set_variable = omni_ai_battle_cast_succeeded
@@ -731,7 +734,7 @@ omni_ai_cast_battle_offense_effect = {
 				omni_spend_unit_ward = yes
 			}
 			else = {
-				damage_unit_percent = 0.02
+				omni_apply_spell_unit_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = 0.02 }
 			}
 		}
 		set_variable = omni_ai_battle_cast_succeeded
@@ -753,7 +756,7 @@ omni_ai_cast_battle_offense_effect = {
 					limit = { omni_personal_ward_blocks = { TIER = 1 } }
 					omni_spend_personal_ward = yes
 				}
-				else = { omni_apply_spell_health_damage = { DAMAGE = -0.5 RESISTED_DAMAGE = -0.25 } }
+				else = { omni_apply_spell_health_damage = { CASTER = scope:omni_spell_damage_caster DAMAGE = -0.5 RESISTED_DAMAGE = -0.25 } }
 			}
 		}
 		omni_apply_enemy_debuff_effect = { MOD = omni_igniting_spark_mod DAYS = 30 UNITTYPE = is_army TIER = 1 HIT_PRIMARY = no }
@@ -1215,6 +1218,7 @@ omni_ai_cast_personal_ward_effect = {
 						unit_owner = { war_with = scope:caster_country }
 						exists = commander
 						commander = {
+							omni_lich_offensive_magic_immune = no
 							omni_character_is_eligible_caster = yes
 							NOT = { has_character_modifier = omni_disrupt_magic_mod }
 						}
@@ -1231,6 +1235,7 @@ omni_ai_cast_personal_ward_effect = {
 						unit_owner = { war_with = scope:caster_country }
 						exists = commander
 						commander = {
+							omni_lich_offensive_magic_immune = no
 							omni_character_is_eligible_caster = yes
 							NOT = { has_character_modifier = omni_disrupt_magic_mod }
 						}
