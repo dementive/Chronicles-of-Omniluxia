@@ -1,0 +1,143 @@
+﻿namespace = omni_worlds_end
+
+# Select one eligible mainland harbor when the invasion comes due.
+omni_worlds_end.1 = {
+	type = country_event
+	hidden = yes
+	trigger = { tag = RXD }
+	immediate = {
+		if = {
+			limit = {
+				exists = current_ruler
+				current_ruler = { has_variable = omni_ancient_wyrm is_alive = yes }
+				NOT = { has_variable = omni_worlds_end_seized }
+				NOT = { has_variable = omni_worlds_end_war }
+			}
+			p:3808 = { add_to_list = omni_southern_ports }
+			p:4022 = { add_to_list = omni_southern_ports }
+			p:4134 = { add_to_list = omni_southern_ports }
+			p:4303 = { add_to_list = omni_southern_ports }
+			p:4606 = { add_to_list = omni_southern_ports }
+			random_in_list = {
+				list = omni_southern_ports
+				limit = {
+					exists = owner
+					owner = { is_ai = yes NOT = { tag = RXD } }
+				}
+				save_scope_as = omni_invasion_city
+			}
+			if = {
+				limit = { exists = scope:omni_invasion_city }
+				trigger_event = { id = omni_worlds_end.2 }
+			}
+			else = {
+				trigger_event = { id = omni_worlds_end.1 days = 365 }
+			}
+		}
+	}
+}
+
+omni_worlds_end.2 = {
+	type = country_event
+	title = omni_worlds_end.2.t
+	desc = omni_worlds_end.2.desc
+	picture = Event_dragons_burning_ships
+	left_portrait = current_ruler
+	right_portrait = scope:omni_worlds_end_defender_ruler
+	trigger = {
+		tag = RXD
+		exists = current_ruler
+		current_ruler = { has_variable = omni_ancient_wyrm }
+		scope:omni_invasion_city = { exists = owner NOT = { owner = { tag = RXD } } }
+	}
+	immediate = {
+		scope:omni_invasion_city.owner = {
+			save_scope_as = omni_worlds_end_defender
+			if = { limit = { exists = current_ruler } current_ruler = { save_scope_as = omni_worlds_end_defender_ruler } }
+		}
+	}
+
+	option = {
+		name = omni_worlds_end.2.a
+		trigger = { scope:omni_invasion_city = { exists = owner } }
+		set_variable = { name = omni_worlds_end_war days = 1825 }
+		set_variable = { name = omni_worlds_end_target value = scope:omni_invasion_city days = 1825 }
+		declare_war_with_wargoal = {
+			war_goal = imperial_conquest_wargoal
+			province = scope:omni_invasion_city
+			target = scope:omni_invasion_city.owner
+		}
+		ai_chance = { factor = 100 }
+	}
+	option = {
+		name = omni_worlds_end.2.b
+		ai_chance = { factor = 0 }
+	}
+}
+
+# Country scope (RXD). Sent once the chosen harbor changes hands to the dragon.
+omni_worlds_end.3 = {
+	type = country_event
+	title = omni_worlds_end.3.t
+	desc = omni_worlds_end.3.desc
+	picture = Event_dragons_burning_ships
+	left_portrait = current_ruler
+	immediate = {
+		var:omni_worlds_end_seat = {
+			save_scope_as = omni_invasion_city
+			if = {
+				limit = { has_province_rank = settlement }
+				set_city_status = city
+			}
+			if = {
+				limit = { NOT = { has_building = fortress_building } }
+				add_building_level = fortress_building
+			}
+		}
+		set_capital = scope:omni_invasion_city
+	}
+	option = { name = omni_worlds_end.3.a }
+}
+
+# Country scope (any realm with its capital in Morrigon). The var carries RXD across the hop.
+omni_worlds_end.4 = {
+	type = country_event
+	title = omni_worlds_end.4.t
+	desc = omni_worlds_end.4.desc
+	picture = Event_dragons_burning_ships
+	left_portrait = scope:omni_worlds_end_dragon
+	right_portrait = current_ruler
+	trigger = {
+		exists = var:omni_worlds_end_realm
+		var:omni_worlds_end_realm = { tag = RXD }
+	}
+	immediate = {
+		var:omni_worlds_end_realm = {
+			save_scope_as = omni_worlds_end_realm
+			if = {
+				limit = { exists = var:omni_worlds_end_seat }
+				var:omni_worlds_end_seat = { save_scope_as = omni_invasion_city }
+			}
+			else = { p:3808 = { save_scope_as = omni_invasion_city } }
+			current_ruler = { save_scope_as = omni_worlds_end_dragon }
+		}
+		remove_variable = omni_worlds_end_realm
+	}
+	option = {
+		name = omni_worlds_end.4.a
+		add_country_modifier = { name = omni_dragon_vigil duration = 1825 }
+		ai_chance = { factor = 50 }
+	}
+	option = {
+		name = omni_worlds_end.4.b
+		trigger = { treasury >= 50 }
+		add_treasury = -50
+		add_stability = 5
+		ai_chance = { factor = 30 }
+	}
+	option = {
+		name = omni_worlds_end.4.c
+		add_country_modifier = { name = omni_dragon_dread duration = 1095 }
+		ai_chance = { factor = 20 }
+	}
+}

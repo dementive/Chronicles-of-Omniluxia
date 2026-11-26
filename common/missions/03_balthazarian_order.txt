@@ -494,6 +494,49 @@
         highlight = { scope:province = { OR = { province_id = 870 province_id = 1199 province_id = 1230 province_id = 1331 } } }
     }
 
+    # The night landing on the Qasuda Isles (the Order's answer to the Invictus "Isle of Roses" task).
+    ob_task_32 = {
+        duration = 30
+        icon = "task_battle" requires = { ob_task_7 }
+
+        bypass = {
+            OR = {
+                has_variable = ob_task_done_32
+                owns_or_subject_owns = 6069
+                NOT = { exists = p:6069.owner }
+                p:6069.owner = { is_ai = no }
+            }
+        }
+        allow = {
+            num_of_ships >= 10
+            manpower >= 5
+            custom_tooltip = { text = ob_isle_ai_held_tt
+                exists = p:6069.owner
+                p:6069.owner = { is_ai = yes }
+            }
+        }
+        on_start = {
+            ob_isle_save_scopes = yes
+            trigger_event = { id = ob_isle.1 }
+        }
+        on_completion = {
+            if = {
+                limit = { NOT = { has_variable = ob_task_done_32 } }
+                set_variable = { name = ob_task_done_32 }
+                custom_tooltip = ob_task_32_rewards_tt
+                if = {
+                    limit = {
+                        exists = p:6069.owner
+                        p:6069.owner = { is_ai = yes }
+                    }
+                    trigger_event = { id = ob_isle.2 days = 3 }
+                }
+            }
+        }
+
+        highlight = { scope:province = { OR = { province_id = 6068 province_id = 6069 province_id = 6070 } } }
+    }
+
     # The northern expedition and border defenses.
     ob_task_10 = {
 

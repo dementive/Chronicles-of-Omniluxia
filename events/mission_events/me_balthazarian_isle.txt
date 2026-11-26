@@ -1,0 +1,241 @@
+﻿namespace = ob_isle
+# Balthazarian Order, task 32: the night landing on the Qasuda Isles (Qivuk 6068, Qasuda 6069, Inqar 6070).
+# Chain: 1 (task start, choose the plan) -> 2 (the fleet sails dark) -> 3 (the landing) -> 4 (the sentinels)
+#        -> 5 (the fight for the Amber Quay) -> 6 (the isle lord) -> 7 (dawn, the isles pass to the Order).
+# Choices are stored in variables on the Order: ob_isle_plan_harbor / ob_isle_plan_caves, ob_isle_silent / ob_isle_loud,
+# ob_isle_mercy / ob_isle_hardline. All are cleared in ob_isle.7 (ob_isle_clear_vars).
+
+# ---------------------------------------------------------------- 1. the chart table
+ob_isle.1 = {
+	type = country_event
+	title = ob_isle.1.t
+	desc = ob_isle.1.desc
+	picture = omni_event_scene_northern_war_tent
+	left_portrait = current_ruler
+	right_portrait = scope:ob_isle_aux
+	immediate = {
+		ob_isle_save_scopes = yes
+	}
+	option = {
+		name = ob_isle.1.a
+		custom_tooltip = ob_isle.1.a.tt
+		hidden_effect = {
+			remove_variable = ob_isle_plan_caves
+			set_variable = { name = ob_isle_plan_harbor }
+		}
+	}
+	option = {
+		name = ob_isle.1.b
+		custom_tooltip = ob_isle.1.b.tt
+		hidden_effect = {
+			remove_variable = ob_isle_plan_harbor
+			set_variable = { name = ob_isle_plan_caves }
+		}
+	}
+}
+
+# ---------------------------------------------------------------- 2. the fleet sails dark
+ob_isle.2 = {
+	type = country_event
+	title = ob_isle.2.t
+	desc = {
+		desc = ob_isle.2.desc
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = ob_isle_plan_caves } desc = ob_isle.2.desc_caves }
+			triggered_desc = { trigger = { always = yes } desc = ob_isle.2.desc_harbor }
+		}
+	}
+	picture = omni_ship_leaving_port
+	left_portrait = scope:ob_isle_sword
+	right_portrait = scope:ob_isle_lord
+	immediate = {
+		ob_isle_save_scopes = yes
+	}
+	option = {
+		name = ob_isle.2.a
+		custom_tooltip = ob_isle.2.a.tt
+		hidden_effect = {
+			trigger_event = { id = ob_isle.3 days = 2 }
+		}
+	}
+}
+
+# ---------------------------------------------------------------- 3. the moonless shore
+ob_isle.3 = {
+	type = country_event
+	title = ob_isle.3.t
+	desc = {
+		desc = ob_isle.3.desc
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = ob_isle_plan_caves } desc = ob_isle.3.desc_caves }
+			triggered_desc = { trigger = { always = yes } desc = ob_isle.3.desc_harbor }
+		}
+	}
+	picture = omni_fleet_landing_white_cliffs
+	left_portrait = scope:ob_isle_sword
+	right_portrait = scope:ob_isle_lord
+	immediate = {
+		ob_isle_save_scopes = yes
+	}
+	option = {
+		name = ob_isle.3.a
+		custom_tooltip = ob_isle.3.a.tt
+		add_manpower = -1
+		hidden_effect = {
+			remove_variable = ob_isle_loud
+			set_variable = { name = ob_isle_silent }
+			trigger_event = { id = ob_isle.4 days = 1 }
+		}
+	}
+	option = {
+		name = ob_isle.3.b
+		custom_tooltip = ob_isle.3.b.tt
+		add_manpower = -2
+		hidden_effect = {
+			remove_variable = ob_isle_silent
+			set_variable = { name = ob_isle_loud }
+			trigger_event = { id = ob_isle.4 days = 1 }
+		}
+	}
+}
+
+# ---------------------------------------------------------------- 4. the sentinels of the Moon-Stair
+ob_isle.4 = {
+	type = country_event
+	title = ob_isle.4.t
+	desc = {
+		desc = ob_isle.4.desc
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = ob_isle_silent } desc = ob_isle.4.desc_silent }
+			triggered_desc = { trigger = { always = yes } desc = ob_isle.4.desc_loud }
+		}
+	}
+	picture = omni_forest_night_moonlight
+	left_portrait = scope:ob_isle_sword
+	right_portrait = scope:ob_isle_lord
+	immediate = {
+		ob_isle_save_scopes = yes
+	}
+	option = {
+		name = ob_isle.4.a
+		custom_tooltip = ob_isle.4.a.tt
+		hidden_effect = {
+			trigger_event = { id = ob_isle.5 days = 1 }
+		}
+	}
+}
+
+# ---------------------------------------------------------------- 5. the fight for the Amber Quay
+ob_isle.5 = {
+	type = country_event
+	title = ob_isle.5.t
+	desc = {
+		desc = ob_isle.5.desc
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = ob_isle_silent } desc = ob_isle.5.desc_silent }
+			triggered_desc = { trigger = { always = yes } desc = ob_isle.5.desc_loud }
+		}
+		desc = ob_isle.5.desc_end
+	}
+	picture = omni_burning_settlement_night
+	left_portrait = scope:ob_isle_sword
+	right_portrait = scope:ob_isle_lord
+	immediate = {
+		ob_isle_save_scopes = yes
+	}
+	option = {
+		name = ob_isle.5.a
+		custom_tooltip = ob_isle.5.a.tt
+		add_military_experience = 10
+		add_manpower = -1
+		hidden_effect = {
+			trigger_event = { id = ob_isle.6 days = 1 }
+		}
+	}
+	option = {
+		name = ob_isle.5.b
+		custom_tooltip = ob_isle.5.b.tt
+		add_military_experience = 5
+		hidden_effect = {
+			trigger_event = { id = ob_isle.6 days = 1 }
+		}
+	}
+}
+
+# ---------------------------------------------------------------- 6. the isle lord
+ob_isle.6 = {
+	type = country_event
+	title = ob_isle.6.t
+	desc = ob_isle.6.desc
+	picture = omni_city_night_moonlight
+	left_portrait = scope:ob_isle_sword
+	right_portrait = scope:ob_isle_lord
+	immediate = {
+		ob_isle_save_scopes = yes
+	}
+	option = {
+		name = ob_isle.6.a
+		custom_tooltip = ob_isle.6.a.tt
+		hidden_effect = {
+			# Spared: the lord joins the Order's court as a guest of the chapter.
+			ob_isle_take_lord = yes
+			remove_variable = ob_isle_hardline
+			set_variable = { name = ob_isle_mercy }
+			trigger_event = { id = ob_isle.7 days = 1 }
+		}
+	}
+	option = {
+		name = ob_isle.6.b
+		custom_tooltip = ob_isle.6.b.tt
+		hidden_effect = {
+			# Sent north in chains: brought into the Order, imprisoned, and hurt on the way.
+			ob_isle_take_lord = yes
+			if = {
+				limit = {
+					exists = scope:ob_isle_lord
+					scope:ob_isle_lord = { is_alive = yes employer = root }
+				}
+				imprison = { target = scope:ob_isle_lord }
+				scope:ob_isle_lord = { add_health = -25 }
+			}
+			remove_variable = ob_isle_mercy
+			set_variable = { name = ob_isle_hardline }
+			trigger_event = { id = ob_isle.7 days = 1 }
+		}
+	}
+}
+
+# ---------------------------------------------------------------- 7. dawn over Qasuda
+ob_isle.7 = {
+	type = country_event
+	title = ob_isle.7.t
+	desc = {
+		desc = ob_isle.7.desc
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = ob_isle_mercy } desc = ob_isle.7.desc_mercy }
+			triggered_desc = { trigger = { always = yes } desc = ob_isle.7.desc_hardline }
+		}
+		desc = ob_isle.7.desc_end
+	}
+	picture = omni_victory_triumph
+	left_portrait = current_ruler
+	right_portrait = scope:ob_isle_sword
+	immediate = {
+		ob_isle_save_scopes = yes
+		ob_isle_seize = yes
+	}
+	option = {
+		name = ob_isle.7.a
+		custom_tooltip = ob_isle.7.a.tt
+		add_country_modifier = { name = ob_isle_night_landing duration = 3650 }
+		p:6069 = { add_province_modifier = { name = ob_isle_chapter_garrison duration = -1 } }
+		hidden_effect = { ob_isle_clear_vars = yes }
+	}
+	option = {
+		name = ob_isle.7.b
+		custom_tooltip = ob_isle.7.b.tt
+		add_country_modifier = { name = ob_isle_night_landing duration = 3650 }
+		p:6069 = { add_province_modifier = { name = ob_isle_amber_charter duration = -1 } }
+		hidden_effect = { ob_isle_clear_vars = yes }
+	}
+}

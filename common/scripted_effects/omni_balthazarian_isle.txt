@@ -1,0 +1,167 @@
+﻿# Balthazarian Order task 32: the night landing on the Qasuda Isles (provinces 6068 Qivuk, 6069 Qasuda, 6070 Inqar).
+# Event chain lives in events/mission_events/me_balthazarian_isle.txt (namespace ob_isle).
+# Called with the Order country as scope. Saved scopes are rebuilt on every use.
+#
+# Saved scopes:
+#   ob_isle_lord  - the isle lord (remembered in ob_isle_lord_var, since the isles change hands)
+#   ob_isle_sword - the co-ruler (Sword Master); with no co-ruler, the Order's best captain
+#                   (remembered in ob_isle_sword_var), or the ruler if there is nobody else
+#   ob_isle_aux   - event 1's right portrait: the Sword Master, or the isle lord when the
+#                   ruler leads the landing in person
+# Titles in the text come from ob_isle_ruler_title / ob_isle_sword_title (customizable localization),
+# which read ob_isle_sword_is_ruler.
+
+ob_isle_save_scopes = {
+	# The isle lord. A lord who died before being taken is forgotten, so a living one is found.
+	if = {
+		limit = {
+			has_variable = ob_isle_lord_var
+			NOT = { has_variable = ob_isle_lord_taken }
+			var:ob_isle_lord_var = { is_alive = no }
+		}
+		remove_variable = ob_isle_lord_var
+	}
+	if = {
+		limit = {
+			NOT = { has_variable = ob_isle_lord_var }
+			exists = p:6069.owner
+			NOT = { p:6069.owner = root }
+		}
+		p:6069.owner = {
+			if = {
+				limit = { exists = current_ruler }
+				current_ruler = { save_scope_as = ob_isle_new_lord }
+			}
+			else = {
+				create_character = {
+					first_name = "Ilvaeneli"
+					age = 140
+					female = no
+					culture = sreirrie
+					religion = transcendence_enlighten
+					add_trait = cautious
+					save_scope_as = ob_isle_new_lord
+				}
+			}
+		}
+		set_variable = { name = ob_isle_lord_var value = scope:ob_isle_new_lord }
+	}
+	if = {
+		limit = { has_variable = ob_isle_lord_var }
+		var:ob_isle_lord_var = { save_scope_as = ob_isle_lord }
+	}
+
+	# The commander of the landing.
+	remove_variable = ob_isle_sword_is_ruler
+	if = {
+		limit = { exists = current_co_ruler }
+		remove_variable = ob_isle_sword_var
+		current_co_ruler = { save_scope_as = ob_isle_sword }
+	}
+	else = {
+		# No Sword Master (the Lord Protector, or a vacant seat): the chapter's best captain leads.
+		if = {
+			limit = {
+				has_variable = ob_isle_sword_var
+				NOT = {
+					var:ob_isle_sword_var = {
+						is_alive = yes
+						employer = root
+						prisoner = no
+					}
+				}
+			}
+			remove_variable = ob_isle_sword_var
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = ob_isle_sword_var }
+				any_character = { ob_isle_sword_candidate = yes }
+			}
+			ordered_character = {
+				limit = { ob_isle_sword_candidate = yes }
+				check_range_bounds = no
+				order_by = martial
+				save_scope_as = ob_isle_new_sword
+			}
+			set_variable = { name = ob_isle_sword_var value = scope:ob_isle_new_sword }
+		}
+		if = {
+			limit = { has_variable = ob_isle_sword_var }
+			var:ob_isle_sword_var = { save_scope_as = ob_isle_sword }
+		}
+		else = {
+			set_variable = ob_isle_sword_is_ruler
+			current_ruler = { save_scope_as = ob_isle_sword }
+		}
+	}
+	if = {
+		limit = {
+			has_variable = ob_isle_sword_is_ruler
+			exists = scope:ob_isle_lord
+		}
+		scope:ob_isle_lord = { save_scope_as = ob_isle_aux }
+	}
+	else_if = {
+		limit = { exists = scope:ob_isle_sword }
+		scope:ob_isle_sword = { save_scope_as = ob_isle_aux }
+	}
+}
+
+# Event 6. The lord is brought into the Order's court before the isles change hands, so the
+# character survives the old realm's fall and stays valid for event 7's text.
+ob_isle_take_lord = {
+	if = {
+		limit = {
+			exists = scope:ob_isle_lord
+			scope:ob_isle_lord = {
+				is_alive = yes
+				NOT = { employer = root }
+			}
+		}
+		scope:ob_isle_lord = { move_country = root }
+	}
+	set_variable = ob_isle_lord_taken
+}
+
+# The isles pass to the Order and their people are Ascendic High Elves (sreirrie), as they were
+# before the landing. An isle held by a player, or already by the Order, is left alone.
+ob_isle_seize = {
+	hidden_effect = {
+		p:6068 = {
+			if = {
+				limit = { ob_isle_takeable = yes }
+				set_owned_by = root
+				every_pops_in_province = { set_pop_culture = sreirrie set_pop_religion = transcendence_enlighten }
+			}
+		}
+		p:6069 = {
+			if = {
+				limit = { ob_isle_takeable = yes }
+				set_owned_by = root
+				every_pops_in_province = { set_pop_culture = sreirrie set_pop_religion = transcendence_enlighten }
+			}
+		}
+		p:6070 = {
+			if = {
+				limit = { ob_isle_takeable = yes }
+				set_owned_by = root
+				every_pops_in_province = { set_pop_culture = sreirrie set_pop_religion = transcendence_enlighten }
+			}
+		}
+	}
+}
+
+# Event 7. Clears every variable the chain set.
+ob_isle_clear_vars = {
+	remove_variable = ob_isle_plan_harbor
+	remove_variable = ob_isle_plan_caves
+	remove_variable = ob_isle_silent
+	remove_variable = ob_isle_loud
+	remove_variable = ob_isle_mercy
+	remove_variable = ob_isle_hardline
+	remove_variable = ob_isle_lord_var
+	remove_variable = ob_isle_lord_taken
+	remove_variable = ob_isle_sword_var
+	remove_variable = ob_isle_sword_is_ruler
+}

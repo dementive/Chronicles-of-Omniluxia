@@ -1288,6 +1288,25 @@ omni_ai_battlecast_effect = {
 		limit = { omni_ai_enemy_stack_colocated_trigger = yes }
 		omni_ai_cast_offensive_debuff_effect = yes
 	}
+	# Emzalian Alligators is not a battle spell: an AI caster at war summons them where its army stands.
+	else_if = {
+		limit = {
+			omni_knows_spell = { SPELL = summon_emzalian_alligators }
+			omni_can_afford_spell = { BASE = 60 }
+			exists = scope:caster_country
+			scope:caster_country = {
+				war = yes
+				NOT = { has_variable = omni_cd_summon_emzalian_alligators }
+			}
+			any_character_unit = { is_army = yes }
+		}
+		random_character_unit = {
+			limit = { is_army = yes }
+			unit_location = { save_scope_as = emzalian_summon_site }
+		}
+		omni_spell_mana_cost_effect = { BASE = 60 }
+		scope:caster_country = { omni_raise_emzalian_alligators = yes }
+	}
 	else_if = {
 		limit = { var:magic >= omni_ai_field_cast_floor_value }
 		omni_ai_cast_support_buff_effect = yes

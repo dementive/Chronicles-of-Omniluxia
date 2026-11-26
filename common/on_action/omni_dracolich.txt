@@ -10,7 +10,35 @@ omni_dracolich_on_succession = {
 	effect = { scope:former_ruler = { omni_end_dracolich_flight = yes } }
 }
 
-monthly_country_pulse = { on_actions = { omni_dracolich_existing_save_dominion omni_dracolich_existing_save_flight omni_dracolich_recover } }
+monthly_country_pulse = { on_actions = { omni_dracolich_existing_save_dominion omni_dracolich_existing_save_flight omni_dracolich_recover omni_ai_dragon_flight omni_ai_lich_ascension } }
+
+# AI dominions (dracolich or wyrm) take wing when at war and land when at peace.
+omni_ai_dragon_flight = {
+	trigger = { is_ai = yes has_land = yes exists = current_ruler }
+	effect = {
+		if = {
+			limit = { war = yes }
+			if = {
+				limit = { omni_can_deploy_dracolich = yes }
+				omni_deploy_dracolich = yes
+			}
+			else_if = {
+				limit = { omni_can_deploy_wyrm = yes }
+				omni_deploy_wyrm = yes
+			}
+		}
+		else = {
+			if = {
+				limit = { omni_can_land_dracolich = yes }
+				omni_land_dracolich = yes
+			}
+			else_if = {
+				limit = { omni_can_land_wyrm = yes }
+				omni_land_wyrm = yes
+			}
+		}
+	}
+}
 
 # Apply the ascension's government change to rulers from older saves.
 omni_dracolich_existing_save_dominion = {
@@ -28,6 +56,7 @@ omni_dracolich_existing_save_flight = {
 	trigger = {
 		has_land = yes
 		exists = current_ruler
+		OR = { is_ai = no war = yes }
 		current_ruler = { NOT = { has_variable = omni_dracolich_first_flight } }
 		omni_can_deploy_dracolich = yes
 	}
@@ -106,5 +135,19 @@ omni_dracolich_recover = {
 				add_subunit_strength = { value = 1 subtract = subunit_strength_percentage max = 0.01 }
 			}
 		}
+	}
+}
+
+# AI rulers have no decision button, so resolve a ready ascension for them monthly.
+omni_ai_lich_ascension = {
+	trigger = {
+		is_ai = yes
+		has_land = yes
+		exists = current_ruler
+		current_ruler = { omni_lich_ascension_ready = yes }
+	}
+	effect = {
+		current_ruler = { save_scope_as = omni_ascending_lich }
+		trigger_event = { id = omni_lich_ascension.2 }
 	}
 }

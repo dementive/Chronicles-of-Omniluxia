@@ -1,0 +1,79 @@
+﻿# Psalm of the Three Days: the Balthazarian Order's folk battle chant.
+# Known by the Order's masters (ruler and co-ruler) from game start, and taught to every new master
+# (common/on_action/omni_psalm_of_the_three_days.txt). Not taught at folk teaching sites.
+# Cast from the battle magic menu (me_zorgo_magic_focus.29) or by the AI (omni_ai_folk_battlecast).
+# The 365-day per-caster cooldown (omni_cd_psalm_of_the_three_days) is set by each caller, where
+# tools/spellbook/build_spellbook.py reads it.
+
+# Character scope: the caster, commanding an army in live combat.
+omni_cast_psalm_of_the_three_days_effect = {
+	omni_spell_mana_cost_effect = { BASE = 50 }
+	employer = { save_scope_as = omni_psalm_country }
+	# The shield-wall steadies, and the enemy in the same battle hears it.
+	every_character_unit = {
+		limit = { is_army = yes in_combat = yes }
+		add_morale = 1
+		unit_location = {
+			every_unit_in_province = {
+				limit = {
+					is_army = yes
+					in_combat = yes
+					exists = unit_owner
+					unit_owner = { war_with = scope:omni_psalm_country }
+					omni_lich_led_unit = no
+				}
+				if = {
+					limit = { omni_unit_ward_blocks = { TIER = 1 } }
+					omni_spend_unit_ward = yes
+				}
+				else = {
+					add_morale = -0.5
+				}
+			}
+		}
+	}
+	# 90 days of the walking shield-wall on the caster's commanded armies.
+	if = {
+		limit = { has_trait = ob_psalm_folk_trait }
+		remove_trait = ob_psalm_folk_trait
+	}
+	force_add_trait = ob_psalm_folk_trait
+	set_variable = { name = omni_spell_active_ob_psalm_folk_trait days = 90 }
+	save_scope_as = remove_magic_target
+	scope:omni_psalm_country = { trigger_event = { id = me_zorgo_magic_focus.22 days = 90 } }
+}
+
+# Character scope. Make a master of the Order a folk practitioner who knows the Psalm.
+omni_psalm_teach_master = {
+	if = {
+		limit = { NOT = { omni_knows_spell = { SPELL = psalm_of_the_three_days } } }
+		omni_folk_initiate_practitioner = yes
+		omni_learn_spell = { SPELL = psalm_of_the_three_days }
+	}
+}
+
+# Country scope (an Order realm). Teach both seats.
+omni_psalm_teach_order_masters = {
+	if = {
+		limit = { exists = current_ruler }
+		current_ruler = { omni_psalm_teach_master = yes }
+	}
+	if = {
+		limit = { exists = current_co_ruler }
+		current_co_ruler = { omni_psalm_teach_master = yes }
+	}
+}
+
+# Global, run once from on_game_initialized. The starting masters open the game able to sing it
+# once: practitioners start with 25 mana, and the Psalm costs 50.
+omni_psalm_start_order_masters = {
+	every_country = {
+		limit = { omni_psalm_order_realm = yes }
+		every_character = {
+			limit = { OR = { is_ruler = yes is_co_ruler = yes } }
+			omni_psalm_teach_master = yes
+			change_variable = { name = magic add = 25 }
+			clamp_character_magic_to_max = yes
+		}
+	}
+}

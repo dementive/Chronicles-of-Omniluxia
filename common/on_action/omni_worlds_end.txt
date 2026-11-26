@@ -1,0 +1,47 @@
+﻿on_ownership_change = { on_actions = { omni_worlds_end_seized } }
+
+# Province scope. The chosen port falls to Sarthovar's realm in the war he declared.
+omni_worlds_end_seized = {
+	trigger = {
+		exists = owner
+		OR = {
+			AND = { exists = owner.var:omni_worlds_end_target this = owner.var:omni_worlds_end_target }
+			# Campaigns already fighting the original invasion targeted Linupom.
+			AND = { NOT = { exists = owner.var:omni_worlds_end_target } this = p:3808 }
+		}
+		owner = {
+			tag = RXD
+			has_variable = omni_worlds_end_war
+			NOT = { has_variable = omni_worlds_end_seized }
+		}
+	}
+	effect = {
+		save_scope_as = omni_invasion_city
+		owner = {
+			set_variable = { name = omni_worlds_end_seat value = scope:omni_invasion_city }
+			set_variable = omni_worlds_end_seized
+			remove_variable = omni_worlds_end_war
+			remove_variable = omni_worlds_end_target
+			if = { limit = { is_ai = yes } set_antagonist = yes }
+			trigger_event = { id = omni_worlds_end.3 }
+			save_scope_as = omni_worlds_end_new_seat
+			# Word of the fall of the chosen port reaches every realm of Morrigon.
+			every_country = {
+				limit = {
+					NOT = { tag = RXD }
+					has_land = yes
+					exists = capital_scope
+					capital_scope = { is_in_morrigon = yes }
+				}
+				set_variable = { name = omni_worlds_end_realm value = scope:omni_worlds_end_new_seat days = 30 }
+				trigger_event = { id = omni_worlds_end.4 days = { 3 10 } }
+			}
+		}
+	}
+}
+
+# Two to three years in, check for eligible AI-held ports.
+omni_worlds_end_schedule = {
+	trigger = { tag = RXD }
+	effect = { trigger_event = { id = omni_worlds_end.1 days = { 730 1095 } } }
+}
