@@ -271,12 +271,25 @@ omni_dragon.12 = {
         exists = var:omni_dragon_herald_realm
         var:omni_dragon_herald_realm = { government = omni_dragon_dominion }
     }
+    # The event window re-reads immediate for its tooltips, so the variable must
+    # survive until the event closes (removed in after; it also expires in 30 days).
     immediate = {
-        var:omni_dragon_herald_realm = {
-            save_scope_as = omni_dragon_herald_realm
-            current_ruler = { save_scope_as = omni_dragon_herald_king }
-            capital_scope = { save_scope_as = omni_dragon_herald_seat }
+        if = {
+            limit = { exists = var:omni_dragon_herald_realm }
+            var:omni_dragon_herald_realm = {
+                save_scope_as = omni_dragon_herald_realm
+                if = {
+                    limit = { exists = current_ruler }
+                    current_ruler = { save_scope_as = omni_dragon_herald_king }
+                }
+                if = {
+                    limit = { exists = capital_scope }
+                    capital_scope = { save_scope_as = omni_dragon_herald_seat }
+                }
+            }
         }
+    }
+    after = {
         remove_variable = omni_dragon_herald_realm
     }
     option = {

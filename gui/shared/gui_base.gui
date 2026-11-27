@@ -4877,7 +4877,7 @@ types Base_GUI_Types
             parentanchor = bottom|hcenter
             size = { 118% 118% }
             texture = "gfx/interface/portrait/omniluxia/morrigon_hatchling.dds"
-            visible = "[And(Not(Character.MakeScope.Var('omni_dracolich').IsSet), LessThan_int32( Character.GetAge, '(int32)16' ))]"
+            visible = "[Or( And( Character.IsAlive, And( Not(Character.MakeScope.Var('omni_dracolich').IsSet), LessThan_int32( Character.GetAge, '(int32)16' ) ) ), And( Not( Character.IsAlive ), GetScriptedGui('omni_dead_dragon_hatchling_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) )]"
             alwaystransparent = yes
             block "DragonMirror" {}
         }
@@ -4885,7 +4885,7 @@ types Base_GUI_Types
             parentanchor = bottom|hcenter
             size = { 118% 118% }
             texture = "gfx/interface/portrait/omniluxia/morrigon_sovereign.dds"
-            visible = "[And(Not(Character.MakeScope.Var('omni_dracolich').IsSet), GreaterThanOrEqualTo_int32( Character.GetAge, '(int32)16' ))]"
+            visible = "[Or( And( Character.IsAlive, And( Not(Character.MakeScope.Var('omni_dracolich').IsSet), GreaterThanOrEqualTo_int32( Character.GetAge, '(int32)16' ) ) ), And( Not( Character.IsAlive ), Not( Or( GetScriptedGui('omni_dead_dragon_hatchling_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ), GetScriptedGui('omni_dead_dracolich_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) ) ) )]"
             alwaystransparent = yes
             block "DragonMirror" {}
         }
@@ -4893,11 +4893,11 @@ types Base_GUI_Types
             block "DracolichPortraitSize" { size = { 118% 118% } }
             block "DracolichPortraitPosition" { parentanchor = bottom|hcenter position = { 0 0 } }
             texture = "gfx/interface/portrait/omniluxia/omni_dracolich.dds"
-            visible = "[Character.MakeScope.Var('omni_dracolich').IsSet]"
+            visible = "[Or( Character.MakeScope.Var('omni_dracolich').IsSet, And( Not( Character.IsAlive ), GetScriptedGui('omni_dead_dracolich_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) )]"
             alwaystransparent = yes
             block "DragonMirror" {}
         }
-        visible = "[Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) )]"
+        visible = "[Or( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ), And( Not( Character.IsAlive ), GetScriptedGui('omni_dead_dragon_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) )]"
         using = tooltip_es_portrait
         onclick = "[DefaultOnCharacterClick( Character.GetID )]"
         onrightclick = "[DefaultOnCharacterRightClick( Character.GetID )]"
@@ -5067,7 +5067,7 @@ types Base_GUI_Types
 			    margin_top = -2
 			    # Dragons hide the 3D portrait that normally covers this tint's top edge,
 			    # which then showed as a strip above the dragon artwork.
-			    visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ))]"
+			    visible = "[Not(Or( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ), And( Not( Character.IsAlive ), GetScriptedGui('omni_dead_dragon_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) ))]"
 
 			    textbox = {
 			        text = "[Character.Custom('character_bg')]"
@@ -5700,7 +5700,7 @@ types Base_GUI_Types
 			    }
 			    block "BackgroundTint" { texture = "[GetCharacterBackgroundIconTint( Character.Self, Character.GetLocation.GetTerrain )]" }
 			    block "PortraitTexture" { portrait_texture = "[Character.GetPortrait('default', 'default')]" }
-				visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ))]"
+				visible = "[Not(Or( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ), And( Not( Character.IsAlive ), GetScriptedGui('omni_dead_dragon_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) ))]"
 			}
 			omni_dragon_face = {
 				# Small portraits (children, family) left a gap under the hatchling.
@@ -7126,7 +7126,7 @@ types Base_GUI_Types
 			portrait_button = {
 				using = pt_button_large
 				pop_out = yes
-				visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ))]"
+				visible = "[Not(Or( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ), And( Not( Character.IsAlive ), GetScriptedGui('omni_dead_dragon_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) ))]"
 			}
 			omni_dragon_face = {
 				blockoverride "DracolichPortraitSize" { size = { 120% 120% } }
@@ -7143,7 +7143,7 @@ types Base_GUI_Types
 			position = { 36 18 }
 			portrait_button = {
 				using = pt_button_baby
-                visible = "[Not(Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ))]"
+                visible = "[Not(Or( Or( Or( Character.MakeScope.Var('omni_dragon_sovereign').IsSet, Character.MakeScope.Var('omni_dragon_descendant').IsSet ), Or( Character.MakeScope.Var('omni_wild_dragon_self').IsSet, Character.MakeScope.Var('omni_dracolich').IsSet ) ), And( Not( Character.IsAlive ), GetScriptedGui('omni_dead_dragon_portrait').IsShown( GuiScope.SetRoot( Character.MakeScope ).End ) ) ))]"
             }
             omni_dragon_face = {
                 blockoverride "HatchlingPosition" { position = { 0 10 } }

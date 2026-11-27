@@ -1,0 +1,34 @@
+﻿# Dead dragons keep their dragon portrait.
+# Death frees a character's variables and traits, so the portrait GUI can no longer
+# see omni_dragon_sovereign / omni_dragon_descendant / omni_wild_dragon_self /
+# omni_dracolich and fell back to the human 3D portrait. Record dragons here while
+# their variables are still readable; the GUI checks these lists only for dead
+# characters (scripted GUIs in common/scripted_guis/omni_dead_dragon_portrait.txt).
+#   omni_dead_dragons            - every dead dragon (portrait swap)
+#   omni_dead_dragon_hatchlings  - died younger than 16 (hatchling art)
+#   omni_dead_dracoliches        - died as a dracolich (dracolich art)
+# Non-dragons stop at the first limit: four has_variable checks per death.
+on_character_death = { on_actions = { omni_dead_dragon_on_character_death } }
+omni_dead_dragon_on_character_death = {
+	effect = {
+		if = {
+			limit = {
+				OR = {
+					has_variable = omni_dragon_sovereign
+					has_variable = omni_dragon_descendant
+					has_variable = omni_wild_dragon_self
+					has_variable = omni_dracolich
+				}
+			}
+			add_to_global_variable_list = { name = omni_dead_dragons target = this }
+			if = {
+				limit = { has_variable = omni_dracolich }
+				add_to_global_variable_list = { name = omni_dead_dracoliches target = this }
+			}
+			else_if = {
+				limit = { age < 16 }
+				add_to_global_variable_list = { name = omni_dead_dragon_hatchlings target = this }
+			}
+		}
+	}
+}
